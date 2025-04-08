@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Behaviours.Effects;
 using UnityEngine;
 
 namespace itolib.Behaviours.Kinematics

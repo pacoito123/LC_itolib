@@ -5,7 +5,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace itolib.Behaviours.Kinematics
+namespace itolib.Behaviours.Effects
 {
     /// <summary>
     ///     Represents an effect or concept that continually affects a player (attach), and eventually stops (detach).

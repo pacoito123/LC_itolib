@@ -1,4 +1,3 @@
-using itolib.Patches;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -55,16 +54,26 @@ namespace itolib.Behaviours.Materials
         /// </summary>
         public bool activateImmediately = true;
 
-        private void Awake()
+        private void Start()
         {
             if (activateImmediately)
             {
                 SwapMaterials();
             }
-            else
+        }
+
+        private void OnEnable()
+        {
+            if (!activateImmediately)
             {
-                LoadPatch.OnFinishGeneratingNewLevelClientRpcPost += SwapMaterials;
+                StartOfRound.Instance.StartNewRoundEvent.AddListener(SwapMaterials);
             }
+        }
+
+        private void OnDisable()
+        {
+            // TODO: Switch to regular C# events?
+            StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SwapMaterials);
         }
 
         /// <summary>
@@ -81,6 +90,11 @@ namespace itolib.Behaviours.Materials
 
                 foreach (GameObject affectedObject in swap.affectedObjects)
                 {
+                    if (affectedObject == null)
+                    {
+                        continue;
+                    }
+
                     foreach (MeshRenderer renderer in affectedObject.GetComponentsInChildren<MeshRenderer>())
                     {
                         Material[] materials = renderer.sharedMaterials;
@@ -96,11 +110,6 @@ namespace itolib.Behaviours.Materials
                         renderer.sharedMaterials = materials;
                     }
                 }
-            }
-
-            if (!activateImmediately)
-            {
-                LoadPatch.OnFinishGeneratingNewLevelClientRpcPost -= SwapMaterials;
             }
         }
     }

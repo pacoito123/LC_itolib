@@ -12,8 +12,15 @@ namespace itolib.Patches
     {
         public static bool FirstLoad { get; private set; } = true;
 
+        /// <summary>
+        ///     Event invoked after the moon finishes loading.
+        /// </summary>
         public static event Action? OnFinishGeneratingLevelPost;
 
+        /// <summary>
+        ///     Event invoked after the dungeon finishes generating.
+        /// </summary>
+        /// <remarks><b>NOTE:</b> Runs twice for the host; use 'StartOfRound.StartNewRoundEvent' preferably, if possible.</remarks>
         public static event Action? OnFinishGeneratingNewLevelClientRpcPost;
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.FinishGeneratingLevel))]
@@ -23,7 +30,7 @@ namespace itolib.Patches
             OnFinishGeneratingLevelPost?.Invoke();
         }
 
-        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.FinishGeneratingNewLevelClientRpc)), HarmonyPriority(Priority.Low)]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.FinishGeneratingNewLevelClientRpc))]
         [HarmonyPostfix]
         private static void FinishGeneratingNewLevelClientRpcPost()
         {

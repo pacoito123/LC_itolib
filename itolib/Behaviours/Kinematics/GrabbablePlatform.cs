@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Behaviours.Effects;
 using System;
 using Unity.Netcode;
 using UnityEngine;
@@ -158,7 +159,7 @@ namespace itolib.Behaviours.Kinematics
             if (actionToHold.Length > 0)
             {
                 // Get action (key) that must be held, if one is set.
-                ActionToHold = GameNetworkManager.Instance.localPlayerController.playerActions.FindAction(actionToHold);
+                ActionToHold = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToHold);
             }
         }
 
@@ -214,7 +215,12 @@ namespace itolib.Behaviours.Kinematics
             {
                 // Detach player from the platform if an enemy collides with it.
                 DetachPlayerLocal();
-                DetachPlayerServerRpc();
+
+                if (!isLocalEffect)
+                {
+                    // Detach attached player on all clients.
+                    DetachPlayerServerRpc();
+                }
 
                 return;
             }
@@ -225,7 +231,12 @@ namespace itolib.Behaviours.Kinematics
             {
                 // Detach player from the platform if it collides with a wall.
                 DetachPlayerLocal();
-                DetachPlayerServerRpc();
+
+                if (!isLocalEffect)
+                {
+                    // Detach attached player on all clients.
+                    DetachPlayerServerRpc();
+                }
 
                 return;
             }

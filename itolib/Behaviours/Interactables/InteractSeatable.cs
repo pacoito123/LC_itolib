@@ -29,16 +29,34 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     TODO.
         /// </summary>
+        public InputAction? ActionToExit { get; private set; }
+
+        /// <summary>
+        ///     Key required to be held for the player to hang on to the platform. See 'UnityEngine.InputSystem.Key' for number values. Leaving it at '-1' allows players to
+        ///     remain attached without holding anything, until being detached through other means (e.g. 'detachTimer').
+        /// </summary>
+        /// <remarks>Probably worth looking into adding controller support for this.</remarks>
+        [Header("Interact Seatable")]
+        [Tooltip("Key required to be held for the player to hang on to the platform. See 'UnityEngine.InputSystem.Key' for number values. Leaving it at '-1' allows "
+            + "players to remain attached without holding anything, until being detached through other means (e.g. 'detachTimer').")]
+        public string actionToExit = "";
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         public AudioSource? seatableSource;
 
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
         public UnityEvent? onPlayerSit;
 
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
         public UnityEvent? onPlayerStand;
 
         /// <summary>
@@ -77,27 +95,19 @@ namespace itolib.Behaviours.Interactables
                 }
             });
 
-            /* holdingInteractEvent.AddListener(amount =>
-            {
-                if (LocalPlayerSeated && amount >= 0.9f)
-                {
-                    ExitChairLocal(teleport: true);
-                    ExitChairServerRpc();
-                }
-            }); */
+            ActionToExit = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToExit);
         }
 
         private new void Update()
         {
             base.Update();
 
-            if (SittingPlayer == null)
+            if (SittingPlayer == null || ActionToExit == null)
             {
                 return;
             }
 
-            // if (LocalPlayerSeated && Keyboard.current[(Key)keyToHold].isPressed)
-            if (LocalPlayerSeated && Keyboard.current[Key.Space].isPressed)
+            if (LocalPlayerSeated && ActionToExit.IsPressed())
             {
                 ExitChairLocal(true);
                 ExitChairServerRpc();
