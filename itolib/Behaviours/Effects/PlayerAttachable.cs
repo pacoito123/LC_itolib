@@ -101,8 +101,9 @@ namespace itolib.Behaviours.Effects
         public bool isLocalEffect = false;
 
         /// <summary>
-        ///     TODO.
+        ///     Attach upon coming into contact with a player.
         /// </summary>
+        /// <param name="collider">Collider to attempt to attach to.</param>
         public virtual void OnTriggerEnter(Collider collider)
         {
             // Check if a player has attached once already.

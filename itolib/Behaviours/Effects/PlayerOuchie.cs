@@ -4,58 +4,28 @@ using UnityEngine;
 namespace itolib.Behaviours.Effects
 {
     /// <summary>
-    /// 	TODO.
+    /// 	Script to deal a set (or random) amount of damage to a given player.
     /// </summary>
     public class PlayerOuchie : MonoBehaviour
     {
         /// <summary>
-        ///     Time-seeded (local) Random instance for randomization purposes.
+        ///     Minimum damage value to inflict on a player.
         /// </summary>
-        public static System.Random Random { get; private set; } = new();
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
+        [Tooltip("Minimum damage value to inflict on a player.")]
         public int minDamage = 0;
 
         /// <summary>
-        ///     TODO.
+        ///     Maximum damage value to inflict on a player.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Maximum damage value to inflict on a player.")]
         public int maxDamage = 0;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether or not to play the vanilla player damage sound effect.
         /// </summary>
         [Header("Audio")]
-        [Tooltip("")]
-        public AudioSource? ouchSource;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public AudioClip? ouchSfx;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public float ouchVolume = 1.0f;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Header("Launch")]
-        [Tooltip("")]
-        public Vector3 launchForce = Vector3.zero;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public bool dealFallDamage = false;
+        [Tooltip("Whether or not to play the vanilla player damage sound effect.")]
+        public bool playDamageSFX = true;
 
         /// <summary>
         ///     TODO.
@@ -82,22 +52,15 @@ namespace itolib.Behaviours.Effects
         /// <param name="playerHurt"></param>
         public void Ouchie(PlayerControllerB playerHurt)
         {
-            if (ouchSfx != null)
-            {
-                ouchSource?.PlayOneShot(ouchSfx, ouchVolume);
-            }
-
             if (playerHurt.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId
                 || playerHurt.isPlayerDead || !playerHurt.isActiveAndEnabled)
             {
                 return;
             }
 
-            int damageTaken = minDamage != maxDamage ? Random.Next(minDamage, maxDamage + 1) : minDamage;
-            playerHurt.DamagePlayer(damageTaken, ouchSfx == null, true, (CauseOfDeath)deathCause,
-                deathAnimation, dealFallDamage, deathLaunchForce);
-
-            playerHurt.externalForceAutoFade = launchForce;
+            int damageTaken = (minDamage < maxDamage) ? Random.Range(minDamage, maxDamage + 1) : minDamage;
+            playerHurt.DamagePlayer(damageTaken, playDamageSFX, true, (CauseOfDeath)deathCause,
+                deathAnimation, false, deathLaunchForce);
         }
     }
 }

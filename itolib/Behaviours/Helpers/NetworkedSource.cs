@@ -25,6 +25,7 @@ namespace itolib.Behaviours.Helpers
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Header("Pitch")]
         [Tooltip("")]
         public float minPitch = 1.0f;
 
@@ -33,6 +34,19 @@ namespace itolib.Behaviours.Helpers
         /// </summary>
         [Tooltip("")]
         public float maxPitch = 1.0f;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Header("Walkie")]
+        [Tooltip("")]
+        public bool transmitOverWalkie = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public float walkieVolume = 1.0f;
 
         /// <summary>
         ///     TODO.
@@ -81,7 +95,10 @@ namespace itolib.Behaviours.Helpers
         [ServerRpc(RequireOwnership = false)]
         public void PlayAudioServerRpc()
         {
-            PlayAudioClientRpc(GetRandomPitch());
+            if (syncedSource?.clip != null)
+            {
+                PlayAudioClientRpc(GetRandomPitch());
+            }
         }
 
         /// <summary>
@@ -90,10 +107,15 @@ namespace itolib.Behaviours.Helpers
         [ClientRpc]
         public void PlayAudioClientRpc(float pitch)
         {
-            if (syncedSource != null)
+            if (syncedSource?.clip != null)
             {
                 syncedSource.pitch = pitch;
                 syncedSource.Play();
+
+                if (transmitOverWalkie)
+                {
+                    WalkieTalkie.TransmitOneShotAudio(syncedSource, syncedSource.clip, walkieVolume);
+                }
             }
         }
 
@@ -103,7 +125,7 @@ namespace itolib.Behaviours.Helpers
         [ServerRpc(RequireOwnership = false)]
         public void PlayOneshotServerRpc(int clip)
         {
-            if (audioClips.Count > clip)
+            if (audioClips.Count > clip && audioClips[clip] != null)
             {
                 PlayOneshotClientRpc(clip, GetRandomPitch());
             }
@@ -115,10 +137,15 @@ namespace itolib.Behaviours.Helpers
         [ClientRpc]
         public void PlayOneshotClientRpc(int clip, float pitch)
         {
-            if (syncedSource != null)
+            if (syncedSource != null && audioClips.Count > clip && audioClips[clip] != null)
             {
                 syncedSource.pitch = pitch;
-                syncedSource?.PlayOneShot(audioClips[clip]);
+                syncedSource.PlayOneShot(audioClips[clip]);
+
+                if (transmitOverWalkie)
+                {
+                    WalkieTalkie.TransmitOneShotAudio(syncedSource, audioClips[clip], walkieVolume);
+                }
             }
         }
     }

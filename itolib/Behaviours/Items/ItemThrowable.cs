@@ -79,6 +79,14 @@ namespace itolib.Behaviours.Items
         [Tooltip("")]
         public AnimationCurve? verticalFallCurveNoBounce;
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(10f)]
+        [Header("Collision")]
+        [Tooltip("")]
+        public LayerMask collisionMask = 268437761;
+
         private void Awake()
         {
             item.FallWithCurveOverride = FallWithCurve;
@@ -132,13 +140,13 @@ namespace itolib.Behaviours.Items
             Transform cameraTransform = item.playerHeldBy.gameplayCamera.transform;
             ThrowRay = new(cameraTransform.position, cameraTransform.forward);
 
-            Vector3 pos = Physics.Raycast(ThrowRay, out rayHit, throwDistance, 268437761, QueryTriggerInteraction.Ignore)
+            Vector3 pos = Physics.Raycast(ThrowRay, out rayHit, throwDistance, collisionMask, QueryTriggerInteraction.Ignore)
                 ? ThrowRay.GetPoint(rayHit.distance - 0.05f)
                 : ThrowRay.GetPoint(throwDistance);
 
             ThrowRay = new(pos, Vector3.down);
 
-            return Physics.Raycast(ThrowRay, out rayHit, fallDistance, 268437761, QueryTriggerInteraction.Ignore)
+            return Physics.Raycast(ThrowRay, out rayHit, fallDistance, collisionMask, QueryTriggerInteraction.Ignore)
                 ? rayHit.point + (Vector3.up * item.itemProperties.verticalOffset) : ThrowRay.GetPoint(fallDistance);
         }
     }

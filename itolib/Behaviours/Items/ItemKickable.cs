@@ -91,6 +91,14 @@ namespace itolib.Behaviours.Items
         [Tooltip("")]
         public UnityEvent<PlayerControllerB>? onPlayerKick;
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(10f)]
+        [Header("Collision")]
+        [Tooltip("")]
+        public LayerMask collisionMask = 369101057;
+
         private void Awake()
         {
             item.FallWithCurveOverride = FallWithCurve;
@@ -154,7 +162,7 @@ namespace itolib.Behaviours.Items
 
             KickRay = new(pos + (Vector3.up * 0.22f), direction);
 
-            pos = Physics.Raycast(KickRay, out rayHit, 12f, 369101057, QueryTriggerInteraction.Ignore)
+            pos = Physics.Raycast(KickRay, out rayHit, 12f, collisionMask, QueryTriggerInteraction.Ignore)
                 ? (rayHit.distance < 2f
                     ? KickRay.GetPoint(rayHit.distance - 0.05f) + (rayHit.normal * (rayHit.distance * 2.0f))
                     : KickRay.GetPoint(rayHit.distance - 0.05f))
@@ -162,7 +170,7 @@ namespace itolib.Behaviours.Items
 
             KickRay = new(pos, Vector3.down);
 
-            return Physics.Raycast(KickRay, out rayHit, 65.0f, 369101057, QueryTriggerInteraction.Ignore)
+            return Physics.Raycast(KickRay, out rayHit, 65.0f, collisionMask, QueryTriggerInteraction.Ignore)
                 ? rayHit.point + (Vector3.up * item.itemProperties.verticalOffset) : Vector3.zero;
         }
 
