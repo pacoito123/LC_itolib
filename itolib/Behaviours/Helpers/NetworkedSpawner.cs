@@ -70,7 +70,7 @@ namespace itolib.Behaviours.Helpers
                 }
             }
 
-            if (destroySpawner)
+            if (destroySpawner) // TODO: Move elsewhere.
             {
                 Destroy(gameObject);
             }

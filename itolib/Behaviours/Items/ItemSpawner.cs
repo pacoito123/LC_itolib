@@ -1,5 +1,7 @@
 using itolib.Behaviours.Helpers;
 using itolib.Enums;
+using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -8,12 +10,57 @@ namespace itolib.Behaviours.Items
     /// <summary>
     ///     TODO.
     /// </summary>
+    [Serializable]
+    public struct SyncedItem : INetworkSerializable
+    {
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public Quaternion rotation;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public int meshVariant;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public int materialVariant;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public int scrapValue;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="serializer"></param>
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref rotation);
+            serializer.SerializeValue(ref meshVariant);
+            serializer.SerializeValue(ref materialVariant);
+            serializer.SerializeValue(ref scrapValue);
+        }
+    }
+
+    /// <summary>
+    ///     TODO.
+    /// </summary>
     public class ItemSpawner : NetworkedSpawner
     {
         /// <summary>
         ///     Seeded Random instance initialized with the current map seed.
         /// </summary>
-        public static System.Random? Random { get; internal set; }
+        public static System.Random Random { get; private set; } = null!;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public List<SyncedItem> ItemsToSync { get; private set; } = [];
 
         /// <summary>
         ///     TODO.
@@ -58,6 +105,11 @@ namespace itolib.Behaviours.Items
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
+            if (PrefabToSpawn != null)
+            {
+                return PrefabToSpawn;
+            }
+
             if (itemToSpawn?.spawnPrefab?.TryGetComponent(out NetworkObject itemNetworkObject) == true)
             {
                 return itemNetworkObject;
@@ -114,24 +166,33 @@ namespace itolib.Behaviours.Items
                 return;
             }
 
-            GameObject itemPrefab = Instantiate(PrefabToSpawn.gameObject, spawnLocation.position, spawnLocation.rotation,
+            GameObject itemPrefab = Instantiate(PrefabToSpawn.gameObject, spawnLocation.position, Quaternion.identity,
                 RoundManager.Instance.spawnedScrapContainer);
 
             if (itemPrefab.TryGetComponent(out NetworkObject itemNetworkObject)
                 && itemPrefab.TryGetComponent(out GrabbableObject item))
             {
-                itemPrefab.transform.rotation *= Quaternion.Euler(item.itemProperties.restingRotation);
                 item.fallTime = 0.0f;
 
-                item.scrapValue = Random!.Next(overrideMinValue < 0 ? item.itemProperties.minValue : overrideMinValue,
+                int scrapValue = Random.Next(overrideMinValue < 0 ? item.itemProperties.minValue : overrideMinValue,
                     overrideMaxValue < 0 ? item.itemProperties.maxValue : overrideMaxValue);
-
                 if (applyScrapMultiplier)
                 {
-                    item.scrapValue = (int)(item.scrapValue * RoundManager.Instance.scrapValueMultiplier);
+                    scrapValue = (int)(scrapValue * RoundManager.Instance.scrapValueMultiplier);
                 }
 
+                SyncedItem serializedItem = new()
+                {
+                    rotation = spawnLocation.rotation * Quaternion.Euler(item.itemProperties.restingRotation),
+                    meshVariant = (allowMeshVariants && item.itemProperties.meshVariants.Length > 0)
+                        ? Random.Next(0, item.itemProperties.meshVariants.Length) : -1,
+                    materialVariant = (allowMaterialVariants && item.itemProperties.materialVariants.Length > 0)
+                        ? Random.Next(0, item.itemProperties.materialVariants.Length) : -1,
+                    scrapValue = scrapValue
+                };
+
                 PrefabInstances.Add(itemNetworkObject);
+                ItemsToSync.Add(serializedItem);
             }
         }
 
@@ -157,7 +218,7 @@ namespace itolib.Behaviours.Items
                 StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncAllItemValuesServerRpc);
             }
 
-            Random = null;
+            Random = null!;
         }
 
         /// <summary>
@@ -168,23 +229,9 @@ namespace itolib.Behaviours.Items
         {
             for (int i = 0; i < PrefabInstances.Count; i++)
             {
-                NetworkObject? itemNetworkObject = PrefabInstances[i];
-                if (itemNetworkObject != null && itemNetworkObject.TryGetComponent(out GrabbableObject item))
+                if (PrefabInstances[i] != null)
                 {
-                    if (allowMeshVariants || allowMaterialVariants)
-                    {
-                        int meshVariant = (allowMeshVariants && item.itemProperties.meshVariants.Length > 0)
-                            ? Random!.Next(0, item.itemProperties.meshVariants.Length) : -1;
-
-                        int materialVariant = (allowMaterialVariants && item.itemProperties.materialVariants.Length > 0)
-                            ? Random!.Next(0, item.itemProperties.materialVariants.Length) : -1;
-
-                        SyncItemValuesClientRpc(itemNetworkObject, item.scrapValue, meshVariant, materialVariant);
-
-                        continue;
-                    }
-
-                    SyncItemValuesClientRpc(itemNetworkObject, item.scrapValue);
+                    SyncItemValuesClientRpc(PrefabInstances[i], ItemsToSync[i]);
                 }
             }
         }
@@ -192,23 +239,26 @@ namespace itolib.Behaviours.Items
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="itemReference"></param>
+        /// <param name="syncedItem"></param>
         [ClientRpc]
-        public void SyncItemValuesClientRpc(NetworkObjectReference itemReference, int scrapValue, int meshVariant = -1, int materialVariant = -1)
+        public void SyncItemValuesClientRpc(NetworkObjectReference itemReference, SyncedItem syncedItem)
         {
             if (itemReference.TryGet(out NetworkObject itemNetworkObject)
                 && itemNetworkObject.TryGetComponent(out GrabbableObject item))
             {
-                if (meshVariant != -1 && item.TryGetComponent(out MeshFilter itemFilter))
+                item.transform.rotation = syncedItem.rotation;
+
+                if (syncedItem.meshVariant != -1 && item.TryGetComponent(out MeshFilter itemFilter))
                 {
-                    itemFilter.mesh = item.itemProperties.meshVariants[meshVariant];
+                    itemFilter.mesh = item.itemProperties.meshVariants[syncedItem.meshVariant];
+                }
+                if (syncedItem.materialVariant != -1 && item.TryGetComponent(out MeshRenderer itemRenderer))
+                {
+                    itemRenderer.sharedMaterial = item.itemProperties.materialVariants[syncedItem.materialVariant];
                 }
 
-                if (materialVariant != -1 && item.TryGetComponent(out MeshRenderer itemRenderer))
-                {
-                    itemRenderer.sharedMaterial = item.itemProperties.materialVariants[materialVariant];
-                }
-
-                item.SetScrapValue(scrapValue);
+                item.SetScrapValue(syncedItem.scrapValue);
             }
         }
     }
