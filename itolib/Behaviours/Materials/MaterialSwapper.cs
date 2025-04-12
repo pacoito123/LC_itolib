@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using itolib.Enums;
 using UnityEngine;
 
 namespace itolib.Behaviours.Materials
@@ -47,16 +48,19 @@ namespace itolib.Behaviours.Materials
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Header("Material Swapper")]
+        [Tooltip("")]
         public List<MaterialSwap> materialSwaps = [];
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public bool activateImmediately = true;
+        [Tooltip("")]
+        public ActivationTime activationTime = ActivationTime.Immediate;
 
         private void Start()
         {
-            if (activateImmediately)
+            if (activationTime == ActivationTime.Immediate)
             {
                 SwapMaterials();
             }
@@ -64,16 +68,19 @@ namespace itolib.Behaviours.Materials
 
         private void OnEnable()
         {
-            if (!activateImmediately)
+            if (activationTime == ActivationTime.StartOfRound)
             {
-                StartOfRound.Instance.StartNewRoundEvent.AddListener(SwapMaterials);
+                StartOfRound.Instance?.StartNewRoundEvent.AddListener(SwapMaterials);
             }
         }
 
         private void OnDisable()
         {
             // TODO: Switch to regular C# events?
-            StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SwapMaterials);
+            if (activationTime == ActivationTime.StartOfRound)
+            {
+                StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SwapMaterials);
+            }
         }
 
         /// <summary>
