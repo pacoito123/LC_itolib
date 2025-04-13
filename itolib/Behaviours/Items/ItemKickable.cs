@@ -47,19 +47,31 @@ namespace itolib.Behaviours.Items
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public float kickSpeed = 12.0f;
+        public float kickDistance = 12.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public float kickUpwardAmount = 0.0f;
+        public float kickUpwardAmount = 0.4f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public float fallSpeed = 14.0f;
+        public float fallDistance = 65.0f;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public float fallSpeed = 12.0f;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public float rotationSpeed = 14.0f;
 
         /// <summary>
         ///     TODO.
@@ -133,9 +145,9 @@ namespace itolib.Behaviours.Items
             float magnitude = (item.startFallingPosition - item.targetFloorPosition).magnitude;
 
             itemTransform.rotation = Quaternion.Lerp(itemTransform.rotation, Quaternion.Euler(item.itemProperties.restingRotation.x, itemTransform.eulerAngles.y,
-                item.itemProperties.restingRotation.z), kickSpeed * Time.deltaTime / magnitude);
-            itemTransform.localPosition = Vector3.Lerp(item.startFallingPosition, item.targetFloorPosition, fallCurve?.Evaluate(item.fallTime)
-                ?? item.fallTime);
+                item.itemProperties.restingRotation.z), rotationSpeed * Time.deltaTime / magnitude);
+            itemTransform.localPosition = Vector3.Lerp(item.startFallingPosition, item.targetFloorPosition,
+                fallCurve?.Evaluate(item.fallTime) ?? item.fallTime);
 
             itemTransform.localPosition = magnitude < 3.0f
                 ? Vector3.Lerp(new(itemTransform.localPosition.x, item.startFallingPosition.y, itemTransform.localPosition.z),
@@ -162,15 +174,15 @@ namespace itolib.Behaviours.Items
 
             KickRay = new(pos + (Vector3.up * 0.22f), direction);
 
-            pos = Physics.Raycast(KickRay, out rayHit, 12f, collisionMask, QueryTriggerInteraction.Ignore)
+            pos = Physics.Raycast(KickRay, out rayHit, kickDistance, collisionMask, QueryTriggerInteraction.Ignore)
                 ? (rayHit.distance < 2f
                     ? KickRay.GetPoint(rayHit.distance - 0.05f) + (rayHit.normal * (rayHit.distance * 2.0f))
                     : KickRay.GetPoint(rayHit.distance - 0.05f))
-                : KickRay.GetPoint(10.0f);
+                : KickRay.GetPoint(kickDistance);
 
             KickRay = new(pos, Vector3.down);
 
-            return Physics.Raycast(KickRay, out rayHit, 65.0f, collisionMask, QueryTriggerInteraction.Ignore)
+            return Physics.Raycast(KickRay, out rayHit, kickDistance, collisionMask, QueryTriggerInteraction.Ignore)
                 ? rayHit.point + (Vector3.up * item.itemProperties.verticalOffset) : Vector3.zero;
         }
 

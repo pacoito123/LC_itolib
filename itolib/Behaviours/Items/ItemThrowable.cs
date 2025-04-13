@@ -53,13 +53,13 @@ namespace itolib.Behaviours.Items
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public float throwSpeed = 14.0f;
+        public float fallSpeed = 12.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public float fallSpeed = 12.0f;
+        public float rotationSpeed = 14.0f;
 
         /// <summary>
         ///     TODO.
@@ -116,9 +116,9 @@ namespace itolib.Behaviours.Items
             float magnitude = (item.startFallingPosition - item.targetFloorPosition).magnitude;
 
             itemTransform.rotation = Quaternion.Lerp(itemTransform.rotation, Quaternion.Euler(item.itemProperties.restingRotation.x, itemTransform.eulerAngles.y,
-                item.itemProperties.restingRotation.z), throwSpeed * Time.deltaTime / magnitude);
-            itemTransform.localPosition = Vector3.Lerp(item.startFallingPosition, item.targetFloorPosition, fallCurve?.Evaluate(item.fallTime)
-                ?? item.fallTime);
+                item.itemProperties.restingRotation.z), rotationSpeed * Time.deltaTime / magnitude);
+            itemTransform.localPosition = Vector3.Lerp(item.startFallingPosition, item.targetFloorPosition,
+                fallCurve?.Evaluate(item.fallTime) ?? item.fallTime);
 
             itemTransform.localPosition = magnitude > 5.0f
                 ? Vector3.Lerp(new(itemTransform.localPosition.x, item.startFallingPosition.y, itemTransform.localPosition.z),
