@@ -7,6 +7,7 @@ namespace itolib.Behaviours.Helpers
     /// <summary>
     ///     Simple networking for AudioSource components.
     /// </summary>
+    [RequireComponent(typeof(AudioSource))]
     public class NetworkedSource : NetworkBehaviour
     {
         /// <summary>

@@ -8,6 +8,7 @@ namespace itolib.Behaviours.Items
     /// <summary>
     ///     TODO.
     /// </summary>
+    [RequireComponent(typeof(ItemGrabbable))]
     public class ItemKickable : NetworkBehaviour
     {
         /// <summary>
