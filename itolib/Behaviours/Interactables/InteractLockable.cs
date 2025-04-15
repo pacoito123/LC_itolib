@@ -93,8 +93,11 @@ namespace itolib.Behaviours.Interactables
             isPickingLock = false;
             isLocked = true;
 
-            navMeshObstacle.carving = true;
-            navMeshObstacle.carveOnlyStationary = true;
+            if (navMeshObstacle != null)
+            {
+                navMeshObstacle.carving = true;
+                navMeshObstacle.carveOnlyStationary = true;
+            }
 
             if (twinDoor != null)
             {
@@ -116,8 +119,11 @@ namespace itolib.Behaviours.Interactables
             doorLockSFX.Stop();
             doorLockSFX.PlayOneShot(unlockSFX);
 
-            navMeshObstacle.carving = false;
-            navMeshObstacle.carveOnlyStationary = false;
+            if (navMeshObstacle != null)
+            {
+                navMeshObstacle.carving = false;
+                navMeshObstacle.carveOnlyStationary = false;
+            }
 
             if (!isLocked)
             {
@@ -165,7 +171,10 @@ namespace itolib.Behaviours.Interactables
             }
             else
             {
-                navMeshObstacle.carving = false;
+                if (navMeshObstacle != null)
+                {
+                    navMeshObstacle.carving = false;
+                }
 
                 if (hauntedDoor)
                 {
