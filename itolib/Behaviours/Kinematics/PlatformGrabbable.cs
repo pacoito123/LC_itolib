@@ -10,7 +10,7 @@ namespace itolib.Behaviours.Kinematics
     /// <summary>
     ///     Represents a platform players can grab and hold on to.
     /// </summary>
-    public class GrabbablePlatform : PlayerAttachable
+    public class PlatformGrabbable : PlayerAttachable
     {
         /// <summary>
         ///     Time-seeded (local) Random instance for randomization purposes (only pitch selection at the moment).

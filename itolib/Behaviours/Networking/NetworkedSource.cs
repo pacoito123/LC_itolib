@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-namespace itolib.Behaviours.Helpers
+namespace itolib.Behaviours.Networking
 {
     /// <summary>
     ///     Simple networking for AudioSource components.

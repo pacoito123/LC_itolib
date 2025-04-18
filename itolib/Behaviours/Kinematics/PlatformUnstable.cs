@@ -8,7 +8,7 @@ namespace itolib.Behaviours.Kinematics
     /// <summary>
     ///     Represents a platform that can collapse, either due to player carry weight or a flat percentage chance.
     /// </summary>
-    public class UnstablePlatform : NetworkBehaviour
+    public class PlatformUnstable : NetworkBehaviour // TODO: Redo with PlayerAttachable.
     {
         /// <summary>
         ///     Map-seeded (local) Random instance for randomization purposes.

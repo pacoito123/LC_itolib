@@ -3,7 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace itolib.Behaviours.Items
+namespace itolib.Behaviours.Grabbables
 {
     /// <summary>
     ///     TODO.
@@ -117,6 +117,7 @@ namespace itolib.Behaviours.Items
             item.FallWithCurveOverride = FallWithCurve;
 
             item.onActivatePhysicsTrigger?.AddListener(ActivatePhysicsTrigger);
+            item.onHitGround?.AddListener(() => LastKickedBy = null); // TODO: Run after kick instead.
         }
 
         /// <summary>

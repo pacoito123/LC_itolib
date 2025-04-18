@@ -1,11 +1,11 @@
-using itolib.Behaviours.Helpers;
+using itolib.Behaviours.Networking;
 using itolib.Enums;
 using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-namespace itolib.Behaviours.Items
+namespace itolib.Behaviours.Props
 {
     /// <summary>
     ///     TODO.
@@ -50,7 +50,7 @@ namespace itolib.Behaviours.Items
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class ItemSpawner : NetworkedSpawner
+    public class ScrapSpawner : NetworkedSpawner
     {
         /// <summary>
         ///     Seeded Random instance initialized with the current map seed.

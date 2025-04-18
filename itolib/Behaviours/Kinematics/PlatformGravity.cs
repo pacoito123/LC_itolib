@@ -7,7 +7,7 @@ namespace itolib.Behaviours.Kinematics
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class GravityPlatform : PlayerPhysicsRegion
+    public class PlatformGravity : PlayerPhysicsRegion
     {
         /// <summary>
         ///     TODO.

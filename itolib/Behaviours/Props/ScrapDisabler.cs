@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace itolib.Behaviours.Items
+namespace itolib.Behaviours.Props
 {
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class ItemDisabler : MonoBehaviour
+    public class ScrapDisabler : MonoBehaviour
     {
         /// <summary>
         ///     TODO.

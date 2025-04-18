@@ -2,13 +2,13 @@ using itolib.Enums;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace itolib.Behaviours.Items
+namespace itolib.Behaviours.Props
 {
     /// <summary>
     ///     TODO.
     /// </summary>
     [RequireComponent(typeof(Collider))]
-    public class ItemRegion : MonoBehaviour
+    public class ScrapRegion : MonoBehaviour
     {
         /// <summary>
         ///     TODO.

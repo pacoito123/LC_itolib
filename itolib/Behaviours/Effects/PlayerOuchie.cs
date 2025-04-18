@@ -32,7 +32,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Death")]
         [Tooltip("")]
-        public int deathCause = 0;
+        public CauseOfDeath deathCause = CauseOfDeath.Unknown;
 
         /// <summary>
         ///     TODO.
@@ -59,7 +59,7 @@ namespace itolib.Behaviours.Effects
             }
 
             int damageTaken = (minDamage < maxDamage) ? Random.Range(minDamage, maxDamage + 1) : minDamage;
-            playerHurt.DamagePlayer(damageTaken, playDamageSFX, true, (CauseOfDeath)deathCause,
+            playerHurt.DamagePlayer(damageTaken, playDamageSFX, true, deathCause,
                 deathAnimation, false, deathLaunchForce);
         }
     }

@@ -3,7 +3,7 @@ using GameNetcodeStuff;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace itolib.Behaviours.Items
+namespace itolib.Behaviours.Grabbables
 {
     /// <summary>
     ///     TODO.
