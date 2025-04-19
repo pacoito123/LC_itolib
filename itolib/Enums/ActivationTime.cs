@@ -21,6 +21,11 @@ namespace itolib.Enums
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        HazardSpawn,
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         StartOfRound,
         /// <summary>
         ///     TODO.

@@ -161,7 +161,7 @@ namespace itolib.Behaviours.Props
         /// <param name="spawnLocation"></param>
         public void SpawnItem(Transform spawnLocation)
         {
-            if (PrefabToSpawn == null)
+            if (PrefabToSpawn == null || !spawnLocation.gameObject.activeInHierarchy)
             {
                 return;
             }
@@ -201,9 +201,22 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public override void OnEnable()
         {
-            if (activationTime == ActivationTime.ScrapSpawn)
+            switch (activationTime)
             {
-                LethalLevelLoader.DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(PerformSpawn);
+                case ActivationTime.Immediate:
+                    break;
+                case ActivationTime.ScrapSpawn:
+                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(PerformSpawn);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(PerformSpawn);
+                    break;
+                case ActivationTime.StartOfRound:
+                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(PerformSpawn);
+                    break;
+                case ActivationTime.Manual:
+                default:
+                    break;
             }
         }
 
@@ -212,10 +225,22 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public override void OnDisable()
         {
-            if (activationTime == ActivationTime.ScrapSpawn)
+            switch (activationTime)
             {
-                LethalLevelLoader.DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(PerformSpawn);
-                StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncAllItemValuesServerRpc);
+                case ActivationTime.Immediate:
+                    break;
+                case ActivationTime.ScrapSpawn:
+                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(PerformSpawn);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(PerformSpawn);
+                    break;
+                case ActivationTime.StartOfRound:
+                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PerformSpawn);
+                    break;
+                case ActivationTime.Manual:
+                default:
+                    break;
             }
 
             Random = null!;

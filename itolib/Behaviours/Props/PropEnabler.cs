@@ -75,7 +75,7 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public ActivationTime activateOn = ActivationTime.StartOfRound;
+        public ActivationTime activationTime = ActivationTime.StartOfRound;
 
         /// <summary>
         ///     TODO.
@@ -109,13 +109,16 @@ namespace itolib.Behaviours.Props
                     PropWeightsCumulative.Add(TotalWeight);
                 }
 
-                switch (activateOn)
+                switch (activationTime)
                 {
                     case ActivationTime.Immediate:
                         EnablePropsServerRpc();
                         break;
                     case ActivationTime.ScrapSpawn:
                         LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(EnablePropsServerRpc);
+                        break;
+                    case ActivationTime.HazardSpawn:
+                        LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(EnablePropsServerRpc);
                         break;
                     case ActivationTime.StartOfRound:
                         StartOfRound.Instance?.StartNewRoundEvent.AddListener(EnablePropsServerRpc);
@@ -134,12 +137,15 @@ namespace itolib.Behaviours.Props
         {
             Random = null!;
 
-            switch (activateOn)
+            switch (activationTime)
             {
                 case ActivationTime.Immediate:
                     break;
                 case ActivationTime.ScrapSpawn:
                     LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(EnablePropsServerRpc);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(EnablePropsServerRpc);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(EnablePropsServerRpc);
