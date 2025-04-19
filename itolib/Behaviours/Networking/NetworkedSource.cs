@@ -1,3 +1,4 @@
+using GameNetcodeStuff;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -56,14 +57,9 @@ namespace itolib.Behaviours.Networking
         {
             base.OnNetworkSpawn();
 
-            if (!IsHost)
+            if (IsHost && syncedSource?.playOnAwake == true)
             {
-                return;
-            }
-
-            if (syncedSource?.playOnAwake == true)
-            {
-                StartOfRound.Instance?.StartNewRoundEvent.AddListener(PlayAudioServerRpc);
+                StartOfRound.Instance?.StartNewRoundEvent.AddListener(PlayNetworkedAudio);
             }
         }
 
@@ -72,9 +68,9 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         public override void OnDestroy()
         {
-            if (syncedSource?.playOnAwake == true)
+            if (IsHost && syncedSource?.playOnAwake == true)
             {
-                StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PlayAudioServerRpc);
+                StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PlayNetworkedAudio);
             }
 
             base.OnDestroy();
@@ -93,20 +89,22 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void PlayAudioServerRpc()
+        public void PlayNetworkedAudio()
         {
             if (syncedSource?.clip != null)
             {
-                PlayAudioClientRpc(GetRandomPitch());
+                float pitch = GetRandomPitch();
+
+                PlayAudioLocal(pitch);
+                PlayAudioServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), pitch);
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [ClientRpc]
-        public void PlayAudioClientRpc(float pitch)
+        /// <param name="pitch"></param>
+        private void PlayAudioLocal(float pitch)
         {
             if (syncedSource?.clip != null)
             {
@@ -123,20 +121,66 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="playerWhoCalled"></param>
+        /// <param name="pitch"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void PlayOneshotServerRpc(int clip)
+        public void PlayAudioServerRpc(NetworkObjectReference playerWhoCalled, float pitch)
         {
-            if (audioClips.Count > clip && audioClips[clip] != null)
+            PlayAudioClientRpc(playerWhoCalled, pitch);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerWhoCalled"></param>
+        /// <param name="pitch"></param>
+        [ClientRpc]
+        public void PlayAudioClientRpc(NetworkObjectReference playerWhoCalled, float pitch)
+        {
+            if (playerWhoCalled.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
             {
-                PlayOneshotClientRpc(clip, GetRandomPitch());
+                PlayAudioLocal(pitch);
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [ClientRpc]
-        public void PlayOneshotClientRpc(int clip, float pitch)
+        public void PlayNetworkedOneshotRandom()
+        {
+            if (syncedSource != null && audioClips.Count > 0)
+            {
+                int clip = Random.Range(0, audioClips.Count);
+                float pitch = GetRandomPitch();
+
+                PlayOneshotLocal(clip, pitch);
+                PlayOneshotServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), clip, pitch);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="clip"></param>
+        public void PlayNetworkedOneshot(int clip)
+        {
+            if (syncedSource != null && audioClips.Count > 0)
+            {
+                float pitch = GetRandomPitch();
+
+                PlayOneshotLocal(clip, pitch);
+                PlayOneshotServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), clip, pitch);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="clip"></param>
+        /// <param name="pitch"></param>
+        private void PlayOneshotLocal(int clip, float pitch)
         {
             if (syncedSource != null && audioClips.Count > clip && audioClips[clip] != null)
             {
@@ -147,6 +191,35 @@ namespace itolib.Behaviours.Networking
                 {
                     WalkieTalkie.TransmitOneShotAudio(syncedSource, audioClips[clip], walkieVolume);
                 }
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerWhoCalled"></param>
+        /// <param name="clip"></param>
+        /// <param name="pitch"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void PlayOneshotServerRpc(NetworkObjectReference playerWhoCalled, int clip, float pitch)
+        {
+            PlayOneshotClientRpc(playerWhoCalled, clip, pitch);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerWhoCalled"></param>
+        /// <param name="clip"></param>
+        /// <param name="pitch"></param>
+        [ClientRpc]
+        public void PlayOneshotClientRpc(NetworkObjectReference playerWhoCalled, int clip, float pitch)
+        {
+            if (playerWhoCalled.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            {
+                PlayOneshotLocal(clip, pitch);
             }
         }
     }
