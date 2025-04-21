@@ -178,7 +178,18 @@ namespace itolib.Behaviours.Props
 
                 EnablePropClientRpc(propIndex);
 
-                PropWeightsCumulative.RemoveAt(propIndex);
+                int weightRemoved = propsToEnable[propIndex].weight;
+                TotalWeight -= weightRemoved;
+
+                for (int j = propIndex + 1; j < PropWeightsCumulative.Count; j++)
+                {
+                    if (PropWeightsCumulative[j] > 0)
+                    {
+                        PropWeightsCumulative[j] -= weightRemoved;
+                    }
+                }
+
+                PropWeightsCumulative[propIndex] = 0;
             }
 
             HasRun = true;

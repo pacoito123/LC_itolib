@@ -2,18 +2,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace itolib.Behaviours.Props
+namespace itolib.Behaviours.Detectors
 {
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class ScrapDisabler : MonoBehaviour
+    public class ScrapDisabler : DetectRegion<GrabbableObject>
     {
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public List<MeshRenderer> DisabledRenderers { get; private set; } = [];
-
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -22,13 +17,30 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void DisableItemRenderer(GrabbableObject item)
+        public List<MeshRenderer> DisabledRenderers { get; private set; } = [];
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void Reset()
         {
-            item.GetComponentsInChildren<MeshRenderer>().Where(renderer => renderer.enabled).ToList().ForEach(renderer =>
+            layerMask = (1 << LayerMask.NameToLayer("Props")) | (1 << LayerMask.NameToLayer("PhysicsObject"));
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void CheckObjectsInRegion()
+        {
+            base.CheckObjectsInRegion();
+
+            for (int i = 0; i < ObjectsFound; i++)
             {
-                renderer.enabled = false;
-                DisabledRenderers.Add(renderer);
-            });
+                if (OverlapBuffer![i].TryGetComponent(out GrabbableObject item))
+                {
+                    onObjectsEach?.Invoke(item);
+                }
+            }
         }
 
         /// <summary>
@@ -41,6 +53,18 @@ namespace itolib.Behaviours.Props
             {
                 collider.enabled = false;
                 DisabledColliders.Add(collider);
+            });
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void DisableItemRenderer(GrabbableObject item)
+        {
+            item.GetComponentsInChildren<MeshRenderer>().Where(renderer => renderer.enabled).ToList().ForEach(renderer =>
+            {
+                renderer.enabled = false;
+                DisabledRenderers.Add(renderer);
             });
         }
 
