@@ -43,7 +43,7 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onRegionChecked;
+        public UnityEvent<int>? onRegionChecked;
 
         /// <summary>
         ///     TODO.
@@ -188,7 +188,7 @@ namespace itolib.Behaviours.Detectors
                 return;
             }
 
-            onRegionChecked?.Invoke();
+            onRegionChecked?.Invoke(ObjectsFound);
         }
     }
 }
