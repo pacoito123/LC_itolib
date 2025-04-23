@@ -36,7 +36,10 @@ namespace itolib.Behaviours.Detectors
 
             for (int i = 0; i < ObjectsFound; i++)
             {
-                if (OverlapBuffer![i].TryGetComponent(out GrabbableObject item))
+                Collider scrapCollider = OverlapBuffer![i];
+
+                if (scrapCollider.TryGetComponent(out GrabbableObject item)
+                    && !scrapCollider.TryGetComponent(out EnemyAI _)) // Maneater check...
                 {
                     onObjectsEach?.Invoke(item);
                 }

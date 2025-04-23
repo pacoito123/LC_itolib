@@ -50,6 +50,18 @@ namespace itolib.PlayZone
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public InteractTrigger? openDoors;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public InteractTrigger? closeDoors;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Header("Audio")]
         [Tooltip("")]
         public AudioSource? elevatorSource;
@@ -119,6 +131,39 @@ namespace itolib.PlayZone
         ///     TODO.
         /// </summary>
         /// <param name="newState"></param>
+        public void SwitchStateLocal(ElevatorState newState)
+        {
+            if (CurrentState != newState)
+            {
+                SwitchState(newState);
+                SwitchStateServerRpc(newState);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="newState"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void SwitchStateServerRpc(ElevatorState newState)
+        {
+            SwitchStateClientRpc(newState);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="newState"></param>
+        [ClientRpc]
+        public void SwitchStateClientRpc(ElevatorState newState)
+        {
+            SwitchState(newState);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="newState"></param>
         public void SwitchState(ElevatorState newState)
         {
             if (CurrentState == newState)
@@ -126,44 +171,51 @@ namespace itolib.PlayZone
                 return;
             }
 
-            switch (CurrentState)
+            bool up;
+            switch (newState)
             {
                 case ElevatorState.IdleUp:
                 case ElevatorState.IdleDown:
-                case ElevatorState.GoingUp:
+                    up = newState is ElevatorState.IdleUp;
+
                     if (elevatorAudioFinish != null && elevatorSource != null)
                     {
+                        elevatorSource.Stop();
                         elevatorSource.PlayOneShot(elevatorAudioFinish);
                     }
 
                     if (callElevatorUpper != null && callElevatorLower != null)
                     {
-                        callElevatorUpper.hoverTip = "Open Door";
-                        callElevatorLower.hoverTip = "Call Elevator";
+                        callElevatorUpper.hoverTip = up ? "Open Door" : "Call Elevator";
+                        callElevatorLower.hoverTip = up ? "Call Elevator" : "Open Door";
                     }
 
-                    onElevatorTravelFinish?.Invoke(true);
+                    CurrentState = newState;
+
+                    onElevatorTravelFinish?.Invoke(up);
+                    OpenDoors();
+
                     break;
+                case ElevatorState.GoingUp:
                 case ElevatorState.GoingDown:
+                    up = newState is ElevatorState.GoingUp;
+
                     if (elevatorAudioFinish != null && elevatorSource != null)
                     {
-                        elevatorSource.PlayOneShot(elevatorAudioFinish);
+                        elevatorSource.Play();
                     }
 
-                    if (callElevatorUpper != null && callElevatorLower != null)
-                    {
-                        callElevatorUpper.hoverTip = "Call Elevator";
-                        callElevatorLower.hoverTip = "Open Door";
-                    }
+                    elevatorAnimator?.SetBool("ElevatorGoingUp", up);
+                    onElevatorTravelStart?.Invoke(up);
+                    CloseDoors();
 
-                    onElevatorTravelFinish?.Invoke(true);
+                    CurrentState = newState;
+
                     break;
                 case ElevatorState.Stuck:
                 default:
                     break;
             }
-
-            CurrentState = newState;
         }
 
         /// <summary>
@@ -175,66 +227,23 @@ namespace itolib.PlayZone
             switch (CurrentState)
             {
                 case ElevatorState.IdleUp:
-                    if (up)
-                    {
-                        OpenDoors();
-                    }
-                    else
-                    {
-                        MoveElevator(up);
-                    }
-
-                    break;
-                case ElevatorState.IdleDown:
                     if (!up)
                     {
-                        OpenDoors();
+                        SwitchStateLocal(ElevatorState.GoingDown);
                     }
                     else
                     {
-                        MoveElevator(up);
+                        OpenDoors();
                     }
-
-                    break;
-                case ElevatorState.GoingUp:
-                case ElevatorState.GoingDown:
-                case ElevatorState.Stuck:
-                default:
-                    break;
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="up"></param>
-        public void MoveElevator(bool up)
-        {
-            switch (CurrentState)
-            {
-                case ElevatorState.IdleUp:
-                    if (!up && elevatorAnimator?.GetBool("ElevatorGoingUp") == true)
-                    {
-                        if (elevatorAudioFinish != null && elevatorSource != null)
-                        {
-                            elevatorSource.Play();
-                        }
-
-                        elevatorAnimator.SetBool("ElevatorGoingUp", false);
-                        onElevatorTravelStart?.Invoke(true);
-                    }
-
                     break;
                 case ElevatorState.IdleDown:
-                    if (up && elevatorAnimator?.GetBool("ElevatorGoingUp") == false)
+                    if (up)
                     {
-                        if (elevatorAudioFinish != null && elevatorSource != null)
-                        {
-                            elevatorSource.Play();
-                        }
-
-                        elevatorAnimator.SetBool("ElevatorGoingUp", true);
-                        onElevatorTravelStart?.Invoke(false);
+                        SwitchStateLocal(ElevatorState.GoingUp);
+                    }
+                    else
+                    {
+                        OpenDoors();
                     }
                     break;
                 case ElevatorState.GoingUp:
