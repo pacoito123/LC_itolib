@@ -222,5 +222,57 @@ namespace itolib.Behaviours.Networking
                 PlayOneshotLocal(clip, pitch);
             }
         }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="surfaceID"></param>
+        public void PlayNetworkedSurfaceHit(int surfaceID)
+        {
+            if (syncedSource != null && StartOfRound.Instance.footstepSurfaces.Length > surfaceID)
+            {
+                PlaySurfaceHitLocal(surfaceID);
+                PlaySurfaceHitServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), surfaceID);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerWhoCalled"></param>
+        /// <param name="surfaceID"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void PlaySurfaceHitServerRpc(NetworkObjectReference playerWhoCalled, int surfaceID)
+        {
+            PlaySurfaceHitClientRpc(playerWhoCalled, surfaceID);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerWhoCalled"></param>
+        /// <param name="surfaceID"></param>
+        [ClientRpc]
+        public void PlaySurfaceHitClientRpc(NetworkObjectReference playerWhoCalled, int surfaceID)
+        {
+            if (playerWhoCalled.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            {
+                syncedSource?.PlayOneShot(StartOfRound.Instance.footstepSurfaces[surfaceID].hitSurfaceSFX);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="surfaceID"></param>
+        public void PlaySurfaceHitLocal(int surfaceID)
+        {
+            if (StartOfRound.Instance.footstepSurfaces[surfaceID] != null)
+            {
+                syncedSource?.PlayOneShot(StartOfRound.Instance.footstepSurfaces[surfaceID].hitSurfaceSFX);
+            }
+        }
     }
 }

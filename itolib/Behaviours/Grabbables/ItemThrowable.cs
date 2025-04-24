@@ -99,14 +99,17 @@ namespace itolib.Behaviours.Grabbables
         ///     TODO.
         /// </summary>
         /// <param name="used"></param>
-        public void ItemActivate(bool used)
+        /// <param name="buttonDown"></param>
+        public void ItemActivate(bool used, bool buttonDown)
         {
-            if (item.IsOwner)
+            if (!item.IsOwner)
             {
-                item.FallWithCurveOverride = FallWithCurve;
-
-                item.playerHeldBy?.DiscardHeldObject(true, null, GetThrowDestination(), true);
+                return;
             }
+
+            item.FallWithCurveOverride = FallWithCurve;
+
+            item.playerHeldBy?.DiscardHeldObject(true, null, GetThrowDestination(), true);
         }
 
         /// <summary>

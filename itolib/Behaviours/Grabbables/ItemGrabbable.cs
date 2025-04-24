@@ -1,5 +1,6 @@
 using System;
 using GameNetcodeStuff;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -13,6 +14,11 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        public int VariantIndex { get; internal set; } = -1;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public Action? FallWithCurveOverride { get; internal set; }
 
         /// <summary>
@@ -20,7 +26,21 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Header("Item Grabbable")]
         [Tooltip("")]
-        public UnityEvent<bool>? onActivate;
+        public bool saveMaterialVariant = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool saveMeshVariant = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Header("Events")]
+        [Tooltip("")]
+        public UnityEvent<bool, bool>? onActivate;
+
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -121,6 +141,12 @@ namespace itolib.Behaviours.Grabbables
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        public UnityEvent<int>? onHitGroundVariant;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         public UnityEvent? onInspect;
 
         /// <summary>
@@ -168,12 +194,66 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <returns></returns>
+        public override int GetItemDataToSave()
+        {
+            if (saveMeshVariant && mainObjectRenderer.TryGetComponent(out MeshFilter itemMesh))
+            {
+                for (int i = 0; i < itemProperties.meshVariants.Length; i++)
+                {
+                    if (itemProperties.meshVariants[i] == itemMesh.sharedMesh)
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            if (saveMaterialVariant)
+            {
+                for (int i = 0; i < itemProperties.materialVariants.Length; i++)
+                {
+                    if (itemProperties.materialVariants[i] == mainObjectRenderer.sharedMaterial)
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="variantIndex"></param>
+        public override void LoadItemSaveData(int variantIndex)
+        {
+            if (variantIndex < 0)
+            {
+                return;
+            }
+
+            if (saveMeshVariant && variantIndex < itemProperties.meshVariants.Length
+                && mainObjectRenderer.TryGetComponent(out MeshFilter itemMesh))
+            {
+                itemMesh.mesh = itemProperties.meshVariants[variantIndex]; // TODO: Test sharedMesh
+            }
+
+            if (saveMaterialVariant && variantIndex < itemProperties.materialVariants.Length)
+            {
+                mainObjectRenderer.sharedMaterial = itemProperties.materialVariants[variantIndex];
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="used"></param>
         /// <param name="buttonDown"></param>
         public override void ItemActivate(bool used, bool buttonDown = true)
         {
             base.ItemActivate(used, buttonDown);
-            onActivate?.Invoke(used);
+            onActivate?.Invoke(used, buttonDown);
         }
 
         /// <summary>
@@ -287,7 +367,15 @@ namespace itolib.Behaviours.Grabbables
         public override void OnHitGround()
         {
             base.OnHitGround();
-            onHitGround?.Invoke();
+
+            if (VariantIndex < 0)
+            {
+                onHitGround?.Invoke();
+            }
+            else
+            {
+                onHitGroundVariant?.Invoke(VariantIndex);
+            }
         }
 
         /// <summary>
@@ -357,6 +445,35 @@ namespace itolib.Behaviours.Grabbables
             {
                 base.FallWithCurve();
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void SyncItemVariant()
+        {
+            if (VariantIndex < 0 && (saveMeshVariant || saveMaterialVariant))
+            {
+                SyncItemVariantServerRpc(GetItemDataToSave());
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [ServerRpc(RequireOwnership = false)]
+        public void SyncItemVariantServerRpc(int variantIndex)
+        {
+            SyncItemVariantClientRpc(variantIndex);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [ClientRpc]
+        public void SyncItemVariantClientRpc(int variantIndex)
+        {
+            VariantIndex = variantIndex;
         }
     }
 }

@@ -276,7 +276,7 @@ namespace itolib.Behaviours.Props
 
                 if (syncedItem.meshVariant != -1 && item.TryGetComponent(out MeshFilter itemFilter))
                 {
-                    itemFilter.mesh = item.itemProperties.meshVariants[syncedItem.meshVariant];
+                    itemFilter.mesh = item.itemProperties.meshVariants[syncedItem.meshVariant]; // TODO: Test sharedMesh
                 }
                 if (syncedItem.materialVariant != -1 && item.TryGetComponent(out MeshRenderer itemRenderer))
                 {
