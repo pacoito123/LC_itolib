@@ -1,12 +1,88 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace itolib.Behaviours.Detectors
 {
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class EnemyRegion : DetectRegion<EnemyAI>
+    [Serializable]
+    public struct EnemyFilter
     {
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public string enemyName;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public int amount;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool fuzzySearch;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool objectSearch;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public EnemyFilter()
+        {
+            enemyName = "";
+            amount = 1;
+            fuzzySearch = false;
+            objectSearch = false;
+        }
+    }
+
+    /// <summary>
+    ///     TODO.
+    /// </summary>
+    public class EnemySensor : DetectRegion<EnemyAI>
+    {
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Header("Enemy Sensor")]
+        [Tooltip("")]
+        public List<EnemyFilter> enemyFilters = [];
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public UnityEvent<EnemyFilter>? onFilterAmountMet;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool filterExiting = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool subtractOnExit = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        public int[] enemyAmounts = null!;
+
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -18,11 +94,44 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        public override void Start()
+        {
+            enemyAmounts = new int[enemyFilters.Count];
+
+            base.Start();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void OnTriggerEnter(Collider other)
         {
-            if (other.TryGetComponent(out EnemyAI enemy))
+            if (other.TryGetComponent(out EnemyAICollisionDetect enemyCollision)
+                && enemyCollision.mainScript != null)
             {
-                onRegionEntered?.Invoke(enemy);
+                if (enemyFilters.Count == 0)
+                {
+                    onRegionEntered?.Invoke(enemyCollision.mainScript);
+                    return;
+                }
+
+                for (int i = 0; i < enemyFilters.Count; i++)
+                {
+                    EnemyFilter filter = enemyFilters[i];
+                    string search = !filter.objectSearch ? enemyCollision.mainScript.enemyType.enemyName : enemyCollision.mainScript.gameObject.name;
+
+                    if ((filter.fuzzySearch && search.Contains(filter.enemyName)) || string.CompareOrdinal(search, filter.enemyName) == 0)
+                    {
+                        if (++enemyAmounts[i] >= filter.amount)
+                        {
+                            onFilterAmountMet?.Invoke(filter);
+                            enemyAmounts[i] = 0;
+                        }
+
+                        onRegionEntered?.Invoke(enemyCollision.mainScript);
+                        break;
+                    }
+                }
             }
         }
 
@@ -31,9 +140,31 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void OnTriggerExit(Collider other)
         {
-            if (other.TryGetComponent(out EnemyAI enemy))
+            if (other.TryGetComponent(out EnemyAICollisionDetect enemyCollision)
+                && enemyCollision.mainScript != null)
             {
-                onRegionExited?.Invoke(enemy);
+                if (enemyFilters.Count == 0 || !filterExiting)
+                {
+                    onRegionExited?.Invoke(enemyCollision.mainScript);
+                    return;
+                }
+
+                for (int i = 0; i < enemyFilters.Count; i++)
+                {
+                    EnemyFilter filter = enemyFilters[i];
+                    string search = filter.objectSearch ? enemyCollision.mainScript.enemyType.enemyName : enemyCollision.mainScript.gameObject.name;
+
+                    if ((filter.fuzzySearch && search.Contains(filter.enemyName)) || string.CompareOrdinal(search, filter.enemyName) == 0)
+                    {
+                        if (subtractOnExit)
+                        {
+                            enemyAmounts[i]--;
+                        }
+
+                        onRegionExited?.Invoke(enemyCollision.mainScript);
+                        break;
+                    }
+                }
             }
         }
     }

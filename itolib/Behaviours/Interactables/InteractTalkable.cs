@@ -25,7 +25,7 @@ namespace itolib.Behaviours.Interactables
         public UnityEvent<PlayerControllerB>? onStopTalking;
 
         /// <summary>
-        ///     Set default seat properties.
+        ///     Set default talkable properties.
         /// </summary>
         private void Reset()
         {

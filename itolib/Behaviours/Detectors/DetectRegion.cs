@@ -164,12 +164,12 @@ namespace itolib.Behaviours.Detectors
 
             if (regionCollider is BoxCollider box)
             {
-                ObjectsFound = Physics.OverlapBoxNonAlloc(transform.position + box.center, box.size * 0.5f, OverlapBuffer,
+                ObjectsFound = Physics.OverlapBoxNonAlloc(transform.TransformPoint(box.center), box.size * 0.5f, OverlapBuffer,
                     Quaternion.identity, layerMask, QueryTriggerInteraction.Collide);
             }
             else if (regionCollider is SphereCollider sphere)
             {
-                ObjectsFound = Physics.OverlapSphereNonAlloc(transform.position + sphere.center, sphere.radius, OverlapBuffer,
+                ObjectsFound = Physics.OverlapSphereNonAlloc(transform.TransformPoint(sphere.center), sphere.radius, OverlapBuffer,
                     layerMask, QueryTriggerInteraction.Collide);
             }
             else if (regionCollider is CapsuleCollider capsule)
@@ -177,8 +177,9 @@ namespace itolib.Behaviours.Detectors
                 Vector3 direction = new() { [capsule.direction] = 1 };
                 float offset = (capsule.height / 2) - capsule.radius;
 
-                ObjectsFound = Physics.OverlapCapsuleNonAlloc(transform.position + capsule.center - (offset * direction),
-                    transform.position + capsule.center + (offset * direction), capsule.radius, OverlapBuffer, layerMask,
+                // TODO: Test if works when rotated.
+                ObjectsFound = Physics.OverlapCapsuleNonAlloc(transform.TransformPoint(capsule.center - (offset * direction)),
+                    transform.TransformPoint(capsule.center + (offset * direction)), capsule.radius, OverlapBuffer, layerMask,
                     QueryTriggerInteraction.Collide);
             }
             else
