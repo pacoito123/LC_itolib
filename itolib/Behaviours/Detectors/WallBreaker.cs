@@ -37,6 +37,19 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        public override void Start()
+        {
+            if (disableSelf)
+            {
+                onObjectsAny?.AddListener(_ => gameObject.SetActive(false));
+            }
+
+            base.Start();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void CheckObjectsInRegion()
         {
             base.CheckObjectsInRegion();
@@ -61,9 +74,9 @@ namespace itolib.Behaviours.Detectors
                 }
             }
 
-            if (disableSelf && BlockersFound > 0)
+            if (BlockersFound > 0)
             {
-                gameObject.SetActive(false);
+                onObjectsAny?.Invoke(BlockersFound);
             }
         }
 

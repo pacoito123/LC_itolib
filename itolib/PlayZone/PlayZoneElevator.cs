@@ -119,6 +119,18 @@ namespace itolib.PlayZone
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        public UnityEvent? onTopReached;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public UnityEvent? onBottomReached;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         public UnityEvent<bool>? onDoorsOpen;
 
         /// <summary>
@@ -126,6 +138,51 @@ namespace itolib.PlayZone
         /// </summary>
         [Tooltip("")]
         public UnityEvent<bool>? onDoorsClose;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="speedMultiplier"></param>
+        public void ChangeSpeedLocal(float speedMultiplier)
+        {
+            if (elevatorAnimator != null && elevatorAnimator.GetFloat("speed") != speedMultiplier)
+            {
+                ChangeSpeed(speedMultiplier);
+                ChangeSpeedServerRpc(speedMultiplier);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="speedMultiplier"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void ChangeSpeedServerRpc(float speedMultiplier)
+        {
+            ChangeSpeedClientRpc(speedMultiplier);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="speedMultiplier"></param>
+        [ClientRpc]
+        public void ChangeSpeedClientRpc(float speedMultiplier)
+        {
+            ChangeSpeed(speedMultiplier);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="speedMultiplier"></param>
+        public void ChangeSpeed(float speedMultiplier)
+        {
+            if (elevatorAnimator != null && elevatorAnimator.GetFloat("speed") != speedMultiplier)
+            {
+                elevatorAnimator.SetFloat("speed", speedMultiplier);
+            }
+        }
 
         /// <summary>
         ///     TODO.
@@ -192,8 +249,16 @@ namespace itolib.PlayZone
 
                     CurrentState = newState;
 
+                    if (up)
+                    {
+                        onTopReached?.Invoke();
+                    }
+                    else
+                    {
+                        onBottomReached?.Invoke();
+                    }
+
                     onElevatorTravelFinish?.Invoke(up);
-                    OpenDoors();
 
                     break;
                 case ElevatorState.GoingUp:
@@ -207,7 +272,6 @@ namespace itolib.PlayZone
 
                     elevatorAnimator?.SetBool("ElevatorGoingUp", up);
                     onElevatorTravelStart?.Invoke(up);
-                    CloseDoors();
 
                     CurrentState = newState;
 

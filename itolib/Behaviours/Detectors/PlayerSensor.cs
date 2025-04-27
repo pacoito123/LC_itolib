@@ -19,6 +19,12 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public UnityEvent<int>? onPlayersAliveAny;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void Reset()
         {
             maxObjects = 4;
@@ -32,17 +38,32 @@ namespace itolib.Behaviours.Detectors
         {
             base.CheckObjectsInRegion();
 
+            int playersFound = 0,
+                playersFoundAlive = 0;
+
             for (int i = 0; i < ObjectsFound; i++)
             {
                 if (OverlapBuffer![i].TryGetComponent(out PlayerControllerB player))
                 {
                     onObjectsEach?.Invoke(player);
+                    playersFound++;
 
                     if (player.isActiveAndEnabled && !player.isPlayerDead)
                     {
                         onPlayersAliveEach?.Invoke(player);
+                        playersFoundAlive++;
                     }
                 }
+            }
+
+            if (playersFound > 0)
+            {
+                onObjectsAny?.Invoke(playersFound);
+            }
+
+            if (playersFoundAlive > 0)
+            {
+                onPlayersAliveAny?.Invoke(playersFoundAlive);
             }
         }
 

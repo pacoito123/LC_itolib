@@ -66,6 +66,12 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public UnityEvent<int>? onObjectsAny;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Space(10f)]
         [Header("Layer Mask")]
         [Tooltip("")]

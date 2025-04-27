@@ -104,14 +104,40 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        public override void CheckObjectsInRegion()
+        {
+            base.CheckObjectsInRegion();
+
+            int enemiesFound = 0;
+
+            for (int i = 0; i < ObjectsFound; i++)
+            {
+                if (OverlapBuffer![i].TryGetComponent(out EnemyAICollisionDetect enemyCollision)
+                    && enemyCollision.mainScript != null)
+                {
+                    onObjectsEach?.Invoke(enemyCollision.mainScript);
+                    enemiesFound++;
+                }
+            }
+
+            if (enemiesFound > 0)
+            {
+                onObjectsAny?.Invoke(enemiesFound);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void OnTriggerEnter(Collider other)
         {
             if (other.TryGetComponent(out EnemyAICollisionDetect enemyCollision)
                 && enemyCollision.mainScript != null)
             {
+                onRegionEntered?.Invoke(enemyCollision.mainScript);
+
                 if (enemyFilters.Count == 0)
                 {
-                    onRegionEntered?.Invoke(enemyCollision.mainScript);
                     return;
                 }
 

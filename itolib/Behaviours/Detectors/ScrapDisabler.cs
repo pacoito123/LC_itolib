@@ -34,6 +34,8 @@ namespace itolib.Behaviours.Detectors
         {
             base.CheckObjectsInRegion();
 
+            int scrapFound = 0;
+
             for (int i = 0; i < ObjectsFound; i++)
             {
                 Collider scrapCollider = OverlapBuffer![i];
@@ -42,7 +44,13 @@ namespace itolib.Behaviours.Detectors
                     && !scrapCollider.TryGetComponent(out EnemyAI _)) // Maneater check...
                 {
                     onObjectsEach?.Invoke(item);
+                    scrapFound++;
                 }
+            }
+
+            if (scrapFound > 0)
+            {
+                onObjectsAny?.Invoke(scrapFound);
             }
         }
 
