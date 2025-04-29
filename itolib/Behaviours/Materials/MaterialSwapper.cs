@@ -1,6 +1,7 @@
+using DunGen;
+using itolib.Enums;
 using System;
 using System.Collections.Generic;
-using itolib.Enums;
 using UnityEngine;
 
 namespace itolib.Behaviours.Materials
@@ -43,7 +44,7 @@ namespace itolib.Behaviours.Materials
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class MaterialSwapper : MonoBehaviour
+    public class MaterialSwapper : MonoBehaviour, IDungeonCompleteReceiver
     {
         /// <summary>
         ///     TODO.
@@ -56,7 +57,7 @@ namespace itolib.Behaviours.Materials
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public ActivationTime activationTime = ActivationTime.Immediate;
+        public ActivationTime activationTime = ActivationTime.DungeonComplete;
 
         private void Start()
         {
@@ -108,7 +109,7 @@ namespace itolib.Behaviours.Materials
 
                         for (int i = 0; i < materials.Length; i++)
                         {
-                            if (materials[i].name.Contains(swap.searchKeyword))
+                            if (materials[i].name.Contains(swap.searchKeyword, StringComparison.OrdinalIgnoreCase))
                             {
                                 materials[i] = swap.replacementMaterial;
                             }
@@ -117,6 +118,18 @@ namespace itolib.Behaviours.Materials
                         renderer.sharedMaterials = materials;
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="dungeon"></param>
+        public void OnDungeonComplete(Dungeon dungeon)
+        {
+            if (activationTime == ActivationTime.DungeonComplete)
+            {
+                SwapMaterials();
             }
         }
     }

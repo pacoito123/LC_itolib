@@ -1,3 +1,4 @@
+using DunGen;
 using itolib.Enums;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -8,7 +9,7 @@ namespace itolib.Behaviours.Networking
     /// <summary>
     ///     TODO.
     /// </summary>
-    public abstract class NetworkedSpawner : NetworkBehaviour
+    public abstract class NetworkedSpawner : NetworkBehaviour, IDungeonCompleteReceiver
     {
         /// <summary>
         ///     TODO.
@@ -31,7 +32,7 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public ActivationTime activationTime = ActivationTime.Immediate;
+        public ActivationTime activationTime = ActivationTime.DungeonComplete;
 
         /// <summary>
         ///     TODO.
@@ -116,6 +117,18 @@ namespace itolib.Behaviours.Networking
             if (activationTime == ActivationTime.StartOfRound)
             {
                 StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PerformSpawn);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="dungeon"></param>
+        public void OnDungeonComplete(Dungeon dungeon)
+        {
+            if (activationTime == ActivationTime.DungeonComplete)
+            {
+                PerformSpawn();
             }
         }
     }

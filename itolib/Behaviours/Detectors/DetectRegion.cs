@@ -1,3 +1,4 @@
+using DunGen;
 using itolib.Enums;
 using UnityEngine;
 using UnityEngine.Events;
@@ -8,7 +9,7 @@ namespace itolib.Behaviours.Detectors
     ///     TODO.
     /// </summary>
     [RequireComponent(typeof(Collider))]
-    public abstract class DetectRegion<T> : MonoBehaviour
+    public abstract class DetectRegion<T> : MonoBehaviour, IDungeonCompleteReceiver
     {
         /// <summary>
         ///     TODO.
@@ -103,6 +104,7 @@ namespace itolib.Behaviours.Detectors
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.AddListener(CheckObjectsInRegion);
                     break;
+                case ActivationTime.DungeonComplete:
                 case ActivationTime.Manual:
                 default:
                     break;
@@ -127,8 +129,6 @@ namespace itolib.Behaviours.Detectors
         {
             switch (activationTime)
             {
-                case ActivationTime.Immediate:
-                    break;
                 case ActivationTime.ScrapSpawn:
                     LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(CheckObjectsInRegion);
                     break;
@@ -138,6 +138,8 @@ namespace itolib.Behaviours.Detectors
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(CheckObjectsInRegion);
                     break;
+                case ActivationTime.Immediate:
+                case ActivationTime.DungeonComplete:
                 case ActivationTime.Manual:
                 default:
                     break;
@@ -196,6 +198,18 @@ namespace itolib.Behaviours.Detectors
             }
 
             onRegionChecked?.Invoke(ObjectsFound);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="dungeon"></param>
+        public void OnDungeonComplete(Dungeon dungeon)
+        {
+            if (activationTime == ActivationTime.DungeonComplete)
+            {
+                CheckObjectsInRegion();
+            }
         }
     }
 }

@@ -11,7 +11,12 @@ namespace itolib.Enums
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        Immediate = 0,
+        Immediate = -1,
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        DungeonComplete,
         /// <summary>
         ///     TODO.
         /// </summary>

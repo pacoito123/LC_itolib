@@ -70,6 +70,17 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        public override void OnTriggerEnter(Collider other)
+        {
+            if (other.TryGetComponent(out PlayerControllerB player))
+            {
+                onRegionEntered?.Invoke(player);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="other"></param>
         public override void OnTriggerExit(Collider other)
         {

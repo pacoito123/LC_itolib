@@ -1,6 +1,7 @@
+using itolib.Behaviours.Detectors;
 using UnityEngine;
 
-namespace itolib.Behaviours.Detectors
+namespace itolib.Behaviours.Props
 {
     /// <summary>
     ///     TODO.
@@ -52,6 +53,13 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void CheckObjectsInRegion()
         {
+            if (!isActiveAndEnabled)
+            {
+                Plugin.StaticLogger.LogInfo("UNBELIEVER");
+
+                return;
+            }
+
             base.CheckObjectsInRegion();
 
             BlockersFound = 0;

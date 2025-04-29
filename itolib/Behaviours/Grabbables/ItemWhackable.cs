@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Grabbables
 {
@@ -105,7 +104,6 @@ namespace itolib.Behaviours.Grabbables
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [FormerlySerializedAs("onWeaponVariantHit")]
         public UnityEvent<int>? onWeaponHitVariant;
 
         /// <summary>

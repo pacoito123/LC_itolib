@@ -1,3 +1,4 @@
+using DunGen;
 using itolib.Enums;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,7 @@ namespace itolib.Behaviours.Props
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class PropEnabler : NetworkBehaviour
+    public class PropEnabler : NetworkBehaviour, IDungeonCompleteReceiver
     {
         /// <summary>
         ///     Seeded Random instance initialized with the current map seed.
@@ -123,6 +124,7 @@ namespace itolib.Behaviours.Props
                     case ActivationTime.StartOfRound:
                         StartOfRound.Instance?.StartNewRoundEvent.AddListener(EnablePropsServerRpc);
                         break;
+                    case ActivationTime.DungeonComplete:
                     case ActivationTime.Manual:
                     default:
                         break;
@@ -139,8 +141,6 @@ namespace itolib.Behaviours.Props
 
             switch (activationTime)
             {
-                case ActivationTime.Immediate:
-                    break;
                 case ActivationTime.ScrapSpawn:
                     LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(EnablePropsServerRpc);
                     break;
@@ -150,6 +150,8 @@ namespace itolib.Behaviours.Props
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(EnablePropsServerRpc);
                     break;
+                case ActivationTime.Immediate:
+                case ActivationTime.DungeonComplete:
                 case ActivationTime.Manual:
                 default:
                     break;
@@ -202,6 +204,18 @@ namespace itolib.Behaviours.Props
         public void EnablePropClientRpc(int index)
         {
             propsToEnable[index].prop?.SetActive(true);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="dungeon"></param>
+        public void OnDungeonComplete(Dungeon dungeon)
+        {
+            if (activationTime == ActivationTime.DungeonComplete)
+            {
+                EnablePropsServerRpc();
+            }
         }
     }
 }

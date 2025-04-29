@@ -203,8 +203,6 @@ namespace itolib.Behaviours.Props
         {
             switch (activationTime)
             {
-                case ActivationTime.Immediate:
-                    break;
                 case ActivationTime.ScrapSpawn:
                     LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(PerformSpawn);
                     break;
@@ -214,6 +212,8 @@ namespace itolib.Behaviours.Props
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.AddListener(PerformSpawn);
                     break;
+                case ActivationTime.Immediate:
+                case ActivationTime.DungeonComplete:
                 case ActivationTime.Manual:
                 default:
                     break;
@@ -227,8 +227,6 @@ namespace itolib.Behaviours.Props
         {
             switch (activationTime)
             {
-                case ActivationTime.Immediate:
-                    break;
                 case ActivationTime.ScrapSpawn:
                     LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(PerformSpawn);
                     break;
@@ -238,6 +236,8 @@ namespace itolib.Behaviours.Props
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PerformSpawn);
                     break;
+                case ActivationTime.Immediate:
+                case ActivationTime.DungeonComplete:
                 case ActivationTime.Manual:
                 default:
                     break;
