@@ -55,8 +55,6 @@ namespace itolib.Behaviours.Props
         {
             if (!isActiveAndEnabled)
             {
-                Plugin.StaticLogger.LogInfo("UNBELIEVER");
-
                 return;
             }
 
@@ -78,6 +76,7 @@ namespace itolib.Behaviours.Props
                     if (magnitude < tolerance)
                     {
                         onObjectsEach?.Invoke(blocker);
+                        BlockersFound++;
                     }
                 }
             }
@@ -95,7 +94,6 @@ namespace itolib.Behaviours.Props
         public void DisableWall(WallBreaker blocker)
         {
             blocker.gameObject.SetActive(false);
-            BlockersFound++;
         }
     }
 }
