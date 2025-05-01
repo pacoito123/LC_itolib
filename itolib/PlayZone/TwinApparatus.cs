@@ -1,5 +1,6 @@
-using System.Collections;
 using itolib.Behaviours.Helpers;
+using LethalLevelLoader;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -109,12 +110,20 @@ namespace itolib.PlayZone
 
                 bool bothPulled = LongLostTwin != null && !LongLostTwin.isLungDocked && !LongLostTwin.isLungPowered;
                 disconnectAnimation = StartCoroutine(HandleDisconnect(bothPulled));
-            }
 
-            if (isLungDockedInElevator)
-            {
-                isLungDockedInElevator = false;
-                apparatusAudio?.PlayOneShot(disconnectSFX);
+                if (bothPulled) // Invoke LLL Apparatus pull events only when both are pulled.
+                {
+                    if (DungeonManager.CurrentExtendedDungeonFlow != null)
+                    {
+                        DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onApparatusTaken.Invoke(this);
+                        DungeonManager.GlobalDungeonEvents.onApparatusTaken.Invoke(this);
+                    }
+                    if (LevelManager.CurrentExtendedLevel != null)
+                    {
+                        LevelManager.CurrentExtendedLevel.LevelEvents.onApparatusTaken.Invoke(this);
+                        LevelManager.GlobalLevelEvents.onApparatusTaken.Invoke(this);
+                    }
+                }
             }
 
             base.EquipItem();
