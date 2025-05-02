@@ -5,7 +5,7 @@ using UnityEngine.Events;
 namespace itolib.Behaviours.Detectors
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a <c>DetectRegion</c> specifically for <c>PlayerControllerB</c> objects, with some additional stuff.
     /// </summary>
     public class PlayerSensor : DetectRegion<PlayerControllerB>
     {

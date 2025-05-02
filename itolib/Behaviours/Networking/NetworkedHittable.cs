@@ -59,6 +59,12 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         [Header("Networked Hittable")]
         [Tooltip("")]
+        public HitInfo defaultHit;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         public UnityEvent? onHit;
 
         /// <summary>
@@ -87,7 +93,7 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         public void PerformHit()
         {
-            PerformHit(new());
+            PerformHit(defaultHit);
         }
 
         /// <summary>

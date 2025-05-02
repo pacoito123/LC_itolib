@@ -1,3 +1,4 @@
+using itolib.Behaviours.Grabbables;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -5,9 +6,9 @@ using UnityEngine;
 namespace itolib.Behaviours.Detectors
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a <c>DetectRegion</c> specifically for <c>GrabbableObject</c> objects, with some additional stuff.
     /// </summary>
-    public class ScrapDisabler : DetectRegion<GrabbableObject>
+    public class ScrapSensor : DetectRegion<GrabbableObject>
     {
         /// <summary>
         ///     TODO.
@@ -57,6 +58,31 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        public override void OnTriggerEnter(Collider other)
+        {
+            if (other.TryGetComponent(out GrabbableObject item)
+                && !item.TryGetComponent(out EnemyAI _)) // Maneater check...
+            {
+                onRegionEntered?.Invoke(item);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="other"></param>
+        public override void OnTriggerExit(Collider other)
+        {
+            if (other.TryGetComponent(out GrabbableObject item)
+                && !item.TryGetComponent(out EnemyAI _)) // Maneater check...
+            {
+                onRegionExited?.Invoke(item);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="item"></param>
         public void DisableItemCollider(GrabbableObject item)
         {
@@ -70,6 +96,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="item"></param>
         public void DisableItemRenderer(GrabbableObject item)
         {
             item.GetComponentsInChildren<MeshRenderer>().Where(renderer => renderer.enabled).ToList().ForEach(renderer =>
@@ -95,6 +122,27 @@ namespace itolib.Behaviours.Detectors
         {
             DisabledColliders.ForEach(collider => collider.enabled = true);
             DisabledColliders.Clear();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="item"></param>
+        public void DropItem(GrabbableObject item)
+        {
+            if (item is ItemGrabbable grabbable)
+            {
+                grabbable.FallWithCurveOverride = null;
+            }
+
+            item.startFallingPosition = item.transform.position;
+
+            if (item.transform.GetParent() != null)
+            {
+                item.startFallingPosition = item.transform.GetParent().InverseTransformPoint(item.startFallingPosition);
+            }
+
+            item.FallToGround();
         }
     }
 }

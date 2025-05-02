@@ -48,7 +48,7 @@ namespace itolib.Behaviours.Detectors
     }
 
     /// <summary>
-    ///     TODO.
+    ///     Represents a <c>DetectRegion</c> specifically for <c>EnemyAI</c> objects, with some additional stuff.
     /// </summary>
     public class EnemySensor : DetectRegion<EnemyAI>
     {
