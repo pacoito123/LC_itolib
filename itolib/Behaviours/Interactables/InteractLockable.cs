@@ -171,7 +171,10 @@ namespace itolib.Behaviours.Interactables
             }
             else
             {
-                _ = (navMeshObstacle?.carving = false);
+                if (navMeshObstacle != null)
+                {
+                    navMeshObstacle.carving = false;
+                }
 
                 if (hauntedDoor)
                 {

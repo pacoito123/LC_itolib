@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-namespace itolib.Behaviours.Kinematics
+namespace itolib.Behaviours.Animations
 {
     /// <summary>
     ///     TODO.

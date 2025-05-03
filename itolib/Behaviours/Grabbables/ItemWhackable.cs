@@ -243,7 +243,10 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public void DiscardItemEarly()
         {
-            _ = (LastHeldBy?.activatingItem = false);
+            if (LastHeldBy != null)
+            {
+                LastHeldBy.activatingItem = false;
+            }
         }
 
         /// <summary>
