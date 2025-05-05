@@ -104,7 +104,19 @@ namespace itolib.Behaviours.Grabbables
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        public UnityEvent? onWeaponHitLocal;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         public UnityEvent<int>? onWeaponHitVariant;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public UnityEvent<int>? onWeaponHitVariantLocal;
 
         /// <summary>
         ///     TODO.
@@ -156,6 +168,8 @@ namespace itolib.Behaviours.Grabbables
 
         private void Awake()
         {
+            item ??= GetComponent<ItemGrabbable>();
+
             item.onActivate?.AddListener(ItemActivate);
             item.onDiscardEarly?.AddListener(DiscardItemEarly);
         }
@@ -173,7 +187,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="buttonDown"></param>
         public void ItemActivate(bool used, bool buttonDown)
         {
-            if (!item.IsOwner)
+            if (item.playerHeldBy == null)
             {
                 return;
             }
@@ -218,7 +232,7 @@ namespace itolib.Behaviours.Grabbables
 
             // Handle swing.
             LastHeldBy?.playerBodyAnimator.SetBool("reelingUp", false);
-            if (!item.isHeld)
+            if (item.isHeld)
             {
                 onWeaponSwing?.Invoke();
                 LastHeldBy?.UpdateSpecialAnimationValue(true, (short)LastHeldBy.transform.localEulerAngles.y, 0.4f, false);
@@ -310,21 +324,24 @@ namespace itolib.Behaviours.Grabbables
                 {
                     weaponHit = true;
 
-                    if (!objectHit.TryGetComponent(out EnemyAICollisionDetect enemyAICollision)
-                        || enemyAICollision.mainScript == null || HitEnemies?.Contains(enemyAICollision.mainScript) == true)
+                    if (objectHit.TryGetComponent(out EnemyAICollisionDetect enemyAICollision) &&
+                        (enemyAICollision.mainScript == null || HitEnemies?.Contains(enemyAICollision.mainScript) == true))
                     {
                         continue;
                     }
-                    else if (objectHit.TryGetComponent(out PlayerControllerB _))
+
+                    if (objectHit.TryGetComponent(out PlayerControllerB _))
                     {
                         if (playerHit)
                         {
                             continue;
                         }
+
                         playerHit = true;
                     }
 
-                    if (hittable.Hit(weaponDamage, gameplayCamera.forward, LastHeldBy, playHitSFX, hitID))
+                    if (hittable.Hit(weaponDamage, gameplayCamera.forward, LastHeldBy, playHitSFX, hitID)
+                        && enemyAICollision != null)
                     {
                         HitEnemies?.Add(enemyAICollision.mainScript);
                         enemyHit = true;
@@ -338,10 +355,20 @@ namespace itolib.Behaviours.Grabbables
             {
                 if (item.VariantIndex < 0)
                 {
+                    if (item.IsOwner)
+                    {
+                        onWeaponHitLocal?.Invoke();
+                    }
+
                     onWeaponHit?.Invoke();
                 }
                 else
                 {
+                    if (item.IsOwner)
+                    {
+                        onWeaponHitVariantLocal?.Invoke(item.VariantIndex);
+                    }
+
                     onWeaponHitVariant?.Invoke(item.VariantIndex);
                 }
 

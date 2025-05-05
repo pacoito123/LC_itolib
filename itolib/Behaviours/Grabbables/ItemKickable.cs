@@ -114,6 +114,7 @@ namespace itolib.Behaviours.Grabbables
 
         private void Awake()
         {
+            item ??= GetComponent<ItemGrabbable>();
             item.FallWithCurveOverride = FallWithCurve;
 
             item.onActivatePhysicsTrigger?.AddListener(ActivatePhysicsTrigger);

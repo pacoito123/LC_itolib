@@ -103,24 +103,6 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="pitch"></param>
-        private void PlayAudioLocal(float pitch)
-        {
-            if (syncedSource?.clip != null)
-            {
-                syncedSource.pitch = pitch;
-                syncedSource.Play();
-
-                if (transmitOverWalkie)
-                {
-                    WalkieTalkie.TransmitOneShotAudio(syncedSource, syncedSource.clip, walkieVolume);
-                }
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         /// <param name="playerWhoCalled"></param>
         /// <param name="pitch"></param>
         [ServerRpc(RequireOwnership = false)]
@@ -142,6 +124,24 @@ namespace itolib.Behaviours.Networking
                 && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
             {
                 PlayAudioLocal(pitch);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="pitch"></param>
+        private void PlayAudioLocal(float pitch)
+        {
+            if (syncedSource?.clip != null)
+            {
+                syncedSource.pitch = pitch;
+                syncedSource.Play();
+
+                if (transmitOverWalkie)
+                {
+                    WalkieTalkie.TransmitOneShotAudio(syncedSource, syncedSource.clip, walkieVolume);
+                }
             }
         }
 
@@ -178,25 +178,6 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="clip"></param>
-        /// <param name="pitch"></param>
-        private void PlayOneshotLocal(int clip, float pitch)
-        {
-            if (syncedSource != null && audioClips.Count > clip && audioClips[clip] != null)
-            {
-                syncedSource.pitch = pitch;
-                syncedSource.PlayOneShot(audioClips[clip]);
-
-                if (transmitOverWalkie)
-                {
-                    WalkieTalkie.TransmitOneShotAudio(syncedSource, audioClips[clip], walkieVolume);
-                }
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         /// <param name="playerWhoCalled"></param>
         /// <param name="clip"></param>
         /// <param name="pitch"></param>
@@ -220,6 +201,25 @@ namespace itolib.Behaviours.Networking
                 && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
             {
                 PlayOneshotLocal(clip, pitch);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="clip"></param>
+        /// <param name="pitch"></param>
+        private void PlayOneshotLocal(int clip, float pitch)
+        {
+            if (syncedSource != null && audioClips.Count > clip && audioClips[clip] != null)
+            {
+                syncedSource.pitch = pitch;
+                syncedSource.PlayOneShot(audioClips[clip]);
+
+                if (transmitOverWalkie)
+                {
+                    WalkieTalkie.TransmitOneShotAudio(syncedSource, audioClips[clip], walkieVolume);
+                }
             }
         }
 
@@ -267,7 +267,7 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         /// <param name="surfaceID"></param>
-        public void PlaySurfaceHitLocal(int surfaceID)
+        private void PlaySurfaceHitLocal(int surfaceID)
         {
             if (StartOfRound.Instance.footstepSurfaces[surfaceID] != null)
             {
