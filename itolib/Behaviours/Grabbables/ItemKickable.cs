@@ -198,6 +198,8 @@ namespace itolib.Behaviours.Grabbables
         {
             if (hitByEnemy)
             {
+                LastKickedBy = null;
+
                 if (IsHost)
                 {
                     onEnemyKick?.Invoke();
