@@ -215,7 +215,7 @@ namespace itolib.Behaviours.Kinematics
             }
         }
 
-        private void OnTriggerLeave(Collider collider)
+        private void OnTriggerExit(Collider collider)
         {
             if (!PlatformCollapsed && LocalPlayerOnPlatform && collider.CompareTag("Player") && collider.TryGetComponent(out PlayerControllerB player)
                 && player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId)

@@ -43,10 +43,12 @@ namespace itolib.Behaviours.Detectors
         public ActivationTime activationTime = ActivationTime.StartOfRound;
 
         /// <summary>
-        ///     Maximum number of <c>Collider</c> instances expected to be found per search by this <c>DetectRegion</c>, for memory allocation purposes.
+        ///     Maximum number of <c>Collider</c> instances expected to be found per search by this <c>DetectRegion</c>, for memory allocation purposes. Can be set
+        ///     to 0 to disable object searching.
         /// </summary>
-        [Tooltip("Maximum number of Collider instances expected to be found per search by this DetectRegion, for memory allocation purposes.")]
-        [Min(1)]
+        [Tooltip("Maximum number of Collider instances expected to be found per search by this DetectRegion, for memory allocation purposes. Can be set "
+            + "to 0 to disable object searching.")]
+        [Min(0)]
         public int maxObjects = 16;
 
         /// <summary>
@@ -103,7 +105,10 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public virtual void Start()
         {
-            OverlapBuffer = new Collider[maxObjects];
+            if (maxObjects > 0)
+            {
+                OverlapBuffer = new Collider[maxObjects];
+            }
 
             switch (activationTime)
             {
@@ -198,7 +203,7 @@ namespace itolib.Behaviours.Detectors
             else if (regionCollider is CapsuleCollider capsule)
             {
                 Vector3 direction = new() { [capsule.direction] = 1 };
-                float offset = (capsule.height / 2) - capsule.radius;
+                float offset = (capsule.height * 0.5f) - capsule.radius;
 
                 // TODO: Test if works when rotated.
                 ObjectsFound = Physics.OverlapCapsuleNonAlloc(transform.TransformPoint(capsule.center - (offset * direction)),

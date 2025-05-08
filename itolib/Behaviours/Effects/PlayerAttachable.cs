@@ -69,6 +69,12 @@ namespace itolib.Behaviours.Effects
         public float detachTimer = 0.0f;
 
         /// <summary>
+        ///     Whether players detach upon leaving the ... or not.
+        /// </summary>
+        [Tooltip("")]
+        public bool detachOnExit = false;
+
+        /// <summary>
         ///     Parent NetworkObject to despawn once detached, if set to despawn upon detaching.
         /// </summary>
         [Header("Despawn")]
@@ -112,8 +118,9 @@ namespace itolib.Behaviours.Effects
                 return;
             }
 
-            // Check if a player is already attached, or the local player was not the one who will be attached.
-            if (AttachedPlayer != null || !collider.TryGetComponent(out PlayerControllerB player)
+            // Check if a player is already attached, or the local player is not the one who will be attached.
+            if (AttachedPlayer != null || !collider.CompareTag("Player")
+                || !collider.TryGetComponent(out PlayerControllerB player)
                 || player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
             {
                 return;
@@ -138,6 +145,36 @@ namespace itolib.Behaviours.Effects
                 {
                     _ = StartCoroutine(DetachPlayerDelayed());
                 }
+            }
+        }
+
+        /// <summary>
+        ///     Detach player upon exiting the attach region.
+        /// </summary>
+        /// <param name="collider">Collider to attempt to detach.</param>
+        public virtual void OnTriggerExit(Collider collider)
+        {
+            // Check if player should detach upon leaving the attach region.
+            if (!detachOnExit)
+            {
+                return;
+            }
+
+            // Check if the local player is not attached, or something else exited the attach region.
+            if (!LocalPlayerAttached || !collider.CompareTag("Player")
+                || !collider.TryGetComponent(out PlayerControllerB player)
+                || player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            {
+                return;
+            }
+
+            // Detach attached player locally.
+            DetachPlayerLocal();
+
+            if (!isLocalEffect)
+            {
+                // Detach attached player on all clients.
+                DetachPlayerServerRpc();
             }
         }
 
@@ -265,7 +302,7 @@ namespace itolib.Behaviours.Effects
         {
             if (!LocalPlayerAttached)
             {
-                // Exit early if a player is no longer attached.
+                // Exit early if not attached to the local player.
                 yield break;
             }
 
