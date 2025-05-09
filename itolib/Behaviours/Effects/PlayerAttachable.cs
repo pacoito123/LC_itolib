@@ -69,9 +69,9 @@ namespace itolib.Behaviours.Effects
         public float detachTimer = 0.0f;
 
         /// <summary>
-        ///     Whether players detach upon leaving the ... or not.
+        ///     Whether players detach upon leaving the attach region or not.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Whether players detach upon leaving the attach region or not.")]
         public bool detachOnExit = false;
 
         /// <summary>

@@ -76,7 +76,7 @@ namespace itolib.Behaviours.Detectors
 
             if (AttachedPlayer == null)
             {
-                Timer = 0.0f;
+                Timer = triggerInterval;
                 return;
             }
 

@@ -1,5 +1,5 @@
-using System;
 using GameNetcodeStuff;
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -190,6 +190,40 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Tooltip("")]
         public UnityEvent? onPocketEarly;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void Start()
+        {
+            base.Start();
+
+            onDiscardEarly?.AddListener(() =>
+            {
+                if (playerHeldBy != null)
+                {
+                    playerHeldBy.equippedUsableItemQE = false;
+                    isBeingUsed = false;
+                }
+            });
+
+            onEquip?.AddListener(() =>
+            {
+                if (playerHeldBy != null)
+                {
+                    playerHeldBy.equippedUsableItemQE = true;
+                }
+            });
+
+            onPocketEarly?.AddListener(() =>
+            {
+                if (IsOwner && playerHeldBy != null)
+                {
+                    playerHeldBy.equippedUsableItemQE = false;
+                    isBeingUsed = false;
+                }
+            });
+        }
 
         /// <summary>
         ///     TODO.
