@@ -176,10 +176,7 @@ namespace itolib.Behaviours.Kinematics
                 platformSource.pitch = SyncedPitch.Value;
 
                 // Update platform pitch if the network variable is modified.
-                SyncedPitch.OnValueChanged += (_, current) =>
-                {
-                    platformSource.pitch = current;
-                };
+                SyncedPitch.OnValueChanged += (_, current) => platformSource.pitch = current;
             }
 
             if (IsHost)

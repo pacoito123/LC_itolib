@@ -37,6 +37,12 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public bool hideOnPocket = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Header("Events")]
         [Tooltip("")]
         public UnityEvent<bool, bool>? onActivate;
@@ -462,7 +468,12 @@ namespace itolib.Behaviours.Grabbables
         public override void PocketItem()
         {
             onPocketEarly?.Invoke();
-            base.PocketItem();
+
+            if (hideOnPocket)
+            {
+                base.PocketItem();
+            }
+
             onPocket?.Invoke();
         }
 

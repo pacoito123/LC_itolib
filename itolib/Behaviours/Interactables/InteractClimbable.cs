@@ -39,12 +39,8 @@ namespace itolib.Behaviours.Interactables
             // Obtain and save normal player climbing speed.
             normalClimbSpeed = GameNetworkManager.Instance.localPlayerController.climbSpeed;
 
-            // Add call for when player initially attaches to the ladder to begin climbing.
-            onInteractEarly.AddListener(_ =>
-            {
-                // Set player climbing speed to the ladder's specified value.
-                GameNetworkManager.Instance.localPlayerController.climbSpeed = climbSpeed;
-            });
+            // Add call to set player climbing speed to the ladder's specified value, upon attaching.
+            onInteractEarly.AddListener(_ => GameNetworkManager.Instance.localPlayerController.climbSpeed = climbSpeed);
 
             void resetClimbSpeed(PlayerControllerB _)
             {
@@ -52,7 +48,7 @@ namespace itolib.Behaviours.Interactables
                 GameNetworkManager.Instance.localPlayerController.climbSpeed = normalClimbSpeed;
             }
 
-            // Add call for when the player either finishes climbing or gets off the ladder.
+            // Add calls to reset player climbing speed upon getting off the ladder.
             onInteract.AddListener(resetClimbSpeed);
             onCancelAnimation.AddListener(resetClimbSpeed);
         }

@@ -1,6 +1,7 @@
 using GameNetcodeStuff;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace itolib.Behaviours.Grabbables
 {
@@ -88,12 +89,33 @@ namespace itolib.Behaviours.Grabbables
         [Tooltip("")]
         public LayerMask collisionMask = 268437761;
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [Header("Events")]
+        public UnityEvent? onThrowStart;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public UnityEvent? onThrowFinish;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public UnityEvent<int>? onThrowFinishVariant;
+
         private void Awake()
         {
             item ??= GetComponent<ItemGrabbable>();
             item.FallWithCurveOverride = FallWithCurve;
 
             item.onActivate?.AddListener(ItemActivate);
+            item.onHitGround?.AddListener(OnHitGround);
+            item.onHitGroundVariant?.AddListener(OnHitGroundVariant);
         }
 
         /// <summary>
@@ -110,7 +132,39 @@ namespace itolib.Behaviours.Grabbables
 
             item.FallWithCurveOverride = FallWithCurve;
 
-            item.playerHeldBy?.DiscardHeldObject(true, null, GetThrowDestination(), true);
+            if (item.playerHeldBy != null)
+            {
+                LastThrownBy = item.playerHeldBy;
+                onThrowStart?.Invoke();
+
+                SyncThrowerServerRpc(item.playerHeldBy.GetComponent<NetworkObject>());
+
+                item.playerHeldBy.DiscardHeldObject(true, null, GetThrowDestination(), true);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void OnHitGround()
+        {
+            if (LastThrownBy != null)
+            {
+                onThrowFinish?.Invoke();
+                LastThrownBy = null;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void OnHitGroundVariant(int variantIndex)
+        {
+            if (LastThrownBy != null)
+            {
+                onThrowFinishVariant?.Invoke(item.VariantIndex);
+                LastThrownBy = null;
+            }
         }
 
         /// <summary>
@@ -153,6 +207,32 @@ namespace itolib.Behaviours.Grabbables
 
             return Physics.Raycast(ThrowRay, out rayHit, fallDistance, collisionMask, QueryTriggerInteraction.Ignore)
                 ? rayHit.point + (Vector3.up * item.itemProperties.verticalOffset) : ThrowRay.GetPoint(fallDistance);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void SyncThrowerServerRpc(NetworkObjectReference playerReference)
+        {
+            SyncThrowerClientRpc(playerReference);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        [ClientRpc]
+        public void SyncThrowerClientRpc(NetworkObjectReference playerReference)
+        {
+            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            {
+                LastThrownBy = player;
+                onThrowStart?.Invoke();
+            }
         }
     }
 }

@@ -243,8 +243,8 @@ namespace itolib.PlayZone
 
                     if (callElevatorUpper != null && callElevatorLower != null)
                     {
-                        callElevatorUpper.hoverTip = up ? "Open Door" : "Call Elevator";
-                        callElevatorLower.hoverTip = up ? "Call Elevator" : "Open Door";
+                        callElevatorUpper.hoverTip = up ? "Open door : [LMB]" : "Call : [LMB]";
+                        callElevatorLower.hoverTip = up ? "Call : [LMB]" : "Open door : [LMB]";
                     }
 
                     CurrentState = newState;

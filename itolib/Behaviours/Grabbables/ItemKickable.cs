@@ -95,6 +95,7 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Header("Events")]
         [Tooltip("")]
         public UnityEvent? onEnemyKick;
 
@@ -198,8 +199,6 @@ namespace itolib.Behaviours.Grabbables
         {
             if (hitByEnemy)
             {
-                LastKickedBy = null;
-
                 if (IsHost)
                 {
                     onEnemyKick?.Invoke();
@@ -226,11 +225,6 @@ namespace itolib.Behaviours.Grabbables
             KickTimer = Time.realtimeSinceStartup;
             LastKickedBy = GameNetworkManager.Instance.localPlayerController;
 
-            if (!LastKickedBy.TryGetComponent(out NetworkObject playerNetworkObject))
-            {
-                return;
-            }
-
             Vector3 destination = GetKickDestination(hitFromPosition);
             if (destination == Vector3.zero)
             {
@@ -252,10 +246,13 @@ namespace itolib.Behaviours.Grabbables
                 destination = StartOfRound.Instance.propsContainer.InverseTransformPoint(destination);
             }
 
-            onPlayerKick?.Invoke(LastKickedBy);
+            if (!hitByEnemy)
+            {
+                onPlayerKick?.Invoke(LastKickedBy);
+            }
 
             KickLocalClient(destination, setInElevator, setInShipRoom);
-            KickServerRpc(destination, playerNetworkObject, setInElevator, setInShipRoom);
+            KickServerRpc(destination, LastKickedBy.GetComponent<NetworkObject>(), setInElevator, setInShipRoom);
         }
 
         /// <summary>
