@@ -39,12 +39,12 @@ namespace itolib.Behaviours.Helpers
         /// </summary>
         public override void OnNetworkSpawn()
         {
+            base.OnNetworkSpawn();
+
             if (!IsHost)
             {
                 Activate();
             }
-
-            base.OnNetworkSpawn();
         }
 
         /// <summary>

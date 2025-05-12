@@ -137,6 +137,20 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        public void StopAudio()
+        {
+            if (!item.IsOwner || item.playerHeldBy == null)
+            {
+                return;
+            }
+
+            StopAudioLocal();
+            StopAudioServerRpc(item.playerHeldBy.GetComponent<NetworkObject>());
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="used"></param>
         /// <param name="buttonDown"></param>
         public void ItemActivate(bool used, bool buttonDown)
@@ -253,6 +267,37 @@ namespace itolib.Behaviours.Grabbables
                     }
                 }
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerWhoCalled"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void StopAudioServerRpc(NetworkObjectReference playerWhoCalled)
+        {
+            StopAudioClientRpc(playerWhoCalled);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerWhoCalled"></param>
+        [ClientRpc]
+        public void StopAudioClientRpc(NetworkObjectReference playerWhoCalled)
+        {
+            if (playerWhoCalled.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            {
+                StopAudioLocal();
+            }
+        }
+
+        private void StopAudioLocal()
+        {
+            itemSource?.Stop();
+            itemSourceFar?.Stop();
         }
     }
 }
