@@ -119,7 +119,6 @@ namespace itolib.Behaviours.Grabbables
             item.FallWithCurveOverride = FallWithCurve;
 
             item.onActivatePhysicsTrigger?.AddListener(ActivatePhysicsTrigger);
-            item.onHitGround?.AddListener(() => LastKickedBy = null); // TODO: Run after kick instead.
         }
 
         /// <summary>

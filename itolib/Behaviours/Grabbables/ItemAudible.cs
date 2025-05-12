@@ -116,6 +116,12 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public bool requireHolding = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void Awake()
         {
             item ??= GetComponent<ItemGrabbable>();
@@ -155,7 +161,12 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="buttonDown"></param>
         public void ItemActivate(bool used, bool buttonDown)
         {
-            if (!item.IsOwner || item.playerHeldBy == null || audioClips == null)
+            if (audioClips == null)
+            {
+                return;
+            }
+
+            if ((requireHolding && (!item.IsOwner || item.playerHeldBy == null)) || (!requireHolding && !IsHost))
             {
                 return;
             }

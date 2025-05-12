@@ -19,7 +19,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public List<int>? ModifiedIndices { get; private set; }
+        public List<SpawnableItemWithRarity>? ModifiedRarities { get; private set; }
 
         /// <summary>
         ///     TODO.
@@ -39,7 +39,8 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            ModifiedIndices = new(currentDungeon.ExtendedMod.ExtendedItems.Count);
+            int scrapCount = CurrentLevel.spawnableScrap.Count;
+            ModifiedRarities = new(currentDungeon.ExtendedMod.ExtendedItems.Count);
 
             foreach (ExtendedItem extendedItem in currentDungeon.ExtendedMod.ExtendedItems)
             {
@@ -52,14 +53,14 @@ namespace itolib.Behaviours.Props
 
                 if (dungeonRarity > 0)
                 {
-                    for (int i = 0; i < CurrentLevel.spawnableScrap.Count; i++)
+                    for (int i = 0; i < scrapCount; i++)
                     {
                         SpawnableItemWithRarity item = CurrentLevel.spawnableScrap[i];
 
                         if (item.spawnableItem == extendedItem.Item && item.rarity < 1)
                         {
                             item.rarity = dungeonRarity;
-                            ModifiedIndices.Add(i);
+                            ModifiedRarities.Add(item);
 
                             break;
                         }
@@ -73,12 +74,16 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public void OnDestroy()
         {
-            if (CurrentLevel == null || ModifiedIndices == null || ModifiedIndices.Count < 1)
+            if (CurrentLevel == null || ModifiedRarities == null)
             {
                 return;
             }
 
-            ModifiedIndices.ForEach(index => CurrentLevel.spawnableScrap[index].rarity = 0);
+            int count = ModifiedRarities.Count;
+            for (int i = 0; i < count; i++)
+            {
+                ModifiedRarities[i].rarity = 0;
+            }
         }
     }
 }
