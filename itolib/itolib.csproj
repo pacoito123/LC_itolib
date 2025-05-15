@@ -52,6 +52,9 @@
         <Reference Include="CrowdControl" Publicize="true">
             <HintPath>managed\CrowdControl.dll</HintPath>
         </Reference>
+        <Reference Include="TVLoader" Publicize="true">
+            <HintPath>managed\TVLoader.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
