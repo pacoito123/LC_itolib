@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -96,6 +97,16 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void Start()
         {
+            if (!IsHost)
+            {
+                if (regionCollider != null)
+                {
+                    regionCollider.enabled = false;
+                }
+
+                return;
+            }
+
             enemyAmounts = new int[enemyFilters.Count];
 
             base.Start();
@@ -106,6 +117,11 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void CheckObjectsInRegion()
         {
+            if (!IsHost)
+            {
+                return;
+            }
+
             base.CheckObjectsInRegion();
 
             int enemiesFound = 0;
@@ -115,14 +131,14 @@ namespace itolib.Behaviours.Detectors
                 if (OverlapBuffer![i].TryGetComponent(out EnemyAICollisionDetect enemyCollision)
                     && enemyCollision.mainScript != null)
                 {
-                    onObjectsEach?.Invoke(enemyCollision.mainScript);
+                    FoundEnemiesEachClientRpc(enemyCollision.mainScript.thisNetworkObject);
                     enemiesFound++;
                 }
             }
 
             if (enemiesFound > 0)
             {
-                onObjectsAny?.Invoke(enemiesFound);
+                FoundEnemiesAnyClientRpc(enemiesFound);
             }
         }
 
@@ -131,10 +147,15 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void OnTriggerEnter(Collider other)
         {
+            if (!IsHost)
+            {
+                return;
+            }
+
             if (other.TryGetComponent(out EnemyAICollisionDetect enemyCollision)
                 && enemyCollision.mainScript != null)
             {
-                onRegionEntered?.Invoke(enemyCollision.mainScript);
+                RegionEnteredClientRpc(enemyCollision.mainScript.thisNetworkObject);
 
                 if (enemyFilters.Count == 0)
                 {
@@ -155,7 +176,7 @@ namespace itolib.Behaviours.Detectors
                             enemyAmounts[i] = 0;
                         }
 
-                        onRegionEntered?.Invoke(enemyCollision.mainScript);
+                        RegionEnteredClientRpc(enemyCollision.mainScript.thisNetworkObject);
                         break;
                     }
                 }
@@ -167,12 +188,17 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void OnTriggerExit(Collider other)
         {
+            if (!IsHost)
+            {
+                return;
+            }
+
             if (other.TryGetComponent(out EnemyAICollisionDetect enemyCollision)
                 && enemyCollision.mainScript != null)
             {
                 if (enemyFilters.Count == 0 || !filterExiting)
                 {
-                    onRegionExited?.Invoke(enemyCollision.mainScript);
+                    RegionEnteredClientRpc(enemyCollision.mainScript.thisNetworkObject, exit: true);
                     return;
                 }
 
@@ -188,9 +214,55 @@ namespace itolib.Behaviours.Detectors
                             enemyAmounts[i]--;
                         }
 
-                        onRegionExited?.Invoke(enemyCollision.mainScript);
+                        RegionEnteredClientRpc(enemyCollision.mainScript.thisNetworkObject, exit: true);
                         break;
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="enemyReference"></param>
+        [ClientRpc]
+        public void FoundEnemiesEachClientRpc(NetworkObjectReference enemyReference)
+        {
+            if (enemyReference.TryGet(out NetworkObject enemyNetworkObject)
+                && enemyNetworkObject.TryGetComponent(out EnemyAI enemy))
+            {
+                onObjectsEach?.Invoke(enemy);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="enemiesFound"></param>
+        [ClientRpc]
+        public void FoundEnemiesAnyClientRpc(int enemiesFound)
+        {
+            onObjectsAny?.Invoke(enemiesFound);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="enemyReference"></param>
+        /// <param name="exit"></param>
+        [ClientRpc]
+        public void RegionEnteredClientRpc(NetworkObjectReference enemyReference, bool exit = false)
+        {
+            if (enemyReference.TryGet(out NetworkObject enemyNetworkObject)
+                && enemyNetworkObject.TryGetComponent(out EnemyAI enemy))
+            {
+                if (!exit)
+                {
+                    onRegionEntered?.Invoke(enemy);
+                }
+                else
+                {
+                    onRegionExited?.Invoke(enemy);
                 }
             }
         }

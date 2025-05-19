@@ -78,6 +78,25 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Header("Speed")]
+        [Tooltip("")]
+        public float chargeTimer = 0.35f;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public float hitSpeed = 0.13f;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public float hitCooldown = 0.3f;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Header("Events")]
         [Tooltip("")]
         public UnityEvent? onReelingStart;
@@ -148,6 +167,12 @@ namespace itolib.Behaviours.Grabbables
         [Space(10f)]
         [Header("Collision")]
         [Tooltip("")]
+        public LayerMask shovelMask;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         public LayerMask hitMask;
 
         /// <summary>
@@ -158,10 +183,14 @@ namespace itolib.Behaviours.Grabbables
 
         private void Reset()
         {
-            hitMask = (1 << LayerMask.NameToLayer("Player")) | (1 << LayerMask.NameToLayer("Props"))
+            shovelMask = (1 << LayerMask.NameToLayer("Player")) | (1 << LayerMask.NameToLayer("Props"))
                 | (1 << LayerMask.NameToLayer("Room")) | (1 << LayerMask.NameToLayer("Colliders"))
                 | (1 << LayerMask.NameToLayer("Enemies")) | (1 << LayerMask.NameToLayer("MapHazards"))
                 | (1 << LayerMask.NameToLayer("EnemiesNotRendered")) | (1 << LayerMask.NameToLayer("Vehicle"));
+
+            hitMask = (1 << LayerMask.NameToLayer("Default")) | (1 << LayerMask.NameToLayer("Room"))
+                | (1 << LayerMask.NameToLayer("Colliders")) | (1 << LayerMask.NameToLayer("Terrain"))
+                | (1 << LayerMask.NameToLayer("Vehicle"));
 
             hitSFXMask = (1 << LayerMask.NameToLayer("Room")) | (1 << LayerMask.NameToLayer("Colliders"));
         }
@@ -225,7 +254,7 @@ namespace itolib.Behaviours.Grabbables
             LastHeldBy.playerBodyAnimator.SetBool("reelingUp", true);
 
             onReelingStart?.Invoke();
-            yield return new WaitForSeconds(0.35f); // TODO: Parameterize charge timer
+            yield return new WaitForSeconds(chargeTimer);
 
             onReelingFinish?.Invoke();
             yield return new WaitUntil(() => !isHoldingButton || !item.isHeld);
@@ -239,12 +268,12 @@ namespace itolib.Behaviours.Grabbables
             }
             // ...
 
-            yield return new WaitForSeconds(0.13f); // TODO: Parameterize hit speed
+            yield return new WaitForSeconds(hitSpeed);
             yield return new WaitForEndOfFrame();
 
             Whack(); // Bonk.mp3
 
-            yield return new WaitForSeconds(0.3f); // TODO: Parameterize hit cooldown
+            yield return new WaitForSeconds(hitCooldown);
 
             reelingUp = false;
             whackingCoroutine = null;
@@ -289,7 +318,7 @@ namespace itolib.Behaviours.Grabbables
 
             // TODO: Parameterize hit position, radius, and distance.
             ObjectsHit = Physics.SphereCastNonAlloc(gameplayCamera.position + (-0.35f * gameplayCamera.right), 0.8f,
-                gameplayCamera.forward, HitBuffer, 1.5f, hitMask, QueryTriggerInteraction.Collide);
+                gameplayCamera.forward, HitBuffer, 1.5f, shovelMask, QueryTriggerInteraction.Collide);
 
             if (HitBuffer == null || ObjectsHit == 0)
             {
@@ -319,8 +348,7 @@ namespace itolib.Behaviours.Grabbables
                     }
                 }
                 else if (objectHit.TryGetComponent(out IHittable hittable) && rayHit.transform != LastHeldBy.transform && (rayHit.point == Vector3.zero
-                    || !Physics.Linecast(gameplayCamera.position, rayHit.point, (1 << LayerMask.NameToLayer("Default")) | hitSFXMask,
-                    QueryTriggerInteraction.Ignore)))
+                    || !Physics.Linecast(gameplayCamera.position, rayHit.point, hitMask, QueryTriggerInteraction.Ignore)))
                 {
                     weaponHit = true;
 

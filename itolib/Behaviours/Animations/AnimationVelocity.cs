@@ -1,3 +1,4 @@
+using itolib.Enums;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     Seeded Random instance initialized with the current map seed.
         /// </summary>
-        public static System.Random? Random { get; internal set; }
+        public static System.Random SeededRandom { get; internal set; } = null!;
 
         /// <summary>
         ///     TODO.
@@ -78,21 +79,50 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public ActivationTime activationTime = ActivationTime.StartOfRound;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
 
-            if (IsHost)
+            if (!IsHost)
             {
-                Random ??= new(StartOfRound.Instance.randomMapSeed + 33);
-                InitialSpeed = minStartingSpeed != maxStartingSpeed ? ((float)Random.NextDouble() * (maxStartingSpeed - minStartingSpeed))
-                    + minStartingSpeed : minStartingSpeed;
+                return;
             }
 
-            StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncSpeedServerRpc);
+            SeededRandom ??= new(StartOfRound.Instance.randomMapSeed + 33);
+            InitialSpeed = minStartingSpeed != maxStartingSpeed ? ((float)SeededRandom.NextDouble() * (maxStartingSpeed - minStartingSpeed))
+                + minStartingSpeed : minStartingSpeed;
+
+            switch (activationTime)
+            {
+                case ActivationTime.Immediate:
+                    SyncSpeedServerRpc();
+                    break;
+                case ActivationTime.ScrapSpawn:
+                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(SyncSpeedServerRpc);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(SyncSpeedServerRpc);
+                    break;
+                case ActivationTime.StartOfRound:
+                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(SyncSpeedServerRpc);
+                    break;
+                case ActivationTime.DungeonComplete:
+                case ActivationTime.Manual:
+                default:
+                    break;
+            }
         }
 
-        private void FixedUpdate()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void FixedUpdate()
         {
             if (TargetReached)
             {
@@ -118,8 +148,25 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         public override void OnDestroy()
         {
-            StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SyncSpeedServerRpc);
-            Random = null;
+            SeededRandom = null!;
+
+            switch (activationTime)
+            {
+                case ActivationTime.ScrapSpawn:
+                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(SyncSpeedServerRpc);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(SyncSpeedServerRpc);
+                    break;
+                case ActivationTime.StartOfRound:
+                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncSpeedServerRpc);
+                    break;
+                case ActivationTime.Immediate:
+                case ActivationTime.DungeonComplete:
+                case ActivationTime.Manual:
+                default:
+                    break;
+            }
 
             base.OnDestroy();
         }
@@ -180,6 +227,15 @@ namespace itolib.Behaviours.Animations
 
             animator?.SetFloat(speedParameter, initialSpeed);
             animator?.Play(initialState);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [ServerRpc(RequireOwnership = false)]
+        public void RerollSpeedServerRpc()
+        {
+            SyncSpeedClientRpc(Random.Range(minStartingSpeed, maxStartingSpeed));
         }
     }
 }

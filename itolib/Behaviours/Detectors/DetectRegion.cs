@@ -1,5 +1,6 @@
 using DunGen;
 using itolib.Enums;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -11,7 +12,7 @@ namespace itolib.Behaviours.Detectors
     /// </summary>
     /// <remarks><b>NOTE:</b> Region needs to be either a <c>BoxCollider</c>, <c>SphereCollider</c>, or <c>CapsuleCollider</c> to perform searches.</remarks>
     [RequireComponent(typeof(Collider))]
-    public abstract class DetectRegion<T> : MonoBehaviour, IDungeonCompleteReceiver
+    public abstract class DetectRegion<T> : NetworkBehaviour, IDungeonCompleteReceiver
     {
         /// <summary>
         ///     Pre-allocated <c>Collider</c> array of a specified size (<see cref="maxObjects"/>), containing objects of type <typeparamref name="T"/>

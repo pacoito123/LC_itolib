@@ -31,10 +31,8 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnNetworkSpawn()
+        public void Start()
         {
-            base.OnNetworkSpawn();
-
             TargetedParamID = Animator.StringToHash(defaultParameterName);
         }
 

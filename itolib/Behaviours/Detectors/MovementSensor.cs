@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Behaviours.Effects;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
@@ -74,7 +75,7 @@ namespace itolib.Behaviours.Detectors
         {
             base.Update();
 
-            if (AttachedPlayer == null)
+            if (!LocalPlayerAttached || AttachedPlayer == null)
             {
                 Timer = triggerInterval;
                 return;
@@ -92,7 +93,38 @@ namespace itolib.Behaviours.Detectors
             }
 
             onMovementDetected?.Invoke(AttachedPlayer);
+
+            if (IsSpawned) // TODO: Add separate 'local effect' field
+            {
+                PlayerMovedServerRpc(AttachedPlayer.GetComponent<NetworkObject>());
+            }
+
             Timer = 0.0f;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void PlayerMovedServerRpc(NetworkObjectReference playerReference)
+        {
+            PlayerMovedClientRpc(playerReference);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        [ClientRpc]
+        public void PlayerMovedClientRpc(NetworkObjectReference playerReference)
+        {
+            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            {
+                onMovementDetected?.Invoke(player);
+            }
         }
     }
 }

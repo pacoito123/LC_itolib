@@ -1,5 +1,7 @@
 using GameNetcodeStuff;
+using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace itolib.Behaviours.Effects
 {
@@ -24,6 +26,19 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Header("Events")]
+        [Tooltip("")]
+        public UnityEvent<PlayerControllerB>? onHinderStart;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public UnityEvent<PlayerControllerB>? onHinderStop;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void Awake()
         {
             AttachCondition = player => !player.isPlayerDead;
@@ -35,6 +50,11 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public override void AttachPlayerLocal(PlayerControllerB player)
         {
+            if (player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            {
+                return;
+            }
+
             base.AttachPlayerLocal(player);
 
             player.isMovementHindered++;
@@ -44,6 +64,9 @@ namespace itolib.Behaviours.Effects
             {
                 player.isUnderwater = true;
             }
+
+            onHinderStart?.Invoke(player);
+            HinderPlayerServerRpc(player.GetComponent<NetworkObject>());
         }
 
         /// <summary>
@@ -51,18 +74,57 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public override void DetachPlayerLocal()
         {
-            if (AttachedPlayer != null)
+            if (AttachedPlayer == null || (!isLocalEffect && AttachedPlayer.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId))
             {
-                AttachedPlayer.isMovementHindered--;
-                AttachedPlayer.hinderedMultiplier /= hinderedMultiplier;
-
-                if (allowJumping)
-                {
-                    AttachedPlayer.isUnderwater = false;
-                }
+                return;
             }
 
+            AttachedPlayer.isMovementHindered--;
+            AttachedPlayer.hinderedMultiplier /= hinderedMultiplier;
+
+            if (allowJumping)
+            {
+                AttachedPlayer.isUnderwater = false;
+            }
+
+            onHinderStop?.Invoke(AttachedPlayer);
+            HinderPlayerServerRpc(AttachedPlayer.GetComponent<NetworkObject>(), stop: true);
+
             base.DetachPlayerLocal();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="stop"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void HinderPlayerServerRpc(NetworkObjectReference playerReference, bool stop = false)
+        {
+            HinderPlayerClientRpc(playerReference, stop);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="stop"></param>
+        [ClientRpc]
+        public void HinderPlayerClientRpc(NetworkObjectReference playerReference, bool stop = false)
+        {
+            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            {
+                if (!stop)
+                {
+                    onHinderStart?.Invoke(player);
+                }
+                else
+                {
+                    onHinderStop?.Invoke(player);
+                }
+            }
         }
     }
 }

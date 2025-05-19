@@ -1,6 +1,7 @@
 using itolib.Behaviours.Grabbables;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace itolib.Behaviours.Detectors
@@ -35,23 +36,33 @@ namespace itolib.Behaviours.Detectors
         {
             base.CheckObjectsInRegion();
 
-            int scrapFound = 0;
+            if (!IsHost)
+            {
+                if (regionCollider != null)
+                {
+                    regionCollider.enabled = false;
+                }
+
+                return;
+            }
+
+            int itemsFound = 0;
 
             for (int i = 0; i < ObjectsFound; i++)
             {
-                Collider scrapCollider = OverlapBuffer![i];
+                Collider itemCollider = OverlapBuffer![i];
 
-                if (scrapCollider.TryGetComponent(out GrabbableObject item)
-                    && !scrapCollider.TryGetComponent(out EnemyAI _)) // Maneater check...
+                if (itemCollider.TryGetComponent(out GrabbableObject item)
+                    && !itemCollider.TryGetComponent(out EnemyAI _)) // Maneater check...
                 {
-                    onObjectsEach?.Invoke(item);
-                    scrapFound++;
+                    FoundItemsEachClientRpc(item.GetComponent<NetworkObject>());
+                    itemsFound++;
                 }
             }
 
-            if (scrapFound > 0)
+            if (itemsFound > 0)
             {
-                onObjectsAny?.Invoke(scrapFound);
+                FoundItemsAnyClientRpc(itemsFound);
             }
         }
 
@@ -60,10 +71,11 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void OnTriggerEnter(Collider other)
         {
-            if (other.TryGetComponent(out GrabbableObject item)
+            if (other.TryGetComponent(out GrabbableObject item) && item.IsOwner
                 && !item.TryGetComponent(out EnemyAI _)) // Maneater check...
             {
                 onRegionEntered?.Invoke(item);
+                RegionEnteredServerRpc(item.GetComponent<NetworkObject>());
             }
         }
 
@@ -73,10 +85,11 @@ namespace itolib.Behaviours.Detectors
         /// <param name="other"></param>
         public override void OnTriggerExit(Collider other)
         {
-            if (other.TryGetComponent(out GrabbableObject item)
+            if (other.TryGetComponent(out GrabbableObject item) && item.IsOwner
                 && !item.TryGetComponent(out EnemyAI _)) // Maneater check...
             {
                 onRegionExited?.Invoke(item);
+                RegionEnteredServerRpc(item.GetComponent<NetworkObject>(), exit: true);
             }
         }
 
@@ -86,7 +99,8 @@ namespace itolib.Behaviours.Detectors
         /// <param name="item"></param>
         public void DisableItemCollider(GrabbableObject item)
         {
-            item.GetComponentsInChildren<Collider>().Where(collider => collider.enabled).ToList().ForEach(collider =>
+            item.GetComponentsInChildren<Collider>().Where(collider =>
+                collider.enabled && collider.gameObject.layer != LayerMask.NameToLayer("ScanNode")).ToList().ForEach(collider =>
             {
                 collider.enabled = false;
                 DisabledColliders.Add(collider);
@@ -143,6 +157,63 @@ namespace itolib.Behaviours.Detectors
             }
 
             item.FallToGround();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="scrapReference"></param>
+        [ClientRpc]
+        public void FoundItemsEachClientRpc(NetworkObjectReference scrapReference)
+        {
+            if (scrapReference.TryGet(out NetworkObject scrapNetworkObject)
+                && scrapNetworkObject.TryGetComponent(out GrabbableObject scrap))
+            {
+                onObjectsEach?.Invoke(scrap);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="scrapFound"></param>
+        [ClientRpc]
+        public void FoundItemsAnyClientRpc(int scrapFound)
+        {
+            onObjectsAny?.Invoke(scrapFound);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="itemReference"></param>
+        /// <param name="exit"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void RegionEnteredServerRpc(NetworkObjectReference itemReference, bool exit = false)
+        {
+            RegionEnteredClientRpc(itemReference);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="itemReference"></param>
+        /// <param name="exit"></param>
+        [ClientRpc]
+        public void RegionEnteredClientRpc(NetworkObjectReference itemReference, bool exit = false)
+        {
+            if (itemReference.TryGet(out NetworkObject itemNetworkObject)
+                && itemNetworkObject.TryGetComponent(out GrabbableObject item) && !item.IsOwner)
+            {
+                if (!exit)
+                {
+                    onRegionEntered?.Invoke(item);
+                }
+                else
+                {
+                    onRegionExited?.Invoke(item);
+                }
+            }
         }
     }
 }

@@ -28,11 +28,6 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public AttachedEffect EffectToAttach { get; private set; } = null!;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         public Transform CurrentPosition { get; private set; } = null!;
 
         /// <summary>
@@ -44,6 +39,12 @@ namespace itolib.Behaviours.Effects
         ///     TODO.
         /// </summary>
         [Header("Attached Effect")]
+        [Tooltip("")]
+        public AttachedEffect effectToAttach = null!;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Tooltip("")]
         public int maxInstances = 8;
 
@@ -71,8 +72,11 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public void Awake()
         {
-            EffectToAttach = this;
             CurrentPosition = transform;
+
+            TakenBy = null!;
+            Next = null!;
+            TargetPosition = null!;
 
             enabled = false;
         }
@@ -82,25 +86,13 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public void Update()
         {
-            if (!followObject)
+            if (!followObject || TargetPosition == null)
             {
                 return;
             }
 
-            if (TakenBy != null)
-            {
-                if (TargetPosition == null)
-                {
-                    TargetPosition = TakenBy.transform;
-                }
-
-                CurrentPosition.position = TargetPosition.position;
-                // CurrentPosition.SetPositionAndRotation(TargetPosition.position, TargetPosition.rotation);
-            }
-            else
-            {
-                TargetPosition = null!;
-            }
+            CurrentPosition.position = TargetPosition.position;
+            // CurrentPosition.SetPositionAndRotation(TargetPosition.position, TargetPosition.rotation);
         }
 
         /// <summary>
@@ -125,9 +117,15 @@ namespace itolib.Behaviours.Effects
         /// <param name="gameObject"></param>
         public void Attach(GameObject gameObject)
         {
-            if ((this as IPooledObject).TryAssignInstance(gameObject, maxInstances))
+            if ((this as IPooledObject).TryAssignInstance(gameObject, maxInstances, out IPooledObject instance))
             {
-                onAttach?.Invoke(gameObject);
+                if (instance is AttachedEffect effect)
+                {
+                    effect.CurrentPosition.position = effect.TakenBy.transform.position;
+                    effect.TargetPosition = effect.TakenBy.transform;
+
+                    effect.onAttach?.Invoke(gameObject);
+                }
             }
         }
 
@@ -153,9 +151,13 @@ namespace itolib.Behaviours.Effects
         /// <param name="gameObject"></param>
         public void Detach(GameObject gameObject)
         {
-            if ((this as IPooledObject).TryFreeInstance(gameObject))
+            if ((this as IPooledObject).TryFreeInstance(gameObject, out IPooledObject instance))
             {
-                onDetach?.Invoke(gameObject);
+                if (instance is AttachedEffect effect)
+                {
+                    effect.onDetach?.Invoke(gameObject);
+                    effect.TargetPosition = null!;
+                }
             }
         }
 
@@ -165,7 +167,7 @@ namespace itolib.Behaviours.Effects
         /// <returns></returns> 
         public IPooledObject CreateInstance()
         {
-            AttachedEffect instance = Instantiate(EffectToAttach, transform.GetParent(), false);
+            AttachedEffect instance = Instantiate(effectToAttach, transform.GetParent(), false);
             instance.name = name;
 
             return instance;

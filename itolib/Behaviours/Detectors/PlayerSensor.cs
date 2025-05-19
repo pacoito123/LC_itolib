@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -38,6 +39,11 @@ namespace itolib.Behaviours.Detectors
         {
             base.CheckObjectsInRegion();
 
+            if (!IsHost)
+            {
+                return;
+            }
+
             int playersFound = 0,
                 playersFoundAlive = 0;
 
@@ -45,12 +51,12 @@ namespace itolib.Behaviours.Detectors
             {
                 if (OverlapBuffer![i].TryGetComponent(out PlayerControllerB player))
                 {
-                    onObjectsEach?.Invoke(player);
+                    FoundPlayersEachClientRpc(player.GetComponent<NetworkObject>());
                     playersFound++;
 
                     if (player.isActiveAndEnabled && !player.isPlayerDead)
                     {
-                        onPlayersAliveEach?.Invoke(player);
+                        FoundPlayersAliveEachClientRpc(player.GetComponent<NetworkObject>());
                         playersFoundAlive++;
                     }
                 }
@@ -58,12 +64,12 @@ namespace itolib.Behaviours.Detectors
 
             if (playersFound > 0)
             {
-                onObjectsAny?.Invoke(playersFound);
-            }
+                FoundPlayersAnyClientRpc(playersFound);
 
-            if (playersFoundAlive > 0)
-            {
-                onPlayersAliveAny?.Invoke(playersFoundAlive);
+                if (playersFoundAlive > 0)
+                {
+                    FoundPlayersAliveAnyClientRpc(playersFoundAlive);
+                }
             }
         }
 
@@ -72,9 +78,12 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void OnTriggerEnter(Collider other)
         {
-            if (other.TryGetComponent(out PlayerControllerB player))
+            if (other.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId)
             {
                 onRegionEntered?.Invoke(player);
+
+                RegionEnteredServerRpc(player.GetComponent<NetworkObject>());
             }
         }
 
@@ -84,9 +93,94 @@ namespace itolib.Behaviours.Detectors
         /// <param name="other"></param>
         public override void OnTriggerExit(Collider other)
         {
-            if (other.TryGetComponent(out PlayerControllerB player))
+            if (other.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId)
             {
                 onRegionExited?.Invoke(player);
+
+                RegionEnteredServerRpc(player.GetComponent<NetworkObject>(), exit: true);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        [ClientRpc]
+        public void FoundPlayersEachClientRpc(NetworkObjectReference playerReference)
+        {
+            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player))
+            {
+                onObjectsEach?.Invoke(player);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        [ClientRpc]
+        public void FoundPlayersAliveEachClientRpc(NetworkObjectReference playerReference)
+        {
+            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player))
+            {
+                onPlayersAliveEach?.Invoke(player);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playersFound"></param>
+        [ClientRpc]
+        public void FoundPlayersAnyClientRpc(int playersFound)
+        {
+            onObjectsAny?.Invoke(playersFound);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playersFound"></param>
+        [ClientRpc]
+        public void FoundPlayersAliveAnyClientRpc(int playersFound)
+        {
+            onPlayersAliveAny?.Invoke(playersFound);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="exit"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void RegionEnteredServerRpc(NetworkObjectReference playerReference, bool exit = false)
+        {
+            RegionEnteredClientRpc(playerReference);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="exit"></param>
+        [ClientRpc]
+        public void RegionEnteredClientRpc(NetworkObjectReference playerReference, bool exit = false)
+        {
+            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            {
+                if (exit)
+                {
+                    onRegionEntered?.Invoke(player);
+                }
+                else
+                {
+                    onRegionExited?.Invoke(player);
+                }
             }
         }
     }
