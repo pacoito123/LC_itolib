@@ -1,3 +1,4 @@
+using GameNetcodeStuff;
 using itolib.Enums;
 using Unity.Netcode;
 using UnityEngine;
@@ -142,45 +143,40 @@ namespace itolib.PlayZone
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="speedMultiplier"></param>
-        public void ChangeSpeedLocal(float speedMultiplier)
+        /// <param name="newState"></param>
+        public void SwitchState(ElevatorState newState)
         {
-            if (elevatorAnimator != null && elevatorAnimator.GetFloat("speed") != speedMultiplier)
+            if (CurrentState != newState)
             {
-                ChangeSpeed(speedMultiplier);
-                ChangeSpeedServerRpc(speedMultiplier);
+                SwitchStateLocal(newState);
+                SwitchStateServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), newState);
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="speedMultiplier"></param>
+        /// <param name="playerReference"></param>
+        /// <param name="newState"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void ChangeSpeedServerRpc(float speedMultiplier)
+        public void SwitchStateServerRpc(NetworkObjectReference playerReference, ElevatorState newState)
         {
-            ChangeSpeedClientRpc(speedMultiplier);
+            SwitchStateClientRpc(playerReference, newState);
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="speedMultiplier"></param>
+        /// <param name="playerReference"></param>
+        /// <param name="newState"></param>
         [ClientRpc]
-        public void ChangeSpeedClientRpc(float speedMultiplier)
+        public void SwitchStateClientRpc(NetworkObjectReference playerReference, ElevatorState newState)
         {
-            ChangeSpeed(speedMultiplier);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="speedMultiplier"></param>
-        public void ChangeSpeed(float speedMultiplier)
-        {
-            if (elevatorAnimator != null && elevatorAnimator.GetFloat("speed") != speedMultiplier)
+            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
             {
-                elevatorAnimator.SetFloat("speed", speedMultiplier);
+                SwitchStateLocal(newState);
             }
         }
 
@@ -189,39 +185,6 @@ namespace itolib.PlayZone
         /// </summary>
         /// <param name="newState"></param>
         public void SwitchStateLocal(ElevatorState newState)
-        {
-            if (CurrentState != newState)
-            {
-                SwitchState(newState);
-                SwitchStateServerRpc(newState);
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="newState"></param>
-        [ServerRpc(RequireOwnership = false)]
-        public void SwitchStateServerRpc(ElevatorState newState)
-        {
-            SwitchStateClientRpc(newState);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="newState"></param>
-        [ClientRpc]
-        public void SwitchStateClientRpc(ElevatorState newState)
-        {
-            SwitchState(newState);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="newState"></param>
-        public void SwitchState(ElevatorState newState)
         {
             if (CurrentState == newState)
             {
@@ -293,11 +256,47 @@ namespace itolib.PlayZone
                 case ElevatorState.IdleUp:
                     if (!up)
                     {
+                        SwitchState(ElevatorState.GoingDown);
+                    }
+                    else
+                    {
+                        ToggleDoors(open: true);
+                    }
+                    break;
+                case ElevatorState.IdleDown:
+                    if (up)
+                    {
+                        SwitchState(ElevatorState.GoingUp);
+                    }
+                    else
+                    {
+                        ToggleDoors(open: true);
+                    }
+                    break;
+                case ElevatorState.GoingUp:
+                case ElevatorState.GoingDown:
+                case ElevatorState.Stuck:
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="up"></param>
+        public void CallElevatorLocal(bool up)
+        {
+            switch (CurrentState)
+            {
+                case ElevatorState.IdleUp:
+                    if (!up)
+                    {
                         SwitchStateLocal(ElevatorState.GoingDown);
                     }
                     else
                     {
-                        OpenDoors();
+                        ToggleDoorsLocal(open: true);
                     }
                     break;
                 case ElevatorState.IdleDown:
@@ -307,7 +306,7 @@ namespace itolib.PlayZone
                     }
                     else
                     {
-                        OpenDoors();
+                        ToggleDoorsLocal(open: true);
                     }
                     break;
                 case ElevatorState.GoingUp:
@@ -321,74 +320,87 @@ namespace itolib.PlayZone
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OpenDoors()
+        /// <param name="open"></param>
+        public void ToggleDoors(bool open)
+        {
+            ToggleDoorsLocal(open);
+            ToggleDoorsServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), open);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="open"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void ToggleDoorsServerRpc(NetworkObjectReference playerReference, bool open)
+        {
+            ToggleDoorsClientRpc(playerReference, open);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="open"></param>
+        [ClientRpc]
+        public void ToggleDoorsClientRpc(NetworkObjectReference playerReference, bool open)
+        {
+            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            {
+                ToggleDoorsLocal(open);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="open"></param>
+        public void ToggleDoorsLocal(bool open)
         {
             switch (CurrentState)
             {
                 case ElevatorState.IdleUp:
-                    if (doorAnimatorUpper?.GetBool("Open") == false)
+                    if (doorAnimatorUpper?.GetBool("Open") == !open)
                     {
                         if (doorAudioOpen != null)
                         {
                             doorSourceUpper?.PlayOneShot(doorAudioOpen);
                         }
 
-                        doorAnimatorUpper.SetBool("Open", true);
-                        onDoorsOpen?.Invoke(true);
+                        doorAnimatorUpper.SetBool("Open", open);
+
+                        if (open)
+                        {
+                            onDoorsOpen?.Invoke(true);
+                        }
+                        else
+                        {
+                            onDoorsClose?.Invoke(true);
+                        }
                     }
 
                     break;
                 case ElevatorState.IdleDown:
-                    if (doorAnimatorLower?.GetBool("Open") == false)
+                    if (doorAnimatorLower?.GetBool("Open") == !open)
                     {
                         if (doorAudioOpen != null)
                         {
                             doorSourceLower?.PlayOneShot(doorAudioOpen);
                         }
 
-                        doorAnimatorLower.SetBool("Open", true);
-                        onDoorsOpen?.Invoke(false);
-                    }
+                        doorAnimatorLower.SetBool("Open", open);
 
-                    break;
-                case ElevatorState.GoingUp:
-                case ElevatorState.GoingDown:
-                case ElevatorState.Stuck:
-                default:
-                    break;
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public void CloseDoors()
-        {
-            switch (CurrentState)
-            {
-                case ElevatorState.IdleUp:
-                    if (doorAnimatorUpper?.GetBool("Open") == true)
-                    {
-                        if (doorAudioOpen != null)
+                        if (open)
                         {
-                            doorSourceUpper?.PlayOneShot(doorAudioClose);
+                            onDoorsOpen?.Invoke(false);
                         }
-
-                        doorAnimatorUpper.SetBool("Open", false);
-                        onDoorsClose?.Invoke(true);
-                    }
-
-                    break;
-                case ElevatorState.IdleDown:
-                    if (doorAnimatorLower?.GetBool("Open") == true)
-                    {
-                        if (doorAudioOpen != null)
+                        else
                         {
-                            doorSourceLower?.PlayOneShot(doorAudioClose);
+                            onDoorsClose?.Invoke(false);
                         }
-
-                        doorAnimatorLower.SetBool("Open", false);
-                        onDoorsClose?.Invoke(false);
                     }
 
                     break;
