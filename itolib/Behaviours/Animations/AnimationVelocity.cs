@@ -1,3 +1,4 @@
+using GameNetcodeStuff;
 using itolib.Enums;
 using Unity.Netcode;
 using UnityEngine;
@@ -22,29 +23,9 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        public float TransitionTimer { get; private set; } = 0.0f;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public float PreviousTarget { get; private set; } = 0.0f;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public float CurrentTarget { get; private set; } = 0.0f;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public bool TargetReached { get; private set; } = true;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [Header("Animation Velocity")]
         [Tooltip("")]
-        public Animator? animator;
+        public Animator animator = null!;
 
         /// <summary>
         ///     TODO.
@@ -85,9 +66,40 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
+        [HideInInspector]
+        public float transitionTimer;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        public bool targetReached = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        public float previousTarget;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        public float currentTarget;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
+            if (animator == null && !TryGetComponent(out animator))
+            {
+                Plugin.StaticLogger.LogWarning($"Could not find Animator for AnimationVelocity component in GameObject '{gameObject.name}'.");
+                enabled = false;
+                return;
+            }
 
             if (!IsHost)
             {
@@ -101,16 +113,16 @@ namespace itolib.Behaviours.Animations
             switch (activationTime)
             {
                 case ActivationTime.Immediate:
-                    SyncSpeedServerRpc();
+                    SyncSpeed();
                     break;
                 case ActivationTime.ScrapSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(SyncSpeedServerRpc);
+                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(SyncSpeed);
                     break;
                 case ActivationTime.HazardSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(SyncSpeedServerRpc);
+                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(SyncSpeed);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(SyncSpeedServerRpc);
+                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(SyncSpeed);
                     break;
                 case ActivationTime.DungeonComplete:
                 case ActivationTime.Manual:
@@ -124,22 +136,22 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         public void FixedUpdate()
         {
-            if (TargetReached)
+            if (targetReached)
             {
                 return;
             }
 
-            TransitionTimer += Time.fixedDeltaTime;
+            transitionTimer += Time.fixedDeltaTime;
 
-            float currentSpeed = Mathf.Lerp(PreviousTarget, CurrentTarget, TransitionTimer * stoppingSpeed);
-            animator?.SetFloat(speedParameter, currentSpeed);
+            float currentSpeed = Mathf.Lerp(previousTarget, currentTarget, transitionTimer * stoppingSpeed);
+            animator.SetFloat(speedParameter, currentSpeed);
 
-            if (currentSpeed == CurrentTarget)
+            if (currentSpeed == currentTarget)
             {
-                PreviousTarget = currentSpeed;
+                previousTarget = currentSpeed;
 
-                TransitionTimer = 0.0f;
-                TargetReached = true;
+                transitionTimer = 0.0f;
+                targetReached = true;
             }
         }
 
@@ -153,13 +165,13 @@ namespace itolib.Behaviours.Animations
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(SyncSpeedServerRpc);
+                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(SyncSpeed);
                     break;
                 case ActivationTime.HazardSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(SyncSpeedServerRpc);
+                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(SyncSpeed);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncSpeedServerRpc);
+                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncSpeed);
                     break;
                 case ActivationTime.Immediate:
                 case ActivationTime.DungeonComplete:
@@ -174,68 +186,133 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void ResetSpeedServerRpc()
+        public void ResetSpeed()
         {
-            ChangeSpeedClientRpc(InitialSpeed);
+            ChangeSpeed(InitialSpeed);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void ResetSpeedLocal()
+        {
+            ChangeSpeedLocal(InitialSpeed);
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
         /// <param name="targetSpeed"></param>
-        [ServerRpc(RequireOwnership = false)]
-        public void ChangeSpeedServerRpc(float targetSpeed)
+        public void ChangeSpeed(float targetSpeed)
         {
-            ChangeSpeedClientRpc(targetSpeed);
+            ChangeSpeedLocal(targetSpeed);
+            ChangeSpeedServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), targetSpeed);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="targetSpeed"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void ChangeSpeedServerRpc(NetworkObjectReference playerReference, float targetSpeed)
+        {
+            ChangeSpeedClientRpc(playerReference, targetSpeed);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="targetSpeed"></param>
+        [ClientRpc]
+        public void ChangeSpeedClientRpc(NetworkObjectReference playerReference, float targetSpeed)
+        {
+            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            {
+                ChangeSpeedLocal(targetSpeed);
+            }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
         /// <param name="targetSpeed"></param>
-        [ClientRpc]
-        public void ChangeSpeedClientRpc(float targetSpeed)
+        public void ChangeSpeedLocal(float targetSpeed)
         {
-            CurrentTarget = targetSpeed;
+            currentTarget = targetSpeed;
 
-            TransitionTimer = 0.0f;
-            TargetReached = false;
+            transitionTimer = 0.0f;
+            targetReached = false;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void RerollSpeed()
+        {
+            SyncSpeed(Random.Range(minStartingSpeed, maxStartingSpeed));
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void SyncSpeed()
+        {
+            SyncSpeed(InitialSpeed);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void SyncSpeed(float initialSpeed)
+        {
+            SyncSpeedLocal(initialSpeed);
+            SyncSpeedServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), initialSpeed);
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [ServerRpc(RequireOwnership = false)]
-        public void SyncSpeedServerRpc()
+        public void SyncSpeedServerRpc(NetworkObjectReference playerReference, float initialSpeed)
         {
-            SyncSpeedClientRpc(InitialSpeed);
+            SyncSpeedClientRpc(playerReference, initialSpeed);
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="initialSpeed"></param>
         [ClientRpc]
-        public void SyncSpeedClientRpc(float initialSpeed)
+        public void SyncSpeedClientRpc(NetworkObjectReference playerReference, float initialSpeed)
+        {
+            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            {
+                SyncSpeedLocal(initialSpeed);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="initialSpeed"></param>
+        public void SyncSpeedLocal(float initialSpeed)
         {
             InitialSpeed = initialSpeed;
-            PreviousTarget = initialSpeed;
-            CurrentTarget = initialSpeed;
+            previousTarget = initialSpeed;
+            currentTarget = initialSpeed;
 
-            TransitionTimer = 0.0f;
-            TargetReached = true;
+            transitionTimer = 0.0f;
+            targetReached = true;
 
-            animator?.SetFloat(speedParameter, initialSpeed);
-            animator?.Play(initialState);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void RerollSpeedServerRpc()
-        {
-            SyncSpeedClientRpc(Random.Range(minStartingSpeed, maxStartingSpeed));
+            animator.SetFloat(speedParameter, initialSpeed);
+            animator.Play(initialState);
         }
     }
 }

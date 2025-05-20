@@ -32,6 +32,8 @@ namespace itolib.Behaviours.Interactables
             animationString = "SA_PullLever";
             lockPlayerPosition = true;
             isLadder = true;
+
+            climbSpeed = normalClimbSpeed;
         }
 
         private void Awake()
