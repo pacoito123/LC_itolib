@@ -64,15 +64,18 @@ namespace itolib.Behaviours.Grabbables
         [Tooltip("")]
         public Quaternion wearRotationOffset = Quaternion.identity;
 
-        private void Awake()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Start()
         {
             item ??= GetComponent<ItemGrabbable>();
             item.hideOnPocket = false;
 
-            item.onDiscard?.AddListener(DiscardItem);
-            item.onEquip?.AddListener(EquipItem);
-            item.onGrab?.AddListener(GrabItem);
-            item.onPocket?.AddListener(PocketItem);
+            item.onDiscardEarly?.AddListener(OnDiscardEarly);
+            item.onEquip?.AddListener(OnEquip);
+            item.onGrab?.AddListener(SetWearablePosition);
+            item.onPocket?.AddListener(OnPocket);
 
             if (applyOffsetTo != null)
             {
@@ -84,75 +87,150 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void DiscardItem()
+        public void SetWearablePosition()
         {
-            if (BoneToAttachTo != null)
+            if (item.playerHeldBy?.IsOwner == true)
             {
-                applyOffsetTo?.SetLocalPositionAndRotation(InitialPosition, InitialRotation);
+                SetWearablePositionLocal(item.playerHeldBy);
+                SetWearablePositionServerRpc(item.playerHeldBy.GetComponent<NetworkObject>());
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void EquipItem()
+        /// <param name="playerReference"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void SetWearablePositionServerRpc(NetworkObjectReference playerReference)
         {
-            item.parentObject = item.playerHeldBy.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId
-                ? item.playerHeldBy.localItemHolder.transform : item.playerHeldBy.serverItemHolder.transform;
+            SetWearablePositionClientRpc(playerReference);
+        }
 
-            if (BoneToAttachTo != null)
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        [ClientRpc]
+        public void SetWearablePositionClientRpc(NetworkObjectReference playerReference)
+        {
+            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
             {
-                applyOffsetTo?.SetLocalPositionAndRotation(InitialPosition, InitialRotation);
+                SetWearablePositionLocal(player);
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void GrabItem()
+        /// <param name="player"></param>
+        private void SetWearablePositionLocal(PlayerControllerB player)
         {
-            if (item.IsOwner && item.playerHeldBy != null)
+            switch (wearPosition)
             {
-                PlayerControllerB player = item.playerHeldBy;
-
-                switch (wearPosition)
-                {
-                    case WearablePosition.Custom:
-                        BoneToAttachTo = player.playerBodyAnimator.transform.Find(customBone);
-                        break;
-                    case WearablePosition.Head:
-                        BoneToAttachTo = player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId
-                            ? player.headCostumeContainer : player.headCostumeContainerLocal;
-                        // BoneToAttachTo = player.headCostumeContainer;
-                        break;
-                    case WearablePosition.Belt:
-                        BoneToAttachTo = player.lowerTorsoCostumeContainer;
-                        break;
-                    default:
-                        break;
-                }
+                case WearablePosition.Custom:
+                    BoneToAttachTo = player.playerBodyAnimator.transform.Find(customBone);
+                    break;
+                case WearablePosition.Head:
+                    BoneToAttachTo = player.IsOwner ? player.headCostumeContainerLocal : player.headCostumeContainer;
+                    break;
+                case WearablePosition.Belt:
+                    BoneToAttachTo = player.lowerTorsoCostumeContainer;
+                    break;
+                default:
+                    break;
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void PocketItem()
+        public void OnDiscardEarly()
         {
-            if (item.IsOwner && item.playerHeldBy != null)
+            OnEquip();
+
+            item.parentObject = null;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void OnEquip()
+        {
+            EquipWearable(reset: true);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void OnPocket()
+        {
+            EquipWearable(reset: false);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="reset"></param>
+        public void EquipWearable(bool reset = false)
+        {
+            if (item.playerHeldBy?.IsOwner == true)
             {
-                item.playerHeldBy.IsInspectingItem = false;
-                item.playerHeldBy.equippedUsableItemQE = false;
+                EquipWearableLocal(item.playerHeldBy, reset);
+                EquipWearableServerRpc(item.playerHeldBy.GetComponent<NetworkObject>(), reset);
             }
+        }
 
-            item.isPocketed = true;
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="reset"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void EquipWearableServerRpc(NetworkObjectReference playerReference, bool reset = false)
+        {
+            EquipWearableClientRpc(playerReference, reset);
+        }
 
-            if (BoneToAttachTo != null)
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="reset"></param>
+        [ClientRpc]
+        public void EquipWearableClientRpc(NetworkObjectReference playerReference, bool reset = false)
+        {
+            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
             {
+                EquipWearableLocal(player, reset);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="reset"></param>
+        private void EquipWearableLocal(PlayerControllerB player, bool reset = false)
+        {
+            if (!reset)
+            {
+                player.IsInspectingItem = false;
+                player.equippedUsableItemQE = false;
+
+                item.isPocketed = true;
                 item.parentObject = BoneToAttachTo;
-
-                applyOffsetTo?.SetLocalPositionAndRotation(wearPositionOffset, wearRotationOffset);
             }
+            else
+            {
+                item.parentObject = player.IsOwner ? player.localItemHolder.transform : player.serverItemHolder.transform;
+            }
+
+            applyOffsetTo?.SetLocalPositionAndRotation(!reset ? wearPositionOffset : InitialPosition,
+                !reset ? wearRotationOffset : InitialRotation);
         }
     }
 }
