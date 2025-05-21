@@ -2,12 +2,12 @@ using System;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace itolib.Behaviours.Helpers
+namespace itolib.Behaviours.Events
 {
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class TimedEvent : MonoBehaviour
+    public class HourEvent : MonoBehaviour // TODO: Improve with LLL events
     {
         /// <summary>
         ///     TODO.

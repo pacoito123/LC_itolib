@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace itolib.Behaviours.Helpers
+namespace itolib.Behaviours.Events
 {
     /// <summary>
     /// 	TODO.

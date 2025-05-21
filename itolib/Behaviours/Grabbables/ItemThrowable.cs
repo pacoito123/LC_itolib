@@ -94,19 +94,19 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Tooltip("")]
         [Header("Events")]
-        public UnityEvent? onThrowStart;
+        public UnityEvent<PlayerControllerB>? onThrowStart;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onThrowFinish;
+        public UnityEvent<PlayerControllerB>? onThrowFinish;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int>? onThrowFinishVariant;
+        public UnityEvent<PlayerControllerB, int>? onThrowFinishVariant;
 
         private void Awake()
         {
@@ -135,7 +135,7 @@ namespace itolib.Behaviours.Grabbables
             if (item.playerHeldBy != null)
             {
                 LastThrownBy = item.playerHeldBy;
-                onThrowStart?.Invoke();
+                onThrowStart?.Invoke(LastThrownBy);
 
                 SyncThrowerServerRpc(item.playerHeldBy.GetComponent<NetworkObject>());
 
@@ -150,7 +150,7 @@ namespace itolib.Behaviours.Grabbables
         {
             if (LastThrownBy != null)
             {
-                onThrowFinish?.Invoke();
+                onThrowFinish?.Invoke(LastThrownBy);
                 LastThrownBy = null;
             }
         }
@@ -162,7 +162,7 @@ namespace itolib.Behaviours.Grabbables
         {
             if (LastThrownBy != null)
             {
-                onThrowFinishVariant?.Invoke(item.VariantIndex);
+                onThrowFinishVariant?.Invoke(LastThrownBy, item.VariantIndex);
                 LastThrownBy = null;
             }
         }
@@ -231,7 +231,7 @@ namespace itolib.Behaviours.Grabbables
                 && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
             {
                 LastThrownBy = player;
-                onThrowStart?.Invoke();
+                onThrowStart?.Invoke(LastThrownBy);
             }
         }
     }
