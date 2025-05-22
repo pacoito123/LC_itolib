@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Enums;
+using LethalLevelLoader;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -116,10 +117,10 @@ namespace itolib.Behaviours.Animations
                     SyncSpeed();
                     break;
                 case ActivationTime.ScrapSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(SyncSpeed);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(SyncSpeed);
                     break;
                 case ActivationTime.HazardSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(SyncSpeed);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(SyncSpeed);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.AddListener(SyncSpeed);
@@ -165,10 +166,10 @@ namespace itolib.Behaviours.Animations
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(SyncSpeed);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(SyncSpeed);
                     break;
                 case ActivationTime.HazardSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(SyncSpeed);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(SyncSpeed);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncSpeed);

@@ -31,6 +31,6 @@ namespace itolib.Enums
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        Stuck
+        Deactivated
     }
 }

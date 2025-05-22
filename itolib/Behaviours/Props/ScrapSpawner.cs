@@ -1,5 +1,6 @@
 using itolib.Behaviours.Networking;
 using itolib.Enums;
+using LethalLevelLoader;
 using System;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -204,10 +205,10 @@ namespace itolib.Behaviours.Props
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(PerformSpawn);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(PerformSpawn);
                     break;
                 case ActivationTime.HazardSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(PerformSpawn);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(PerformSpawn);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.AddListener(PerformSpawn);
@@ -228,10 +229,10 @@ namespace itolib.Behaviours.Props
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(PerformSpawn);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(PerformSpawn);
                     break;
                 case ActivationTime.HazardSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(PerformSpawn);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(PerformSpawn);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PerformSpawn);

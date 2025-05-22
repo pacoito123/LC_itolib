@@ -20,7 +20,7 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         [Header("Animation Param Setter")]
         [Tooltip("")]
-        public Animator? animator;
+        public Animator animator = null!;
 
         /// <summary>
         ///     TODO.
@@ -31,9 +31,22 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Start()
+        public void Awake()
         {
             TargetedParamID = Animator.StringToHash(defaultParameterName);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void OnEnable()
+        {
+            if (animator == null)
+            {
+                Plugin.StaticLogger.LogWarning($"Could not find Animator for AnimationParamSetter component in GameObject '{gameObject.name}'.");
+                enabled = false;
+                return;
+            }
         }
 
         /// <summary>
@@ -43,10 +56,14 @@ namespace itolib.Behaviours.Animations
         public void SwitchParam(string paramName)
         {
             int paramID = Animator.StringToHash(paramName);
-            if (animator?.parameters.Any(param => param.nameHash == paramID) == true)
+            if (animator.parameters.Any(param => param.nameHash == paramID))
             {
                 SwitchParamLocal(paramID);
-                SwitchParamServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), paramID);
+
+                if (IsSpawned)
+                {
+                    SwitchParamServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), paramID);
+                }
             }
         }
 
@@ -92,10 +109,14 @@ namespace itolib.Behaviours.Animations
         /// <param name="value"></param>
         public void SetBool(bool value)
         {
-            if (TargetedParamID != -1)
+            if (TargetedParamID != -1 && animator.GetBool(TargetedParamID) != value)
             {
                 SetBoolLocal(value);
-                SetBoolServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), value);
+
+                if (IsSpawned)
+                {
+                    SetBoolServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), value);
+                }
             }
         }
 
@@ -132,7 +153,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="value"></param>
         private void SetBoolLocal(bool value)
         {
-            animator?.SetBool(TargetedParamID, value);
+            animator.SetBool(TargetedParamID, value);
         }
 
         /// <summary>
@@ -141,10 +162,14 @@ namespace itolib.Behaviours.Animations
         /// <param name="value"></param>
         public void SetFloat(float value)
         {
-            if (TargetedParamID != -1)
+            if (TargetedParamID != -1 && animator.GetFloat(TargetedParamID) != value)
             {
                 SetFloatLocal(value);
-                SetFloatServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), value);
+
+                if (IsSpawned)
+                {
+                    SetFloatServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), value);
+                }
             }
         }
 
@@ -181,7 +206,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="value"></param>
         private void SetFloatLocal(float value)
         {
-            animator?.SetFloat(TargetedParamID, value);
+            animator.SetFloat(TargetedParamID, value);
         }
 
         /// <summary>
@@ -190,10 +215,14 @@ namespace itolib.Behaviours.Animations
         /// <param name="value"></param>
         public void SetInt(int value)
         {
-            if (TargetedParamID != -1)
+            if (TargetedParamID != -1 && animator.GetInteger(TargetedParamID) != value)
             {
                 SetIntLocal(value);
-                SetIntServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), value);
+
+                if (IsSpawned)
+                {
+                    SetIntServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), value);
+                }
             }
         }
 
@@ -230,7 +259,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="value"></param>
         private void SetIntLocal(int value)
         {
-            animator?.SetInteger(TargetedParamID, value);
+            animator.SetInteger(TargetedParamID, value);
         }
     }
 }

@@ -1,5 +1,6 @@
 using DunGen;
 using itolib.Enums;
+using LethalLevelLoader;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -114,10 +115,10 @@ namespace itolib.Behaviours.Detectors
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(CheckObjectsInRegion);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(CheckObjectsInRegion);
                     break;
                 case ActivationTime.HazardSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(CheckObjectsInRegion);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(CheckObjectsInRegion);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.AddListener(CheckObjectsInRegion);
@@ -149,10 +150,10 @@ namespace itolib.Behaviours.Detectors
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(CheckObjectsInRegion);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(CheckObjectsInRegion);
                     break;
                 case ActivationTime.HazardSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(CheckObjectsInRegion);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(CheckObjectsInRegion);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(CheckObjectsInRegion);

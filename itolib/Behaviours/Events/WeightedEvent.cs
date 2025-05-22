@@ -1,6 +1,7 @@
 using DunGen;
 using GameNetcodeStuff;
 using itolib.Enums;
+using LethalLevelLoader;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -103,10 +104,10 @@ namespace itolib.Behaviours.Events
                     RollFromServer();
                     break;
                 case ActivationTime.ScrapSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(RollFromServer);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(RollFromServer);
                     break;
                 case ActivationTime.HazardSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(RollFromServer);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(RollFromServer);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.AddListener(RollFromServer);
@@ -126,10 +127,10 @@ namespace itolib.Behaviours.Events
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(RollFromServer);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(RollFromServer);
                     break;
                 case ActivationTime.HazardSpawn:
-                    LethalLevelLoader.DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(RollFromServer);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(RollFromServer);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(RollFromServer);

@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Enums;
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -132,6 +133,12 @@ namespace itolib.PlayZone
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        public UnityEvent? onDeactivate;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         public UnityEvent<bool>? onDoorsOpen;
 
         /// <summary>
@@ -146,7 +153,7 @@ namespace itolib.PlayZone
         /// <param name="newState"></param>
         public void SwitchState(ElevatorState newState)
         {
-            if (CurrentState != newState)
+            if (CurrentState != newState && CurrentState != ElevatorState.Deactivated)
             {
                 SwitchStateLocal(newState);
                 SwitchStateServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), newState);
@@ -239,7 +246,12 @@ namespace itolib.PlayZone
                     CurrentState = newState;
 
                     break;
-                case ElevatorState.Stuck:
+                case ElevatorState.Deactivated:
+                    elevatorAnimator?.SetTrigger("Deactivated");
+
+                    CurrentState = newState;
+
+                    break;
                 default:
                     break;
             }
@@ -275,7 +287,7 @@ namespace itolib.PlayZone
                     break;
                 case ElevatorState.GoingUp:
                 case ElevatorState.GoingDown:
-                case ElevatorState.Stuck:
+                case ElevatorState.Deactivated:
                 default:
                     break;
             }
@@ -311,7 +323,7 @@ namespace itolib.PlayZone
                     break;
                 case ElevatorState.GoingUp:
                 case ElevatorState.GoingDown:
-                case ElevatorState.Stuck:
+                case ElevatorState.Deactivated:
                 default:
                     break;
             }
@@ -323,8 +335,11 @@ namespace itolib.PlayZone
         /// <param name="open"></param>
         public void ToggleDoors(bool open)
         {
-            ToggleDoorsLocal(open);
-            ToggleDoorsServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), open);
+            if (CurrentState != ElevatorState.Deactivated)
+            {
+                ToggleDoorsLocal(open);
+                ToggleDoorsServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), open);
+            }
         }
 
         /// <summary>
@@ -406,10 +421,82 @@ namespace itolib.PlayZone
                     break;
                 case ElevatorState.GoingUp:
                 case ElevatorState.GoingDown:
-                case ElevatorState.Stuck:
+                case ElevatorState.Deactivated:
                 default:
                     break;
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void DeactivateElevator()
+        {
+            switch (CurrentState)
+            {
+                case ElevatorState.IdleUp:
+                    SwitchState(ElevatorState.GoingDown);
+                    break;
+                case ElevatorState.IdleDown:
+                    SwitchState(ElevatorState.GoingUp);
+                    break;
+                case ElevatorState.GoingUp:
+                case ElevatorState.GoingDown:
+                case ElevatorState.Deactivated:
+                default:
+                    break;
+            }
+
+            if (doorAnimatorLower?.GetBool("Open") == true)
+            {
+                doorAnimatorLower?.SetBool("Open", false);
+
+                if (doorAudioOpen != null)
+                {
+                    doorSourceLower?.PlayOneShot(doorAudioClose);
+                }
+            }
+
+            if (doorAnimatorUpper?.GetBool("Open") == true)
+            {
+                doorAnimatorUpper?.SetBool("Open", false);
+
+                if (doorAudioOpen != null)
+                {
+                    doorSourceUpper?.PlayOneShot(doorAudioClose);
+                }
+            }
+
+            _ = StartCoroutine(DeactivateElevatorDelayed());
+        }
+
+        private IEnumerator DeactivateElevatorDelayed()
+        {
+            yield return new WaitForSeconds(1.5f);
+            SwitchState(ElevatorState.Deactivated);
+            yield break;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void OnDeactivate()
+        {
+            onDeactivate?.Invoke();
+
+            if (elevatorAudioFinish != null && elevatorSource != null)
+            {
+                elevatorSource.Stop();
+                elevatorSource.PlayOneShot(elevatorAudioFinish);
+            }
+
+            if (doorAudioOpen != null)
+            {
+                doorSourceLower?.PlayOneShot(doorAudioOpen);
+            }
+
+            doorAnimatorLower?.SetBool("Open", true);
+            doorAnimatorUpper?.SetBool("Open", false);
         }
     }
 }

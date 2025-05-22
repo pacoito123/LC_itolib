@@ -11,11 +11,6 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        public float Timer { get; private set; } = 0.0f;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [Header("Delayed Event")]
         [Tooltip("")]
         public float delayTimer = 1.0f;
@@ -32,11 +27,17 @@ namespace itolib.Behaviours.Events
         [Tooltip("")]
         public UnityEvent? onDelayedEvent;
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        public float timer;
+
         private void Update()
         {
-            if (Timer < delayTimer)
+            if (timer < delayTimer)
             {
-                Timer += Time.deltaTime;
+                timer += Time.deltaTime;
                 return;
             }
 
@@ -64,7 +65,7 @@ namespace itolib.Behaviours.Events
         /// </summary>
         public void ResetTimer()
         {
-            Timer = 0.0f;
+            timer = 0.0f;
         }
     }
 }
