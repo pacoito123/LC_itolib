@@ -92,7 +92,7 @@ namespace itolib.Behaviours.Networking
 
             PrefabToSpawn ??= GetPrefabToSpawn();
 
-            if (activationTime == ActivationTime.Immediate)
+            if (activationTime is ActivationTime.Immediate)
             {
                 PerformSpawn();
             }
@@ -103,7 +103,7 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         public virtual void OnEnable()
         {
-            if (activationTime == ActivationTime.StartOfRound)
+            if (activationTime is ActivationTime.StartOfRound)
             {
                 StartOfRound.Instance?.StartNewRoundEvent.AddListener(PerformSpawn);
             }
@@ -114,7 +114,7 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         public virtual void OnDisable()
         {
-            if (activationTime == ActivationTime.StartOfRound)
+            if (activationTime is ActivationTime.StartOfRound)
             {
                 StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PerformSpawn);
             }
@@ -126,7 +126,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="dungeon"></param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
-            if (activationTime == ActivationTime.DungeonComplete)
+            if (activationTime is ActivationTime.DungeonComplete)
             {
                 PerformSpawn();
             }

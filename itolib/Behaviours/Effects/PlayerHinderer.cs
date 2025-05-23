@@ -48,6 +48,19 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        public override void Update()
+        {
+            if (allowJumping && AttachedPlayer?.isExhausted == true)
+            {
+                AttachedPlayer.isExhausted = false;
+            }
+
+            base.Update();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void AttachPlayerLocal(PlayerControllerB player)
         {
             if (player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)

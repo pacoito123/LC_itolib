@@ -136,7 +136,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public virtual void OnEnable()
         {
-            if (activationTime == ActivationTime.Immediate)
+            if (activationTime is ActivationTime.Immediate)
             {
                 CheckObjectsInRegion();
             }
@@ -229,7 +229,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public void OnDungeonComplete(Dungeon _)
         {
-            if (activationTime == ActivationTime.DungeonComplete)
+            if (activationTime is ActivationTime.DungeonComplete)
             {
                 CheckObjectsInRegion();
             }

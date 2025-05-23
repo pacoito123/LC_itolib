@@ -150,7 +150,7 @@ namespace itolib.Behaviours.Props
 
             base.PerformSpawn();
 
-            if (activationTime == ActivationTime.ScrapSpawn) // TODO: Start Coroutine if spawned manually.
+            if (activationTime is ActivationTime.ScrapSpawn or ActivationTime.HazardSpawn) // TODO: Start Coroutine if spawned manually.
             {
                 StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
             }

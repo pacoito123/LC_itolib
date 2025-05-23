@@ -153,7 +153,7 @@ namespace itolib.PlayZone
         /// <param name="newState"></param>
         public void SwitchState(ElevatorState newState)
         {
-            if (CurrentState != newState && CurrentState != ElevatorState.Deactivated)
+            if (CurrentState != newState && CurrentState is not ElevatorState.Deactivated)
             {
                 SwitchStateLocal(newState);
                 SwitchStateServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), newState);
@@ -335,7 +335,7 @@ namespace itolib.PlayZone
         /// <param name="open"></param>
         public void ToggleDoors(bool open)
         {
-            if (CurrentState != ElevatorState.Deactivated)
+            if (CurrentState is not ElevatorState.Deactivated)
             {
                 ToggleDoorsLocal(open);
                 ToggleDoorsServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), open);

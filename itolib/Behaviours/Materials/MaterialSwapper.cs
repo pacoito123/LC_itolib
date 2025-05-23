@@ -61,7 +61,7 @@ namespace itolib.Behaviours.Materials
 
         private void Start()
         {
-            if (activationTime == ActivationTime.Immediate)
+            if (activationTime is ActivationTime.Immediate)
             {
                 SwapMaterials();
             }
@@ -69,7 +69,7 @@ namespace itolib.Behaviours.Materials
 
         private void OnEnable()
         {
-            if (activationTime == ActivationTime.StartOfRound)
+            if (activationTime is ActivationTime.StartOfRound)
             {
                 StartOfRound.Instance?.StartNewRoundEvent.AddListener(SwapMaterials);
             }
@@ -78,7 +78,7 @@ namespace itolib.Behaviours.Materials
         private void OnDisable()
         {
             // TODO: Switch to regular C# events?
-            if (activationTime == ActivationTime.StartOfRound)
+            if (activationTime is ActivationTime.StartOfRound)
             {
                 StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SwapMaterials);
             }
@@ -127,7 +127,7 @@ namespace itolib.Behaviours.Materials
         /// <param name="dungeon"></param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
-            if (activationTime == ActivationTime.DungeonComplete)
+            if (activationTime is ActivationTime.DungeonComplete)
             {
                 SwapMaterials();
             }

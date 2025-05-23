@@ -87,8 +87,15 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Start()
+        public override void OnNetworkSpawn()
         {
+            base.OnNetworkSpawn();
+
+            if (!IsHost)
+            {
+                return;
+            }
+
             List<int> propWeights = [.. eventEntries.Select(prop => prop.weight)];
             AllWeightsCumulative = new(propWeights.Count);
 
@@ -187,7 +194,11 @@ namespace itolib.Behaviours.Events
                 }
 
                 InvokeEventLocal(weightIndex);
-                InvokeEventServerRpc(player.GetComponent<NetworkObject>(), weightIndex);
+
+                if (IsSpawned)
+                {
+                    InvokeEventServerRpc(player.GetComponent<NetworkObject>(), weightIndex);
+                }
             }
         }
 
@@ -250,7 +261,7 @@ namespace itolib.Behaviours.Events
         /// </summary>
         public void OnDungeonComplete(Dungeon _)
         {
-            if (activationTime == ActivationTime.DungeonComplete)
+            if (activationTime is ActivationTime.DungeonComplete)
             {
                 RollFromServer();
             }

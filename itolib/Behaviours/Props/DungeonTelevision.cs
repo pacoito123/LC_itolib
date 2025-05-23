@@ -13,16 +13,12 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public static TVScript? VanillaTV
+        public static UnlockableItem? TelevisionUnlockableItem
         {
             get
             {
-                if (field == null && StartOfRound.Instance?.unlockablesList.unlockables.Find(unlockable =>
-                    string.CompareOrdinal(unlockable.unlockableName, "Television") == 0)?.prefabObject.transform.Find("TVScript")?
-                        .TryGetComponent(out TVScript tvScript) == true)
-                {
-                    field = tvScript;
-                }
+                field ??= StartOfRound.Instance?.unlockablesList.unlockables.Find(unlockable =>
+                        string.CompareOrdinal(unlockable.unlockableName, "Television") == 0);
 
                 return field;
             }
@@ -32,24 +28,44 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Start()
+        [Header("Dungeon Television")]
+        [Tooltip("")]
+        public InteractTrigger? tvTrigger;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Awake()
         {
-            if (VanillaTV?.TryGetComponent(out VideoPlayer vanillaVideo) == true
-                && TryGetComponent(out VideoPlayer video))
+            if (TelevisionUnlockableItem?.prefabObject.transform.Find("TVScript").TryGetComponent(out TVScript television) == true
+                && television.TryGetComponent(out VideoPlayer vanillaVideo))
             {
-                tvClips = VanillaTV.tvClips;
-                tvAudioClips = VanillaTV.tvAudioClips;
+                tvClips = television.tvClips;
+                tvAudioClips = television.tvAudioClips;
 
-                tvOnMaterial = VanillaTV.tvOnMaterial;
-                tvOffMaterial = VanillaTV.tvOffMaterial;
+                tvOnMaterial = television.tvOnMaterial;
+                tvOffMaterial = television.tvOffMaterial;
 
-                switchTVOn = VanillaTV.switchTVOn;
-                switchTVOff = VanillaTV.switchTVOff;
+                switchTVOn = television.switchTVOn;
+                switchTVOff = television.switchTVOff;
 
-                tvMesh.sharedMaterials = VanillaTV.tvMesh.sharedMaterials;
+                tvMesh.sharedMaterials = television.tvMesh.sharedMaterials;
 
-                video.clip = tvClips[0];
-                video.targetTexture = vanillaVideo.targetTexture;
+                if (TryGetComponent(out VideoPlayer video))
+                {
+                    video.clip = tvClips[0];
+                    video.targetTexture = vanillaVideo.targetTexture;
+                }
+            }
+
+            if (TVLoaderCompatibility.Enabled && (TelevisionUnlockableItem?.alreadyUnlocked == true || TelevisionUnlockableItem?.hasBeenUnlockedByPlayer == true))
+            {
+                if (tvTrigger != null)
+                {
+                    tvTrigger.interactable = false;
+                }
+
+                enabled = false;
             }
         }
 
