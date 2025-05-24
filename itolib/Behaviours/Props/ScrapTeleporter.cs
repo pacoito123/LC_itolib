@@ -190,7 +190,8 @@ namespace itolib.Behaviours.Props
             }
 
             AvailableScrap ??= [.. spawnedScrap];
-            _ = AvailableScrap.RemoveAll(item => item.isInShipRoom || item.isInElevator || item.itemProperties?.isScrap == false);
+            _ = AvailableScrap.RemoveAll(item => item.isInShipRoom || item.isInElevator
+                || item.itemProperties?.isScrap == false || item is LungProp);
         }
 
         /// <summary>
