@@ -1,5 +1,6 @@
 using itolib.Enums;
 using LethalLevelLoader;
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -7,10 +8,43 @@ using UnityEngine;
 namespace itolib.Behaviours.Props
 {
     /// <summary>
+    ///     TODO.
+    /// </summary>
+    [Serializable]
+    public struct TeleportData : INetworkSerializable
+    {
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public Vector3 position;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public Quaternion rotation;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="serializer"></param>
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref position);
+            serializer.SerializeValue(ref rotation);
+        }
+    }
+
+    /// <summary>
     /// 	TODO.
     /// </summary>
     public class ScrapTeleporter : NetworkBehaviour
     {
+        /// <summary>
+        ///     Seeded Random instance initialized with the current map seed.
+        /// </summary>
+        public static System.Random SeededRandom { get; internal set; } = null!;
+
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -21,25 +55,63 @@ namespace itolib.Behaviours.Props
         /// </summary>
         [Header("Scrap Teleporter")]
         [Tooltip("")]
-        public int minValue = 0;
+        public List<string>? specificItems;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool allowOneHanded = true;
+        public List<Transform>? teleportPoints;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool allowTwoHanded = true;
+        public List<BoxCollider>? teleportAreas;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public ActivationTime activationTime = ActivationTime.ScrapSpawn;
+        [Min(0)]
+        public int minAmount = 0;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [Min(0)]
+        public int maxAmount = 1;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool fallToGround = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool randomizePosition = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool exhaustivePoints = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool exhaustiveAreas = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public ActivationTime activationTime = ActivationTime.StartOfRound;
 
         /// <summary>
         ///     TODO.
@@ -48,21 +120,24 @@ namespace itolib.Behaviours.Props
         {
             base.OnNetworkSpawn();
 
-            if (IsHost)
+            if (!IsHost)
             {
-                DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(ObtainSpawnedScrap);
+                return;
             }
+
+            SeededRandom ??= new(StartOfRound.Instance.randomMapSeed + 55);
+            DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(ObtainSpawnedScrap);
 
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(TeleportRandomScrap);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(TeleportScrap);
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(TeleportRandomScrap);
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(TeleportScrap);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(TeleportRandomScrap);
+                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(TeleportScrap);
                     break;
                 case ActivationTime.Immediate:
                 case ActivationTime.DungeonComplete:
@@ -78,6 +153,27 @@ namespace itolib.Behaviours.Props
         public override void OnDestroy()
         {
             AvailableScrap = null;
+            SeededRandom = null!;
+
+            DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(ObtainSpawnedScrap);
+
+            switch (activationTime)
+            {
+                case ActivationTime.ScrapSpawn:
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(TeleportScrap);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(TeleportScrap);
+                    break;
+                case ActivationTime.StartOfRound:
+                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(TeleportScrap);
+                    break;
+                case ActivationTime.Immediate:
+                case ActivationTime.DungeonComplete:
+                case ActivationTime.Manual:
+                default:
+                    break;
+            }
 
             base.OnDestroy();
         }
@@ -88,31 +184,94 @@ namespace itolib.Behaviours.Props
         /// <param name="spawnedScrap"></param>
         public void ObtainSpawnedScrap(List<GrabbableObject> spawnedScrap)
         {
-            if (!IsHost && AvailableScrap?.Count > 0)
+            if (!IsHost || AvailableScrap?.Count > 0)
             {
                 return;
             }
 
             AvailableScrap ??= [.. spawnedScrap];
+            _ = AvailableScrap.RemoveAll(item => item.isInShipRoom || item.isInElevator || item.itemProperties?.isScrap == false);
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void TeleportRandomScrap()
+        public void TeleportScrap()
         {
-            if (!IsHost)
+            if (!IsHost || AvailableScrap == null || AvailableScrap.Count == 0)
             {
                 return;
             }
 
-            if (AvailableScrap?.Count > 0)
+            int itemsToTeleport = SeededRandom.Next(minAmount, maxAmount + 1);
+
+            for (int i = 0; i < itemsToTeleport; i++)
             {
-                int index = Random.RandomRangeInt(0, AvailableScrap.Count);
+                Vector3 teleportPosition = transform.position;
+                Quaternion teleportRotation = Quaternion.identity; // TODO: Randomize rotation option
 
-                TeleportRandomScrapClientRpc(AvailableScrap[index].GetComponent<NetworkObject>());
+                if (teleportPoints?.Count > 0)
+                {
+                    int positionIndex = SeededRandom.Next(0, teleportPoints.Count);
+                    teleportPosition = teleportPoints[positionIndex]?.position ?? transform.position;
+                    teleportRotation = teleportPoints[positionIndex]?.rotation ?? transform.rotation;
 
-                AvailableScrap.RemoveAt(index);
+                    if (exhaustivePoints)
+                    {
+                        teleportPoints.RemoveAt(positionIndex);
+                    }
+                }
+                else if (teleportAreas?.Count > 0)
+                {
+                    int areaIndex = SeededRandom.Next(0, teleportAreas.Count);
+                    BoxCollider teleportArea = teleportAreas[areaIndex];
+
+                    Vector3 extents = teleportArea.size / 2.0f;
+                    Vector3 point = new(UnityEngine.Random.Range(-extents.x, extents.x),
+                        UnityEngine.Random.Range(-extents.y, extents.y),
+                        UnityEngine.Random.Range(-extents.z, extents.z));
+
+                    teleportPosition = teleportArea.transform.TransformPoint(point); // TODO: Maybe find point in NavMesh instead?
+
+                    if (exhaustiveAreas)
+                    {
+                        teleportAreas.RemoveAt(areaIndex);
+                    }
+                }
+
+                if (specificItems?.Count > 0)
+                {
+                    for (int j = 0; j < AvailableScrap.Count; j++)
+                    {
+                        if (specificItems.FindIndex(specificItem => string.CompareOrdinal(AvailableScrap[j]
+                            .itemProperties?.itemName, specificItem) == 0) >= 0)
+                        {
+                            TeleportData teleport = new()
+                            {
+                                position = teleportPosition,
+                                rotation = teleportRotation
+                            };
+
+                            TeleportScrapClientRpc(AvailableScrap[j].GetComponent<NetworkObject>(), teleport);
+                            AvailableScrap.RemoveAt(j);
+
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    int index = UnityEngine.Random.RandomRangeInt(0, AvailableScrap.Count);
+
+                    TeleportData teleport = new()
+                    {
+                        position = teleportPosition,
+                        rotation = AvailableScrap[index].transform.rotation
+                    };
+
+                    TeleportScrapClientRpc(AvailableScrap[index].GetComponent<NetworkObject>(), teleport);
+                    AvailableScrap.RemoveAt(index);
+                }
             }
         }
 
@@ -120,17 +279,24 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         [ClientRpc]
-        public void TeleportRandomScrapClientRpc(NetworkObjectReference itemReference)
+        public void TeleportScrapClientRpc(NetworkObjectReference itemReference, TeleportData teleport)
         {
             if (itemReference.TryGet(out NetworkObject itemNetworkObject)
                 && itemNetworkObject.TryGetComponent(out GrabbableObject item))
             {
-                item.transform.position = transform.position;
+                item.fallTime = 0.0f;
+                item.reachedFloorTarget = true;
 
-                item.startFallingPosition = transform.position + new Vector3(0.0f, item.itemProperties.verticalOffset, 0.0f);
-                item.targetFloorPosition = transform.position;
+                item.transform.position = teleport.position;
+                item.transform.rotation = teleport.rotation;
 
-                item.FallToGround();
+                item.startFallingPosition = teleport.position;
+                item.targetFloorPosition = teleport.position;
+
+                if (fallToGround)
+                {
+                    item.FallToGround(randomizePosition);
+                }
             }
         }
     }

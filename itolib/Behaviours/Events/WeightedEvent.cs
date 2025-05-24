@@ -27,6 +27,7 @@ namespace itolib.Behaviours.Events
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        [Min(0)]
         public int weight;
 
         /// <summary>

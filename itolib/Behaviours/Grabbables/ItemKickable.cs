@@ -126,17 +126,31 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public void ActivatePhysicsTrigger(Collider other)
         {
-            if (other.gameObject.CompareTag("Player") || other.gameObject.CompareTag("Enemy"))
-            {
-                if (Physics.Linecast(other.gameObject.transform.position + Vector3.up, itemTransform.position + (Vector3.up * 0.5f),
+            if ((!other.gameObject.CompareTag("Player") && !other.gameObject.CompareTag("Enemy"))
+                || Physics.Linecast(other.gameObject.transform.position + Vector3.up, itemTransform.position + (Vector3.up * 0.5f),
                     StartOfRound.Instance.collidersAndRoomMaskAndDefault, QueryTriggerInteraction.Ignore))
-                {
-                    return;
-                }
+            {
+                return;
+            }
 
+            if (other.gameObject.CompareTag("Enemy"))
+            {
                 item.FallWithCurveOverride = FallWithCurve;
 
-                BeginKick(other.gameObject.transform.position + Vector3.up, other.gameObject.CompareTag("Enemy"));
+                if (IsHost)
+                {
+                    BeginKick(other.gameObject.transform.position + Vector3.up, hitByEnemy: true);
+                }
+            }
+            else if (other.gameObject.CompareTag("Player"))
+            {
+                item.FallWithCurveOverride = FallWithCurve;
+
+                if (other.TryGetComponent(out PlayerControllerB player)
+                    && player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId)
+                {
+                    BeginKick(other.gameObject.transform.position + Vector3.up, hitByEnemy: false);
+                }
             }
         }
 
@@ -198,14 +212,9 @@ namespace itolib.Behaviours.Grabbables
         {
             if (hitByEnemy)
             {
-                if (IsHost)
-                {
-                    onEnemyKick?.Invoke();
-                }
-                else
-                {
-                    return;
-                }
+                onEnemyKick?.Invoke();
+
+                return;
             }
 
             if (item.isHeld || item.parentObject != null || (itemTransform.GetParent() != RoundManager.Instance.spawnedScrapContainer
