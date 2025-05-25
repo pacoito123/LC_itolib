@@ -12,16 +12,6 @@ namespace itolib.Behaviours.Kinematics
     {
         /// <summary>
         ///     TODO.
-        /// </summary> 
-        public Transform PlayerModelTransform { get; private set; } = null!;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public float FallTime { get; private set; } = 0.0f;
-
-        /// <summary>
-        ///     TODO.
         /// </summary>
         [Header("Player Launcher")]
         [Tooltip("")]
@@ -122,6 +112,18 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
+        [HideInInspector]
+        public Transform playerModelTransform = null!;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        public float fallTime = 0.0f;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void Awake()
         {
             AttachCondition = player => !player.isPlayerDead && !(crouchingPreventsLaunch && player.isCrouching);
@@ -135,16 +137,15 @@ namespace itolib.Behaviours.Kinematics
         {
             if (AttachedPlayer != null)
             {
-                FallTime += Time.deltaTime;
+                fallTime += Time.deltaTime;
 
                 if (rotateCamera)
                 {
-                    PlayerModelTransform.localRotation = Quaternion.Lerp(Quaternion.identity, Quaternion.Euler(targetAngle), FallTime * rotationSpeed);
+                    playerModelTransform.localRotation = Quaternion.Lerp(Quaternion.identity, Quaternion.Euler(targetAngle), fallTime * rotationSpeed);
                 }
 
                 if (negateFallDamage)
                 {
-                    // AttachedPlayer.ResetFallGravity();
                     AttachedPlayer.takingFallDamage = false;
                 }
             }
@@ -160,11 +161,11 @@ namespace itolib.Behaviours.Kinematics
         {
             base.AttachPlayerLocal(player);
 
-            PlayerModelTransform = player.meshContainer.transform;
+            playerModelTransform = player.meshContainer.transform;
 
             player.externalForceAutoFade = (forceToApply * (considerRotationFrom switch
             {
-                RotationSource.Player => PlayerModelTransform.rotation * forceDirection,
+                RotationSource.Player => playerModelTransform.rotation * forceDirection,
                 RotationSource.Launcher => transform.rotation * forceDirection,
                 RotationSource.Absolute or _ => forceDirection
             })) + additionalForce;
@@ -201,8 +202,8 @@ namespace itolib.Behaviours.Kinematics
         {
             if (AttachedPlayer != null)
             {
-                PlayerModelTransform.localRotation = Quaternion.identity;
-                FallTime = 0.0f;
+                playerModelTransform.localRotation = Quaternion.identity;
+                fallTime = 0.0f;
 
                 AttachedPlayer.disableMoveInput = false;
                 AttachedPlayer.disableLookInput = false;

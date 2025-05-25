@@ -56,6 +56,12 @@ namespace itolib.Behaviours.Effects
         public bool triggerOnce = false;
 
         /// <summary>
+        ///     Whether players automatically attach upon entering the attach region or not.
+        /// </summary>
+        [Tooltip("Whether players automatically attach upon entering the attach region or not.")]
+        public bool attachOnEnter = true;
+
+        /// <summary>
         ///     Callback invoked immediately before a player detaches, with the player in question as parameter.
         /// </summary>
         [Header("Detach")]
@@ -69,9 +75,9 @@ namespace itolib.Behaviours.Effects
         public float detachTimer = 0.0f;
 
         /// <summary>
-        ///     Whether players detach upon leaving the attach region or not.
+        ///     Whether players automatically detach upon leaving the attach region or not.
         /// </summary>
-        [Tooltip("Whether players detach upon leaving the attach region or not.")]
+        [Tooltip("Whether players automatically detach upon leaving the attach region or not.")]
         public bool detachOnExit = false;
 
         /// <summary>
@@ -112,6 +118,12 @@ namespace itolib.Behaviours.Effects
         /// <param name="collider">Collider to attempt to attach to.</param>
         public virtual void OnTriggerEnter(Collider collider)
         {
+            // Check if player should attach upon entering the attach region.
+            if (!attachOnEnter)
+            {
+                return;
+            }
+
             // Check if a player has attached once already.
             if (triggerOnce && HasTriggered)
             {

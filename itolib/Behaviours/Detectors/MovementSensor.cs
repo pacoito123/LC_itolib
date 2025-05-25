@@ -33,6 +33,12 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public bool holdAction = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Header("Events")]
         [Tooltip("")]
         public UnityEvent<PlayerControllerB>? onMovementDetected;
@@ -88,14 +94,14 @@ namespace itolib.Behaviours.Detectors
                 return;
             }
 
-            if (!ActionToTrigger!.IsPressed())
+            if ((holdAction && !ActionToTrigger!.IsPressed()) || (!holdAction && !ActionToTrigger!.WasPerformedThisFrame()))
             {
                 return;
             }
 
             onMovementDetected?.Invoke(AttachedPlayer);
 
-            if (IsSpawned) // TODO: Add separate 'local effect' field
+            if (!isLocalEffect && IsSpawned)
             {
                 PlayerMovedServerRpc(AttachedPlayer.GetComponent<NetworkObject>());
             }

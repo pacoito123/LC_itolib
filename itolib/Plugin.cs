@@ -41,6 +41,15 @@ namespace itolib
                 Harmony.PatchAll(typeof(LoadPatch));
                 // ...
 
+                // Patch LLL's ExtendedStoryLogs if on v1.4.11 or lower.
+                if (BepInEx.Bootstrap.Chainloader.PluginInfos[LethalLevelLoader.Plugin.ModGUID].Metadata.Version
+                    .CompareTo(new(1, 4, 11)) <= 0)
+                {
+                    LLLStoryLogPatch.LLLStoryLogNodes = [];
+                    Harmony.PatchAll(typeof(LLLStoryLogPatch));
+                }
+                // ...
+
                 StaticLogger.LogInfo($"{PLUGIN_NAME} v{VERSION} loaded!");
             }
             catch (Exception e)
