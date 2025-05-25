@@ -16,7 +16,7 @@ namespace itolib
     [BepInPlugin(GUID, PLUGIN_NAME, VERSION)]
     public class Plugin : BaseUnityPlugin
     {
-        internal const string GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.0.0";
+        internal const string GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.1.0";
         internal static ManualLogSource StaticLogger { get; private set; } = null!;
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace itolib
                 Harmony.PatchAll(typeof(LoadPatch));
                 // ...
 
-                StaticLogger.LogInfo($"{PLUGIN_NAME} loaded!");
+                StaticLogger.LogInfo($"{PLUGIN_NAME} v{VERSION} loaded!");
             }
             catch (Exception e)
             {

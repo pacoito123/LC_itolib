@@ -15,11 +15,6 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public float Timer { get; private set; } = 0.0f;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         public InputAction? ActionToTrigger { get; private set; }
 
         /// <summary>
@@ -41,6 +36,12 @@ namespace itolib.Behaviours.Detectors
         [Header("Events")]
         [Tooltip("")]
         public UnityEvent<PlayerControllerB>? onMovementDetected;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        public float timer = 0.0f;
 
         /// <summary>
         ///     TODO.
@@ -77,13 +78,13 @@ namespace itolib.Behaviours.Detectors
 
             if (!LocalPlayerAttached || AttachedPlayer == null)
             {
-                Timer = triggerInterval;
+                timer = triggerInterval;
                 return;
             }
 
-            if (Timer < triggerInterval)
+            if (timer < triggerInterval)
             {
-                Timer += Time.deltaTime;
+                timer += Time.deltaTime;
                 return;
             }
 
@@ -99,7 +100,7 @@ namespace itolib.Behaviours.Detectors
                 PlayerMovedServerRpc(AttachedPlayer.GetComponent<NetworkObject>());
             }
 
-            Timer = 0.0f;
+            timer = 0.0f;
         }
 
         /// <summary>

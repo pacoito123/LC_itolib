@@ -2,8 +2,8 @@
     <!-- BepInEx properties. -->
     <PropertyGroup>
         <AssemblyName>itolib</AssemblyName>
-        <Description></Description>
-        <Version>0.0.0</Version>
+        <Description>Wondrous gizmos and gadgets for the restless mind.</Description>
+        <Version>0.1.0</Version>
     </PropertyGroup>
 
     <!-- Project properties. -->
@@ -51,6 +51,9 @@
         <PackageReference Include="mrov.MrovLib" Version="0.2.*" />
         <Reference Include="CrowdControl" Publicize="true">
             <HintPath>managed\CrowdControl.dll</HintPath>
+        </Reference>
+        <Reference Include="FacilityMeltdown" Publicize="true">
+            <HintPath>managed\FacilityMeltdown.dll</HintPath>
         </Reference>
         <Reference Include="TVLoader" Publicize="true">
             <HintPath>managed\TVLoader.dll</HintPath>

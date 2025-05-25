@@ -1,4 +1,5 @@
 using itolib.Behaviours.Helpers;
+using itolib.Compatibility;
 using LethalLevelLoader;
 using System.Collections;
 using UnityEngine;
@@ -78,6 +79,13 @@ namespace itolib.PlayZone
             }
 
             base.Start();
+
+            if (FacilityMeltdownCompatibility.Enabled)
+            {
+                FacilityMeltdownCompatibility.HalveTwinValue(this);
+
+                onDisconnectEarly?.AddListener(FacilityMeltdownCompatibility.TwinMeltdown);
+            }
         }
 
         /// <summary>
