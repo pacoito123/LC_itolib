@@ -99,6 +99,12 @@ namespace itolib.Behaviours.Kinematics
         public bool detachOnWallCollision = false;
 
         /// <summary>
+        ///     Detach the player if the player is in a special animation.
+        /// </summary>
+        [Tooltip("Detach the player if the player is in a special animation.")]
+        public bool detachOnSpecialAnimation = true;
+
+        /// <summary>
         ///     AudioSource instance of the platform, used to play sound effects at various points. Optional if not playing any sound effects.
         /// </summary>
         [Header("Audio")]
@@ -153,8 +159,8 @@ namespace itolib.Behaviours.Kinematics
 
             AttachCondition = player => !player.isPlayerDead && (allowTwoHanded || !player.twoHanded)
                 && (ActionToHold == null || ActionToHold.IsPressed());
-            DetachCondition = player => player.isPlayerDead || player.inAnimationWithEnemy || player.inSpecialInteractAnimation
-                || (ActionToHold != null && !ActionToHold.IsPressed());
+            DetachCondition = player => player.isPlayerDead || (detachOnEnemyCollision && player.inAnimationWithEnemy)
+                || (detachOnSpecialAnimation && player.inSpecialInteractAnimation) || (ActionToHold != null && !ActionToHold.IsPressed());
 
             if (actionToHold.Length > 0)
             {

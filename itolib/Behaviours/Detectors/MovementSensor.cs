@@ -101,7 +101,7 @@ namespace itolib.Behaviours.Detectors
 
             onMovementDetected?.Invoke(AttachedPlayer);
 
-            if (!isLocalEffect && IsSpawned)
+            if (IsSpawned) // TODO: Separate local effect field?
             {
                 PlayerMovedServerRpc(AttachedPlayer.GetComponent<NetworkObject>());
             }

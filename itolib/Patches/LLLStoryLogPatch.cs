@@ -13,13 +13,14 @@ namespace itolib.Patches
         /// <summary>
         ///     Cached list of TerminalNode instances corresponding to ExtendedStoryLog IDs.
         /// </summary>
-        public static Dictionary<int, TerminalNode>? LLLStoryLogNodes { get; internal set; }
+        public static Dictionary<int, TerminalNode?>? LLLStoryLogNodes { get; internal set; }
 
         [HarmonyPatch(typeof(TerminalManager), nameof(TerminalManager.CreateStoryLogTerminalData))]
         [HarmonyPostfix]
         internal static void CacheStoryLog(ExtendedStoryLog newStoryLog)
         {
-            LLLStoryLogNodes?.Add(newStoryLog.newStoryLogID, LethalLevelLoader.Patches.Terminal.logEntryFiles[^1]);
+            // Cache TerminalNode instance of the last (newly added) element in the 'Terminal.logEntryFiles' list.
+            LLLStoryLogNodes?.Add(newStoryLog.newStoryLogID, LethalLevelLoader.Patches.Terminal?.logEntryFiles[^1]);
         }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Awake))]
@@ -36,7 +37,10 @@ namespace itolib.Patches
                     {
                         foreach (ExtendedStoryLog extendedStoryLog in extendedMod.ExtendedStoryLogs)
                         {
-                            LethalLevelLoader.Patches.Terminal?.logEntryFiles.Add(LLLStoryLogNodes[extendedStoryLog.newStoryLogID]);
+                            if (LLLStoryLogNodes?[extendedStoryLog.newStoryLogID] != null)
+                            {
+                                LethalLevelLoader.Patches.Terminal?.logEntryFiles.Add(LLLStoryLogNodes[extendedStoryLog.newStoryLogID]);
+                            }
                         }
                     }
                 }
