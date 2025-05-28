@@ -1,6 +1,7 @@
 using GameNetcodeStuff;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -9,7 +10,8 @@ namespace itolib.Behaviours.Grabbables
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class ItemWhackable : MonoBehaviour
+    [RequireComponent(typeof(ItemGrabbable))]
+    public class ItemWhackable : NetworkBehaviour
     {
         /// <summary>
         ///     TODO.
@@ -146,20 +148,8 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public bool isHoldingButton;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [HideInInspector]
-        public bool reelingUp;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [HideInInspector]
-        public Coroutine? whackingCoroutine;
+        [Tooltip("")]
+        public UnityEvent<int>? onSurfaceHitLocal;
 
         /// <summary>
         ///     TODO.
@@ -180,6 +170,24 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Tooltip("")]
         public LayerMask hitSFXMask;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        public bool isHoldingButton;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        public bool reelingUp;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        public Coroutine? whackingCoroutine;
 
         private void Reset()
         {
@@ -381,38 +389,83 @@ namespace itolib.Behaviours.Grabbables
 
             if (weaponHit)
             {
-                if (item.VariantIndex < 0)
-                {
-                    if (item.IsOwner)
-                    {
-                        onWeaponHitLocal?.Invoke();
-                    }
-
-                    onWeaponHit?.Invoke();
-                }
-                else
-                {
-                    if (item.IsOwner)
-                    {
-                        onWeaponHitVariantLocal?.Invoke(item.VariantIndex);
-                    }
-
-                    onWeaponHitVariant?.Invoke(item.VariantIndex);
-                }
-
-                if (!enemyHit && surfaceIndex != -1)
-                {
-                    onSurfaceHit?.Invoke(surfaceIndex);
-                }
-
-                if (!silentHit)
-                {
-                    // TODO: Parameterize noise properties
-                    RoundManager.Instance.PlayAudibleNoise(transform.position, 17f, 0.8f, 0, false, 0);
-                }
-
-                LastHeldBy.playerBodyAnimator.SetTrigger("shovelHit");
+                WeaponHitLocal(enemyHit, surfaceIndex);
+                WeaponHitServerRpc(LastHeldBy.GetComponent<NetworkObject>(), enemyHit, surfaceIndex);
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="enemyHit"></param>
+        /// <param name="surfaceIndex"></param>
+        [ServerRpc(RequireOwnership = false)]
+        public void WeaponHitServerRpc(NetworkObjectReference playerReference, bool enemyHit, int surfaceIndex)
+        {
+            WeaponHitClientRpc(playerReference, enemyHit, surfaceIndex);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="enemyHit"></param>
+        /// <param name="surfaceIndex"></param>
+        [ClientRpc]
+        public void WeaponHitClientRpc(NetworkObjectReference playerReference, bool enemyHit, int surfaceIndex)
+        {
+            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
+                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
+                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            {
+                WeaponHitLocal(enemyHit, surfaceIndex);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="enemyHit"></param>
+        /// <param name="surfaceIndex"></param>
+        private void WeaponHitLocal(bool enemyHit, int surfaceIndex)
+        {
+            if (item.VariantIndex < 0)
+            {
+                if (item.IsOwner)
+                {
+                    onWeaponHitLocal?.Invoke();
+                }
+
+                onWeaponHit?.Invoke();
+            }
+            else
+            {
+                if (item.IsOwner)
+                {
+                    onWeaponHitVariantLocal?.Invoke(item.VariantIndex);
+                }
+
+                onWeaponHitVariant?.Invoke(item.VariantIndex);
+            }
+
+            if (!enemyHit && surfaceIndex != -1)
+            {
+                if (item.IsOwner)
+                {
+                    onSurfaceHitLocal?.Invoke(surfaceIndex);
+                }
+
+                onSurfaceHit?.Invoke(surfaceIndex);
+            }
+
+            if (!silentHit)
+            {
+                // TODO: Parameterize noise properties
+                RoundManager.Instance.PlayAudibleNoise(transform.position, 17f, 0.8f, 0, false, 0);
+            }
+
+            LastHeldBy?.playerBodyAnimator.SetTrigger("shovelHit");
         }
     }
 }

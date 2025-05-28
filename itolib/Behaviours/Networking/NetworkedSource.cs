@@ -208,6 +208,15 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         /// <param name="clip"></param>
+        public void PlayOneshotLocal(int clip)
+        {
+            PlayOneshotLocal(clip, GetRandomPitch());
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="clip"></param>
         /// <param name="pitch"></param>
         private void PlayOneshotLocal(int clip, float pitch)
         {
