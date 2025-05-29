@@ -30,7 +30,7 @@ namespace itolib.Compatibility
         /// <summary>
         ///     TODO.
         /// </summary>
-        public static event Action<string, string>? OnCCWeatherChanged;
+        public static event Action<LevelWeatherType, LevelWeatherType>? OnCCWeatherChanged;
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         [HarmonyPatch(typeof(TestMod), nameof(TestMod.CrowdControlCommands))]
@@ -39,7 +39,7 @@ namespace itolib.Compatibility
         {
             if (TimeOfDay.Instance.currentLevel.currentWeather != CurrentWeather)
             {
-                OnCCWeatherChanged?.Invoke($"{CurrentWeather}", $"{TimeOfDay.Instance.currentLevel.currentWeather}");
+                OnCCWeatherChanged?.Invoke(CurrentWeather, TimeOfDay.Instance.currentLevel.currentWeather);
                 CurrentWeather = TimeOfDay.Instance.currentLevelWeather;
             }
         }

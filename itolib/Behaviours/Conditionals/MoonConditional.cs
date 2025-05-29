@@ -8,7 +8,8 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void ApplyConditional()
+        /// <param name="undo"></param>
+        public override void ApplyConditional(bool undo)
         {
             ApplyConditional(StartOfRound.Instance.currentLevel);
         }
@@ -17,7 +18,8 @@ namespace itolib.Behaviours.Conditionals
         ///     TODO.
         /// </summary>
         /// <param name="objectToCheck"></param>
-        public override void ApplyConditional(SelectableLevel objectToCheck)
+        /// <param name="undo"></param>
+        public override void ApplyConditional(SelectableLevel objectToCheck, bool undo)
         {
             for (int i = 0; i < conditionalOverrides.Count; i++)
             {
@@ -25,9 +27,19 @@ namespace itolib.Behaviours.Conditionals
 
                 if (string.CompareOrdinal(planetName, conditionalOverrides[i].nameToSearch) == 0)
                 {
-                    conditionalOverrides[i].Apply();
-
-                    break;
+                    conditionalOverrides[i].Apply(undo);
+                    return;
+                }
+                else if (conditionalOverrides[i].alsoAppliesTo.Count > 0)
+                {
+                    for (int j = 0; j < conditionalOverrides[i].alsoAppliesTo.Count; j++)
+                    {
+                        if (string.CompareOrdinal(planetName, conditionalOverrides[i].alsoAppliesTo[j]) == 0)
+                        {
+                            conditionalOverrides[i].Apply(undo);
+                            return;
+                        }
+                    }
                 }
             }
         }

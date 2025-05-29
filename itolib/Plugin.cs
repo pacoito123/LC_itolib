@@ -10,13 +10,16 @@ using UnityEngine;
 namespace itolib
 {
     /// <summary>
-    ///     
+    ///     Wondrous gizmos and gadgets for the restless mind.
     /// </summary>
     [BepInDependency(LethalLevelLoader.Plugin.ModGUID, LethalLevelLoader.Plugin.ModVersion)]
     [BepInPlugin(GUID, PLUGIN_NAME, VERSION)]
     public class Plugin : BaseUnityPlugin
     {
-        internal const string GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.1.0";
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public const string GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.1.0";
         internal static ManualLogSource StaticLogger { get; private set; } = null!;
 
         /// <summary>

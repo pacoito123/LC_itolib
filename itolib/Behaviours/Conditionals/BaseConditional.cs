@@ -134,13 +134,32 @@ namespace itolib.Behaviours.Conditionals
 
         /// <summary>
         ///     TODO.
-        /// </summary> 
-        public abstract void ApplyConditional();
+        /// </summary>
+        public virtual void ApplyConditional()
+        {
+            ApplyConditional(undo: false);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="undo"></param>
+        public abstract void ApplyConditional(bool undo);
 
         /// <summary>
         ///     TODO.
         /// </summary>
         /// <param name="objectToCheck"></param>
-        public abstract void ApplyConditional(T objectToCheck);
+        public virtual void ApplyConditional(T objectToCheck)
+        {
+            ApplyConditional(objectToCheck, undo: false);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="objectToCheck"></param>
+        /// <param name="undo"></param>
+        public abstract void ApplyConditional(T objectToCheck, bool undo);
     }
 }

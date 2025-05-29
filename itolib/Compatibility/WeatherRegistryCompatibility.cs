@@ -43,7 +43,6 @@ namespace itolib.Compatibility
         {
             if (WeatherRegistry.WeatherManager.GetCurrentLevelWeather().Type == WeatherRegistry.WeatherType.Clear)
             {
-                // LoadPatch.OnFinishGeneratingLevelPost += weatherAction;
                 return false;
             }
 
