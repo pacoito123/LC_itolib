@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace itolib.Behaviours.Effects
@@ -28,6 +29,15 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public void DeactivateSpookyFog()
         {
+            _ = StartCoroutine(DeactivateSpookyFogDelayed());
+        }
+
+        /// <summary>
+        ///     Coroutine to turn off the 'SpookyFog' GameObject after 5 seconds.
+        /// </summary>
+        private IEnumerator DeactivateSpookyFogDelayed()
+        {
+            yield return new WaitForSeconds(5.0f);
             RoundManager.Instance?.indoorFog?.gameObject.SetActive(false);
         }
     }
