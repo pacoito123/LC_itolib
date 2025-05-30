@@ -1,6 +1,7 @@
 using GameNetcodeStuff;
 using itolib.Behaviours.Effects;
 using itolib.Enums;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace itolib.Behaviours.Kinematics
@@ -112,6 +113,12 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public bool clampAngle = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [HideInInspector]
         public Transform playerModelTransform = null!;
 
@@ -141,7 +148,14 @@ namespace itolib.Behaviours.Kinematics
 
                 if (rotateCamera)
                 {
-                    playerModelTransform.localRotation = Quaternion.Lerp(Quaternion.identity, Quaternion.Euler(targetAngle), fallTime * rotationSpeed);
+                    if (clampAngle)
+                    {
+                        playerModelTransform.localRotation = Quaternion.Lerp(Quaternion.identity, Quaternion.Euler(targetAngle), fallTime * rotationSpeed);
+                    }
+                    else
+                    {
+                        playerModelTransform.localEulerAngles = Vector3.Lerp(Vector3.zero, targetAngle, fallTime * rotationSpeed);
+                    }
                 }
 
                 if (negateFallDamage)
@@ -151,6 +165,21 @@ namespace itolib.Behaviours.Kinematics
             }
 
             base.Update();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void AttachPlayerLocal()
+        {
+            if (isLocalEffect)
+            {
+                AttachPlayerLocal(GameNetworkManager.Instance.localPlayerController);
+            }
+            else
+            {
+                AttachPlayerServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>());
+            }
         }
 
         /// <summary>

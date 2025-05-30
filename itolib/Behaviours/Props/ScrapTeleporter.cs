@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace itolib.Behaviours.Props
 {
@@ -190,8 +191,9 @@ namespace itolib.Behaviours.Props
             }
 
             AvailableScrap ??= [.. spawnedScrap];
+
             _ = AvailableScrap.RemoveAll(item => item.isInShipRoom || item.isInElevator
-                || item.itemProperties?.isScrap == false || item is LungProp);
+                || item.itemProperties?.isScrap == false || item is LungProp || item.TryGetComponent(out NavMeshAgent agent));
         }
 
         /// <summary>

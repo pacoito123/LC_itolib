@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace itolib.Behaviours.Detectors
 {
@@ -53,7 +54,7 @@ namespace itolib.Behaviours.Detectors
                 Collider itemCollider = OverlapBuffer![i];
 
                 if (itemCollider.TryGetComponent(out GrabbableObject item)
-                    && !itemCollider.TryGetComponent(out EnemyAI _)) // Maneater check...
+                    && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
                 {
                     FoundItemsEachClientRpc(item.GetComponent<NetworkObject>());
                     itemsFound++;
@@ -72,7 +73,7 @@ namespace itolib.Behaviours.Detectors
         public override void OnTriggerEnter(Collider other)
         {
             if (other.TryGetComponent(out GrabbableObject item) && item.IsOwner
-                && !item.TryGetComponent(out EnemyAI _)) // Maneater check...
+                && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
             {
                 onRegionEntered?.Invoke(item);
                 RegionEnteredServerRpc(item.GetComponent<NetworkObject>());
@@ -86,7 +87,7 @@ namespace itolib.Behaviours.Detectors
         public override void OnTriggerExit(Collider other)
         {
             if (other.TryGetComponent(out GrabbableObject item) && item.IsOwner
-                && !item.TryGetComponent(out EnemyAI _)) // Maneater check...
+                && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
             {
                 onRegionExited?.Invoke(item);
                 RegionEnteredServerRpc(item.GetComponent<NetworkObject>(), exit: true);

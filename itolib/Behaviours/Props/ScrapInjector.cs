@@ -26,7 +26,7 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public void OnDungeonComplete(Dungeon _)
         {
-            if (!NetworkManager.Singleton.IsHost)
+            if (!NetworkManager.Singleton.IsHost || !enabled)
             {
                 return;
             }
