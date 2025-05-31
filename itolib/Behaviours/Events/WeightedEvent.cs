@@ -43,6 +43,11 @@ namespace itolib.Behaviours.Events
     public class WeightedEvent : NetworkBehaviour, IDungeonCompleteReceiver
     {
         /// <summary>
+        ///     Seeded Random instance initialized with the current map seed.
+        /// </summary>
+        public static System.Random SeededRandom { get; internal set; } = null!;
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         public List<int>? AllWeightsCumulative { get; private set; }
@@ -88,9 +93,20 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public bool seededRandom;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
+            if (seededRandom)
+            {
+                SeededRandom ??= new(StartOfRound.Instance.randomMapSeed + 66);
+            }
 
             if (!IsHost)
             {
@@ -132,6 +148,11 @@ namespace itolib.Behaviours.Events
         /// </summary>
         public override void OnDestroy()
         {
+            if (seededRandom)
+            {
+                SeededRandom = null!;
+            }
+
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
@@ -177,7 +198,8 @@ namespace itolib.Behaviours.Events
                 return;
             }
 
-            int rollsToPerform = (minRolls < maxRolls) ? UnityEngine.Random.RandomRangeInt(minRolls, maxRolls + 1) : minRolls;
+            int rollsToPerform = (minRolls < maxRolls) ? (seededRandom ? SeededRandom.Next(minRolls, maxRolls + 1)
+                : UnityEngine.Random.RandomRangeInt(minRolls, maxRolls + 1)) : minRolls;
 
             for (int i = 0; i < rollsToPerform; i++)
             {
@@ -186,8 +208,8 @@ namespace itolib.Behaviours.Events
                     break;
                 }
 
-                int randomWeight = UnityEngine.Random.RandomRangeInt(1, TotalWeight + 1),
-                    weightIndex = AllWeightsCumulative.FindIndex(weight => randomWeight <= weight);
+                int randomWeight = seededRandom ? SeededRandom.Next(1, TotalWeight + 1) : UnityEngine.Random.RandomRangeInt(1,
+                    TotalWeight + 1), weightIndex = AllWeightsCumulative.FindIndex(weight => randomWeight <= weight);
 
                 if (weightIndex < 0 || weightIndex >= eventEntries.Count)
                 {

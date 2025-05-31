@@ -35,6 +35,12 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public bool startDeactivated;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void Awake()
         {
             if (TelevisionUnlockableItem?.prefabObject.transform.Find("TVScript").TryGetComponent(out TVScript television) == true
@@ -58,7 +64,8 @@ namespace itolib.Behaviours.Props
                 }
             }
 
-            if (TVLoaderCompatibility.Enabled && (TelevisionUnlockableItem?.alreadyUnlocked == true || TelevisionUnlockableItem?.hasBeenUnlockedByPlayer == true))
+            if (startDeactivated || (TVLoaderCompatibility.Enabled && (TelevisionUnlockableItem?.alreadyUnlocked == true
+                || TelevisionUnlockableItem?.hasBeenUnlockedByPlayer == true)))
             {
                 if (tvTrigger != null)
                 {
