@@ -114,7 +114,7 @@ namespace itolib.Behaviours.Kinematics
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool clampAngle = false;
+        public bool clampAngle = true;
 
         /// <summary>
         ///     TODO.

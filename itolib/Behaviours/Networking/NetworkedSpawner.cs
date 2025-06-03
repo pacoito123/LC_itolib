@@ -57,7 +57,7 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         public virtual void PerformSpawn()
         {
-            if (!IsHost)
+            if (!NetworkManager.Singleton.IsHost)
             {
                 return;
             }
@@ -80,11 +80,9 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnNetworkSpawn()
+        public virtual void Start()
         {
-            base.OnNetworkSpawn();
-
-            if (!IsHost)
+            if (!NetworkManager.Singleton.IsHost)
             {
                 enabled = false;
                 return;

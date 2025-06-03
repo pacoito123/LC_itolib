@@ -2,6 +2,7 @@ using itolib.Behaviours.Networking;
 using itolib.Enums;
 using LethalLevelLoader;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -14,6 +15,11 @@ namespace itolib.Behaviours.Props
     [Serializable]
     public struct SyncedItem : INetworkSerializable
     {
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public Vector3 position;
+
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -41,10 +47,11 @@ namespace itolib.Behaviours.Props
         /// <param name="serializer"></param>
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
+            serializer.SerializeValue(ref position);
             serializer.SerializeValue(ref rotation);
+            serializer.SerializeValue(ref scrapValue);
             serializer.SerializeValue(ref meshVariant);
             serializer.SerializeValue(ref materialVariant);
-            serializer.SerializeValue(ref scrapValue);
         }
     }
 
@@ -103,6 +110,18 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public bool fallToGround = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool randomizePosition = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
@@ -150,9 +169,9 @@ namespace itolib.Behaviours.Props
 
             base.PerformSpawn();
 
-            if (activationTime is ActivationTime.ScrapSpawn or ActivationTime.HazardSpawn) // TODO: Start Coroutine if spawned manually.
+            if (activationTime is not ActivationTime.ScrapSpawn or ActivationTime.HazardSpawn)
             {
-                StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
+                SyncAllItemValuesServerRpc();
             }
         }
 
@@ -160,7 +179,7 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         /// <param name="spawnLocation"></param>
-        public void SpawnItem(Transform spawnLocation)
+        private void SpawnItem(Transform spawnLocation)
         {
             if (PrefabToSpawn == null || !spawnLocation.gameObject.activeInHierarchy)
             {
@@ -173,8 +192,6 @@ namespace itolib.Behaviours.Props
             if (itemPrefab.TryGetComponent(out NetworkObject itemNetworkObject)
                 && itemPrefab.TryGetComponent(out GrabbableObject item))
             {
-                item.fallTime = 0.0f;
-
                 int scrapValue = Random.Next(overrideMinValue < 0 ? item.itemProperties.minValue : overrideMinValue,
                     overrideMaxValue < 0 ? item.itemProperties.maxValue : overrideMaxValue);
                 if (applyScrapMultiplier)
@@ -202,13 +219,20 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public override void OnEnable()
         {
+            if (!NetworkManager.Singleton.IsHost)
+            {
+                return;
+            }
+
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
                     DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(PerformSpawn);
+                    StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
                     break;
                 case ActivationTime.HazardSpawn:
                     DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(PerformSpawn);
+                    StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.AddListener(PerformSpawn);
@@ -226,13 +250,20 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public override void OnDisable()
         {
+            if (!NetworkManager.Singleton.IsHost)
+            {
+                return;
+            }
+
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
                     DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(PerformSpawn);
+                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncAllItemValuesServerRpc);
                     break;
                 case ActivationTime.HazardSpawn:
                     DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(PerformSpawn);
+                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncAllItemValuesServerRpc);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PerformSpawn);
@@ -270,21 +301,49 @@ namespace itolib.Behaviours.Props
         [ClientRpc]
         public void SyncItemValuesClientRpc(NetworkObjectReference itemReference, SyncedItem syncedItem)
         {
-            if (itemReference.TryGet(out NetworkObject itemNetworkObject)
-                && itemNetworkObject.TryGetComponent(out GrabbableObject item))
+            _ = StartCoroutine(SyncItemValuesOnSpawn(itemReference, syncedItem));
+        }
+
+        private IEnumerator SyncItemValuesOnSpawn(NetworkObjectReference itemReference, SyncedItem syncedItem)
+        {
+            NetworkObject itemNetworkObject;
+
+            float startTime = Time.realtimeSinceStartup;
+            while (!itemReference.TryGet(out itemNetworkObject) && Time.realtimeSinceStartup - startTime < 8f)
             {
-                item.transform.rotation = syncedItem.rotation;
+                yield return new WaitForSeconds(0.03f);
+            }
 
-                if (syncedItem.meshVariant != -1 && item.TryGetComponent(out MeshFilter itemFilter))
-                {
-                    itemFilter.mesh = item.itemProperties.meshVariants[syncedItem.meshVariant]; // TODO: Test sharedMesh
-                }
-                if (syncedItem.materialVariant != -1 && item.TryGetComponent(out MeshRenderer itemRenderer))
-                {
-                    itemRenderer.sharedMaterial = item.itemProperties.materialVariants[syncedItem.materialVariant];
-                }
+            yield return new WaitForEndOfFrame();
 
-                item.SetScrapValue(syncedItem.scrapValue);
+            if (!itemNetworkObject.TryGetComponent(out GrabbableObject item))
+            {
+                yield break;
+            }
+
+            item.fallTime = 0.0f;
+            item.reachedFloorTarget = true;
+
+            item.transform.position = syncedItem.position;
+            item.transform.rotation = syncedItem.rotation;
+
+            item.startFallingPosition = syncedItem.position;
+            item.targetFloorPosition = syncedItem.position;
+
+            item.SetScrapValue(syncedItem.scrapValue);
+
+            if (syncedItem.meshVariant != -1 && item.TryGetComponent(out MeshFilter itemFilter))
+            {
+                itemFilter.mesh = item.itemProperties.meshVariants[syncedItem.meshVariant]; // TODO: Test with sharedMesh
+            }
+            if (syncedItem.materialVariant != -1 && item.TryGetComponent(out MeshRenderer itemRenderer))
+            {
+                itemRenderer.sharedMaterial = item.itemProperties.materialVariants[syncedItem.materialVariant];
+            }
+
+            if (fallToGround)
+            {
+                item.FallToGround(randomizePosition, true);
             }
         }
     }
