@@ -68,7 +68,7 @@ namespace itolib.Behaviours.Props
             }
 
             PrefabInstances.Add(Instantiate(PrefabToSpawn.gameObject, spawnLocation.position, spawnLocation.rotation,
-                parentTransform).GetComponent<NetworkObject>());
+                parentTransform ?? RoundManager.Instance?.mapPropsContainer.transform).GetComponent<NetworkObject>());
         }
     }
 }
