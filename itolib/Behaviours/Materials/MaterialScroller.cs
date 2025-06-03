@@ -8,16 +8,18 @@ namespace itolib.Behaviours.Materials
     public class MaterialScroller : MonoBehaviour
     {
         /// <summary>
-        ///     Material to scroll.
+        ///     The material to scroll.
         /// </summary>
-        public Material ScrollingMat { get; internal set; } = null!;
+        /// <remarks><b>NOTE:</b> A custom shader with both a '_TilingX/Y' and an '_OffsetX/Y' parameter is required.</remarks>
+        [Header("Material Scroller")]
+        [Tooltip("The material to scroll. NOTE: A custom shader with both a '_Tiling' and an '_Offset' parameter is required.")]
+        public Material scrollingMat = null!;
 
         /// <summary>
         ///     Current frame being displayed (can be used to start at a specific frame).
         /// </summary>
-        [Header("Material Scroller")]
         [Tooltip("Current frame being displayed (can be used to start at a specific frame).")]
-        private int currentFrame = 1;
+        public int currentFrame = 1;
 
         /// <summary>
         ///     Total number of frames in the texture.
@@ -50,7 +52,7 @@ namespace itolib.Behaviours.Materials
 
         private void Start()
         {
-            ScrollingMat.SetFloat("_Tiling" + offsetAxis, offsetPerFrame);
+            scrollingMat.SetFloat("_Tiling" + offsetAxis, offsetPerFrame);
             offsetID = Shader.PropertyToID("_Offset" + offsetAxis);
         }
 
@@ -61,7 +63,7 @@ namespace itolib.Behaviours.Materials
                 currentFrame = 1;
             }
 
-            ScrollingMat.SetFloat(offsetID, currentFrame * offsetPerFrame);
+            scrollingMat.SetFloat(offsetID, currentFrame * offsetPerFrame);
             currentFrame++;
         }
     }
