@@ -126,7 +126,14 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public void EnableItemRenderers()
         {
-            DisabledRenderers.ForEach(renderer => renderer.enabled = true);
+            for (int i = 0; i < DisabledRenderers.Count; i++)
+            {
+                if (DisabledRenderers[i] != null)
+                {
+                    DisabledRenderers[i].enabled = true;
+                }
+            }
+
             DisabledRenderers.Clear();
         }
 
@@ -135,7 +142,14 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public void EnableItemColliders()
         {
-            DisabledColliders.ForEach(collider => collider.enabled = true);
+            for (int i = 0; i < DisabledColliders.Count; i++)
+            {
+                if (DisabledColliders[i] != null)
+                {
+                    DisabledColliders[i].enabled = true;
+                }
+            }
+
             DisabledColliders.Clear();
         }
 
