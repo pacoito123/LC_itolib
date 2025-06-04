@@ -13,13 +13,17 @@ namespace itolib
     ///     Wondrous gizmos and gadgets for the restless mind.
     /// </summary>
     [BepInDependency(LethalLevelLoader.Plugin.ModGUID, LethalLevelLoader.Plugin.ModVersion)]
+    [BepInDependency(LethalCompanyTestMod.TestMod.modGUID, BepInDependency.DependencyFlags.SoftDependency)] // Crowd Control...
+    [BepInDependency(FacilityMeltdown.MeltdownPlugin.modGUID, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(PizzaTowerEscapeMusic.Plugin.GUID, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(TVLoader.TVLoaderPlugin.MyGUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInPlugin(GUID, PLUGIN_NAME, VERSION)]
     public class Plugin : BaseUnityPlugin
     {
         /// <summary>
         ///     TODO.
         /// </summary>
-        public const string GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.1.0";
+        public const string GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.1.1";
         internal static ManualLogSource StaticLogger { get; private set; } = null!;
 
         /// <summary>

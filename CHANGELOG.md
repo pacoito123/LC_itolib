@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.1]
+
+Added some compatibility for [PizzaTowerEscapeMusic](https://thunderstore.io/c/lethal-company/p/BGN/PizzaTowerEscapeMusic).
+
+- Pulling only one `TwinApparatus` will no longer trigger escape music.
+
 ## [0.1.0]
 
 Initial release!

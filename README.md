@@ -60,7 +60,7 @@ There's a _bunch_ more scripts that are very niche, require further explanation 
 ## Credits
 
 * The LC Modding Community — For support, ideas, encouragement, and just good vibes in general.
-* [LethalMatt](https://www.artstation.com/mattryszkowskiart) — For [Bozoros](https://thunderstore.io/c/lethal-company/p/LethalMatt/Bozoros), my all-time favorite moon (~~I am _not_ biased at all...~~), but also for coming up with wacky concepts for [PlayZone](https://thunderstore.io/c/lethal-company/p/LethalMatt/PlayZone) gimmicks that necessitated additional scripting functionality, which was then added to this library.
+* [LethalMatt](https://www.artstation.com/mattryszkowskiart) — For [Bozoros](https://thunderstore.io/c/lethal-company/p/LethalMatt/Bozoros), my all-time favorite moon (~~I am _not_ biased at all...~~), but also for coming up with wacky concepts for [PlayZone](https://thunderstore.io/c/lethal-company/p/LethalMatt/PlayZone) that necessitated additional scripting functionality, which was then added to this library.
 * [IAmBatby](https://github.com/IAmBatby) — For [LethalLevelLoader](https://thunderstore.io/c/lethal-company/p/IAmBatby/LethalLevelLoader), the backbone for a significant chunk of custom content for this game. A couple scripts in here also require it or make use of its features.
 * [PF1MIL](https://thunderstore.io/c/lethal-company/p/PF1MIL) — For Early Access™ testing of various scripts, suggesting additions and improvements, and just generally waiting patiently for this library to release.
 * _You!_ — ![alt](https://cdn.betterttv.net/emote/642f4905a3c841a2f9ef2a94/1x.webp "pepeSTARE")

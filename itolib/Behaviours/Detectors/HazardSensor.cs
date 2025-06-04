@@ -33,10 +33,11 @@ namespace itolib.Behaviours.Detectors
 
             for (int i = 0; i < ObjectsFound; i++)
             {
-                if (OverlapBuffer![i].TryGetComponent(out NetworkObject hazardNetworkObject)
+                if (OverlapBuffer![i]?.transform.root.TryGetComponent(out NetworkObject hazardNetworkObject) == true
                     && hazardNetworkObject.IsSpawned)
                 {
                     FoundHazardsEachClientRpc(hazardNetworkObject);
+                    hazardsFound++;
                 }
             }
 
@@ -53,10 +54,9 @@ namespace itolib.Behaviours.Detectors
         [ClientRpc]
         public void FoundHazardsEachClientRpc(NetworkObjectReference hazardReference)
         {
-            if (hazardReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out GameObject hazard))
+            if (hazardReference.TryGet(out NetworkObject hazardNetworkObject))
             {
-                onObjectsEach?.Invoke(hazard);
+                onObjectsEach?.Invoke(hazardNetworkObject.gameObject);
             }
         }
 
@@ -76,7 +76,7 @@ namespace itolib.Behaviours.Detectors
         /// <param name="hazardToDespawn"></param>
         public void DespawnHazard(GameObject hazardToDespawn)
         {
-            if (IsHost && hazardToDespawn.TryGetComponent(out NetworkObject hazardNetworkObject))
+            if (IsHost && hazardToDespawn?.transform.root.TryGetComponent(out NetworkObject hazardNetworkObject) == true)
             {
                 hazardNetworkObject.Despawn(true);
             }

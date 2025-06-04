@@ -3,7 +3,7 @@
     <PropertyGroup>
         <AssemblyName>itolib</AssemblyName>
         <Description>Wondrous gizmos and gadgets for the restless mind.</Description>
-        <Version>0.1.0</Version>
+        <Version>0.1.1</Version>
     </PropertyGroup>
 
     <!-- Project properties. -->
@@ -54,6 +54,9 @@
         </Reference>
         <Reference Include="FacilityMeltdown" Publicize="true">
             <HintPath>managed\FacilityMeltdown.dll</HintPath>
+        </Reference>
+        <Reference Include="PizzaTowerEscapeMusic" Publicize="true">
+            <HintPath>managed\PizzaTowerEscapeMusic.dll</HintPath>
         </Reference>
         <Reference Include="TVLoader" Publicize="true">
             <HintPath>managed\TVLoader.dll</HintPath>

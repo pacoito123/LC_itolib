@@ -86,6 +86,11 @@ namespace itolib.PlayZone
 
                 onDisconnectEarly?.AddListener(FacilityMeltdownCompatibility.TwinMeltdown);
             }
+
+            if (PizzaTowerEscapeMusicCompatibility.Enabled)
+            {
+                onDisconnectEarly?.AddListener(_ => PizzaTowerEscapeMusicCompatibility.SwitchTwin(LongLostTwin));
+            }
         }
 
         /// <summary>
