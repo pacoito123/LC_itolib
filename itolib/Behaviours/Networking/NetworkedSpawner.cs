@@ -1,5 +1,6 @@
 using DunGen;
 using itolib.Enums;
+using LethalLevelLoader;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -71,7 +72,7 @@ namespace itolib.Behaviours.Networking
                 }
             }
 
-            if (destroySpawner) // TODO: Move elsewhere.
+            if (destroySpawner) // TODO: Move elsewhere?
             {
                 Destroy(gameObject);
             }
@@ -84,38 +85,56 @@ namespace itolib.Behaviours.Networking
         {
             if (!NetworkManager.Singleton.IsHost)
             {
-                enabled = false;
                 return;
             }
 
             PrefabToSpawn ??= GetPrefabToSpawn();
 
-            if (activationTime is ActivationTime.Immediate)
+            switch (activationTime)
             {
-                PerformSpawn();
+                case ActivationTime.ScrapSpawn:
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(PerformSpawn);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(PerformSpawn);
+                    break;
+                case ActivationTime.StartOfRound:
+                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(PerformSpawn);
+                    break;
+                case ActivationTime.Immediate:
+                    PerformSpawn();
+                    break;
+                case ActivationTime.DungeonComplete:
+                case ActivationTime.Manual:
+                default:
+                    break;
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public virtual void OnEnable()
+        public override void OnDestroy()
         {
-            if (activationTime is ActivationTime.StartOfRound)
+            switch (activationTime)
             {
-                StartOfRound.Instance?.StartNewRoundEvent.AddListener(PerformSpawn);
+                case ActivationTime.ScrapSpawn:
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(PerformSpawn);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(PerformSpawn);
+                    break;
+                case ActivationTime.StartOfRound:
+                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PerformSpawn);
+                    break;
+                case ActivationTime.Immediate:
+                case ActivationTime.DungeonComplete:
+                case ActivationTime.Manual:
+                default:
+                    break;
             }
-        }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public virtual void OnDisable()
-        {
-            if (activationTime is ActivationTime.StartOfRound)
-            {
-                StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PerformSpawn);
-            }
+            base.OnDestroy();
         }
 
         /// <summary>

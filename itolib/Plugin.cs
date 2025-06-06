@@ -23,7 +23,7 @@ namespace itolib
         /// <summary>
         ///     TODO.
         /// </summary>
-        public const string GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.1.1";
+        public const string GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.1.2";
         internal static ManualLogSource StaticLogger { get; private set; } = null!;
 
         /// <summary>

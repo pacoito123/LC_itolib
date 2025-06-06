@@ -117,6 +117,21 @@ namespace itolib.Behaviours.Materials
 
                         renderer.sharedMaterials = materials;
                     }
+
+                    foreach (SkinnedMeshRenderer skinnedRenderer in affectedObject.GetComponentsInChildren<SkinnedMeshRenderer>())
+                    {
+                        Material[] materials = skinnedRenderer.sharedMaterials;
+
+                        for (int i = 0; i < materials.Length; i++)
+                        {
+                            if (materials[i].name.Contains(swap.searchKeyword, StringComparison.OrdinalIgnoreCase))
+                            {
+                                materials[i] = swap.replacementMaterial;
+                            }
+                        }
+
+                        skinnedRenderer.sharedMaterials = materials;
+                    }
                 }
             }
         }

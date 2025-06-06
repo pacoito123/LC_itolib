@@ -1,6 +1,5 @@
 using itolib.Behaviours.Networking;
 using itolib.Enums;
-using LethalLevelLoader;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -122,6 +121,12 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public bool skipInactive = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
@@ -181,7 +186,7 @@ namespace itolib.Behaviours.Props
         /// <param name="spawnLocation"></param>
         private void SpawnItem(Transform spawnLocation)
         {
-            if (PrefabToSpawn == null || !spawnLocation.gameObject.activeInHierarchy)
+            if (PrefabToSpawn == null || (skipInactive && !spawnLocation.gameObject.activeInHierarchy))
             {
                 return;
             }
@@ -201,6 +206,7 @@ namespace itolib.Behaviours.Props
 
                 SyncedItem serializedItem = new()
                 {
+                    position = spawnLocation.position,
                     rotation = spawnLocation.rotation * Quaternion.Euler(item.itemProperties.restingRotation),
                     meshVariant = (allowMeshVariants && item.itemProperties.meshVariants.Length > 0)
                         ? Random.Next(0, item.itemProperties.meshVariants.Length) : -1,
@@ -217,65 +223,34 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnEnable()
+        public override void Start()
         {
+            base.Start();
+
             if (!NetworkManager.Singleton.IsHost)
             {
                 return;
             }
 
-            switch (activationTime)
+            if (activationTime is ActivationTime.HazardSpawn or ActivationTime.ScrapSpawn)
             {
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(PerformSpawn);
-                    StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(PerformSpawn);
-                    StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
-                    break;
-                case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(PerformSpawn);
-                    break;
-                case ActivationTime.Immediate:
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
+                StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnDisable()
+        public override void OnDestroy()
         {
-            if (!NetworkManager.Singleton.IsHost)
-            {
-                return;
-            }
-
-            switch (activationTime)
-            {
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(PerformSpawn);
-                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncAllItemValuesServerRpc);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(PerformSpawn);
-                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncAllItemValuesServerRpc);
-                    break;
-                case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PerformSpawn);
-                    break;
-                case ActivationTime.Immediate:
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
-
             Random = null!;
+
+            if (activationTime is ActivationTime.HazardSpawn or ActivationTime.ScrapSpawn)
+            {
+                StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncAllItemValuesServerRpc);
+            }
+
+            base.OnDestroy();
         }
 
         /// <summary>
@@ -304,6 +279,12 @@ namespace itolib.Behaviours.Props
             _ = StartCoroutine(SyncItemValuesOnSpawn(itemReference, syncedItem));
         }
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="itemReference"></param>
+        /// <param name="syncedItem"></param>
+        /// <returns></returns>
         private IEnumerator SyncItemValuesOnSpawn(NetworkObjectReference itemReference, SyncedItem syncedItem)
         {
             NetworkObject itemNetworkObject;
@@ -321,11 +302,11 @@ namespace itolib.Behaviours.Props
                 yield break;
             }
 
-            item.fallTime = 0.0f;
+            item.fallTime = 1.0f;
+            item.hasHitGround = true;
             item.reachedFloorTarget = true;
 
-            item.transform.position = syncedItem.position;
-            item.transform.rotation = syncedItem.rotation;
+            item.transform.SetPositionAndRotation(syncedItem.position, syncedItem.rotation);
 
             item.startFallingPosition = syncedItem.position;
             item.targetFloorPosition = syncedItem.position;

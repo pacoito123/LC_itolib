@@ -33,7 +33,10 @@ namespace itolib.Behaviours.Events
         [HideInInspector]
         public float timer;
 
-        private void Update()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Update()
         {
             if (timer < delayTimer)
             {
@@ -50,11 +53,17 @@ namespace itolib.Behaviours.Events
             }
         }
 
-        private void OnEnable()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void OnEnable()
         {
             ResetTimer();
         }
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         private void OnDisable()
         {
             ResetTimer();

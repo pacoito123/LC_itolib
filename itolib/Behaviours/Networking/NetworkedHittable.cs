@@ -76,7 +76,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="playHitSFX"></param>
         /// <param name="hitID"></param>
         /// <returns></returns>
-        public bool Hit(int force, Vector3 hitDirection, PlayerControllerB? playerWhoHit = null, bool playHitSFX = false, int hitID = -1)
+        public virtual bool Hit(int force, Vector3 hitDirection, PlayerControllerB? playerWhoHit = null, bool playHitSFX = false, int hitID = -1)
         {
             PerformHit(new()
             {
@@ -91,7 +91,7 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void PerformHit()
+        public virtual void PerformHit()
         {
             PerformHit(defaultHit);
         }
@@ -100,7 +100,7 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         /// <param name="hitInfo"></param>
-        public void PerformHit(HitInfo hitInfo)
+        public virtual void PerformHit(HitInfo hitInfo)
         {
             PerformHitLocal(hitInfo);
             PerformHitServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), hitInfo);
@@ -131,6 +131,14 @@ namespace itolib.Behaviours.Networking
             {
                 PerformHitLocal(hitInfo);
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public virtual void PerformHitLocal()
+        {
+            PerformHitLocal(defaultHit);
         }
 
         /// <summary>

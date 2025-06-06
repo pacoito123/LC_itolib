@@ -1,6 +1,7 @@
 using itolib.Enums;
 using LethalLevelLoader;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -44,12 +45,12 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     Seeded Random instance initialized with the current map seed.
         /// </summary>
-        public static System.Random SeededRandom { get; internal set; } = null!;
+        public static System.Random Random { get; internal set; } = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public static List<GrabbableObject>? AvailableScrap { get; private set; }
+        public static List<GrabbableObject?>? AvailableScrap { get; private set; }
 
         /// <summary>
         ///     TODO.
@@ -126,8 +127,8 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            SeededRandom ??= new(StartOfRound.Instance.randomMapSeed + 55);
-            DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(ObtainSpawnedScrap);
+            Random ??= new(StartOfRound.Instance.randomMapSeed + 55);
+            DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(ObtainSpawnedScrap);
 
             switch (activationTime)
             {
@@ -154,7 +155,7 @@ namespace itolib.Behaviours.Props
         public override void OnDestroy()
         {
             AvailableScrap = null;
-            SeededRandom = null!;
+            Random = null!;
 
             DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(ObtainSpawnedScrap);
 
@@ -192,7 +193,7 @@ namespace itolib.Behaviours.Props
 
             AvailableScrap ??= [.. spawnedScrap];
 
-            _ = AvailableScrap.RemoveAll(item => item.isInShipRoom || item.isInElevator
+            _ = AvailableScrap.RemoveAll(item => item == null || item.isInShipRoom || item.isInElevator
                 || item.itemProperties?.isScrap == false || item is LungProp || item.TryGetComponent(out NavMeshAgent agent));
         }
 
@@ -206,7 +207,7 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            int itemsToTeleport = SeededRandom.Next(minAmount, maxAmount + 1);
+            int itemsToTeleport = Random.Next(minAmount, maxAmount + 1);
 
             for (int i = 0; i < itemsToTeleport; i++)
             {
@@ -215,7 +216,7 @@ namespace itolib.Behaviours.Props
 
                 if (teleportPoints?.Count > 0)
                 {
-                    int positionIndex = SeededRandom.Next(0, teleportPoints.Count);
+                    int positionIndex = Random.Next(0, teleportPoints.Count);
                     teleportPosition = teleportPoints[positionIndex]?.position ?? transform.position;
                     teleportRotation = teleportPoints[positionIndex]?.rotation ?? transform.rotation;
 
@@ -226,15 +227,15 @@ namespace itolib.Behaviours.Props
                 }
                 else if (teleportAreas?.Count > 0)
                 {
-                    int areaIndex = SeededRandom.Next(0, teleportAreas.Count);
+                    int areaIndex = Random.Next(0, teleportAreas.Count);
                     BoxCollider teleportArea = teleportAreas[areaIndex];
 
                     Vector3 extents = teleportArea.size / 2.0f;
-                    Vector3 point = new(UnityEngine.Random.Range(-extents.x, extents.x),
-                        UnityEngine.Random.Range(-extents.y, extents.y),
-                        UnityEngine.Random.Range(-extents.z, extents.z));
+                    Vector3 point = new(((float)Random.NextDouble() * 2 * extents.x) - extents.x,
+                        ((float)Random.NextDouble() * 2 * extents.y) - extents.y,
+                        ((float)Random.NextDouble() * 2 * extents.z) - extents.z);
 
-                    teleportPosition = teleportArea.transform.TransformPoint(point); // TODO: Maybe find point in NavMesh instead?
+                    teleportPosition = teleportArea.transform.TransformPoint(point + teleportArea.center); // TODO: Maybe find point in NavMesh instead?
 
                     if (exhaustiveAreas)
                     {
@@ -246,7 +247,7 @@ namespace itolib.Behaviours.Props
                 {
                     for (int j = 0; j < AvailableScrap.Count; j++)
                     {
-                        if (specificItems.FindIndex(specificItem => string.CompareOrdinal(AvailableScrap[j]
+                        if (specificItems.FindIndex(specificItem => string.CompareOrdinal(AvailableScrap[j]?
                             .itemProperties?.itemName, specificItem) == 0) >= 0)
                         {
                             TeleportData teleport = new()
@@ -255,7 +256,7 @@ namespace itolib.Behaviours.Props
                                 rotation = teleportRotation
                             };
 
-                            TeleportScrapClientRpc(AvailableScrap[j].GetComponent<NetworkObject>(), teleport);
+                            TeleportScrapClientRpc(AvailableScrap[j]?.GetComponent<NetworkObject>(), teleport);
                             AvailableScrap.RemoveAt(j);
 
                             break;
@@ -264,15 +265,15 @@ namespace itolib.Behaviours.Props
                 }
                 else
                 {
-                    int index = UnityEngine.Random.RandomRangeInt(0, AvailableScrap.Count);
+                    int index = Random.Next(0, AvailableScrap.Count);
 
                     TeleportData teleport = new()
                     {
                         position = teleportPosition,
-                        rotation = AvailableScrap[index].transform.rotation
+                        rotation = AvailableScrap[index]?.transform.rotation ?? transform.rotation
                     };
 
-                    TeleportScrapClientRpc(AvailableScrap[index].GetComponent<NetworkObject>(), teleport);
+                    TeleportScrapClientRpc(AvailableScrap[index]?.GetComponent<NetworkObject>(), teleport);
                     AvailableScrap.RemoveAt(index);
                 }
             }
@@ -284,22 +285,44 @@ namespace itolib.Behaviours.Props
         [ClientRpc]
         public void TeleportScrapClientRpc(NetworkObjectReference itemReference, TeleportData teleport)
         {
-            if (itemReference.TryGet(out NetworkObject itemNetworkObject)
-                && itemNetworkObject.TryGetComponent(out GrabbableObject item))
+            _ = StartCoroutine(TeleportScrapDelayed(itemReference, teleport));
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="itemReference"></param>
+        /// <param name="teleport"></param>
+        /// <returns></returns>
+        private IEnumerator TeleportScrapDelayed(NetworkObjectReference itemReference, TeleportData teleport)
+        {
+            NetworkObject itemNetworkObject;
+
+            float startTime = Time.realtimeSinceStartup;
+            while (!itemReference.TryGet(out itemNetworkObject) && Time.realtimeSinceStartup - startTime < 8f)
             {
-                item.fallTime = 0.0f;
-                item.reachedFloorTarget = true;
+                yield return new WaitForSeconds(0.03f);
+            }
 
-                item.transform.position = teleport.position;
-                item.transform.rotation = teleport.rotation;
+            yield return new WaitForEndOfFrame();
 
-                item.startFallingPosition = teleport.position;
-                item.targetFloorPosition = teleport.position;
+            if (!itemNetworkObject.TryGetComponent(out GrabbableObject item))
+            {
+                yield break;
+            }
 
-                if (fallToGround)
-                {
-                    item.FallToGround(randomizePosition);
-                }
+            item.fallTime = 1.0f;
+            item.hasHitGround = true;
+            item.reachedFloorTarget = true;
+
+            item.transform.SetPositionAndRotation(teleport.position, teleport.rotation);
+
+            item.startFallingPosition = teleport.position;
+            item.targetFloorPosition = teleport.position;
+
+            if (fallToGround)
+            {
+                item.FallToGround(randomizePosition);
             }
         }
     }
