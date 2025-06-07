@@ -35,6 +35,16 @@ namespace itolib.Behaviours.Kinematics
         {
             hittableBody?.AddForce(hitForce * hitInfo.damage * hitInfo.direction, forceMode);
             onHit?.Invoke();
+
+            if (hitInfo.playerWhoHit != null)
+            {
+                onPlayerHit?.Invoke(hitInfo.playerWhoHit);
+
+                if (hitInfo.playerWhoHit.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId)
+                {
+                    onPlayerHitLocal?.Invoke(hitInfo.playerWhoHit);
+                }
+            }
         }
     }
 }

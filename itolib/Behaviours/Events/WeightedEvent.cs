@@ -108,11 +108,6 @@ namespace itolib.Behaviours.Events
                 SeededRandom ??= new(StartOfRound.Instance.randomMapSeed + 66);
             }
 
-            if (!IsHost)
-            {
-                return;
-            }
-
             List<int> propWeights = [.. eventEntries.Select(prop => prop.weight)];
             AllWeightsCumulative = new(propWeights.Count);
 

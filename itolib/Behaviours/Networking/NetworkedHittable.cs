@@ -25,6 +25,11 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
+        public PlayerControllerB? playerWhoHit;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public int hitID;
 
         /// <summary>
@@ -34,6 +39,7 @@ namespace itolib.Behaviours.Networking
         {
             damage = 1;
             direction = Vector3.zero;
+            playerWhoHit = null;
             hitID = 1;
         }
 
@@ -70,6 +76,18 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public UnityEvent<PlayerControllerB>? onPlayerHit;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public UnityEvent<PlayerControllerB>? onPlayerHitLocal;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="force"></param>
         /// <param name="hitDirection"></param>
         /// <param name="playerWhoHit"></param>
@@ -82,6 +100,7 @@ namespace itolib.Behaviours.Networking
             {
                 damage = force,
                 direction = hitDirection,
+                playerWhoHit = playerWhoHit,
                 hitID = hitID
             });
 
