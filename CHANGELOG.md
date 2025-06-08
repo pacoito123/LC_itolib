@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.1.3]
+
+Added player callbacks to `NetworkedHittable`, fixed some stuff with `WeightedEvent`.
+
+- Added information to `NetworkedHittable` about the player that performed the hit, as well as some separate hit event callbacks with said player given as an invoke parameter.
+- `WeightedEvent` rolls should now actually roll when initiated by clients.
+
 ## [v0.1.2]
 
 Added `DamageHittable` and `ToggleEvent`, fixed some stuff with scrap-related scripts.
