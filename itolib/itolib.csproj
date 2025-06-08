@@ -3,7 +3,7 @@
     <PropertyGroup>
         <AssemblyName>itolib</AssemblyName>
         <Description>Wondrous gizmos and gadgets for the restless mind.</Description>
-        <Version>0.1.3</Version>
+        <Version>0.1.4</Version>
     </PropertyGroup>
 
     <!-- Project properties. -->
@@ -47,8 +47,8 @@
         <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" />
         <PackageReference Include="LethalCompany.GameLibs.Steam" Version="70.0.0-ngd.0" />
         <PackageReference Include="IAmBatby.LethalLevelLoader" Version="1.4.*" Publicize="true" />
-        <PackageReference Include="mrov.WeatherRegistry" Version="0.5.*" />
-        <PackageReference Include="mrov.MrovLib" Version="0.2.*" />
+        <PackageReference Include="mrov.WeatherRegistry" Version="0.6.*" />
+        <PackageReference Include="mrov.MrovLib" Version="0.3.*" />
         <Reference Include="CrowdControl" Publicize="true">
             <HintPath>managed\CrowdControl.dll</HintPath>
         </Reference>

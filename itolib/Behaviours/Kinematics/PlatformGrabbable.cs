@@ -219,7 +219,7 @@ namespace itolib.Behaviours.Kinematics
                 // Detach player from the platform if an enemy collides with it.
                 DetachPlayerLocal();
 
-                if (!isLocalEffect)
+                if (!attachLocally)
                 {
                     // Detach attached player on all clients.
                     DetachPlayerServerRpc();
@@ -235,7 +235,7 @@ namespace itolib.Behaviours.Kinematics
                 // Detach player from the platform if it collides with a wall.
                 DetachPlayerLocal();
 
-                if (!isLocalEffect)
+                if (!attachLocally)
                 {
                     // Detach attached player on all clients.
                     DetachPlayerServerRpc();

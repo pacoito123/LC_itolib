@@ -116,7 +116,7 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         public override void DetachPlayerLocal()
         {
-            if (AttachedPlayer == null || (!isLocalEffect && AttachedPlayer.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId))
+            if (AttachedPlayer == null || (!attachLocally && AttachedPlayer.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId))
             {
                 return;
             }

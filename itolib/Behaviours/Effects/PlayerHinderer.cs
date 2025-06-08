@@ -20,8 +20,41 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Header("Jumping")]
         [Tooltip("")]
         public bool allowJumping = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool requireStamina = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Header("Quicksand")]
+        [Tooltip("")]
+        public bool sinkPlayer = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public float sinkingSpeedMultiplier = 0.21f;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Header("Water")]
+        [Tooltip("")]
+        public bool drownPlayer = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool waterOverlay = false;
 
         /// <summary>
         ///     TODO.
@@ -39,10 +72,21 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        [HideInInspector]
+        public Collider? hindererCollider;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void Awake()
         {
             AttachCondition = player => !player.isPlayerDead;
             DetachCondition = player => player.isPlayerDead;
+
+            if (!TryGetComponent(out hindererCollider))
+            {
+                // Plugin.StaticLogger.LogWarning(""); // TODO: Warn collider is missing.
+            }
         }
 
         /// <summary>
@@ -50,9 +94,20 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public override void Update()
         {
-            if (allowJumping && AttachedPlayer?.isExhausted == true)
+            if (LocalPlayerAttached && AttachedPlayer != null)
             {
-                AttachedPlayer.isExhausted = false;
+                if (allowJumping && requireStamina && AttachedPlayer.isExhausted)
+                {
+                    AttachedPlayer.isExhausted = false;
+                }
+
+                /* if (drownPlayer)
+                {
+                    if (hindererCollider?.bounds.Contains(AttachedPlayer.gameplayCamera.transform.position) == true)
+                    {
+                        
+                    }
+                } */
             }
 
             base.Update();
@@ -73,9 +128,19 @@ namespace itolib.Behaviours.Effects
             player.isMovementHindered++;
             player.hinderedMultiplier *= hinderedMultiplier;
 
-            if (allowJumping)
+            if (sinkPlayer)
+            {
+                player.sourcesCausingSinking++;
+                player.sinkingSpeedMultiplier = sinkingSpeedMultiplier;
+            }
+            else if (drownPlayer || allowJumping)
             {
                 player.isUnderwater = true;
+
+                if (drownPlayer)
+                {
+                    player.underwaterCollider = hindererCollider;
+                }
             }
 
             onHinderStart?.Invoke(player);
@@ -87,7 +152,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public override void DetachPlayerLocal()
         {
-            if (AttachedPlayer == null || (!isLocalEffect && AttachedPlayer.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId))
+            if (AttachedPlayer == null || (!attachLocally && AttachedPlayer.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId))
             {
                 return;
             }
@@ -95,9 +160,19 @@ namespace itolib.Behaviours.Effects
             AttachedPlayer.isMovementHindered--;
             AttachedPlayer.hinderedMultiplier /= hinderedMultiplier;
 
-            if (allowJumping)
+            if (sinkPlayer)
+            {
+                AttachedPlayer.sourcesCausingSinking--;
+                AttachedPlayer.sinkingSpeedMultiplier = 0.0f;
+            }
+            else if (drownPlayer || allowJumping)
             {
                 AttachedPlayer.isUnderwater = false;
+
+                if (drownPlayer)
+                {
+                    AttachedPlayer.underwaterCollider = null;
+                }
             }
 
             onHinderStop?.Invoke(AttachedPlayer);

@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.1.4]
+
+Reworked `PlayerLauncher` a bit, fixed [WeatherRegistry](https://thunderstore.io/c/lethal-company/p/mrov/WeatherRegistry) compatibility.
+
+- `PlayerLauncher` now uses a list of forces to apply to the player, to combine multiple sources of rotation (e.g. where the launcher is facing + where the player's looking towards).
+- Added some drowning/quicksand-related stuff to `PlayerHinderer`, but it's not quite working just yet...
+- Fixed `WeatherConditional` compatibility with [WeatherRegistry](https://thunderstore.io/c/lethal-company/p/mrov/WeatherRegistry), I forgor to actually apply my patch for it...
+
 ## [v0.1.3]
 
 Added player callbacks to `NetworkedHittable`, fixed some stuff with `WeightedEvent`.

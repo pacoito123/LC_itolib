@@ -1,11 +1,48 @@
 using GameNetcodeStuff;
 using itolib.Behaviours.Effects;
 using itolib.Enums;
+using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace itolib.Behaviours.Kinematics
 {
+    /// <summary>
+    ///     TODO.
+    /// </summary>
+    [Serializable]
+    public struct LaunchParameters
+    {
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public int forceToApply;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public Vector3 forceDirection;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public RotationSource considerRotationFrom;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public LaunchParameters()
+        {
+            forceToApply = 0;
+            forceDirection = Vector3.zero;
+            considerRotationFrom = RotationSource.Absolute;
+        }
+    }
+
     /// <summary>
     ///     TODO.
     /// </summary>
@@ -16,25 +53,7 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         [Header("Player Launcher")]
         [Tooltip("")]
-        public int forceToApply = 0;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public Vector3 forceDirection = Vector3.forward;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public RotationSource considerRotationFrom = RotationSource.Absolute;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public Vector3 additionalForce = Vector3.zero;
+        public List<LaunchParameters> forcesToApply = [];
 
         /// <summary>
         ///     TODO.
@@ -131,6 +150,36 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Space(3.0f)]
+        [Header("DEPRECATED")]
+        [Obsolete("Add to 'forcesToApply' instead.")]
+        [Tooltip("")]
+        public int forceToApply = 0;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Obsolete("Add to 'forcesToApply' instead.")]
+        [Tooltip("")]
+        public Vector3 forceDirection = Vector3.forward;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Obsolete("Add to 'forcesToApply' instead.")]
+        [Tooltip("")]
+        public RotationSource considerRotationFrom = RotationSource.Absolute;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Obsolete("Add to 'forcesToApply' instead.")]
+        [Tooltip("")]
+        public Vector3 additionalForce = Vector3.zero;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void Awake()
         {
             AttachCondition = player => !player.isPlayerDead && !(crouchingPreventsLaunch && player.isCrouching);
@@ -172,7 +221,7 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         public void AttachPlayerLocal()
         {
-            if (isLocalEffect)
+            if (attachLocally)
             {
                 AttachPlayerLocal(GameNetworkManager.Instance.localPlayerController);
             }
@@ -192,12 +241,24 @@ namespace itolib.Behaviours.Kinematics
 
             playerModelTransform = player.meshContainer.transform;
 
-            player.externalForceAutoFade = (forceToApply * (considerRotationFrom switch
+            /* player.externalForceAutoFade = (forceToApply * (considerRotationFrom switch
             {
                 RotationSource.Player => playerModelTransform.rotation * forceDirection,
                 RotationSource.Launcher => transform.rotation * forceDirection,
                 RotationSource.Absolute or _ => forceDirection
-            })) + additionalForce;
+            })) + additionalForce; */
+
+            player.externalForceAutoFade = Vector3.zero;
+
+            foreach (LaunchParameters launch in forcesToApply)
+            {
+                player.externalForceAutoFade += launch.forceToApply * (launch.considerRotationFrom switch
+                {
+                    RotationSource.Player => playerModelTransform.rotation * launch.forceDirection,
+                    RotationSource.Launcher => transform.rotation * launch.forceDirection,
+                    RotationSource.Absolute or _ => launch.forceDirection
+                });
+            }
 
             if (negateFallDamage)
             {

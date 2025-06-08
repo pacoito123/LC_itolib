@@ -4,6 +4,7 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Effects
 {
@@ -21,6 +22,11 @@ namespace itolib.Behaviours.Effects
         ///     Cached transform of the currently attached player (if there is one).
         /// </summary>
         public Transform AttachedPlayerTransform { get; protected set; } = null!;
+
+        /// <summary>
+        ///     Cached transform of the currently attached player's gameplay camera (if there is one).
+        /// </summary>
+        public Transform AttachedPlayerGameplayCamera { get; protected set; } = null!;
 
         /// <summary>
         ///     Whether or not the local player is attached.
@@ -110,7 +116,8 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Other")]
         [Tooltip("Whether players attach locally, otherwise only one player can attach at a time.")]
-        public bool isLocalEffect = false;
+        [FormerlySerializedAs("isLocalEffect")]
+        public bool attachLocally = false;
 
         /// <summary>
         ///     Attach upon coming into contact with a player.
@@ -141,7 +148,7 @@ namespace itolib.Behaviours.Effects
             // Check if attach condition is met.
             if (AttachCondition(player))
             {
-                if (isLocalEffect)
+                if (attachLocally)
                 {
                     // Attach player locally.
                     AttachPlayerLocal(player);
@@ -183,7 +190,7 @@ namespace itolib.Behaviours.Effects
             // Detach attached player locally.
             DetachPlayerLocal();
 
-            if (!isLocalEffect)
+            if (!attachLocally)
             {
                 // Detach attached player on all clients.
                 DetachPlayerServerRpc();
@@ -200,7 +207,7 @@ namespace itolib.Behaviours.Effects
                 // Detach player locally, if the detach condition is met.
                 DetachPlayerLocal();
 
-                if (!isLocalEffect)
+                if (!attachLocally)
                 {
                     // Detach player on all clients.
                     DetachPlayerServerRpc();
@@ -223,6 +230,7 @@ namespace itolib.Behaviours.Effects
             // Attach given player.
             AttachedPlayer = player;
             AttachedPlayerTransform = player.transform;
+            AttachedPlayerGameplayCamera = player.gameplayCamera.transform;
 
             if (triggerOnce)
             {
@@ -248,6 +256,7 @@ namespace itolib.Behaviours.Effects
             // Remove attached player.
             AttachedPlayer = null;
             AttachedPlayerTransform = null!;
+            AttachedPlayerGameplayCamera = null!;
             LocalPlayerAttached = false;
         }
 
@@ -323,7 +332,7 @@ namespace itolib.Behaviours.Effects
             // Detach attached player locally.
             DetachPlayerLocal();
 
-            if (!isLocalEffect)
+            if (!attachLocally)
             {
                 // Detach attached player on all clients.
                 DetachPlayerServerRpc();

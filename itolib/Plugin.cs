@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using itolib.Compatibility;
 using itolib.Patches;
 using System;
 using System.Linq;
@@ -17,13 +18,14 @@ namespace itolib
     [BepInDependency(FacilityMeltdown.MeltdownPlugin.modGUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(PizzaTowerEscapeMusic.Plugin.GUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(TVLoader.TVLoaderPlugin.MyGUID, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(WeatherRegistry.PluginInfo.PLUGIN_GUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInPlugin(GUID, PLUGIN_NAME, VERSION)]
     public class Plugin : BaseUnityPlugin
     {
         /// <summary>
         ///     TODO.
         /// </summary>
-        public const string GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.1.3";
+        public const string GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.1.4";
         internal static ManualLogSource StaticLogger { get; private set; } = null!;
 
         /// <summary>
@@ -56,6 +58,11 @@ namespace itolib
                     Harmony.PatchAll(typeof(LLLStoryLogPatch));
                 }
                 // ...
+
+                if (WeatherRegistryCompatibility.Enabled)
+                {
+                    Harmony.PatchAll(typeof(WeatherRegistryCompatibility));
+                }
 
                 StaticLogger.LogInfo($"{PLUGIN_NAME} v{VERSION} loaded!");
             }
