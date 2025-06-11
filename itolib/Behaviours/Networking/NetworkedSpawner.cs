@@ -88,15 +88,18 @@ namespace itolib.Behaviours.Networking
                 return;
             }
 
-            PrefabToSpawn ??= GetPrefabToSpawn();
+            if (PrefabToSpawn == null)
+            {
+                PrefabToSpawn = GetPrefabToSpawn();
+            }
 
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(PerformSpawn);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(PerformSpawn);
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(PerformSpawn);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(PerformSpawn);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.AddListener(PerformSpawn);
@@ -119,10 +122,10 @@ namespace itolib.Behaviours.Networking
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(PerformSpawn);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(PerformSpawn);
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(PerformSpawn);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(PerformSpawn);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PerformSpawn);

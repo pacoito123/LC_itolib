@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -62,10 +63,10 @@ namespace itolib.Behaviours.Kinematics
         /// <param name="player"></param>
         public void CancelPlayerMomentum(PlayerControllerB player)
         {
-            if (player.IsOwner && player.TryGetComponent(out NetworkObject playerNetworkObject))
+            if (player.IsOwner)
             {
                 player.transform.SetParent(null);
-                CancelPlayerMomentumServerRpc(playerNetworkObject);
+                CancelPlayerMomentumServerRpc(player);
             }
         }
 
@@ -74,7 +75,7 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         /// <param name="playerReference"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void CancelPlayerMomentumServerRpc(NetworkObjectReference playerReference)
+        public void CancelPlayerMomentumServerRpc(NetworkBehaviourReference playerReference)
         {
             CancelPlayerMomentumClientRpc(playerReference);
         }
@@ -84,13 +85,11 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void CancelPlayerMomentumClientRpc(NetworkObjectReference playerReference)
+        public void CancelPlayerMomentumClientRpc(NetworkBehaviourReference playerReference)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
-                playerNetworkObject.transform.SetParent(null);
+                player.transform.SetParent(null);
             }
         }
     }

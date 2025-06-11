@@ -1,4 +1,5 @@
 using itolib.Behaviours.Networking;
+using itolib.Extensions;
 using UnityEngine;
 
 namespace itolib.Behaviours.Kinematics
@@ -34,15 +35,15 @@ namespace itolib.Behaviours.Kinematics
         public override void PerformHitLocal(HitInfo hitInfo)
         {
             hittableBody?.AddForce(hitForce * hitInfo.damage * hitInfo.direction, forceMode);
-            onHit?.Invoke();
+            onHit.Invoke();
 
             if (hitInfo.playerWhoHit != null)
             {
-                onPlayerHit?.Invoke(hitInfo.playerWhoHit);
+                onPlayerHit.Invoke(hitInfo.playerWhoHit);
 
-                if (hitInfo.playerWhoHit.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId)
+                if (hitInfo.playerWhoHit.IsLocalClient())
                 {
-                    onPlayerHitLocal?.Invoke(hitInfo.playerWhoHit);
+                    onPlayerHitLocal.Invoke(hitInfo.playerWhoHit);
                 }
             }
         }

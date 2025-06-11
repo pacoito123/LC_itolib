@@ -11,12 +11,12 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent<int>? onLogSpawned;
+        public UnityEvent<int> onLogSpawned = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent<int>? onAlreadyUnlocked;
+        public UnityEvent<int> onAlreadyUnlocked = new();
 
         /// <summary>
         ///     TODO.
@@ -36,12 +36,12 @@ namespace itolib.Behaviours.Props
                     // Publicized LLL for access to 'ExtendedStoryLog.newStoryLogID' specifically...
                     if (!TerminalManager.Terminal.unlockedStoryLogs.Contains(extendedStoryLog.newStoryLogID))
                     {
-                        onLogSpawned?.Invoke(extendedStoryLog.newStoryLogID);
+                        onLogSpawned.Invoke(extendedStoryLog.newStoryLogID);
                         storyLogID = extendedStoryLog.newStoryLogID;
                     }
                     else
                     {
-                        onAlreadyUnlocked?.Invoke(extendedStoryLog.newStoryLogID);
+                        onAlreadyUnlocked.Invoke(extendedStoryLog.newStoryLogID);
                         RemoveLogCollectible();
                     }
 

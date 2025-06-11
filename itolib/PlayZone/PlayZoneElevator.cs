@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Enums;
+using itolib.Extensions;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -109,43 +110,43 @@ namespace itolib.PlayZone
         /// </summary>
         [Header(header: "Events")]
         [Tooltip("")]
-        public UnityEvent<bool>? onElevatorTravelStart;
+        public UnityEvent<bool> onElevatorTravelStart = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<bool>? onElevatorTravelFinish;
+        public UnityEvent<bool> onElevatorTravelFinish = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onTopReached;
+        public UnityEvent onTopReached = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onBottomReached;
+        public UnityEvent onBottomReached = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onDeactivate;
+        public UnityEvent onDeactivate = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<bool>? onDoorsOpen;
+        public UnityEvent<bool> onDoorsOpen = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<bool>? onDoorsClose;
+        public UnityEvent<bool> onDoorsClose = new();
 
         /// <summary>
         ///     TODO.
@@ -156,7 +157,7 @@ namespace itolib.PlayZone
             if (CurrentState != newState && CurrentState is not ElevatorState.Deactivated)
             {
                 SwitchStateLocal(newState);
-                SwitchStateServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), newState);
+                SwitchStateServerRpc(GameNetworkManager.Instance.localPlayerController, newState);
             }
         }
 
@@ -166,7 +167,7 @@ namespace itolib.PlayZone
         /// <param name="playerReference"></param>
         /// <param name="newState"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SwitchStateServerRpc(NetworkObjectReference playerReference, ElevatorState newState)
+        public void SwitchStateServerRpc(NetworkBehaviourReference playerReference, ElevatorState newState)
         {
             SwitchStateClientRpc(playerReference, newState);
         }
@@ -177,11 +178,9 @@ namespace itolib.PlayZone
         /// <param name="playerReference"></param>
         /// <param name="newState"></param>
         [ClientRpc]
-        public void SwitchStateClientRpc(NetworkObjectReference playerReference, ElevatorState newState)
+        public void SwitchStateClientRpc(NetworkBehaviourReference playerReference, ElevatorState newState)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 SwitchStateLocal(newState);
             }
@@ -221,14 +220,14 @@ namespace itolib.PlayZone
 
                     if (up)
                     {
-                        onTopReached?.Invoke();
+                        onTopReached.Invoke();
                     }
                     else
                     {
-                        onBottomReached?.Invoke();
+                        onBottomReached.Invoke();
                     }
 
-                    onElevatorTravelFinish?.Invoke(up);
+                    onElevatorTravelFinish.Invoke(up);
 
                     break;
                 case ElevatorState.GoingUp:
@@ -241,7 +240,7 @@ namespace itolib.PlayZone
                     }
 
                     elevatorAnimator?.SetBool("ElevatorGoingUp", up);
-                    onElevatorTravelStart?.Invoke(up);
+                    onElevatorTravelStart.Invoke(up);
 
                     CurrentState = newState;
 
@@ -338,7 +337,7 @@ namespace itolib.PlayZone
             if (CurrentState is not ElevatorState.Deactivated)
             {
                 ToggleDoorsLocal(open);
-                ToggleDoorsServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), open);
+                ToggleDoorsServerRpc(GameNetworkManager.Instance.localPlayerController, open);
             }
         }
 
@@ -348,7 +347,7 @@ namespace itolib.PlayZone
         /// <param name="playerReference"></param>
         /// <param name="open"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void ToggleDoorsServerRpc(NetworkObjectReference playerReference, bool open)
+        public void ToggleDoorsServerRpc(NetworkBehaviourReference playerReference, bool open)
         {
             ToggleDoorsClientRpc(playerReference, open);
         }
@@ -359,11 +358,9 @@ namespace itolib.PlayZone
         /// <param name="playerReference"></param>
         /// <param name="open"></param>
         [ClientRpc]
-        public void ToggleDoorsClientRpc(NetworkObjectReference playerReference, bool open)
+        public void ToggleDoorsClientRpc(NetworkBehaviourReference playerReference, bool open)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 ToggleDoorsLocal(open);
             }
@@ -389,11 +386,11 @@ namespace itolib.PlayZone
 
                         if (open)
                         {
-                            onDoorsOpen?.Invoke(true);
+                            onDoorsOpen.Invoke(true);
                         }
                         else
                         {
-                            onDoorsClose?.Invoke(true);
+                            onDoorsClose.Invoke(true);
                         }
                     }
 
@@ -410,11 +407,11 @@ namespace itolib.PlayZone
 
                         if (open)
                         {
-                            onDoorsOpen?.Invoke(false);
+                            onDoorsOpen.Invoke(false);
                         }
                         else
                         {
-                            onDoorsClose?.Invoke(false);
+                            onDoorsClose.Invoke(false);
                         }
                     }
 
@@ -482,7 +479,7 @@ namespace itolib.PlayZone
         /// </summary>
         public void OnDeactivate()
         {
-            onDeactivate?.Invoke();
+            onDeactivate.Invoke();
 
             if (elevatorAudioFinish != null && elevatorSource != null)
             {

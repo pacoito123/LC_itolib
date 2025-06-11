@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -94,28 +95,44 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Tooltip("")]
         [Header("Events")]
-        public UnityEvent<PlayerControllerB>? onThrowStart;
+        public UnityEvent<PlayerControllerB> onThrowStart = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB>? onThrowFinish;
+        public UnityEvent<PlayerControllerB> onThrowFinish = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB, int>? onThrowFinishVariant;
+        public UnityEvent<PlayerControllerB, int> onThrowFinishVariant = new();
 
-        private void Awake()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Awake()
         {
-            item ??= GetComponent<ItemGrabbable>();
-            item.FallWithCurveOverride = FallWithCurve;
+            if (item == null && !TryGetComponent(out item))
+            {
+                // TODO: Log warning
+                enabled = false;
 
-            item.onActivate?.AddListener(ItemActivate);
-            item.onHitGround?.AddListener(OnHitGround);
-            item.onHitGroundVariant?.AddListener(OnHitGroundVariant);
+                return;
+            }
+
+            item.onActivate.AddListener(ItemActivate);
+            item.onHitGround.AddListener(OnHitGround);
+            item.onHitGroundVariant.AddListener(OnHitGroundVariant);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Start()
+        {
+            item.FallWithCurveOverride = FallWithCurve;
         }
 
         /// <summary>
@@ -135,9 +152,9 @@ namespace itolib.Behaviours.Grabbables
             if (item.playerHeldBy != null)
             {
                 LastThrownBy = item.playerHeldBy;
-                onThrowStart?.Invoke(LastThrownBy);
+                onThrowStart.Invoke(LastThrownBy);
 
-                SyncThrowerServerRpc(item.playerHeldBy.GetComponent<NetworkObject>());
+                SyncThrowerServerRpc(item.playerHeldBy);
 
                 item.playerHeldBy.DiscardHeldObject(true, null, GetThrowDestination(), true);
             }
@@ -150,7 +167,7 @@ namespace itolib.Behaviours.Grabbables
         {
             if (LastThrownBy != null)
             {
-                onThrowFinish?.Invoke(LastThrownBy);
+                onThrowFinish.Invoke(LastThrownBy);
                 LastThrownBy = null;
             }
         }
@@ -162,7 +179,7 @@ namespace itolib.Behaviours.Grabbables
         {
             if (LastThrownBy != null)
             {
-                onThrowFinishVariant?.Invoke(LastThrownBy, item.VariantIndex);
+                onThrowFinishVariant.Invoke(LastThrownBy, item.VariantIndex);
                 LastThrownBy = null;
             }
         }
@@ -214,7 +231,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="playerReference"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SyncThrowerServerRpc(NetworkObjectReference playerReference)
+        public void SyncThrowerServerRpc(NetworkBehaviourReference playerReference)
         {
             SyncThrowerClientRpc(playerReference);
         }
@@ -224,14 +241,12 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void SyncThrowerClientRpc(NetworkObjectReference playerReference)
+        public void SyncThrowerClientRpc(NetworkBehaviourReference playerReference)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 LastThrownBy = player;
-                onThrowStart?.Invoke(LastThrownBy);
+                onThrowStart.Invoke(LastThrownBy);
             }
         }
     }

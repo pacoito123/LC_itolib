@@ -79,7 +79,7 @@ namespace itolib.Behaviours.Props
 
                     if (magnitude < tolerance)
                     {
-                        onObjectsEach?.Invoke(connector);
+                        onObjectsEach.Invoke(connector);
                         ConnectorsFound++;
                     }
                 }
@@ -87,7 +87,7 @@ namespace itolib.Behaviours.Props
 
             if (ConnectorsFound > 0)
             {
-                onObjectsAny?.Invoke(ConnectorsFound);
+                onObjectsAny.Invoke(ConnectorsFound);
             }
         }
 

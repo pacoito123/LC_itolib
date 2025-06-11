@@ -56,7 +56,7 @@ namespace itolib.Behaviours.Detectors
         {
             if (hazardReference.TryGet(out NetworkObject hazardNetworkObject))
             {
-                onObjectsEach?.Invoke(hazardNetworkObject.gameObject);
+                onObjectsEach.Invoke(hazardNetworkObject.gameObject);
             }
         }
 
@@ -67,7 +67,7 @@ namespace itolib.Behaviours.Detectors
         [ClientRpc]
         public void FoundHazardsAnyClientRpc(int hazardsFound)
         {
-            onObjectsAny?.Invoke(hazardsFound);
+            onObjectsAny.Invoke(hazardsFound);
         }
 
         /// <summary>

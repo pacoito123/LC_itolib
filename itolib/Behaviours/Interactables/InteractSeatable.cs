@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -51,13 +52,13 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onPlayerSit;
+        public UnityEvent onPlayerSit = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onPlayerStand;
+        public UnityEvent onPlayerStand = new();
 
         /// <summary>
         ///     Set default seat properties.
@@ -84,21 +85,26 @@ namespace itolib.Behaviours.Interactables
             horizontalClamp = 120;
         }
 
-        private void Awake()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Awake()
         {
             onInteractEarlyOtherClients.AddListener(player =>
             {
-                if (player?.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId
-                    && player.TryGetComponent(out NetworkObject playerReference))
+                if (player.IsLocalClient())
                 {
-                    SetPlayerOnSeatServerRpc(playerReference);
+                    SetPlayerOnSeatServerRpc(player);
                 }
             });
 
             ActionToExit = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToExit);
         }
 
-        private new void Update()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public new void Update()
         {
             base.Update();
 
@@ -120,7 +126,7 @@ namespace itolib.Behaviours.Interactables
         /// <param name="playerSitting"></param>
         public void SetPlayerOnSeatLocal(PlayerControllerB playerSitting)
         {
-            if (GameNetworkManager.Instance.localPlayerController.actualClientId == playerSitting.actualClientId)
+            if (playerSitting.IsLocalClient())
             {
                 PlayerExitPoint = playerSitting.visorCamera.transform.position;
                 LocalPlayerSeated = true;
@@ -129,7 +135,7 @@ namespace itolib.Behaviours.Interactables
             SittingPlayer = playerSitting;
             interactable = false;
 
-            onPlayerSit?.Invoke();
+            onPlayerSit.Invoke();
         }
 
         /// <summary>
@@ -147,7 +153,7 @@ namespace itolib.Behaviours.Interactables
                 SittingPlayer.TeleportPlayer(PlayerExitPoint);
             }
 
-            onPlayerStand?.Invoke();
+            onPlayerStand.Invoke();
 
             PlayerExitPoint = Vector3.zero;
             LocalPlayerSeated = false;
@@ -161,7 +167,7 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="playerReference"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SetPlayerOnSeatServerRpc(NetworkObjectReference playerReference)
+        public void SetPlayerOnSeatServerRpc(NetworkBehaviourReference playerReference)
         {
             if (LocalPlayerSeated || SittingPlayer != null)
             {
@@ -176,10 +182,9 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void SetPlayerOnSeatClientRpc(NetworkObjectReference playerReference)
+        public void SetPlayerOnSeatClientRpc(NetworkBehaviourReference playerReference)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player))
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
                 SetPlayerOnSeatLocal(player);
             }

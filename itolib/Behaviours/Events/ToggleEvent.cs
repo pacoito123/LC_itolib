@@ -13,20 +13,20 @@ namespace itolib.Behaviours.Events
         /// </summary>
         [Header("Toggle Event")]
         [Tooltip("")]
-        public UnityEvent? onEnable;
+        public UnityEvent onEnable = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onDisable;
+        public UnityEvent onDisable = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         public void OnEnable()
         {
-            onEnable?.Invoke();
+            onEnable.Invoke();
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace itolib.Behaviours.Events
         /// </summary>
         public void OnDisable()
         {
-            onDisable?.Invoke();
+            onDisable.Invoke();
         }
     }
 }

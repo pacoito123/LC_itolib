@@ -1,8 +1,9 @@
+using GameNetcodeStuff;
+using itolib.Extensions;
+using itolib.Behaviours.Networking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using GameNetcodeStuff;
-using itolib.Behaviours.Networking;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -26,19 +27,19 @@ namespace itolib.Behaviours.Kinematics
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int>? onReachedHealth;
+        public UnityEvent<int> onReachedHealth;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int>? onBelowHealth;
+        public UnityEvent<int> onBelowHealth;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int>? onAboveHealth;
+        public UnityEvent<int> onAboveHealth;
 
         /// <summary>
         ///     TODO.
@@ -51,6 +52,9 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         public HealthCondition()
         {
+            onReachedHealth = new();
+            onBelowHealth = new();
+            onAboveHealth = new();
             runOnce = true;
         }
     }
@@ -88,7 +92,7 @@ namespace itolib.Behaviours.Kinematics
         /// <param name="hitInfo"></param>
         public override void PerformHitLocal(HitInfo hitInfo)
         {
-            onHit?.Invoke();
+            onHit.Invoke();
 
             if (health == 0)
             {
@@ -107,17 +111,17 @@ namespace itolib.Behaviours.Kinematics
                 {
                     if (health == healthConditions[i].healthAmount)
                     {
-                        healthConditions[i].onReachedHealth?.Invoke(health);
+                        healthConditions[i].onReachedHealth.Invoke(health);
                     }
 
                     if (health < healthConditions[i].healthAmount)
                     {
-                        healthConditions[i].onBelowHealth?.Invoke(health);
+                        healthConditions[i].onBelowHealth.Invoke(health);
                     }
 
                     if (health > healthConditions[i].healthAmount)
                     {
-                        healthConditions[i].onAboveHealth?.Invoke(health);
+                        healthConditions[i].onAboveHealth.Invoke(health);
                     }
                 }
             }
@@ -132,7 +136,7 @@ namespace itolib.Behaviours.Kinematics
         public void SetHealth(int health)
         {
             SetHealthLocal(health);
-            SetHealthServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), health);
+            SetHealthServerRpc(GameNetworkManager.Instance.localPlayerController, health);
         }
 
         /// <summary>
@@ -141,7 +145,7 @@ namespace itolib.Behaviours.Kinematics
         /// <param name="playerReference"></param>
         /// <param name="health"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SetHealthServerRpc(NetworkObjectReference playerReference, int health)
+        public void SetHealthServerRpc(NetworkBehaviourReference playerReference, int health)
         {
             SetHealthClientRpc(playerReference, health);
         }
@@ -152,11 +156,9 @@ namespace itolib.Behaviours.Kinematics
         /// <param name="playerReference"></param>
         /// <param name="health"></param>
         [ClientRpc]
-        public void SetHealthClientRpc(NetworkObjectReference playerReference, int health)
+        public void SetHealthClientRpc(NetworkBehaviourReference playerReference, int health)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 SetHealthLocal(health);
             }

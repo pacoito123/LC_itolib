@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -67,13 +68,13 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB>? onHinderStart;
+        public UnityEvent<PlayerControllerB> onHinderStart = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB>? onHinderStop;
+        public UnityEvent<PlayerControllerB> onHinderStop = new();
 
         /// <summary>
         ///     TODO.
@@ -172,11 +173,11 @@ namespace itolib.Behaviours.Effects
                 }
             }
 
-            onHinderStart?.Invoke(player);
+            onHinderStart.Invoke(player);
 
             if (!attachLocally)
             {
-                HinderPlayerServerRpc(player.GetComponent<NetworkObject>());
+                HinderPlayerServerRpc(player);
             }
         }
 
@@ -213,11 +214,11 @@ namespace itolib.Behaviours.Effects
                 }
             }
 
-            onHinderStop?.Invoke(AttachedPlayer);
+            onHinderStop.Invoke(AttachedPlayer);
 
             if (!attachLocally)
             {
-                HinderPlayerServerRpc(AttachedPlayer.GetComponent<NetworkObject>(), stop: true);
+                HinderPlayerServerRpc(AttachedPlayer, stop: true);
             }
 
             base.DetachPlayerLocal();
@@ -229,7 +230,7 @@ namespace itolib.Behaviours.Effects
         /// <param name="playerReference"></param>
         /// <param name="stop"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void HinderPlayerServerRpc(NetworkObjectReference playerReference, bool stop = false)
+        public void HinderPlayerServerRpc(NetworkBehaviourReference playerReference, bool stop = false)
         {
             HinderPlayerClientRpc(playerReference, stop);
         }
@@ -240,19 +241,17 @@ namespace itolib.Behaviours.Effects
         /// <param name="playerReference"></param>
         /// <param name="stop"></param>
         [ClientRpc]
-        public void HinderPlayerClientRpc(NetworkObjectReference playerReference, bool stop = false)
+        public void HinderPlayerClientRpc(NetworkBehaviourReference playerReference, bool stop = false)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 if (!stop)
                 {
-                    onHinderStart?.Invoke(player);
+                    onHinderStart.Invoke(player);
                 }
                 else
                 {
-                    onHinderStop?.Invoke(player);
+                    onHinderStop.Invoke(player);
                 }
             }
         }

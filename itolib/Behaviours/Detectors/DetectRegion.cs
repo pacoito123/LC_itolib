@@ -58,19 +58,19 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         [Tooltip("Callback invoked after a search is performed, with the total number of overlapping Collider instances found as a parameter.")]
         [Header("Detect Region Events")]
-        public UnityEvent<int>? onRegionChecked;
+        public UnityEvent<int> onRegionChecked = new();
 
         /// <summary>
         ///     Callback invoked when an object of type <typeparamref name="T"/> enters the region, with the object itself given as a parameter.
         /// </summary>
         [Tooltip("Callback invoked when an object of the defined type enters the region, with the object itself as a parameter.")]
-        public UnityEvent<T>? onRegionEntered;
+        public UnityEvent<T> onRegionEntered = new();
 
         /// <summary>
         ///     Callback invoked when an object of type <typeparamref name="T"/> exits the region, with the object itself given as a parameter.
         /// </summary>
         [Tooltip("Callback invoked when an object of the defined type exits the region, with the object itself as a parameter.")]
-        public UnityEvent<T>? onRegionExited;
+        public UnityEvent<T> onRegionExited = new();
 
         /// <summary>
         ///     Callback invoked sequentially on every object of type <typeparamref name="T"/> found within the region after a search is performed, with
@@ -78,7 +78,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         [Tooltip("Callback invoked sequentially on every object of the defined type found within the region after a search is performed, with "
             + "each object given as a parameter.")]
-        public UnityEvent<T>? onObjectsEach;
+        public UnityEvent<T> onObjectsEach = new();
 
         /// <summary>
         ///     Callback invoked after a search is performed, only if at least one object of type <typeparamref name="T"/> is found within the region, with
@@ -86,7 +86,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         [Tooltip("Callback invoked after a search is performed, only if at least one object of the defined type is found within the region, with "
             + "the total number of overlapping objects given as a parameter.")]
-        public UnityEvent<int>? onObjectsAny;
+        public UnityEvent<int> onObjectsAny = new();
 
         /// <summary>
         ///     Layers within which to search for overlapping objects of type <typeparamref name="T"/>.
@@ -115,10 +115,10 @@ namespace itolib.Behaviours.Detectors
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(CheckObjectsInRegion);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(CheckObjectsInRegion);
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(CheckObjectsInRegion);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(CheckObjectsInRegion);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.AddListener(CheckObjectsInRegion);
@@ -150,10 +150,10 @@ namespace itolib.Behaviours.Detectors
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(CheckObjectsInRegion);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(CheckObjectsInRegion);
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(CheckObjectsInRegion);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(CheckObjectsInRegion);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(CheckObjectsInRegion);
@@ -221,7 +221,7 @@ namespace itolib.Behaviours.Detectors
             // ...
 
             // Invoke event after the region is checked.
-            onRegionChecked?.Invoke(ObjectsFound);
+            onRegionChecked.Invoke(ObjectsFound);
         }
 
         /// <summary>

@@ -17,14 +17,17 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent? actions;
+        public UnityEvent actions = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         public void OnEnable()
         {
-            scriptableEvent?.AddListener(InvokeEvent);
+            if (scriptableEvent != null)
+            {
+                scriptableEvent.AddListener(InvokeEvent);
+            }
         }
 
         /// <summary>
@@ -32,7 +35,10 @@ namespace itolib.Behaviours.Events
         /// </summary>
         public void OnDisable()
         {
-            scriptableEvent?.RemoveListener(InvokeEvent);
+            if (scriptableEvent != null)
+            {
+                scriptableEvent.RemoveListener(InvokeEvent);
+            }
         }
 
         /// <summary>
@@ -40,7 +46,7 @@ namespace itolib.Behaviours.Events
         /// </summary>
         private void InvokeEvent()
         {
-            actions?.Invoke();
+            actions.Invoke();
         }
     }
 }

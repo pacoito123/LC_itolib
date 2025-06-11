@@ -1,6 +1,7 @@
 using DunGen;
 using GameNetcodeStuff;
 using itolib.Enums;
+using itolib.Extensions;
 using LethalLevelLoader;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace itolib.Behaviours.Events
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onEvent;
+        public UnityEvent onEvent;
 
         /// <summary>
         ///     TODO.
@@ -123,10 +124,10 @@ namespace itolib.Behaviours.Events
                     RollFromServer();
                     break;
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(RollFromServer);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(RollFromServer);
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(RollFromServer);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(RollFromServer);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.AddListener(RollFromServer);
@@ -151,10 +152,10 @@ namespace itolib.Behaviours.Events
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(RollFromServer);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(RollFromServer);
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(RollFromServer);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(RollFromServer);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(RollFromServer);
@@ -187,8 +188,7 @@ namespace itolib.Behaviours.Events
         /// </summary> 
         public void RollFromClient(PlayerControllerB player)
         {
-            if (AllWeightsCumulative == null || AllWeightsCumulative.Count == 0
-                || player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (AllWeightsCumulative == null || AllWeightsCumulative.Count == 0 || !player.IsLocalClient())
             {
                 return;
             }
@@ -215,7 +215,7 @@ namespace itolib.Behaviours.Events
 
                 if (IsSpawned)
                 {
-                    InvokeEventServerRpc(player.GetComponent<NetworkObject>(), weightIndex);
+                    InvokeEventServerRpc(player, weightIndex);
                 }
             }
         }
@@ -226,7 +226,7 @@ namespace itolib.Behaviours.Events
         /// <param name="playerReference"></param>
         /// <param name="weightIndex"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void InvokeEventServerRpc(NetworkObjectReference playerReference, int weightIndex)
+        public void InvokeEventServerRpc(NetworkBehaviourReference playerReference, int weightIndex)
         {
             InvokeEventClientRpc(playerReference, weightIndex);
         }
@@ -237,11 +237,9 @@ namespace itolib.Behaviours.Events
         /// <param name="playerReference"></param>
         /// <param name="weightIndex"></param>
         [ClientRpc]
-        public void InvokeEventClientRpc(NetworkObjectReference playerReference, int weightIndex)
+        public void InvokeEventClientRpc(NetworkBehaviourReference playerReference, int weightIndex)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 InvokeEventLocal(weightIndex);
             }
@@ -253,7 +251,7 @@ namespace itolib.Behaviours.Events
         /// <param name="weightIndex"></param>
         private void InvokeEventLocal(int weightIndex)
         {
-            eventEntries[weightIndex].onEvent?.Invoke();
+            eventEntries[weightIndex].onEvent.Invoke();
 
             if (!exhaustiveRolls || AllWeightsCumulative == null)
             {

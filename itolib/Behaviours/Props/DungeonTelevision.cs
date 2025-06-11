@@ -43,7 +43,7 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public void Awake()
         {
-            if (TelevisionUnlockableItem?.prefabObject.transform.Find("TVScript").TryGetComponent(out TVScript television) == true
+            if (TelevisionUnlockableItem?.prefabObject.transform.Find("TVScript")?.TryGetComponent(out TVScript television) == true
                 && television.TryGetComponent(out VideoPlayer vanillaVideo))
             {
                 tvClips = television.tvClips;

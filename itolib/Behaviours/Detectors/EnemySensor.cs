@@ -64,7 +64,7 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<EnemyFilter>? onFilterAmountMet;
+        public UnityEvent<EnemyFilter> onFilterAmountMet = new();
 
         /// <summary>
         ///     TODO.
@@ -172,7 +172,7 @@ namespace itolib.Behaviours.Detectors
                     {
                         if (++enemyAmounts[i] >= filter.amount)
                         {
-                            onFilterAmountMet?.Invoke(filter);
+                            onFilterAmountMet.Invoke(filter);
                             enemyAmounts[i] = 0;
                         }
 
@@ -231,7 +231,7 @@ namespace itolib.Behaviours.Detectors
             if (enemyReference.TryGet(out NetworkObject enemyNetworkObject)
                 && enemyNetworkObject.TryGetComponent(out EnemyAI enemy))
             {
-                onObjectsEach?.Invoke(enemy);
+                onObjectsEach.Invoke(enemy);
             }
         }
 
@@ -242,7 +242,7 @@ namespace itolib.Behaviours.Detectors
         [ClientRpc]
         public void FoundEnemiesAnyClientRpc(int enemiesFound)
         {
-            onObjectsAny?.Invoke(enemiesFound);
+            onObjectsAny.Invoke(enemiesFound);
         }
 
         /// <summary>
@@ -258,11 +258,11 @@ namespace itolib.Behaviours.Detectors
             {
                 if (!exit)
                 {
-                    onRegionEntered?.Invoke(enemy);
+                    onRegionEntered.Invoke(enemy);
                 }
                 else
                 {
-                    onRegionExited?.Invoke(enemy);
+                    onRegionExited.Invoke(enemy);
                 }
             }
         }

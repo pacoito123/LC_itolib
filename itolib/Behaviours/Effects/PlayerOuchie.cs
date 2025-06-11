@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using UnityEngine;
 
 namespace itolib.Behaviours.Effects
@@ -52,8 +53,7 @@ namespace itolib.Behaviours.Effects
         /// <param name="playerHurt"></param>
         public void Ouchie(PlayerControllerB playerHurt)
         {
-            if (playerHurt.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId
-                || playerHurt.isPlayerDead || !playerHurt.isActiveAndEnabled)
+            if (!playerHurt.IsLocalClient() || playerHurt.isPlayerDead || !playerHurt.isActiveAndEnabled)
             {
                 return;
             }

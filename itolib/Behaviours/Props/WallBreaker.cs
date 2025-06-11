@@ -42,7 +42,7 @@ namespace itolib.Behaviours.Props
         {
             if (disableSelf)
             {
-                onObjectsAny?.AddListener(_ => gameObject.SetActive(false));
+                onObjectsAny.AddListener(_ => gameObject.SetActive(false));
             }
 
             base.Start();
@@ -75,7 +75,7 @@ namespace itolib.Behaviours.Props
 
                     if (magnitude < tolerance)
                     {
-                        onObjectsEach?.Invoke(blocker);
+                        onObjectsEach.Invoke(blocker);
                         BlockersFound++;
                     }
                 }
@@ -83,7 +83,7 @@ namespace itolib.Behaviours.Props
 
             if (BlockersFound > 0)
             {
-                onObjectsAny?.Invoke(BlockersFound);
+                onObjectsAny.Invoke(BlockersFound);
             }
         }
 

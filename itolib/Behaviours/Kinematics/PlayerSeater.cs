@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Behaviours.Effects;
+using itolib.Extensions;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -44,13 +45,13 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB>? onPlayerSit;
+        public UnityEvent<PlayerControllerB> onPlayerSit = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB>? onPlayerUnsit;
+        public UnityEvent<PlayerControllerB> onPlayerUnsit = new();
 
         /// <summary>
         ///     TODO.
@@ -96,7 +97,7 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         public override void AttachPlayerLocal(PlayerControllerB player)
         {
-            if (player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (player.IsLocalClient())
             {
                 return;
             }
@@ -107,7 +108,7 @@ namespace itolib.Behaviours.Kinematics
 
             if (IsSpawned)
             {
-                PlayerSitServerRpc(player.GetComponent<NetworkObject>());
+                PlayerSitServerRpc(player);
             }
         }
 
@@ -116,7 +117,7 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         public override void DetachPlayerLocal()
         {
-            if (AttachedPlayer == null || (!attachLocally && AttachedPlayer.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId))
+            if (AttachedPlayer == null || (!attachLocally && AttachedPlayer.IsLocalClient()))
             {
                 return;
             }
@@ -125,7 +126,7 @@ namespace itolib.Behaviours.Kinematics
 
             if (IsSpawned)
             {
-                PlayerSitServerRpc(AttachedPlayer.GetComponent<NetworkObject>(), unsit: true);
+                PlayerSitServerRpc(AttachedPlayer, unsit: true);
             }
 
             base.DetachPlayerLocal();
@@ -137,7 +138,7 @@ namespace itolib.Behaviours.Kinematics
         /// <param name="playerReference"></param>
         /// <param name="unsit"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void PlayerSitServerRpc(NetworkObjectReference playerReference, bool unsit = false)
+        public void PlayerSitServerRpc(NetworkBehaviourReference playerReference, bool unsit = false)
         {
             PlayerSitClientRpc(playerReference, unsit);
         }
@@ -148,11 +149,9 @@ namespace itolib.Behaviours.Kinematics
         /// <param name="playerReference"></param>
         /// <param name="unsit"></param>
         [ClientRpc]
-        public void PlayerSitClientRpc(NetworkObjectReference playerReference, bool unsit = false)
+        public void PlayerSitClientRpc(NetworkBehaviourReference playerReference, bool unsit = false)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 PlayerSitLocal(player, unsit);
             }
@@ -187,7 +186,7 @@ namespace itolib.Behaviours.Kinematics
                 player.playerBodyAnimator.ResetTrigger("SA_Truck");
                 player.playerBodyAnimator.SetTrigger("SA_Truck");
 
-                onPlayerSit?.Invoke(player);
+                onPlayerSit.Invoke(player);
             }
             else
             {
@@ -210,7 +209,7 @@ namespace itolib.Behaviours.Kinematics
 
                 player.playerBodyAnimator.SetTrigger("SA_stopAnimation");
 
-                onPlayerUnsit?.Invoke(player);
+                onPlayerUnsit.Invoke(player);
             }
         }
     }

@@ -34,37 +34,37 @@ namespace itolib.PlayZone
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent? onActivate;
+        public UnityEvent onActivate = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<bool>? onDisconnectEarly;
+        public UnityEvent<bool> onDisconnectEarly = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<bool>? onDisconnect;
+        public UnityEvent<bool> onDisconnect = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<bool>? onLightsFlicker;
+        public UnityEvent<bool> onLightsFlicker = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<bool>? onLightsOff;
+        public UnityEvent<bool> onLightsOff = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<bool>? onDisplayWarning;
+        public UnityEvent<bool> onDisplayWarning = new();
 
         /// <summary>
         ///     TODO.
@@ -84,12 +84,12 @@ namespace itolib.PlayZone
             {
                 FacilityMeltdownCompatibility.HalveTwinValue(this);
 
-                onDisconnectEarly?.AddListener(FacilityMeltdownCompatibility.TwinMeltdown);
+                onDisconnectEarly.AddListener(FacilityMeltdownCompatibility.TwinMeltdown);
             }
 
             if (PizzaTowerEscapeMusicCompatibility.Enabled)
             {
-                onDisconnectEarly?.AddListener(_ => PizzaTowerEscapeMusicCompatibility.SwitchTwin(LongLostTwin));
+                onDisconnectEarly.AddListener(_ => PizzaTowerEscapeMusicCompatibility.SwitchTwin(LongLostTwin));
             }
         }
 
@@ -161,7 +161,7 @@ namespace itolib.PlayZone
                     apparatusAudio.Play();
                 }
 
-                onActivate?.Invoke();
+                onActivate.Invoke();
             }
         }
 
@@ -194,7 +194,7 @@ namespace itolib.PlayZone
         {
             apparatusAudio?.Stop();
             apparatusAudio?.PlayOneShot(disconnectSFX, 0.7f);
-            onDisconnectEarly?.Invoke(bothPulled);
+            onDisconnectEarly.Invoke(bothPulled);
 
             yield return new WaitForSeconds(0.1f);
             sparkParticle.SetActive(true);
@@ -204,16 +204,16 @@ namespace itolib.PlayZone
             {
                 roundManager.minEnemiesToSpawn = bothPulled ? 2 : 1;
             }
-            onDisconnect?.Invoke(bothPulled);
+            onDisconnect.Invoke(bothPulled);
 
             yield return new WaitForSeconds(1.0f);
             roundManager.FlickerLights(false, false);
-            onLightsFlicker?.Invoke(bothPulled);
+            onLightsFlicker.Invoke(bothPulled);
 
             yield return new WaitForSeconds(2.5f);
             roundManager.SwitchPower(false);
             roundManager.powerOffPermanently = bothPulled;
-            onLightsOff?.Invoke(bothPulled);
+            onLightsOff.Invoke(bothPulled);
 
             yield return new WaitForSeconds(0.75f);
 
@@ -226,7 +226,7 @@ namespace itolib.PlayZone
             }
 
             HUDManager.Instance.RadiationWarningHUD();
-            onDisplayWarning?.Invoke(bothPulled);
+            onDisplayWarning.Invoke(bothPulled);
 
             if (bothPulled && IsHost && radMechEnemyType != null)
             {

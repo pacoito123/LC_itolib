@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Behaviours.Effects;
+using itolib.Extensions;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -41,7 +42,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB>? onMovementDetected;
+        public UnityEvent<PlayerControllerB> onMovementDetected = new();
 
         /// <summary>
         ///     TODO.
@@ -99,11 +100,11 @@ namespace itolib.Behaviours.Detectors
                 return;
             }
 
-            onMovementDetected?.Invoke(AttachedPlayer);
+            onMovementDetected.Invoke(AttachedPlayer);
 
             if (IsSpawned) // TODO: Separate local effect field?
             {
-                PlayerMovedServerRpc(AttachedPlayer.GetComponent<NetworkObject>());
+                PlayerMovedServerRpc(AttachedPlayer);
             }
 
             timer = 0.0f;
@@ -114,7 +115,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="playerReference"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void PlayerMovedServerRpc(NetworkObjectReference playerReference)
+        public void PlayerMovedServerRpc(NetworkBehaviourReference playerReference)
         {
             PlayerMovedClientRpc(playerReference);
         }
@@ -124,13 +125,11 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void PlayerMovedClientRpc(NetworkObjectReference playerReference)
+        public void PlayerMovedClientRpc(NetworkBehaviourReference playerReference)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
-                onMovementDetected?.Invoke(player);
+                onMovementDetected.Invoke(player);
             }
         }
     }

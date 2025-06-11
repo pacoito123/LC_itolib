@@ -1,5 +1,6 @@
-using System;
 using GameNetcodeStuff;
+using itolib.Extensions;
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -71,19 +72,19 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onHit;
+        public UnityEvent onHit = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB>? onPlayerHit;
+        public UnityEvent<PlayerControllerB> onPlayerHit = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB>? onPlayerHitLocal;
+        public UnityEvent<PlayerControllerB> onPlayerHitLocal = new();
 
         /// <summary>
         ///     TODO.
@@ -122,7 +123,7 @@ namespace itolib.Behaviours.Networking
         public virtual void PerformHit(HitInfo hitInfo)
         {
             PerformHitLocal(hitInfo);
-            PerformHitServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), hitInfo);
+            PerformHitServerRpc(GameNetworkManager.Instance.localPlayerController, hitInfo);
         }
 
         /// <summary>
@@ -131,7 +132,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="playerReference"></param>
         /// <param name="hitInfo"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void PerformHitServerRpc(NetworkObjectReference playerReference, HitInfo hitInfo)
+        public void PerformHitServerRpc(NetworkBehaviourReference playerReference, HitInfo hitInfo)
         {
             PerformHitClientRpc(playerReference, hitInfo);
         }
@@ -142,11 +143,9 @@ namespace itolib.Behaviours.Networking
         /// <param name="playerReference"></param>
         /// <param name="hitInfo"></param>
         [ClientRpc]
-        public void PerformHitClientRpc(NetworkObjectReference playerReference, HitInfo hitInfo)
+        public void PerformHitClientRpc(NetworkBehaviourReference playerReference, HitInfo hitInfo)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 PerformHitLocal(hitInfo);
             }

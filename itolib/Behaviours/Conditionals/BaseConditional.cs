@@ -36,12 +36,12 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent? onConditionalApply;
+        public UnityEvent onConditionalApply;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent? onConditionalUndo;
+        public UnityEvent onConditionalUndo;
 
         /// <summary>
         ///     TODO.
@@ -54,11 +54,11 @@ namespace itolib.Behaviours.Conditionals
 
             if (!undo)
             {
-                onConditionalApply?.Invoke();
+                onConditionalApply.Invoke();
             }
             else
             {
-                onConditionalUndo?.Invoke();
+                onConditionalUndo.Invoke();
             }
         }
     }
@@ -93,10 +93,10 @@ namespace itolib.Behaviours.Conditionals
                     ApplyConditional();
                     break;
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(ApplyConditional);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(ApplyConditional);
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(ApplyConditional);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(ApplyConditional);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.AddListener(ApplyConditional);
@@ -116,10 +116,10 @@ namespace itolib.Behaviours.Conditionals
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(ApplyConditional);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(ApplyConditional);
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(ApplyConditional);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(ApplyConditional);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(ApplyConditional);

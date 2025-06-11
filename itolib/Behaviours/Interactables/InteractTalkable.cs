@@ -17,12 +17,12 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent<PlayerControllerB>? onStartTalking;
+        public UnityEvent<PlayerControllerB> onStartTalking = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent<PlayerControllerB>? onStopTalking;
+        public UnityEvent<PlayerControllerB> onStopTalking = new();
 
         /// <summary>
         ///     Set default talkable properties.
@@ -90,7 +90,7 @@ namespace itolib.Behaviours.Interactables
                 player.speakingToWalkieTalkie = true;
                 StartOfRound.Instance.UpdatePlayerVoiceEffects();
 
-                onStartTalking?.Invoke(player);
+                onStartTalking.Invoke(player);
             }
         }
 
@@ -124,7 +124,7 @@ namespace itolib.Behaviours.Interactables
             if (playerReference.TryGet(out NetworkObject playerNetworkObject)
                 && playerNetworkObject.TryGetComponent(out PlayerControllerB player))
             {
-                onStopTalking?.Invoke(player);
+                onStopTalking.Invoke(player);
 
                 player.holdingWalkieTalkie = false;
                 player.speakingToWalkieTalkie = false;

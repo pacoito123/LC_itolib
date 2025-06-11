@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -97,13 +98,13 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent? onEnemyKick;
+        public UnityEvent onEnemyKick = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB>? onPlayerKick;
+        public UnityEvent<PlayerControllerB> onPlayerKick = new();
 
         /// <summary>
         ///     TODO.
@@ -113,12 +114,28 @@ namespace itolib.Behaviours.Grabbables
         [Tooltip("")]
         public LayerMask collisionMask = 369101057;
 
-        private void Awake()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Awake()
         {
-            item ??= GetComponent<ItemGrabbable>();
-            item.FallWithCurveOverride = FallWithCurve;
+            if (item == null && !TryGetComponent(out item))
+            {
+                // TODO: Log warning
+                enabled = false;
 
-            item.onActivatePhysicsTrigger?.AddListener(ActivatePhysicsTrigger);
+                return;
+            }
+
+            item.onActivatePhysicsTrigger.AddListener(ActivatePhysicsTrigger);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Start()
+        {
+            item.FallWithCurveOverride = FallWithCurve;
         }
 
         /// <summary>
@@ -146,8 +163,7 @@ namespace itolib.Behaviours.Grabbables
             {
                 item.FallWithCurveOverride = FallWithCurve;
 
-                if (other.TryGetComponent(out PlayerControllerB player)
-                    && player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId)
+                if (other.TryGetComponent(out PlayerControllerB player) && player.IsLocalClient())
                 {
                     BeginKick(other.gameObject.transform.position + Vector3.up, hitByEnemy: false);
                 }
@@ -212,7 +228,7 @@ namespace itolib.Behaviours.Grabbables
         {
             if (hitByEnemy)
             {
-                onEnemyKick?.Invoke();
+                onEnemyKick.Invoke();
 
                 return;
             }
@@ -224,8 +240,7 @@ namespace itolib.Behaviours.Grabbables
                 return;
             }
 
-            if (LastKickedBy?.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId
-                && Time.realtimeSinceStartup - KickTimer < 0.35f)
+            if (LastKickedBy != null && LastKickedBy.IsLocalClient() && Time.realtimeSinceStartup - KickTimer < 0.35f)
             {
                 return;
             }
@@ -256,11 +271,11 @@ namespace itolib.Behaviours.Grabbables
 
             if (!hitByEnemy)
             {
-                onPlayerKick?.Invoke(LastKickedBy);
+                onPlayerKick.Invoke(LastKickedBy);
             }
 
             KickLocalClient(destination, setInElevator, setInShipRoom);
-            KickServerRpc(destination, LastKickedBy.GetComponent<NetworkObject>(), setInElevator, setInShipRoom);
+            KickServerRpc(destination, LastKickedBy, setInElevator, setInShipRoom);
         }
 
         /// <summary>
@@ -291,11 +306,9 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="setInElevator"></param>
         /// <param name="setInShipRoom"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void KickServerRpc(Vector3 destination, NetworkObjectReference playerWhoKicked, bool setInElevator, bool setInShipRoom)
+        public void KickServerRpc(Vector3 destination, NetworkBehaviourReference playerWhoKicked, bool setInElevator, bool setInShipRoom)
         {
-            if (playerWhoKicked.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerWhoKicked.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 LastKickedBy = player;
                 KickLocalClient(destination, setInElevator, setInShipRoom);
@@ -312,16 +325,14 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="setInElevator"></param>
         /// <param name="setInShipRoom"></param>
         [ClientRpc]
-        public void KickClientRpc(Vector3 destination, NetworkObjectReference playerWhoKicked, bool setInElevator, bool setInShipRoom)
+        public void KickClientRpc(Vector3 destination, NetworkBehaviourReference playerWhoKicked, bool setInElevator, bool setInShipRoom)
         {
             if (IsHost)
             {
                 return;
             }
 
-            if (playerWhoKicked.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerWhoKicked.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 LastKickedBy = player;
                 KickLocalClient(destination, setInElevator, setInShipRoom);

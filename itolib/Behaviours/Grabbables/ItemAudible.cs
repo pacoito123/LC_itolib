@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -124,11 +125,17 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public void Awake()
         {
-            item ??= GetComponent<ItemGrabbable>();
+            if (item == null && !TryGetComponent(out item))
+            {
+                // TODO: Log warning
+                enabled = false;
+
+                return;
+            }
 
             if (!triggerFromElsewhere)
             {
-                item.onActivate?.AddListener(ItemActivate);
+                item.onActivate.AddListener(ItemActivate);
             }
         }
 
@@ -151,7 +158,7 @@ namespace itolib.Behaviours.Grabbables
             }
 
             StopAudioLocal();
-            StopAudioServerRpc(item.playerHeldBy.GetComponent<NetworkObject>());
+            StopAudioServerRpc(item.playerHeldBy);
         }
 
         /// <summary>
@@ -202,7 +209,7 @@ namespace itolib.Behaviours.Grabbables
         public void PlayNetworkedAudio(int clip, int clipFar = -1, float volume = 1.0f, float pitch = 1.0f, float loudness = 0.0f)
         {
             PlayAudioLocal(clip, clipFar, volume, pitch, loudness);
-            PlayNetworkedAudioServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(),
+            PlayNetworkedAudioServerRpc(GameNetworkManager.Instance.localPlayerController,
                 clip, clipFar, volume, pitch, loudness);
         }
 
@@ -216,7 +223,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="pitch"></param>
         /// <param name="loudness"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void PlayNetworkedAudioServerRpc(NetworkObjectReference playerWhoCalled, int clip, int clipFar, float volume, float pitch, float loudness)
+        public void PlayNetworkedAudioServerRpc(NetworkBehaviourReference playerWhoCalled, int clip, int clipFar, float volume, float pitch, float loudness)
         {
             PlayNetworkedAudioClientRpc(playerWhoCalled, clip, clipFar, volume, pitch, loudness);
         }
@@ -231,11 +238,9 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="pitch"></param>
         /// <param name="loudness"></param>
         [ClientRpc]
-        public void PlayNetworkedAudioClientRpc(NetworkObjectReference playerWhoCalled, int clip, int clipFar, float volume, float pitch, float loudness)
+        public void PlayNetworkedAudioClientRpc(NetworkBehaviourReference playerWhoCalled, int clip, int clipFar, float volume, float pitch, float loudness)
         {
-            if (playerWhoCalled.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerWhoCalled.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 PlayAudioLocal(clip, clipFar, volume, pitch, loudness);
             }
@@ -285,7 +290,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="playerWhoCalled"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void StopAudioServerRpc(NetworkObjectReference playerWhoCalled)
+        public void StopAudioServerRpc(NetworkBehaviourReference playerWhoCalled)
         {
             StopAudioClientRpc(playerWhoCalled);
         }
@@ -295,11 +300,9 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="playerWhoCalled"></param>
         [ClientRpc]
-        public void StopAudioClientRpc(NetworkObjectReference playerWhoCalled)
+        public void StopAudioClientRpc(NetworkBehaviourReference playerWhoCalled)
         {
-            if (playerWhoCalled.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerWhoCalled.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 StopAudioLocal();
             }
@@ -310,8 +313,15 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         private void StopAudioLocal()
         {
-            itemSource?.Stop();
-            itemSourceFar?.Stop();
+            if (itemSource != null && itemSource.isPlaying)
+            {
+                itemSource.Stop();
+            }
+
+            if (itemSourceFar != null && itemSourceFar.isPlaying)
+            {
+                itemSourceFar.Stop();
+            }
         }
     }
 }

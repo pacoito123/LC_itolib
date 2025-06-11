@@ -75,7 +75,7 @@ namespace itolib.Behaviours.Detectors
             if (other.TryGetComponent(out GrabbableObject item) && item.IsOwner
                 && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
             {
-                onRegionEntered?.Invoke(item);
+                onRegionEntered.Invoke(item);
                 RegionEnteredServerRpc(item.GetComponent<NetworkObject>());
             }
         }
@@ -89,7 +89,7 @@ namespace itolib.Behaviours.Detectors
             if (other.TryGetComponent(out GrabbableObject item) && item.IsOwner
                 && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
             {
-                onRegionExited?.Invoke(item);
+                onRegionExited.Invoke(item);
                 RegionEnteredServerRpc(item.GetComponent<NetworkObject>(), exit: true);
             }
         }
@@ -184,7 +184,7 @@ namespace itolib.Behaviours.Detectors
             if (scrapReference.TryGet(out NetworkObject scrapNetworkObject)
                 && scrapNetworkObject.TryGetComponent(out GrabbableObject scrap))
             {
-                onObjectsEach?.Invoke(scrap);
+                onObjectsEach.Invoke(scrap);
             }
         }
 
@@ -195,7 +195,7 @@ namespace itolib.Behaviours.Detectors
         [ClientRpc]
         public void FoundItemsAnyClientRpc(int scrapFound)
         {
-            onObjectsAny?.Invoke(scrapFound);
+            onObjectsAny.Invoke(scrapFound);
         }
 
         /// <summary>
@@ -222,11 +222,11 @@ namespace itolib.Behaviours.Detectors
             {
                 if (!exit)
                 {
-                    onRegionEntered?.Invoke(item);
+                    onRegionEntered.Invoke(item);
                 }
                 else
                 {
-                    onRegionExited?.Invoke(item);
+                    onRegionExited.Invoke(item);
                 }
             }
         }

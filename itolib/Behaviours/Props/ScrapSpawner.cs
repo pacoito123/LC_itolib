@@ -158,7 +158,10 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            Random ??= new(StartOfRound.Instance.randomMapSeed + 44);
+            if (Random == null && StartOfRound.Instance != null)
+            {
+                Random = new(StartOfRound.Instance.randomMapSeed + 44);
+            }
 
             if (spawnLocations.Count == 0)
             {
@@ -234,7 +237,7 @@ namespace itolib.Behaviours.Props
 
             if (activationTime is ActivationTime.HazardSpawn or ActivationTime.ScrapSpawn)
             {
-                StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
+                StartOfRound.Instance?.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
             }
         }
 

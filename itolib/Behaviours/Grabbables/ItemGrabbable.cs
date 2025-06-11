@@ -45,157 +45,157 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent<bool, bool>? onActivate;
+        public UnityEvent<bool, bool> onActivate = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<Collider>? onActivatePhysicsTrigger;
+        public UnityEvent<Collider> onActivatePhysicsTrigger = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onBatteryCharge;
+        public UnityEvent onBatteryCharge = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onBatteryDrain;
+        public UnityEvent onBatteryDrain = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onCollect;
+        public UnityEvent onCollect = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onCollectEarly;
+        public UnityEvent onCollectEarly = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB>? onDestroyHeldEarly;
+        public UnityEvent<PlayerControllerB> onDestroyHeldEarly = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onDiscard;
+        public UnityEvent onDiscard = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onDiscardEarly;
+        public UnityEvent onDiscardEarly = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onDiscardSFX;
+        public UnityEvent onDiscardSFX = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onDiscardSFXEarly;
+        public UnityEvent onDiscardSFXEarly = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<EnemyAI>? onEnemyGrab;
+        public UnityEvent<EnemyAI> onEnemyGrab = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onEnemyDiscard;
+        public UnityEvent onEnemyDiscard = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onEquip;
+        public UnityEvent onEquip = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onEquipEarly;
+        public UnityEvent onEquipEarly = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onGrab;
+        public UnityEvent onGrab = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onHitGround;
+        public UnityEvent onHitGround = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int>? onHitGroundVariant;
+        public UnityEvent<int> onHitGroundVariant = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onInspect;
+        public UnityEvent onInspect = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onInspectEarly;
+        public UnityEvent onInspectEarly = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onInteract;
+        public UnityEvent onInteract = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onInteractLeft;
+        public UnityEvent onInteractLeft = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onInteractRight;
+        public UnityEvent onInteractRight = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onPlace;
+        public UnityEvent onPlace = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onPocket;
+        public UnityEvent onPocket = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onPocketEarly;
+        public UnityEvent onPocketEarly = new();
 
         /// <summary>
         ///     TODO.
@@ -204,7 +204,7 @@ namespace itolib.Behaviours.Grabbables
         {
             base.Start();
 
-            onDiscardEarly?.AddListener(() =>
+            onDiscardEarly.AddListener(() =>
             {
                 if (playerHeldBy != null)
                 {
@@ -213,7 +213,7 @@ namespace itolib.Behaviours.Grabbables
                 }
             });
 
-            onEquip?.AddListener(() =>
+            onEquip.AddListener(() =>
             {
                 if (playerHeldBy != null)
                 {
@@ -221,7 +221,7 @@ namespace itolib.Behaviours.Grabbables
                 }
             });
 
-            onPocketEarly?.AddListener(() =>
+            onPocketEarly.AddListener(() =>
             {
                 if (IsOwner && playerHeldBy != null)
                 {
@@ -293,7 +293,7 @@ namespace itolib.Behaviours.Grabbables
         public override void ItemActivate(bool used, bool buttonDown = true)
         {
             base.ItemActivate(used, buttonDown);
-            onActivate?.Invoke(used, buttonDown);
+            onActivate.Invoke(used, buttonDown);
         }
 
         /// <summary>
@@ -303,7 +303,7 @@ namespace itolib.Behaviours.Grabbables
         public override void ActivatePhysicsTrigger(Collider other)
         {
             base.ActivatePhysicsTrigger(other);
-            onActivatePhysicsTrigger?.Invoke(other);
+            onActivatePhysicsTrigger.Invoke(other);
         }
 
         /// <summary>
@@ -312,7 +312,7 @@ namespace itolib.Behaviours.Grabbables
         public override void ChargeBatteries()
         {
             base.ChargeBatteries();
-            onBatteryCharge?.Invoke();
+            onBatteryCharge.Invoke();
         }
 
         /// <summary>
@@ -321,7 +321,7 @@ namespace itolib.Behaviours.Grabbables
         public override void UseUpBatteries()
         {
             base.UseUpBatteries();
-            onBatteryDrain?.Invoke();
+            onBatteryDrain.Invoke();
         }
 
         /// <summary>
@@ -329,9 +329,9 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public override void OnBroughtToShip()
         {
-            onCollectEarly?.Invoke();
+            onCollectEarly.Invoke();
             base.OnBroughtToShip();
-            onCollect?.Invoke();
+            onCollect.Invoke();
         }
 
         /// <summary>
@@ -340,7 +340,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="playerHolding"></param>
         public override void DestroyObjectInHand(PlayerControllerB playerHolding)
         {
-            onDestroyHeldEarly?.Invoke(playerHolding);
+            onDestroyHeldEarly.Invoke(playerHolding);
             base.DestroyObjectInHand(playerHolding);
         }
 
@@ -349,9 +349,9 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public override void DiscardItem()
         {
-            onDiscardEarly?.Invoke();
+            onDiscardEarly.Invoke();
             base.DiscardItem();
-            onDiscard?.Invoke();
+            onDiscard.Invoke();
         }
 
         /// <summary>
@@ -359,9 +359,9 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public override void PlayDropSFX()
         {
-            onDiscardSFXEarly?.Invoke();
+            onDiscardSFXEarly.Invoke();
             base.PlayDropSFX();
-            onDiscardSFX?.Invoke();
+            onDiscardSFX.Invoke();
         }
 
         /// <summary>
@@ -370,7 +370,7 @@ namespace itolib.Behaviours.Grabbables
         public override void GrabItemFromEnemy(EnemyAI enemy)
         {
             base.GrabItemFromEnemy(enemy);
-            onEnemyGrab?.Invoke(enemy);
+            onEnemyGrab.Invoke(enemy);
         }
 
         /// <summary>
@@ -379,7 +379,7 @@ namespace itolib.Behaviours.Grabbables
         public override void DiscardItemFromEnemy()
         {
             base.DiscardItemFromEnemy();
-            onEnemyDiscard?.Invoke();
+            onEnemyDiscard.Invoke();
         }
 
         /// <summary>
@@ -387,9 +387,9 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public override void EquipItem()
         {
-            onEquipEarly?.Invoke();
+            onEquipEarly.Invoke();
             base.EquipItem();
-            onEquip?.Invoke();
+            onEquip.Invoke();
         }
 
         /// <summary>
@@ -398,7 +398,7 @@ namespace itolib.Behaviours.Grabbables
         public override void GrabItem()
         {
             base.GrabItem();
-            onGrab?.Invoke();
+            onGrab.Invoke();
         }
 
         /// <summary>
@@ -410,11 +410,11 @@ namespace itolib.Behaviours.Grabbables
 
             if (VariantIndex < 0)
             {
-                onHitGround?.Invoke();
+                onHitGround.Invoke();
             }
             else
             {
-                onHitGroundVariant?.Invoke(VariantIndex);
+                onHitGroundVariant.Invoke(VariantIndex);
             }
         }
 
@@ -423,9 +423,9 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public override void InspectItem()
         {
-            onInspectEarly?.Invoke();
+            onInspectEarly.Invoke();
             base.InspectItem();
-            onInspect?.Invoke();
+            onInspect.Invoke();
         }
 
         /// <summary>
@@ -434,7 +434,7 @@ namespace itolib.Behaviours.Grabbables
         public override void InteractItem()
         {
             base.InteractItem();
-            onInteract?.Invoke();
+            onInteract.Invoke();
         }
 
         /// <summary>
@@ -445,11 +445,11 @@ namespace itolib.Behaviours.Grabbables
             base.ItemInteractLeftRight(right);
             if (right)
             {
-                onInteractRight?.Invoke();
+                onInteractRight.Invoke();
             }
             else
             {
-                onInteractLeft?.Invoke();
+                onInteractLeft.Invoke();
             }
         }
 
@@ -459,7 +459,7 @@ namespace itolib.Behaviours.Grabbables
         public override void OnPlaceObject()
         {
             base.OnPlaceObject();
-            onPlace?.Invoke();
+            onPlace.Invoke();
         }
 
         /// <summary>
@@ -467,14 +467,14 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public override void PocketItem()
         {
-            onPocketEarly?.Invoke();
+            onPocketEarly.Invoke();
 
             if (hideOnPocket)
             {
                 base.PocketItem();
             }
 
-            onPocket?.Invoke();
+            onPocket.Invoke();
         }
 
         /// <summary>

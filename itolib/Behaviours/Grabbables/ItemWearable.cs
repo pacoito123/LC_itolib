@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Enums;
+using itolib.Extensions;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -67,16 +68,29 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Start()
+        public void Awake()
         {
-            item ??= GetComponent<ItemGrabbable>();
+            if (item == null && !TryGetComponent(out item))
+            {
+                // TODO: Log warning
+                enabled = false;
+
+                return;
+            }
+
             item.hideOnPocket = false;
 
-            item.onDiscardEarly?.AddListener(OnDiscardEarly);
-            item.onEquip?.AddListener(OnEquip);
-            item.onGrab?.AddListener(SetWearablePosition);
-            item.onPocket?.AddListener(OnPocket);
+            item.onDiscardEarly.AddListener(OnDiscardEarly);
+            item.onEquip.AddListener(OnEquip);
+            item.onGrab.AddListener(SetWearablePosition);
+            item.onPocket.AddListener(OnPocket);
+        }
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Start()
+        {
             if (applyOffsetTo != null)
             {
                 InitialPosition = applyOffsetTo.localPosition;
@@ -92,7 +106,7 @@ namespace itolib.Behaviours.Grabbables
             if (item.playerHeldBy?.IsOwner == true)
             {
                 SetWearablePositionLocal(item.playerHeldBy);
-                SetWearablePositionServerRpc(item.playerHeldBy.GetComponent<NetworkObject>());
+                SetWearablePositionServerRpc(item.playerHeldBy);
             }
         }
 
@@ -101,7 +115,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="playerReference"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SetWearablePositionServerRpc(NetworkObjectReference playerReference)
+        public void SetWearablePositionServerRpc(NetworkBehaviourReference playerReference)
         {
             SetWearablePositionClientRpc(playerReference);
         }
@@ -111,11 +125,9 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void SetWearablePositionClientRpc(NetworkObjectReference playerReference)
+        public void SetWearablePositionClientRpc(NetworkBehaviourReference playerReference)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 SetWearablePositionLocal(player);
             }
@@ -178,7 +190,7 @@ namespace itolib.Behaviours.Grabbables
             if (item.playerHeldBy?.IsOwner == true)
             {
                 EquipWearableLocal(item.playerHeldBy, reset);
-                EquipWearableServerRpc(item.playerHeldBy.GetComponent<NetworkObject>(), reset);
+                EquipWearableServerRpc(item.playerHeldBy, reset);
             }
         }
 
@@ -188,7 +200,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="playerReference"></param>
         /// <param name="reset"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void EquipWearableServerRpc(NetworkObjectReference playerReference, bool reset = false)
+        public void EquipWearableServerRpc(NetworkBehaviourReference playerReference, bool reset = false)
         {
             EquipWearableClientRpc(playerReference, reset);
         }
@@ -199,11 +211,9 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="playerReference"></param>
         /// <param name="reset"></param>
         [ClientRpc]
-        public void EquipWearableClientRpc(NetworkObjectReference playerReference, bool reset = false)
+        public void EquipWearableClientRpc(NetworkBehaviourReference playerReference, bool reset = false)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 EquipWearableLocal(player, reset);
             }

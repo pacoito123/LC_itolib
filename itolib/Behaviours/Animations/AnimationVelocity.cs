@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Enums;
+using itolib.Extensions;
 using LethalLevelLoader;
 using Unity.Netcode;
 using UnityEngine;
@@ -117,10 +118,10 @@ namespace itolib.Behaviours.Animations
                     SyncSpeed();
                     break;
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(SyncSpeed);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(SyncSpeed);
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(SyncSpeed);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(SyncSpeed);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.AddListener(SyncSpeed);
@@ -166,10 +167,10 @@ namespace itolib.Behaviours.Animations
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(SyncSpeed);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(SyncSpeed);
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(SyncSpeed);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(SyncSpeed);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncSpeed);
@@ -207,7 +208,7 @@ namespace itolib.Behaviours.Animations
         public void ChangeSpeed(float targetSpeed)
         {
             ChangeSpeedLocal(targetSpeed);
-            ChangeSpeedServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), targetSpeed);
+            ChangeSpeedServerRpc(GameNetworkManager.Instance.localPlayerController, targetSpeed);
         }
 
         /// <summary>
@@ -216,7 +217,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="targetSpeed"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void ChangeSpeedServerRpc(NetworkObjectReference playerReference, float targetSpeed)
+        public void ChangeSpeedServerRpc(NetworkBehaviourReference playerReference, float targetSpeed)
         {
             ChangeSpeedClientRpc(playerReference, targetSpeed);
         }
@@ -227,11 +228,9 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="targetSpeed"></param>
         [ClientRpc]
-        public void ChangeSpeedClientRpc(NetworkObjectReference playerReference, float targetSpeed)
+        public void ChangeSpeedClientRpc(NetworkBehaviourReference playerReference, float targetSpeed)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 ChangeSpeedLocal(targetSpeed);
             }
@@ -271,14 +270,14 @@ namespace itolib.Behaviours.Animations
         public void SyncSpeed(float initialSpeed)
         {
             SyncSpeedLocal(initialSpeed);
-            SyncSpeedServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), initialSpeed);
+            SyncSpeedServerRpc(GameNetworkManager.Instance.localPlayerController, initialSpeed);
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [ServerRpc(RequireOwnership = false)]
-        public void SyncSpeedServerRpc(NetworkObjectReference playerReference, float initialSpeed)
+        public void SyncSpeedServerRpc(NetworkBehaviourReference playerReference, float initialSpeed)
         {
             SyncSpeedClientRpc(playerReference, initialSpeed);
         }
@@ -289,11 +288,9 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="initialSpeed"></param>
         [ClientRpc]
-        public void SyncSpeedClientRpc(NetworkObjectReference playerReference, float initialSpeed)
+        public void SyncSpeedClientRpc(NetworkBehaviourReference playerReference, float initialSpeed)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 SyncSpeedLocal(initialSpeed);
             }

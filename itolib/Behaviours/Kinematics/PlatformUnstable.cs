@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -178,8 +179,7 @@ namespace itolib.Behaviours.Kinematics
                 return;
             }
 
-            if (collider.CompareTag("Player") && collider.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (collider.CompareTag("Player") && collider.TryGetComponent(out PlayerControllerB player) && player.IsLocalClient())
             {
                 LocalPlayerOnPlatform = true;
 
@@ -209,7 +209,7 @@ namespace itolib.Behaviours.Kinematics
             else
             {
                 ShakePlatformLocal();
-                ShakePlatformServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>());
+                ShakePlatformServerRpc(GameNetworkManager.Instance.localPlayerController);
 
                 TimeSinceLastCheck = 0.0f;
             }
@@ -218,7 +218,7 @@ namespace itolib.Behaviours.Kinematics
         private void OnTriggerExit(Collider collider)
         {
             if (!PlatformCollapsed && LocalPlayerOnPlatform && collider.CompareTag("Player") && collider.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId)
+                && player.IsLocalClient())
             {
                 LocalPlayerOnPlatform = false;
                 TimeSinceLastCheck = 0.0f;
@@ -308,7 +308,7 @@ namespace itolib.Behaviours.Kinematics
         ///     TODO.
         /// </summary>
         [ServerRpc(RequireOwnership = false)]
-        public void ShakePlatformServerRpc(NetworkObjectReference playerWhoTriggered)
+        public void ShakePlatformServerRpc(NetworkBehaviourReference playerWhoTriggered)
         {
             ShakePlatformClientRpc(playerWhoTriggered);
         }
@@ -317,11 +317,9 @@ namespace itolib.Behaviours.Kinematics
         ///     TODO.
         /// </summary>
         [ClientRpc]
-        public void ShakePlatformClientRpc(NetworkObjectReference playerWhoTriggered)
+        public void ShakePlatformClientRpc(NetworkBehaviourReference playerWhoTriggered)
         {
-            if (playerWhoTriggered.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerWhoTriggered.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 ShakePlatformLocal();
             }

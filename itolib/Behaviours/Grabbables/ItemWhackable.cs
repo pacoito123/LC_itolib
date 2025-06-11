@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -101,55 +102,55 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent? onReelingStart;
+        public UnityEvent onReelingStart = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onReelingFinish;
+        public UnityEvent onReelingFinish = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onWeaponSwing;
+        public UnityEvent onWeaponSwing = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onWeaponHit;
+        public UnityEvent onWeaponHit = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onWeaponHitLocal;
+        public UnityEvent onWeaponHitLocal = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int>? onWeaponHitVariant;
+        public UnityEvent<int> onWeaponHitVariant = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int>? onWeaponHitVariantLocal;
+        public UnityEvent<int> onWeaponHitVariantLocal = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int>? onSurfaceHit;
+        public UnityEvent<int> onSurfaceHit = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int>? onSurfaceHitLocal;
+        public UnityEvent<int> onSurfaceHitLocal = new();
 
         /// <summary>
         ///     TODO.
@@ -203,15 +204,27 @@ namespace itolib.Behaviours.Grabbables
             hitSFXMask = (1 << LayerMask.NameToLayer("Room")) | (1 << LayerMask.NameToLayer("Colliders"));
         }
 
-        private void Awake()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Awake()
         {
-            item ??= GetComponent<ItemGrabbable>();
+            if (item == null && !TryGetComponent(out item))
+            {
+                // TODO: Log warning
+                enabled = false;
 
-            item.onActivate?.AddListener(ItemActivate);
-            item.onDiscardEarly?.AddListener(DiscardItemEarly);
+                return;
+            }
+
+            item.onActivate.AddListener(ItemActivate);
+            item.onDiscardEarly.AddListener(DiscardItemEarly);
         }
 
-        private void Start()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Start()
         {
             HitBuffer = new RaycastHit[maxObjectHits];
             HitEnemies = new(maxObjectHits);
@@ -261,17 +274,17 @@ namespace itolib.Behaviours.Grabbables
             LastHeldBy.playerBodyAnimator.ResetTrigger("shovelHit");
             LastHeldBy.playerBodyAnimator.SetBool("reelingUp", true);
 
-            onReelingStart?.Invoke();
+            onReelingStart.Invoke();
             yield return new WaitForSeconds(chargeTimer);
 
-            onReelingFinish?.Invoke();
+            onReelingFinish.Invoke();
             yield return new WaitUntil(() => !isHoldingButton || !item.isHeld);
 
             // Handle swing.
             LastHeldBy?.playerBodyAnimator.SetBool("reelingUp", false);
             if (item.isHeld)
             {
-                onWeaponSwing?.Invoke();
+                onWeaponSwing.Invoke();
                 LastHeldBy?.UpdateSpecialAnimationValue(true, (short)LastHeldBy.transform.localEulerAngles.y, 0.4f, false);
             }
             // ...
@@ -390,7 +403,7 @@ namespace itolib.Behaviours.Grabbables
             if (weaponHit)
             {
                 WeaponHitLocal(enemyHit, surfaceIndex);
-                WeaponHitServerRpc(LastHeldBy.GetComponent<NetworkObject>(), enemyHit, surfaceIndex);
+                WeaponHitServerRpc(LastHeldBy, enemyHit, surfaceIndex);
             }
         }
 
@@ -401,7 +414,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="enemyHit"></param>
         /// <param name="surfaceIndex"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void WeaponHitServerRpc(NetworkObjectReference playerReference, bool enemyHit, int surfaceIndex)
+        public void WeaponHitServerRpc(NetworkBehaviourReference playerReference, bool enemyHit, int surfaceIndex)
         {
             WeaponHitClientRpc(playerReference, enemyHit, surfaceIndex);
         }
@@ -413,11 +426,9 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="enemyHit"></param>
         /// <param name="surfaceIndex"></param>
         [ClientRpc]
-        public void WeaponHitClientRpc(NetworkObjectReference playerReference, bool enemyHit, int surfaceIndex)
+        public void WeaponHitClientRpc(NetworkBehaviourReference playerReference, bool enemyHit, int surfaceIndex)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 WeaponHitLocal(enemyHit, surfaceIndex);
             }
@@ -434,29 +445,29 @@ namespace itolib.Behaviours.Grabbables
             {
                 if (item.IsOwner)
                 {
-                    onWeaponHitLocal?.Invoke();
+                    onWeaponHitLocal.Invoke();
                 }
 
-                onWeaponHit?.Invoke();
+                onWeaponHit.Invoke();
             }
             else
             {
                 if (item.IsOwner)
                 {
-                    onWeaponHitVariantLocal?.Invoke(item.VariantIndex);
+                    onWeaponHitVariantLocal.Invoke(item.VariantIndex);
                 }
 
-                onWeaponHitVariant?.Invoke(item.VariantIndex);
+                onWeaponHitVariant.Invoke(item.VariantIndex);
             }
 
             if (!enemyHit && surfaceIndex != -1)
             {
                 if (item.IsOwner)
                 {
-                    onSurfaceHitLocal?.Invoke(surfaceIndex);
+                    onSurfaceHitLocal.Invoke(surfaceIndex);
                 }
 
-                onSurfaceHit?.Invoke(surfaceIndex);
+                onSurfaceHit.Invoke(surfaceIndex);
             }
 
             if (!silentHit)

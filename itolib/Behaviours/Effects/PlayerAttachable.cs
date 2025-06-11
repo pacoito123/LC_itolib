@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using System;
 using System.Collections;
 using Unity.Netcode;
@@ -53,7 +54,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Attach")]
         [Tooltip("Callback invoked immediately after a player attaches, with the player in question as parameter.")]
-        public UnityEvent<PlayerControllerB>? onAttach;
+        public UnityEvent<PlayerControllerB> onAttach = new();
 
         /// <summary>
         ///     Whether players can attach multiple times to the same object or not.
@@ -72,7 +73,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Detach")]
         [Tooltip("Callback invoked immediately before a player detaches, with the player in question as parameter.")]
-        public UnityEvent<PlayerControllerB>? onDetach;
+        public UnityEvent<PlayerControllerB> onDetach = new();
 
         /// <summary>
         ///     Delay in seconds until the player is forcibly detached. Can be left at '0' to attach to the player for an indefinite amount of time.
@@ -97,7 +98,7 @@ namespace itolib.Behaviours.Effects
         ///     Callback invoked immediately before despawning.
         /// </summary>
         [Tooltip("Callback invoked when despawning.")]
-        public UnityEvent? onDespawn;
+        public UnityEvent onDespawn = new();
 
         /// <summary>
         ///     Destroy and despawn after the player detaches.
@@ -140,7 +141,7 @@ namespace itolib.Behaviours.Effects
             // Check if a player is already attached, or the local player is not the one who will be attached.
             if (AttachedPlayer != null || !collider.CompareTag("Player")
                 || !collider.TryGetComponent(out PlayerControllerB player)
-                || player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+                || !player.IsLocalClient())
             {
                 return;
             }
@@ -156,7 +157,7 @@ namespace itolib.Behaviours.Effects
                 else
                 {
                     // Attach player on all clients.
-                    AttachPlayerServerRpc(player.GetComponent<NetworkObject>());
+                    AttachPlayerServerRpc(player);
                 }
 
                 // Start timer until the player is forcibly detached, if one is set.
@@ -181,8 +182,7 @@ namespace itolib.Behaviours.Effects
 
             // Check if the local player is not attached, or something else exited the attach region.
             if (!LocalPlayerAttached || !collider.CompareTag("Player")
-                || !collider.TryGetComponent(out PlayerControllerB player)
-                || player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+                || !collider.TryGetComponent(out PlayerControllerB player) || !player.IsLocalClient())
             {
                 return;
             }
@@ -222,10 +222,7 @@ namespace itolib.Behaviours.Effects
         public virtual void AttachPlayerLocal(PlayerControllerB player)
         {
             // Check if the player attaching is the local client.
-            if (player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId)
-            {
-                LocalPlayerAttached = true;
-            }
+            LocalPlayerAttached = player.IsLocalClient();
 
             // Attach given player.
             AttachedPlayer = player;
@@ -239,7 +236,7 @@ namespace itolib.Behaviours.Effects
             }
 
             // Invoke attach event.
-            onAttach?.Invoke(player);
+            onAttach.Invoke(player);
         }
 
         /// <summary>
@@ -250,7 +247,7 @@ namespace itolib.Behaviours.Effects
             if (AttachedPlayer != null)
             {
                 // Invoke detach event.
-                onDetach?.Invoke(AttachedPlayer);
+                onDetach.Invoke(AttachedPlayer);
             }
 
             // Remove attached player.
@@ -265,7 +262,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         /// <param name="playerReference">NetworkObject reference of the player to attach.</param>
         [ServerRpc(RequireOwnership = false)]
-        public void AttachPlayerServerRpc(NetworkObjectReference playerReference)
+        public void AttachPlayerServerRpc(NetworkBehaviourReference playerReference)
         {
             if (AttachedPlayer == null)
             {
@@ -279,10 +276,9 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         /// <param name="playerReference">NetworkObject reference of the player to attach.</param>
         [ClientRpc]
-        public void AttachPlayerClientRpc(NetworkObjectReference playerReference)
+        public void AttachPlayerClientRpc(NetworkBehaviourReference playerReference)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player))
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
                 AttachPlayerLocal(player);
             }
@@ -347,7 +343,7 @@ namespace itolib.Behaviours.Effects
             yield return new WaitForSeconds(despawnTimer);
 
             // Invoke despawn event.
-            onDespawn?.Invoke();
+            onDespawn.Invoke();
 
             // Despawn and destroy.
             parentNetworkObject?.Despawn(true);

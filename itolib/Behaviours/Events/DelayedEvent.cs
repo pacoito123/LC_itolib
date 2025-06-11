@@ -25,7 +25,7 @@ namespace itolib.Behaviours.Events
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onDelayedEvent;
+        public UnityEvent onDelayedEvent = new();
 
         /// <summary>
         ///     TODO.
@@ -44,7 +44,7 @@ namespace itolib.Behaviours.Events
                 return;
             }
 
-            onDelayedEvent?.Invoke();
+            onDelayedEvent.Invoke();
             ResetTimer();
 
             if (!runsContinuously)

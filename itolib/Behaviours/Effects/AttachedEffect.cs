@@ -59,19 +59,26 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent<GameObject>? onAttach;
+        public UnityEvent<GameObject> onAttach = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<GameObject>? onDetach;
+        public UnityEvent<GameObject> onDetach = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        public IPooledObject pooledSelf = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         public void Awake()
         {
+            pooledSelf = this;
             CurrentPosition = transform;
 
             TakenBy = null!;
@@ -117,14 +124,14 @@ namespace itolib.Behaviours.Effects
         /// <param name="gameObject"></param>
         public void Attach(GameObject gameObject)
         {
-            if ((this as IPooledObject).TryAssignInstance(gameObject, maxInstances, out IPooledObject instance))
+            if (pooledSelf.TryAssignInstance(gameObject, maxInstances, out IPooledObject instance))
             {
                 if (instance is AttachedEffect effect)
                 {
                     effect.CurrentPosition.position = effect.TakenBy.transform.position;
                     effect.TargetPosition = effect.TakenBy.transform;
 
-                    effect.onAttach?.Invoke(gameObject);
+                    effect.onAttach.Invoke(gameObject);
                 }
             }
         }
@@ -151,11 +158,11 @@ namespace itolib.Behaviours.Effects
         /// <param name="gameObject"></param>
         public void Detach(GameObject gameObject)
         {
-            if ((this as IPooledObject).TryFreeInstance(gameObject, out IPooledObject instance))
+            if (pooledSelf.TryFreeInstance(gameObject, out IPooledObject instance))
             {
                 if (instance is AttachedEffect effect)
                 {
-                    effect.onDetach?.Invoke(gameObject);
+                    effect.onDetach.Invoke(gameObject);
                     effect.TargetPosition = null!;
                 }
             }

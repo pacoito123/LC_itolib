@@ -25,7 +25,7 @@ namespace itolib.Behaviours.Events
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onTimedEvent;
+        public UnityEvent onTimedEvent = new();
 
         private void Awake()
         {
@@ -36,7 +36,7 @@ namespace itolib.Behaviours.Events
         {
             if (!HasRun && TimeOfDay.Instance.globalTime >= playAtTime)
             {
-                onTimedEvent?.Invoke();
+                onTimedEvent.Invoke();
                 HasRun = true;
             }
         }

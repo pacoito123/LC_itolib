@@ -128,15 +128,15 @@ namespace itolib.Behaviours.Props
             }
 
             Random ??= new(StartOfRound.Instance.randomMapSeed + 55);
-            DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(ObtainSpawnedScrap);
+            DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(ObtainSpawnedScrap);
 
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.AddListener(TeleportScrap);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(TeleportScrap);
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.AddListener(TeleportScrap);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(TeleportScrap);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.AddListener(TeleportScrap);
@@ -157,15 +157,15 @@ namespace itolib.Behaviours.Props
             AvailableScrap = null;
             Random = null!;
 
-            DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(ObtainSpawnedScrap);
+            DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(ObtainSpawnedScrap);
 
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedScrapObjects?.RemoveListener(TeleportScrap);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(TeleportScrap);
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents?.onSpawnedMapObjects?.RemoveListener(TeleportScrap);
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(TeleportScrap);
                     break;
                 case ActivationTime.StartOfRound:
                     StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(TeleportScrap);

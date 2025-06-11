@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using System;
 using Unity.Netcode;
 using UnityEngine;
@@ -96,13 +97,13 @@ namespace itolib.Behaviours.Interactables
         /// </remarks>
         [Tooltip("Callback invoked when a transaction is complete but the object has not yet been spawned. NOTE: Actions won't run using the instantiated object, but they "
             + "can be used to modify the prefab on the host before spawning it, which can then be synchronized with clients using NetworkVariables... Not ideal.")]
-        public UnityEvent? onPurchase;
+        public UnityEvent onPurchase = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent? onPurchaseNotify;
+        public UnityEvent onPurchaseNotify = new();
 
         /// <summary>
         ///     TODO
@@ -122,11 +123,10 @@ namespace itolib.Behaviours.Interactables
             onInteract.AddListener(player =>
             {
                 // Check if the local player was the one who interacted.
-                if (player?.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId
-                    && player.TryGetComponent(out NetworkObject networkObject))
+                if (player.IsLocalClient())
                 {
                     // Attempt to purchase and spawn object.
-                    RequestPurchaseServerRpc(networkObject);
+                    RequestPurchaseServerRpc(player);
                 }
             });
         }
@@ -134,9 +134,9 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     Attempt to purchase and spawn instance of the purchasable object.
         /// </summary>
-        /// <param name="playerReference">NetworkObject reference of the player attempting the purchase.</param>
+        /// <param name="playerReference">NetworkBehaviour reference of the player attempting the purchase.</param>
         [ServerRpc(RequireOwnership = false)]
-        public void RequestPurchaseServerRpc(NetworkObjectReference playerReference)
+        public void RequestPurchaseServerRpc(NetworkBehaviourReference playerReference)
         {
             if (spawnPrefab == null || spawnTransform == null || Terminal == null)
             {
@@ -155,9 +155,9 @@ namespace itolib.Behaviours.Interactables
             Terminal.SyncGroupCreditsServerRpc(Terminal.groupCredits - price, -1);
 
             // Invoke purchase event.
-            onPurchase?.Invoke();
+            onPurchase.Invoke();
 
-            // Instantiate purchasable object instance and spawn it on all clients.
+            // Instantiate purchasable object instance and spawn it on all clients. TODO: Handle through PrefabSpawner instead.
             GameObject purchasable = Instantiate(spawnPrefab, spawnTransform.position, spawnTransform.rotation, RoundManager.Instance?.mapPropsContainer?.transform);
             if (purchasable.TryGetComponent(out NetworkObject networkObject))
             {
@@ -170,15 +170,13 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     Send a notification message to a specific player.
         /// </summary>
-        /// <param name="playerReference">NetworkObject reference of the player to receive the notification.</param>
+        /// <param name="playerReference">NetworkBehaviour reference of the player to receive the notification.</param>
         /// <param name="price">Price of the purchasable object.</param>
         /// <param name="success">Whether or not the purchase was succesful.</param>
         [ClientRpc]
-        public void SendNotificationClientRpc(NetworkObjectReference playerReference, int price = -1, bool success = false)
+        public void SendNotificationClientRpc(NetworkBehaviourReference playerReference, int price = -1, bool success = false)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && player.IsLocalClient())
             {
                 if (success)
                 {
@@ -190,7 +188,7 @@ namespace itolib.Behaviours.Interactables
 
                         if (purchaseNotification.showOnce)
                         {
-                            onPurchaseNotify?.Invoke();
+                            onPurchaseNotify.Invoke();
                         }
                     }
 
@@ -203,7 +201,7 @@ namespace itolib.Behaviours.Interactables
                 }
                 else
                 {
-                    HUDManager.Instance.DisplayTip("Cannot purchase!", $"This purchasable has been disabled by the host.");
+                    HUDManager.Instance.DisplayTip("Cannot purchase!", "This purchasable has been disabled by the host.");
                 }
             }
         }

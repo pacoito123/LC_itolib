@@ -27,13 +27,13 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent<bool>? onSunHidden;
+        public UnityEvent<bool> onSunHidden = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<bool>? onSunRevealed;
+        public UnityEvent<bool> onSunRevealed = new();
 
         /// <summary>
         ///     TODO.
@@ -97,7 +97,7 @@ namespace itolib.Behaviours.Effects
                 sunTexture.enabled = false;
             }
 
-            onSunHidden?.Invoke(FoundSun);
+            onSunHidden.Invoke(FoundSun);
         }
 
         /// <summary>
@@ -115,12 +115,12 @@ namespace itolib.Behaviours.Effects
                 return;
             }
 
-            if (FoundSun && sunTexture?.enabled == false)
+            if (FoundSun && sunTexture != null && !sunTexture.enabled)
             {
                 sunTexture.enabled = true;
             }
 
-            onSunRevealed?.Invoke(FoundSun);
+            onSunRevealed.Invoke(FoundSun);
         }
 
         /// <summary>

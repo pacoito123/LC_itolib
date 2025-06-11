@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
@@ -62,7 +63,7 @@ namespace itolib.Behaviours.Animations
 
                 if (IsSpawned)
                 {
-                    SwitchParamServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), paramID);
+                    SwitchParamServerRpc(GameNetworkManager.Instance.localPlayerController, paramID);
                 }
             }
         }
@@ -73,7 +74,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="paramID"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SwitchParamServerRpc(NetworkObjectReference playerReference, int paramID)
+        public void SwitchParamServerRpc(NetworkBehaviourReference playerReference, int paramID)
         {
             SwitchParamClientRpc(playerReference, paramID);
         }
@@ -84,11 +85,9 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="paramID"></param>
         [ClientRpc]
-        public void SwitchParamClientRpc(NetworkObjectReference playerReference, int paramID)
+        public void SwitchParamClientRpc(NetworkBehaviourReference playerReference, int paramID)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 SwitchParamLocal(paramID);
             }
@@ -115,7 +114,7 @@ namespace itolib.Behaviours.Animations
 
                 if (IsSpawned)
                 {
-                    SetBoolServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), value);
+                    SetBoolServerRpc(GameNetworkManager.Instance.localPlayerController, value);
                 }
             }
         }
@@ -126,7 +125,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="value"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SetBoolServerRpc(NetworkObjectReference playerReference, bool value)
+        public void SetBoolServerRpc(NetworkBehaviourReference playerReference, bool value)
         {
             SetBoolClientRpc(playerReference, value);
         }
@@ -137,11 +136,9 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="value"></param>
         [ClientRpc]
-        public void SetBoolClientRpc(NetworkObjectReference playerReference, bool value)
+        public void SetBoolClientRpc(NetworkBehaviourReference playerReference, bool value)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 SetBoolLocal(value);
             }
@@ -168,7 +165,7 @@ namespace itolib.Behaviours.Animations
 
                 if (IsSpawned)
                 {
-                    SetFloatServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), value);
+                    SetFloatServerRpc(GameNetworkManager.Instance.localPlayerController, value);
                 }
             }
         }
@@ -179,7 +176,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="value"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SetFloatServerRpc(NetworkObjectReference playerReference, float value)
+        public void SetFloatServerRpc(NetworkBehaviourReference playerReference, float value)
         {
             SetFloatClientRpc(playerReference, value);
         }
@@ -190,11 +187,9 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="value"></param>
         [ClientRpc]
-        public void SetFloatClientRpc(NetworkObjectReference playerReference, float value)
+        public void SetFloatClientRpc(NetworkBehaviourReference playerReference, float value)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 SetFloatLocal(value);
             }
@@ -221,7 +216,7 @@ namespace itolib.Behaviours.Animations
 
                 if (IsSpawned)
                 {
-                    SetIntServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), value);
+                    SetIntServerRpc(GameNetworkManager.Instance.localPlayerController, value);
                 }
             }
         }
@@ -232,7 +227,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="value"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SetIntServerRpc(NetworkObjectReference playerReference, int value)
+        public void SetIntServerRpc(NetworkBehaviourReference playerReference, int value)
         {
             SetIntClientRpc(playerReference, value);
         }
@@ -243,11 +238,9 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="value"></param>
         [ClientRpc]
-        public void SetIntClientRpc(NetworkObjectReference playerReference, int value)
+        public void SetIntClientRpc(NetworkBehaviourReference playerReference, int value)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 SetIntLocal(value);
             }

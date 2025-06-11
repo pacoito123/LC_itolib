@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -96,7 +97,7 @@ namespace itolib.Behaviours.Networking
                 float pitch = GetRandomPitch();
 
                 PlayAudioLocal(pitch);
-                PlayAudioServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), pitch);
+                PlayAudioServerRpc(GameNetworkManager.Instance.localPlayerController, pitch);
             }
         }
 
@@ -106,7 +107,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="playerWhoCalled"></param>
         /// <param name="pitch"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void PlayAudioServerRpc(NetworkObjectReference playerWhoCalled, float pitch)
+        public void PlayAudioServerRpc(NetworkBehaviourReference playerWhoCalled, float pitch)
         {
             PlayAudioClientRpc(playerWhoCalled, pitch);
         }
@@ -117,11 +118,9 @@ namespace itolib.Behaviours.Networking
         /// <param name="playerWhoCalled"></param>
         /// <param name="pitch"></param>
         [ClientRpc]
-        public void PlayAudioClientRpc(NetworkObjectReference playerWhoCalled, float pitch)
+        public void PlayAudioClientRpc(NetworkBehaviourReference playerWhoCalled, float pitch)
         {
-            if (playerWhoCalled.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerWhoCalled.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 PlayAudioLocal(pitch);
             }
@@ -156,7 +155,7 @@ namespace itolib.Behaviours.Networking
                 float pitch = GetRandomPitch();
 
                 PlayOneshotLocal(clip, pitch);
-                PlayOneshotServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), clip, pitch);
+                PlayOneshotServerRpc(GameNetworkManager.Instance.localPlayerController, clip, pitch);
             }
         }
 
@@ -171,7 +170,7 @@ namespace itolib.Behaviours.Networking
                 float pitch = GetRandomPitch();
 
                 PlayOneshotLocal(clip, pitch);
-                PlayOneshotServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), clip, pitch);
+                PlayOneshotServerRpc(GameNetworkManager.Instance.localPlayerController, clip, pitch);
             }
         }
 
@@ -182,7 +181,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="clip"></param>
         /// <param name="pitch"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void PlayOneshotServerRpc(NetworkObjectReference playerWhoCalled, int clip, float pitch)
+        public void PlayOneshotServerRpc(NetworkBehaviourReference playerWhoCalled, int clip, float pitch)
         {
             PlayOneshotClientRpc(playerWhoCalled, clip, pitch);
         }
@@ -194,11 +193,9 @@ namespace itolib.Behaviours.Networking
         /// <param name="clip"></param>
         /// <param name="pitch"></param>
         [ClientRpc]
-        public void PlayOneshotClientRpc(NetworkObjectReference playerWhoCalled, int clip, float pitch)
+        public void PlayOneshotClientRpc(NetworkBehaviourReference playerWhoCalled, int clip, float pitch)
         {
-            if (playerWhoCalled.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerWhoCalled.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 PlayOneshotLocal(clip, pitch);
             }
@@ -241,7 +238,7 @@ namespace itolib.Behaviours.Networking
             if (syncedSource != null && StartOfRound.Instance.footstepSurfaces.Length > surfaceID)
             {
                 PlaySurfaceHitLocal(surfaceID);
-                PlaySurfaceHitServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>(), surfaceID);
+                PlaySurfaceHitServerRpc(GameNetworkManager.Instance.localPlayerController, surfaceID);
             }
         }
 
@@ -251,7 +248,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="playerWhoCalled"></param>
         /// <param name="surfaceID"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void PlaySurfaceHitServerRpc(NetworkObjectReference playerWhoCalled, int surfaceID)
+        public void PlaySurfaceHitServerRpc(NetworkBehaviourReference playerWhoCalled, int surfaceID)
         {
             PlaySurfaceHitClientRpc(playerWhoCalled, surfaceID);
         }
@@ -262,11 +259,9 @@ namespace itolib.Behaviours.Networking
         /// <param name="playerWhoCalled"></param>
         /// <param name="surfaceID"></param>
         [ClientRpc]
-        public void PlaySurfaceHitClientRpc(NetworkObjectReference playerWhoCalled, int surfaceID)
+        public void PlaySurfaceHitClientRpc(NetworkBehaviourReference playerWhoCalled, int surfaceID)
         {
-            if (playerWhoCalled.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player)
-                && player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
+            if (playerWhoCalled.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
                 syncedSource?.PlayOneShot(StartOfRound.Instance.footstepSurfaces[surfaceID].hitSurfaceSFX);
             }
