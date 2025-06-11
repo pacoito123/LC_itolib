@@ -34,19 +34,31 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Damage")]
         [Tooltip("")]
-        public AnimationCurve damageCurve = AnimationCurve.Constant(0.0f, 1.0f, 50);
+        public AnimationCurve damageCurve = AnimationCurve.Constant(0.0f, 1.0f, 50.0f);
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public float damageRange = 6.0f;
+        public AnimationCurve enemyDamageCurve = AnimationCurve.Constant(0.0f, 1.0f, 6.0f);
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public float killRange = 5.7f;
+        public AnimationCurve otherDamageCurve = AnimationCurve.Constant(0.0f, 1.0f, 1.0f);
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public Collider? damageBounds;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public Collider? killBounds;
 
         /// <summary>
         ///     TODO.
@@ -166,42 +178,58 @@ namespace itolib.Behaviours.Effects
 
             for (int i = 0; i < ObjectsFound; i++)
             {
-                GameObject targetHit = OverlapBuffer[i].gameObject;
-                Transform targetTransform = targetHit.transform;
+                Collider? colliderHit = OverlapBuffer[i];
+
+                if (colliderHit == null || !colliderHit.enabled) // Skip disabled colliders.
+                {
+                    continue;
+                }
+
+                GameObject objectHit = colliderHit.gameObject;
+                Transform targetTransform = objectHit.transform;
 
                 float distanceFromBlast = Vector3.Distance(explosionOrigin, targetTransform.position);
 
-                // TODO: Parameterize more stuff.
+                float? damageRange = damageBounds?.bounds.extents.sqrMagnitude,
+                    killRange = killBounds?.bounds.extents.sqrMagnitude;
+
+                float damageTime = 1 - (distanceFromBlast / damageRange) ?? 0.0f;
+
+                // TODO: Parameterize more stuff?
                 if (!Physics.Linecast(explosionOrigin, targetTransform.position + (Vector3.up * 0.3f), coverMask,
                     QueryTriggerInteraction.Ignore))
                 {
-                    if (!localPlayerHit && targetHit.TryGetComponent(out PlayerControllerB player) && player.IsOwner)
+                    if (!localPlayerHit && objectHit.TryGetComponent(out PlayerControllerB player) && player.IsOwner)
                     {
                         if (distanceFromBlast < killRange)
                         {
                             Vector3 launchVelocity = Vector3.Normalize(player.gameplayCamera.transform.position - explosionOrigin) * 80.0f /
                                 Vector3.Distance(player.gameplayCamera.transform.position, explosionOrigin);
 
-                            player.KillPlayer(launchVelocity, true, CauseOfDeath.Blast, 0, Vector3.zero);
+                            player.KillPlayer(launchVelocity, true, CauseOfDeath.Blast);
                         }
                         else if (distanceFromBlast <= damageRange)
                         {
                             Vector3 launchVelocity = Vector3.Normalize(player.gameplayCamera.transform.position - explosionOrigin) * 80.0f /
                                 Vector3.Distance(player.gameplayCamera.transform.position, explosionOrigin);
 
-                            player.DamagePlayer((int)damageCurve.Evaluate(1 - (distanceFromBlast / damageRange)), true,
+                            player.DamagePlayer(Mathf.RoundToInt(damageCurve.Evaluate(damageTime)), true,
                                 true, CauseOfDeath.Blast, 0, false, launchVelocity);
                         }
                     }
-                    else if (targetHit.TryGetComponent(out Landmine landmine) && !landmine.hasExploded && distanceFromBlast < 6.0f)
+                    else if (objectHit.TryGetComponent(out Landmine landmine) && !landmine.hasExploded && distanceFromBlast < damageRange)
                     {
                         _ = landmine.StartCoroutine(landmine.TriggerOtherMineDelayed(landmine));
                     }
-                    else if (targetHit.TryGetComponent(out EnemyAICollisionDetect enemyCollision) && enemyCollision.mainScript?.IsOwner == true
-                        && distanceFromBlast < 4.5f)
+                    else if (objectHit.TryGetComponent(out EnemyAICollisionDetect enemyCollision) && enemyCollision.mainScript?.IsOwner == true
+                        && distanceFromBlast < damageRange)
                     {
-                        enemyCollision.mainScript.HitEnemyOnLocalClient(6);
+                        enemyCollision.mainScript.HitEnemyOnLocalClient(Mathf.RoundToInt(enemyDamageCurve.Evaluate(damageTime)));
                         enemyCollision.mainScript.HitFromExplosion(distanceFromBlast);
+                    }
+                    else if (objectHit.TryGetComponent(out IHittable hittable) && distanceFromBlast <= damageRange)
+                    {
+                        _ = hittable.Hit(Mathf.RoundToInt(otherDamageCurve.Evaluate(damageTime)), explosionOrigin);
                     }
                 }
             }

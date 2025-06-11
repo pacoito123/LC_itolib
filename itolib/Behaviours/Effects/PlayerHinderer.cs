@@ -46,6 +46,12 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public AnimationCurve? playerSinkingCurveOverride;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Header("Water")]
         [Tooltip("")]
         public bool drownPlayer = false;
@@ -78,6 +84,27 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        [HideInInspector]
+        public AnimationCurve? defaultPlayerSinkingCurve;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary> 
+        public void Reset()
+        {
+            // This don't seem to work...
+            Keyframe[] defaultSinkingKeyframes = [new(0.0f, 0.0f, 5.4615f, 5.4615f, 0.0f, 0.3333f),
+                new(0.0415f, 0.2266f, 0.4576f, 0.4576f, 0.3333f, 0.2344f),
+                new(0.3617f, 0.3527f, 0.3546f, 0.3546f, 0.3544f, 0.3333f),
+                new(0.7895f, 0.8496f, 1.9803f, 1.9803f, 0.1134f, 0.3333f),
+                new(1.0f, 1.0f, 0.3884f, 0.3884f, 0.7641f, 0.0f)];
+
+            playerSinkingCurveOverride = new(defaultSinkingKeyframes);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void Awake()
         {
             AttachCondition = player => !player.isPlayerDead;
@@ -87,6 +114,8 @@ namespace itolib.Behaviours.Effects
             {
                 // Plugin.StaticLogger.LogWarning(""); // TODO: Warn collider is missing.
             }
+
+            defaultPlayerSinkingCurve = StartOfRound.Instance?.playerSinkingCurve;
         }
 
         /// <summary>
@@ -118,11 +147,6 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public override void AttachPlayerLocal(PlayerControllerB player)
         {
-            if (player.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId)
-            {
-                return;
-            }
-
             base.AttachPlayerLocal(player);
 
             player.isMovementHindered++;
@@ -130,6 +154,11 @@ namespace itolib.Behaviours.Effects
 
             if (sinkPlayer)
             {
+                if (playerSinkingCurveOverride != null && StartOfRound.Instance != null)
+                {
+                    StartOfRound.Instance.playerSinkingCurve = playerSinkingCurveOverride;
+                }
+
                 player.sourcesCausingSinking++;
                 player.sinkingSpeedMultiplier = sinkingSpeedMultiplier;
             }
@@ -144,7 +173,11 @@ namespace itolib.Behaviours.Effects
             }
 
             onHinderStart?.Invoke(player);
-            HinderPlayerServerRpc(player.GetComponent<NetworkObject>());
+
+            if (!attachLocally)
+            {
+                HinderPlayerServerRpc(player.GetComponent<NetworkObject>());
+            }
         }
 
         /// <summary>
@@ -152,7 +185,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public override void DetachPlayerLocal()
         {
-            if (AttachedPlayer == null || (!attachLocally && AttachedPlayer.actualClientId != GameNetworkManager.Instance.localPlayerController.actualClientId))
+            if (AttachedPlayer == null)
             {
                 return;
             }
@@ -162,6 +195,11 @@ namespace itolib.Behaviours.Effects
 
             if (sinkPlayer)
             {
+                if (playerSinkingCurveOverride != null && StartOfRound.Instance != null)
+                {
+                    StartOfRound.Instance.playerSinkingCurve = defaultPlayerSinkingCurve;
+                }
+
                 AttachedPlayer.sourcesCausingSinking--;
                 AttachedPlayer.sinkingSpeedMultiplier = 0.0f;
             }
@@ -176,7 +214,11 @@ namespace itolib.Behaviours.Effects
             }
 
             onHinderStop?.Invoke(AttachedPlayer);
-            HinderPlayerServerRpc(AttachedPlayer.GetComponent<NetworkObject>(), stop: true);
+
+            if (!attachLocally)
+            {
+                HinderPlayerServerRpc(AttachedPlayer.GetComponent<NetworkObject>(), stop: true);
+            }
 
             base.DetachPlayerLocal();
         }

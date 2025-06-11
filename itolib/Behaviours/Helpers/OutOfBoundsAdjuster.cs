@@ -1,0 +1,43 @@
+using DunGen;
+using Unity.AI.Navigation;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+namespace itolib.Behaviours.Helpers
+{
+    /// <summary>
+    ///     TODO.
+    /// </summary>
+    public class OutOfBoundsAdjuster : MonoBehaviour, IDungeonCompleteReceiver
+    {
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public Vector3 offsetToApply = Vector3.zero;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="dungeon"></param>
+        public void OnDungeonComplete(Dungeon dungeon)
+        {
+            GameObject[]? rootObjects = SceneManager.GetSceneByName(StartOfRound.Instance?.currentLevel?.sceneName).GetRootGameObjects();
+
+            for (int i = 0; i < rootObjects?.Length; i++)
+            {
+                if (rootObjects[i].TryGetComponent(out NavMeshSurface _))
+                {
+                    OutOfBoundsTrigger? outOfBounds = rootObjects[i].GetComponentInChildren<OutOfBoundsTrigger>();
+
+                    if (outOfBounds != null)
+                    {
+                        outOfBounds.transform.position = new(dungeon.transform.position.x + offsetToApply.x, dungeon.transform.position.y
+                            + dungeon.Bounds.min.y + offsetToApply.y, dungeon.transform.position.z + offsetToApply.z);
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
