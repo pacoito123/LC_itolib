@@ -17,8 +17,11 @@ namespace itolib.Behaviours.Props
         {
             get
             {
-                field ??= StartOfRound.Instance?.unlockablesList.unlockables.Find(unlockable =>
+                if (field == null && StartOfRound.Instance != null)
+                {
+                    field = StartOfRound.Instance.unlockablesList.unlockables.Find(unlockable =>
                         string.CompareOrdinal(unlockable.unlockableName, "Television") == 0);
+                }
 
                 return field;
             }
@@ -43,7 +46,13 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public void Awake()
         {
-            if (TelevisionUnlockableItem?.prefabObject.transform.Find("TVScript")?.TryGetComponent(out TVScript television) == true
+            if (TelevisionUnlockableItem == null)
+            {
+                return;
+            }
+
+            Transform? tvScript = TelevisionUnlockableItem.prefabObject.transform.Find("TVScript");
+            if (tvScript.TryGetComponent(out TVScript television)
                 && television.TryGetComponent(out VideoPlayer vanillaVideo))
             {
                 tvClips = television.tvClips;

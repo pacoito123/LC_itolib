@@ -19,13 +19,13 @@ namespace itolib
     [BepInDependency(PizzaTowerEscapeMusic.Plugin.GUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(TVLoader.TVLoaderPlugin.MyGUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(WeatherRegistry.PluginInfo.PLUGIN_GUID, BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInPlugin(GUID, PLUGIN_NAME, VERSION)]
+    [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, VERSION)]
     public class Plugin : BaseUnityPlugin
     {
         /// <summary>
         ///     TODO.
         /// </summary>
-        public const string GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.1.4";
+        public const string PLUGIN_GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.1.4";
         internal static ManualLogSource StaticLogger { get; private set; } = null!;
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace itolib
             {
                 // Initialize 'Config' and 'Harmony' instances.
                 // Settings = new(Config);
-                Harmony = new(GUID);
+                Harmony = new(PLUGIN_GUID);
                 //
 
                 NetcodePatcher();

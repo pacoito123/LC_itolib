@@ -13,29 +13,14 @@ namespace itolib.Behaviours.Kinematics
     public class PlatformGrabbable : PlayerAttachable
     {
         /// <summary>
-        ///     Time-seeded (local) Random instance for randomization purposes (only pitch selection at the moment).
-        /// </summary>
-        public static System.Random Random { get; private set; } = new(); // TODO: Switch to UnityEngine.Random
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public Transform PlatformTransform { get; private set; } = null!;
-
-        /// <summary>
         ///     Synchronized value for the animation variant to play when the player attaches.
         /// </summary>
-        public NetworkVariable<int> SyncedStateVariant { get; private set; } = new(-1);
+        public NetworkVariable<int> SyncedStateVariant { get; private set; } = new(-1); // TODO: Can do without a NetworkVariable.
 
         /// <summary>
         ///     Synchronized pitch value for the platform sound effects.
         /// </summary>
         public NetworkVariable<float> SyncedPitch { get; private set; } = new(1.0f);
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public InputAction? ActionToHold { get; private set; }
 
         /// <summary>
         ///     Animator instance of the platform, used to play an animation once a player grabs the platform. Optional if already playing an animation,
@@ -146,7 +131,22 @@ namespace itolib.Behaviours.Kinematics
         [Range(-3.0f, 3.0f)]
         public float maxPitch = 1.0f;
 
-        private void Awake()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        private InputAction? playerAction;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        private Transform platformTransform = null!;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Awake()
         {
             if (platformAnimator != null)
             {
@@ -155,17 +155,17 @@ namespace itolib.Behaviours.Kinematics
             }
 
             // Cache platform transform.
-            PlatformTransform = transform;
+            platformTransform = transform;
 
-            AttachCondition = player => !player.isPlayerDead && (allowTwoHanded || !player.twoHanded)
-                && (ActionToHold == null || ActionToHold.IsPressed());
-            DetachCondition = player => player.isPlayerDead || (detachOnEnemyCollision && player.inAnimationWithEnemy)
-                || (detachOnSpecialAnimation && player.inSpecialInteractAnimation) || (ActionToHold != null && !ActionToHold.IsPressed());
+            attachCondition = player => !player.isPlayerDead && (allowTwoHanded || !player.twoHanded)
+                && (playerAction == null || playerAction.IsPressed());
+            detachCondition = player => player.isPlayerDead || (detachOnEnemyCollision && player.inAnimationWithEnemy)
+                || (detachOnSpecialAnimation && player.inSpecialInteractAnimation) || (playerAction != null && !playerAction.IsPressed());
 
             if (actionToHold.Length > 0)
             {
                 // Get action (key) that must be held, if one is set.
-                ActionToHold = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToHold);
+                playerAction = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToHold);
             }
         }
 
@@ -190,7 +190,7 @@ namespace itolib.Behaviours.Kinematics
                 if (minPitch < maxPitch)
                 {
                     // Obtain a random pitch value between configured minimum and maximum values.
-                    SyncedPitch.Value = ((float)Random.NextDouble() * (maxPitch - minPitch)) + minPitch;
+                    SyncedPitch.Value = UnityEngine.Random.Range(minPitch, maxPitch);
                 }
 
                 if (stateVariant >= 0)
@@ -200,10 +200,10 @@ namespace itolib.Behaviours.Kinematics
                 }
             }
 
-            if (spawnSFX != null)
+            if (platformSource != null && spawnSFX != null)
             {
                 // Play sound effect when spawning, if one is provided.
-                platformSource?.PlayOneShot(spawnSFX, 1.0f);
+                platformSource.PlayOneShot(spawnSFX, 1.0f);
             }
         }
 
@@ -214,7 +214,7 @@ namespace itolib.Behaviours.Kinematics
         public override void OnTriggerEnter(Collider collider)
         {
             // Check if an enemy collided with the platform while the local player is attached.
-            if (detachOnEnemyCollision && LocalPlayerAttached && collider.TryGetComponent(out EnemyAI _))
+            if (detachOnEnemyCollision && localPlayerAttached && collider.TryGetComponent(out EnemyAI _))
             {
                 // Detach player from the platform if an enemy collides with it.
                 DetachPlayerLocal();
@@ -229,7 +229,7 @@ namespace itolib.Behaviours.Kinematics
             }
 
             // Check if the platform has collided with a wall while the local player is attached.
-            if (detachOnWallCollision && LocalPlayerAttached && (collider.gameObject.layer == LayerMask.NameToLayer("Room")
+            if (detachOnWallCollision && localPlayerAttached && (collider.gameObject.layer == LayerMask.NameToLayer("Room")
                 || collider.gameObject.layer == LayerMask.NameToLayer("MiscLevelGeometry")))
             {
                 // Detach player from the platform if it collides with a wall.
@@ -253,13 +253,13 @@ namespace itolib.Behaviours.Kinematics
         public override void Update()
         {
             // Check if a player is attached to the platform.
-            if (AttachedPlayer != null)
+            if (attachedPlayer != null)
             {
                 // Move attached player to the platform's position, with the configured offset applied.
-                AttachedPlayerTransform.position = PlatformTransform.position + playerOffset;
+                attachedPlayerTransform.position = platformTransform.position + playerOffset;
 
                 // Reset attached player's fall time to avoid instant death upon colliding with another (solid) object.
-                AttachedPlayer.ResetFallGravity();
+                attachedPlayer.ResetFallGravity();
             }
 
             base.Update();

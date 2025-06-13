@@ -12,7 +12,7 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public bool IsActive { get; private set; } = false;
+        public bool IsActive { get; private set; }
 
         /// <summary>
         ///     TODO.
@@ -63,7 +63,7 @@ namespace itolib.Behaviours.Interactables
             }
             IsActive = true;
 
-            EnableWalkieServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>());
+            EnableWalkieServerRpc(GameNetworkManager.Instance.localPlayerController);
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="playerReference"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void EnableWalkieServerRpc(NetworkObjectReference playerReference)
+        public void EnableWalkieServerRpc(NetworkBehaviourReference playerReference)
         {
             EnableWalkieClientRpc(playerReference);
         }
@@ -81,14 +81,17 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void EnableWalkieClientRpc(NetworkObjectReference playerReference)
+        public void EnableWalkieClientRpc(NetworkBehaviourReference playerReference)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player))
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
                 player.holdingWalkieTalkie = true;
                 player.speakingToWalkieTalkie = true;
-                StartOfRound.Instance.UpdatePlayerVoiceEffects();
+
+                if (StartOfRound.Instance != null)
+                {
+                    StartOfRound.Instance.UpdatePlayerVoiceEffects();
+                }
 
                 onStartTalking.Invoke(player);
             }
@@ -100,7 +103,7 @@ namespace itolib.Behaviours.Interactables
         /// <param name="_"></param>
         public void DisableWalkieLocal(PlayerControllerB _)
         {
-            DisableWalkieServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>());
+            DisableWalkieServerRpc(GameNetworkManager.Instance.localPlayerController);
             IsActive = false;
         }
 
@@ -109,7 +112,7 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="playerReference"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void DisableWalkieServerRpc(NetworkObjectReference playerReference)
+        public void DisableWalkieServerRpc(NetworkBehaviourReference playerReference)
         {
             DisableWalkieClientRpc(playerReference);
         }
@@ -119,16 +122,19 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void DisableWalkieClientRpc(NetworkObjectReference playerReference)
+        public void DisableWalkieClientRpc(NetworkBehaviourReference playerReference)
         {
-            if (playerReference.TryGet(out NetworkObject playerNetworkObject)
-                && playerNetworkObject.TryGetComponent(out PlayerControllerB player))
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
                 onStopTalking.Invoke(player);
 
                 player.holdingWalkieTalkie = false;
                 player.speakingToWalkieTalkie = false;
-                StartOfRound.Instance.UpdatePlayerVoiceEffects();
+
+                if (StartOfRound.Instance != null)
+                {
+                    StartOfRound.Instance.UpdatePlayerVoiceEffects();
+                }
             }
         }
     }

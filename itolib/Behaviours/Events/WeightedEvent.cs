@@ -46,7 +46,7 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     Seeded Random instance initialized with the current map seed.
         /// </summary>
-        public static System.Random SeededRandom { get; internal set; } = null!;
+        public static System.Random Random { get; internal set; } = null!;
 
         /// <summary>
         ///     TODO.
@@ -106,7 +106,7 @@ namespace itolib.Behaviours.Events
 
             if (seededRandom)
             {
-                SeededRandom ??= new(StartOfRound.Instance.randomMapSeed + 66);
+                Random ??= new(StartOfRound.Instance.randomMapSeed + 66);
             }
 
             List<int> propWeights = [.. eventEntries.Select(prop => prop.weight)];
@@ -130,7 +130,10 @@ namespace itolib.Behaviours.Events
                     DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(RollFromServer);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(RollFromServer);
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.AddListener(RollFromServer);
+                    }
                     break;
                 case ActivationTime.DungeonComplete:
                 case ActivationTime.Manual:
@@ -146,7 +149,7 @@ namespace itolib.Behaviours.Events
         {
             if (seededRandom)
             {
-                SeededRandom = null!;
+                Random = null!;
             }
 
             switch (activationTime)
@@ -158,7 +161,10 @@ namespace itolib.Behaviours.Events
                     DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(RollFromServer);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(RollFromServer);
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(RollFromServer);
+                    }
                     break;
                 case ActivationTime.Immediate:
                 case ActivationTime.DungeonComplete:
@@ -193,7 +199,7 @@ namespace itolib.Behaviours.Events
                 return;
             }
 
-            int rollsToPerform = (minRolls < maxRolls) ? (seededRandom ? SeededRandom.Next(minRolls, maxRolls + 1)
+            int rollsToPerform = (minRolls < maxRolls) ? (seededRandom ? Random.Next(minRolls, maxRolls + 1)
                 : UnityEngine.Random.RandomRangeInt(minRolls, maxRolls + 1)) : minRolls;
 
             for (int i = 0; i < rollsToPerform; i++)
@@ -203,7 +209,7 @@ namespace itolib.Behaviours.Events
                     break;
                 }
 
-                int randomWeight = seededRandom ? SeededRandom.Next(1, TotalWeight + 1) : UnityEngine.Random.RandomRangeInt(1,
+                int randomWeight = seededRandom ? Random.Next(1, TotalWeight + 1) : UnityEngine.Random.RandomRangeInt(1,
                     TotalWeight + 1), weightIndex = AllWeightsCumulative.FindIndex(weight => randomWeight <= weight);
 
                 if (weightIndex < 0 || weightIndex >= eventEntries.Count)
@@ -275,7 +281,8 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnDungeonComplete(Dungeon _)
+        /// <param name="dungeon"></param>
+        public void OnDungeonComplete(Dungeon dungeon)
         {
             if (activationTime is ActivationTime.DungeonComplete)
             {

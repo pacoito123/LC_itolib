@@ -108,15 +108,15 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public void Awake()
         {
-            AttachCondition = player => !player.isPlayerDead;
-            DetachCondition = player => player.isPlayerDead;
+            attachCondition = player => !player.isPlayerDead;
+            detachCondition = player => player.isPlayerDead;
 
             if (!TryGetComponent(out hindererCollider))
             {
                 // Plugin.StaticLogger.LogWarning(""); // TODO: Warn collider is missing.
             }
 
-            defaultPlayerSinkingCurve = StartOfRound.Instance?.playerSinkingCurve;
+            defaultPlayerSinkingCurve = StartOfRound.Instance != null ? StartOfRound.Instance.playerSinkingCurve : null;
         }
 
         /// <summary>
@@ -124,11 +124,11 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public override void Update()
         {
-            if (LocalPlayerAttached && AttachedPlayer != null)
+            if (localPlayerAttached && attachedPlayer != null)
             {
-                if (allowJumping && requireStamina && AttachedPlayer.isExhausted)
+                if (allowJumping && !requireStamina && attachedPlayer.isExhausted)
                 {
-                    AttachedPlayer.isExhausted = false;
+                    attachedPlayer.isExhausted = false;
                 }
 
                 /* if (drownPlayer)
@@ -186,13 +186,13 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public override void DetachPlayerLocal()
         {
-            if (AttachedPlayer == null)
+            if (attachedPlayer == null)
             {
                 return;
             }
 
-            AttachedPlayer.isMovementHindered--;
-            AttachedPlayer.hinderedMultiplier /= hinderedMultiplier;
+            attachedPlayer.isMovementHindered--;
+            attachedPlayer.hinderedMultiplier /= hinderedMultiplier;
 
             if (sinkPlayer)
             {
@@ -201,24 +201,24 @@ namespace itolib.Behaviours.Effects
                     StartOfRound.Instance.playerSinkingCurve = defaultPlayerSinkingCurve;
                 }
 
-                AttachedPlayer.sourcesCausingSinking--;
-                AttachedPlayer.sinkingSpeedMultiplier = 0.0f;
+                attachedPlayer.sourcesCausingSinking--;
+                attachedPlayer.sinkingSpeedMultiplier = 0.0f;
             }
             else if (drownPlayer || allowJumping)
             {
-                AttachedPlayer.isUnderwater = false;
+                attachedPlayer.isUnderwater = false;
 
                 if (drownPlayer)
                 {
-                    AttachedPlayer.underwaterCollider = null;
+                    attachedPlayer.underwaterCollider = null;
                 }
             }
 
-            onHinderStop.Invoke(AttachedPlayer);
+            onHinderStop.Invoke(attachedPlayer);
 
             if (!attachLocally)
             {
-                HinderPlayerServerRpc(AttachedPlayer, stop: true);
+                HinderPlayerServerRpc(attachedPlayer, stop: true);
             }
 
             base.DetachPlayerLocal();

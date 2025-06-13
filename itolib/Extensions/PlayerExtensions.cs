@@ -10,16 +10,11 @@ namespace itolib.Extensions
         /// <summary>
         ///     TODO.
         /// </summary>
-        extension(PlayerControllerB player)
+        /// <param name="player"></param>
+        /// <returns></returns>
+        public static bool IsLocalClient(this PlayerControllerB player)
         {
-            /// <summary>
-            ///     TODO.
-            /// </summary>
-            /// <returns></returns>
-            public bool IsLocalClient()
-            {
-                return player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId;
-            }
+            return player.actualClientId == GameNetworkManager.Instance.localPlayerController.actualClientId;
         }
     }
 }

@@ -6,10 +6,10 @@ using System.Runtime.CompilerServices;
 namespace itolib.Compatibility
 {
     /// <summary>
-    ///     TODO.
+    ///     Compatibility between WeatherConditional and CrowdControl.
     /// </summary>
     [HarmonyPatch]
-    internal class CrowdControlCompatibility
+    internal sealed class CrowdControlCompatibility
     {
         /// <summary>
         ///     Whether CrowdControl is present in the BepInEx Chainloader or not.
@@ -37,10 +37,10 @@ namespace itolib.Compatibility
         [HarmonyPostfix]
         internal static void CCWeatherCheck()
         {
-            if (TimeOfDay.Instance.currentLevel.currentWeather != CurrentWeather)
+            if (TimeOfDay.Instance != null && TimeOfDay.Instance.currentLevel != null && TimeOfDay.Instance.currentLevel.currentWeather != CurrentWeather)
             {
                 OnCCWeatherChanged?.Invoke(CurrentWeather, TimeOfDay.Instance.currentLevel.currentWeather);
-                CurrentWeather = TimeOfDay.Instance.currentLevelWeather;
+                CurrentWeather = TimeOfDay.Instance.currentLevel.currentWeather;
             }
         }
     }

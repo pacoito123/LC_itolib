@@ -21,7 +21,12 @@ namespace itolib.Behaviours.Helpers
         /// <param name="dungeon"></param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
-            GameObject[]? rootObjects = SceneManager.GetSceneByName(StartOfRound.Instance?.currentLevel?.sceneName).GetRootGameObjects();
+            if (StartOfRound.Instance == null || StartOfRound.Instance.currentLevel == null)
+            {
+                return;
+            }
+
+            GameObject[]? rootObjects = SceneManager.GetSceneByName(StartOfRound.Instance.currentLevel.sceneName).GetRootGameObjects();
 
             for (int i = 0; i < rootObjects?.Length; i++)
             {

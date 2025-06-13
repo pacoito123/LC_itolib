@@ -91,7 +91,7 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         /// <param name="blocker"></param>
-        public void DisableWall(WallBreaker blocker)
+        public static void DisableWall(WallBreaker blocker)
         {
             blocker.gameObject.SetActive(false);
         }

@@ -22,7 +22,7 @@ namespace itolib.Interfaces
         /// <summary>
         ///     Next pooled object instance in the <c>LinkedList</c>.
         /// </summary>
-        IPooledObject Next { get; set; }
+        IPooledObject NextPooledObject { get; set; }
 
         /// <summary>
         ///     Instantiates a new pooled object instance.
@@ -47,14 +47,14 @@ namespace itolib.Interfaces
                 // Use the current (ownerless) pooled object instance.
                 pooledObject = this;
             }
-            else if (Next == null && ObjectID < maxInstances)
+            else if (NextPooledObject == null && ObjectID < maxInstances)
             {
                 // Create a new pooled object instance, if not exceeding the maximum number of instances.
-                Next = CreateInstance();
-                Next.ObjectID = ObjectID + 1;
+                NextPooledObject = CreateInstance();
+                NextPooledObject.ObjectID = ObjectID + 1;
 
                 // Use the newly-created pooled object instance.
-                pooledObject = Next;
+                pooledObject = NextPooledObject;
             }
 
             if (pooledObject != null)
@@ -72,7 +72,7 @@ namespace itolib.Interfaces
             }
 
             // Attempt to assign to the next linked pooled object instance, or return false if there are no more instances left.
-            return Next?.TryAssignInstance(taker, maxInstances, out pooledObject) ?? false;
+            return NextPooledObject?.TryAssignInstance(taker, maxInstances, out pooledObject) ?? false;
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace itolib.Interfaces
             }
 
             // Check next linked pooled object instance, or return false if there are no more instances left.
-            return Next?.TryFreeInstance(possibleOwner, out pooledObject) ?? false;
+            return NextPooledObject?.TryFreeInstance(possibleOwner, out pooledObject) ?? false;
         }
     }
 }

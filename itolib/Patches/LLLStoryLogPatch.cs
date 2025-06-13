@@ -8,7 +8,7 @@ namespace itolib.Patches
     ///     Patch for re-adding ExtendedStoryLog instances to the Terminal upon lobby reload; should only run on LLL v1.4.11 or lower.
     /// </summary>
     [HarmonyPatch]
-    internal class LLLStoryLogPatch
+    internal sealed class LLLStoryLogPatch
     {
         /// <summary>
         ///     Cached list of TerminalNode instances corresponding to ExtendedStoryLog IDs.
@@ -20,7 +20,8 @@ namespace itolib.Patches
         internal static void CacheStoryLog(ExtendedStoryLog newStoryLog)
         {
             // Cache TerminalNode instance of the last (newly added) element in the 'Terminal.logEntryFiles' list.
-            LLLStoryLogNodes?.Add(newStoryLog.newStoryLogID, LethalLevelLoader.Patches.Terminal?.logEntryFiles[^1]);
+            LLLStoryLogNodes?.Add(newStoryLog.newStoryLogID, LethalLevelLoader.Patches.Terminal != null ?
+                LethalLevelLoader.Patches.Terminal.logEntryFiles[^1] : null);
         }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Awake))]
@@ -28,7 +29,7 @@ namespace itolib.Patches
         [HarmonyPrefix]
         internal static void PopulateStoryLogs()
         {
-            if (LLLStoryLogNodes?.Count > 0)
+            if (LLLStoryLogNodes?.Count > 0 && LethalLevelLoader.Patches.Terminal != null)
             {
                 // Load ExtendedStoryLog journal entries.
                 foreach (ExtendedMod extendedMod in PatchedContent.ExtendedMods)
@@ -39,7 +40,7 @@ namespace itolib.Patches
                         {
                             if (LLLStoryLogNodes?[extendedStoryLog.newStoryLogID] != null)
                             {
-                                LethalLevelLoader.Patches.Terminal?.logEntryFiles.Add(LLLStoryLogNodes[extendedStoryLog.newStoryLogID]);
+                                LethalLevelLoader.Patches.Terminal.logEntryFiles.Add(LLLStoryLogNodes[extendedStoryLog.newStoryLogID]);
                             }
                         }
                     }

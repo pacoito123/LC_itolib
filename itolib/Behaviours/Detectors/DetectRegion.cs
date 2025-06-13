@@ -121,7 +121,10 @@ namespace itolib.Behaviours.Detectors
                     DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(CheckObjectsInRegion);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(CheckObjectsInRegion);
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.AddListener(CheckObjectsInRegion);
+                    }
                     break;
                 case ActivationTime.Immediate:
                 case ActivationTime.DungeonComplete:
@@ -156,7 +159,10 @@ namespace itolib.Behaviours.Detectors
                     DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(CheckObjectsInRegion);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(CheckObjectsInRegion);
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(CheckObjectsInRegion);
+                    }
                     break;
                 case ActivationTime.Immediate:
                 case ActivationTime.DungeonComplete:
@@ -195,7 +201,7 @@ namespace itolib.Behaviours.Detectors
             if (regionCollider is BoxCollider box)
             {
                 ObjectsFound = Physics.OverlapBoxNonAlloc(transform.TransformPoint(box.center), box.size * 0.5f, OverlapBuffer,
-                    Quaternion.identity, layerMask, QueryTriggerInteraction.Collide);
+                    regionCollider.transform.rotation, layerMask, QueryTriggerInteraction.Collide);
             }
             else if (regionCollider is SphereCollider sphere)
             {
@@ -227,7 +233,8 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     <c>DunGen</c> listener called when generation finishes, but before blockers and connectors are placed.
         /// </summary>
-        public void OnDungeonComplete(Dungeon _)
+        /// <param name="dungeon"></param>
+        public void OnDungeonComplete(Dungeon dungeon)
         {
             if (activationTime is ActivationTime.DungeonComplete)
             {

@@ -19,22 +19,22 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     Whether or not the platform has collapsed.
         /// </summary>
-        public bool PlatformCollapsed { get; private set; } = false;
+        public bool PlatformCollapsed { get; private set; }
 
         /// <summary>
         ///     Whether or not the local player is on top of the platform.
         /// </summary>
-        public bool LocalPlayerOnPlatform { get; private set; } = false;
+        public bool LocalPlayerOnPlatform { get; private set; }
 
         /// <summary>
         ///     Chance for the platform to collapse every interval.
         /// </summary>
-        public int CollapseChance { get; private set; } = 0;
+        public int CollapseChance { get; private set; }
 
         /// <summary>
         ///     Time passed since last collapse interval.
         /// </summary>
-        public float TimeSinceLastCheck { get; private set; } = 0.0f;
+        public float TimeSinceLastCheck { get; private set; }
 
         /// <summary>
         ///     Interval in seconds between each collapse check.
@@ -164,14 +164,14 @@ namespace itolib.Behaviours.Kinematics
             {
                 PlatformCollapsed = true;
 
-                if (collapseSFX != null)
+                if (platformSource != null && collapseSFX != null)
                 {
-                    platformSource?.PlayOneShot(collapseSFX);
+                    platformSource.PlayOneShot(collapseSFX);
                 }
 
-                if (collapseState.Length > 0)
+                if (platformAnimator != null && collapseState.Length > 0)
                 {
-                    platformAnimator?.Play(collapseState);
+                    platformAnimator.Play(collapseState);
                 }
 
                 _ = StartCoroutine(CollapsePlatform());
@@ -236,14 +236,14 @@ namespace itolib.Behaviours.Kinematics
                 HUDManager.Instance.ShakeCamera((ScreenShakeType)shakeAmount);
             }
 
-            if (shakeSFX != null)
+            if (platformSource != null && shakeSFX != null)
             {
-                platformSource?.PlayOneShot(shakeSFX);
+                platformSource.PlayOneShot(shakeSFX);
             }
 
-            if (shakeState.Length > 0)
+            if (platformAnimator != null && shakeState.Length > 0)
             {
-                platformAnimator?.Play(shakeState);
+                platformAnimator.Play(shakeState);
             }
         }
 
@@ -259,14 +259,14 @@ namespace itolib.Behaviours.Kinematics
                 HUDManager.Instance.ShakeCamera((ScreenShakeType)collapseShakeAmount);
             }
 
-            if (collapseSFX != null)
+            if (platformSource != null && collapseSFX != null)
             {
-                platformSource?.PlayOneShot(collapseSFX);
+                platformSource.PlayOneShot(collapseSFX);
             }
 
-            if (collapseState.Length > 0)
+            if (platformAnimator != null && collapseState.Length > 0)
             {
-                platformAnimator?.Play(collapseState);
+                platformAnimator.Play(collapseState);
             }
 
             _ = StartCoroutine(CollapsePlatform());
@@ -275,7 +275,10 @@ namespace itolib.Behaviours.Kinematics
         private IEnumerator CollapsePlatform()
         {
             yield return new WaitForSeconds(collapseTimer);
-            platformContainer?.SetActive(false);
+            if (platformContainer != null)
+            {
+                platformContainer.SetActive(false);
+            }
 
             if (!respawnPlatform)
             {
@@ -285,16 +288,19 @@ namespace itolib.Behaviours.Kinematics
             }
 
             yield return new WaitForSeconds(respawnTimer);
-            platformContainer?.SetActive(true);
-
-            if (respawnState.Length > 0)
+            if (platformContainer != null)
             {
-                platformAnimator?.Play(respawnState);
+                platformContainer.SetActive(true);
             }
 
-            if (respawnSFX != null)
+            if (platformAnimator != null && respawnState.Length > 0)
             {
-                platformSource?.PlayOneShot(respawnSFX);
+                platformAnimator.Play(respawnState);
+            }
+
+            if (platformSource != null && respawnSFX != null)
+            {
+                platformSource.PlayOneShot(respawnSFX);
             }
 
             LocalPlayerOnPlatform = false;

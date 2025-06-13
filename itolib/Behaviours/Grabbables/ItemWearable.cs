@@ -103,7 +103,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public void SetWearablePosition()
         {
-            if (item.playerHeldBy?.IsOwner == true)
+            if (item.playerHeldBy != null && item.playerHeldBy.IsOwner)
             {
                 SetWearablePositionLocal(item.playerHeldBy);
                 SetWearablePositionServerRpc(item.playerHeldBy);
@@ -187,7 +187,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="reset"></param>
         public void EquipWearable(bool reset = false)
         {
-            if (item.playerHeldBy?.IsOwner == true)
+            if (item.playerHeldBy != null && item.playerHeldBy.IsOwner)
             {
                 EquipWearableLocal(item.playerHeldBy, reset);
                 EquipWearableServerRpc(item.playerHeldBy, reset);
@@ -239,8 +239,11 @@ namespace itolib.Behaviours.Grabbables
                 item.parentObject = player.IsOwner ? player.localItemHolder.transform : player.serverItemHolder.transform;
             }
 
-            applyOffsetTo?.SetLocalPositionAndRotation(!reset ? wearPositionOffset : InitialPosition,
-                !reset ? wearRotationOffset : InitialRotation);
+            if (applyOffsetTo != null)
+            {
+                applyOffsetTo.SetLocalPositionAndRotation(!reset ? wearPositionOffset : InitialPosition,
+                    !reset ? wearRotationOffset : InitialRotation);
+            }
         }
     }
 }

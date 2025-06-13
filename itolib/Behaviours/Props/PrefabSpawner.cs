@@ -7,7 +7,7 @@ namespace itolib.Behaviours.Props
     /// <summary>
     /// 	TODO.
     /// </summary>
-    public class PrefabSpawner : NetworkedSpawner
+    public class PrefabSpawner : NetworkedSpawner<NetworkObject>
     {
         /// <summary>
         ///     TODO.
@@ -68,7 +68,8 @@ namespace itolib.Behaviours.Props
             }
 
             GameObject prefab = Instantiate(PrefabToSpawn.gameObject, spawnLocation.position, spawnLocation.rotation,
-                RoundManager.Instance?.mapPropsContainer.transform);
+                (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null) ?
+                    RoundManager.Instance.mapPropsContainer.transform : null);
 
             if (parentTransform != null)
             {

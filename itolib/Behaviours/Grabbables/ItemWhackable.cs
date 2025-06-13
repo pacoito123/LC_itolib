@@ -281,11 +281,11 @@ namespace itolib.Behaviours.Grabbables
             yield return new WaitUntil(() => !isHoldingButton || !item.isHeld);
 
             // Handle swing.
-            LastHeldBy?.playerBodyAnimator.SetBool("reelingUp", false);
+            LastHeldBy.playerBodyAnimator.SetBool("reelingUp", false);
             if (item.isHeld)
             {
                 onWeaponSwing.Invoke();
-                LastHeldBy?.UpdateSpecialAnimationValue(true, (short)LastHeldBy.transform.localEulerAngles.y, 0.4f, false);
+                LastHeldBy.UpdateSpecialAnimationValue(true, (short)LastHeldBy.transform.localEulerAngles.y, 0.4f, false);
             }
             // ...
 
@@ -476,7 +476,10 @@ namespace itolib.Behaviours.Grabbables
                 RoundManager.Instance.PlayAudibleNoise(transform.position, 17f, 0.8f, 0, false, 0);
             }
 
-            LastHeldBy?.playerBodyAnimator.SetTrigger("shovelHit");
+            if (LastHeldBy != null)
+            {
+                LastHeldBy.playerBodyAnimator.SetTrigger("shovelHit");
+            }
         }
     }
 }

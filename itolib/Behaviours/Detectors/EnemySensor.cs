@@ -131,7 +131,7 @@ namespace itolib.Behaviours.Detectors
                 if (OverlapBuffer![i].TryGetComponent(out EnemyAICollisionDetect enemyCollision)
                     && enemyCollision.mainScript != null)
                 {
-                    FoundEnemiesEachClientRpc(enemyCollision.mainScript.thisNetworkObject);
+                    FoundEnemiesEachClientRpc(enemyCollision.mainScript);
                     enemiesFound++;
                 }
             }
@@ -155,7 +155,7 @@ namespace itolib.Behaviours.Detectors
             if (other.TryGetComponent(out EnemyAICollisionDetect enemyCollision)
                 && enemyCollision.mainScript != null)
             {
-                RegionEnteredClientRpc(enemyCollision.mainScript.thisNetworkObject);
+                RegionEnteredClientRpc(enemyCollision.mainScript);
 
                 if (enemyFilters.Count == 0)
                 {
@@ -176,7 +176,7 @@ namespace itolib.Behaviours.Detectors
                             enemyAmounts[i] = 0;
                         }
 
-                        RegionEnteredClientRpc(enemyCollision.mainScript.thisNetworkObject);
+                        RegionEnteredClientRpc(enemyCollision.mainScript);
                         break;
                     }
                 }
@@ -198,7 +198,7 @@ namespace itolib.Behaviours.Detectors
             {
                 if (enemyFilters.Count == 0 || !filterExiting)
                 {
-                    RegionEnteredClientRpc(enemyCollision.mainScript.thisNetworkObject, exit: true);
+                    RegionEnteredClientRpc(enemyCollision.mainScript, exit: true);
                     return;
                 }
 
@@ -214,7 +214,7 @@ namespace itolib.Behaviours.Detectors
                             enemyAmounts[i]--;
                         }
 
-                        RegionEnteredClientRpc(enemyCollision.mainScript.thisNetworkObject, exit: true);
+                        RegionEnteredClientRpc(enemyCollision.mainScript, exit: true);
                         break;
                     }
                 }
@@ -226,10 +226,9 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="enemyReference"></param>
         [ClientRpc]
-        public void FoundEnemiesEachClientRpc(NetworkObjectReference enemyReference)
+        public void FoundEnemiesEachClientRpc(NetworkBehaviourReference enemyReference)
         {
-            if (enemyReference.TryGet(out NetworkObject enemyNetworkObject)
-                && enemyNetworkObject.TryGetComponent(out EnemyAI enemy))
+            if (enemyReference.TryGet(out EnemyAI enemy))
             {
                 onObjectsEach.Invoke(enemy);
             }
@@ -251,10 +250,9 @@ namespace itolib.Behaviours.Detectors
         /// <param name="enemyReference"></param>
         /// <param name="exit"></param>
         [ClientRpc]
-        public void RegionEnteredClientRpc(NetworkObjectReference enemyReference, bool exit = false)
+        public void RegionEnteredClientRpc(NetworkBehaviourReference enemyReference, bool exit = false)
         {
-            if (enemyReference.TryGet(out NetworkObject enemyNetworkObject)
-                && enemyNetworkObject.TryGetComponent(out EnemyAI enemy))
+            if (enemyReference.TryGet(out EnemyAI enemy))
             {
                 if (!exit)
                 {

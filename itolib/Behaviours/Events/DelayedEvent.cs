@@ -36,6 +36,14 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
+        public void Awake()
+        {
+            enabled = false;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void Update()
         {
             if (timer < delayTimer)

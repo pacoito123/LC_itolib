@@ -15,41 +15,6 @@ namespace itolib.Behaviours.Effects
     public abstract class PlayerAttachable : NetworkBehaviour
     {
         /// <summary>
-        ///     The player that's currently attached.
-        /// </summary>
-        public PlayerControllerB? AttachedPlayer { get; protected set; }
-
-        /// <summary>
-        ///     Cached transform of the currently attached player (if there is one).
-        /// </summary>
-        public Transform AttachedPlayerTransform { get; protected set; } = null!;
-
-        /// <summary>
-        ///     Cached transform of the currently attached player's gameplay camera (if there is one).
-        /// </summary>
-        public Transform AttachedPlayerGameplayCamera { get; protected set; } = null!;
-
-        /// <summary>
-        ///     Whether or not the local player is attached.
-        /// </summary>
-        public bool LocalPlayerAttached { get; protected set; } = false;
-
-        /// <summary>
-        ///     Whether or not a player has attached once already.
-        /// </summary>
-        public bool HasTriggered { get; protected set; } = false;
-
-        /// <summary>
-        ///     Condition needed for the player to be attached.
-        /// </summary>
-        public Predicate<PlayerControllerB> AttachCondition { get; protected set; } = _ => true;
-
-        /// <summary>
-        ///     Condition needed for the player to be detached.
-        /// </summary>
-        public Predicate<PlayerControllerB> DetachCondition { get; protected set; } = _ => false;
-
-        /// <summary>
         ///     Callback invoked immediately after a player attaches, with the player in question as parameter.
         /// </summary>
         [Header("Attach")]
@@ -121,6 +86,59 @@ namespace itolib.Behaviours.Effects
         public bool attachLocally = false;
 
         /// <summary>
+        ///     The player that's currently attached.
+        /// </summary>
+        [HideInInspector]
+        protected PlayerControllerB? attachedPlayer;
+
+        /// <summary>
+        ///     Cached transform of the currently attached player (if there is one).
+        /// </summary>
+        [HideInInspector]
+        protected Transform attachedPlayerTransform = null!;
+
+        /// <summary>
+        ///     Cached transform of the currently attached player's gameplay camera (if there is one).
+        /// </summary>
+        [HideInInspector]
+        protected Transform attachedPlayerGameplayCamera = null!;
+
+        /// <summary>
+        ///     Whether or not the local player is attached.
+        /// </summary>
+        [HideInInspector]
+        protected bool localPlayerAttached;
+
+        /// <summary>
+        ///     Whether or not a player has attached once already.
+        /// </summary>
+        [HideInInspector]
+        protected bool hasTriggered;
+
+        /// <summary>
+        ///     Condition needed for the player to be attached.
+        /// </summary>
+        [HideInInspector]
+        protected Predicate<PlayerControllerB> attachCondition = _ => true;
+
+        /// <summary>
+        ///     Condition needed for the player to be detached.
+        /// </summary>
+        [HideInInspector]
+        protected Predicate<PlayerControllerB> detachCondition = _ => false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            // Start disabled.
+            enabled = false;
+        }
+
+        /// <summary>
         ///     Attach upon coming into contact with a player.
         /// </summary>
         /// <param name="collider">Collider to attempt to attach to.</param>
@@ -133,21 +151,20 @@ namespace itolib.Behaviours.Effects
             }
 
             // Check if a player has attached once already.
-            if (triggerOnce && HasTriggered)
+            if (triggerOnce && hasTriggered)
             {
                 return;
             }
 
             // Check if a player is already attached, or the local player is not the one who will be attached.
-            if (AttachedPlayer != null || !collider.CompareTag("Player")
-                || !collider.TryGetComponent(out PlayerControllerB player)
-                || !player.IsLocalClient())
+            if (attachedPlayer != null || !collider.CompareTag("Player")
+                || !collider.TryGetComponent(out PlayerControllerB player) || !player.IsLocalClient())
             {
                 return;
             }
 
             // Check if attach condition is met.
-            if (AttachCondition(player))
+            if (attachCondition(player))
             {
                 if (attachLocally)
                 {
@@ -181,7 +198,7 @@ namespace itolib.Behaviours.Effects
             }
 
             // Check if the local player is not attached, or something else exited the attach region.
-            if (!LocalPlayerAttached || !collider.CompareTag("Player")
+            if (!localPlayerAttached || !collider.CompareTag("Player")
                 || !collider.TryGetComponent(out PlayerControllerB player) || !player.IsLocalClient())
             {
                 return;
@@ -202,7 +219,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public virtual void Update()
         {
-            if (LocalPlayerAttached && AttachedPlayer != null && DetachCondition(AttachedPlayer))
+            if (localPlayerAttached && attachedPlayer != null && detachCondition(attachedPlayer))
             {
                 // Detach player locally, if the detach condition is met.
                 DetachPlayerLocal();
@@ -222,21 +239,24 @@ namespace itolib.Behaviours.Effects
         public virtual void AttachPlayerLocal(PlayerControllerB player)
         {
             // Check if the player attaching is the local client.
-            LocalPlayerAttached = player.IsLocalClient();
+            localPlayerAttached = player.IsLocalClient();
 
             // Attach given player.
-            AttachedPlayer = player;
-            AttachedPlayerTransform = player.transform;
-            AttachedPlayerGameplayCamera = player.gameplayCamera.transform;
+            attachedPlayer = player;
+            attachedPlayerTransform = player.transform;
+            attachedPlayerGameplayCamera = player.gameplayCamera.transform;
 
             if (triggerOnce)
             {
                 // Set as already having been attached to.
-                HasTriggered = true;
+                hasTriggered = true;
             }
 
             // Invoke attach event.
             onAttach.Invoke(player);
+
+            // Enable update loop.
+            enabled = true;
         }
 
         /// <summary>
@@ -244,17 +264,20 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public virtual void DetachPlayerLocal()
         {
-            if (AttachedPlayer != null)
+            if (attachedPlayer != null)
             {
                 // Invoke detach event.
-                onDetach.Invoke(AttachedPlayer);
+                onDetach.Invoke(attachedPlayer);
             }
 
             // Remove attached player.
-            AttachedPlayer = null;
-            AttachedPlayerTransform = null!;
-            AttachedPlayerGameplayCamera = null!;
-            LocalPlayerAttached = false;
+            attachedPlayer = null;
+            attachedPlayerTransform = null!;
+            attachedPlayerGameplayCamera = null!;
+            localPlayerAttached = false;
+
+            // Disable update loop.
+            enabled = false;
         }
 
         /// <summary>
@@ -264,7 +287,7 @@ namespace itolib.Behaviours.Effects
         [ServerRpc(RequireOwnership = false)]
         public void AttachPlayerServerRpc(NetworkBehaviourReference playerReference)
         {
-            if (AttachedPlayer == null)
+            if (attachedPlayer == null)
             {
                 // Attach the player on all clients.
                 AttachPlayerClientRpc(playerReference);
@@ -306,7 +329,7 @@ namespace itolib.Behaviours.Effects
         [ClientRpc]
         public void DetachPlayerClientRpc()
         {
-            if (AttachedPlayer != null)
+            if (attachedPlayer != null)
             {
                 DetachPlayerLocal();
             }
@@ -317,7 +340,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public virtual IEnumerator DetachPlayerDelayed()
         {
-            if (!LocalPlayerAttached)
+            if (!localPlayerAttached)
             {
                 // Exit early if not attached to the local player.
                 yield break;
@@ -346,7 +369,10 @@ namespace itolib.Behaviours.Effects
             onDespawn.Invoke();
 
             // Despawn and destroy.
-            parentNetworkObject?.Despawn(true);
+            if (parentNetworkObject != null)
+            {
+                parentNetworkObject.Despawn(true);
+            }
         }
     }
 }

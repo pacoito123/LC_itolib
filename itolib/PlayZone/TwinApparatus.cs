@@ -192,13 +192,19 @@ namespace itolib.PlayZone
 
         private IEnumerator HandleDisconnect(bool bothPulled)
         {
-            apparatusAudio?.Stop();
-            apparatusAudio?.PlayOneShot(disconnectSFX, 0.7f);
+            if (apparatusAudio != null)
+            {
+                apparatusAudio.Stop();
+                apparatusAudio.PlayOneShot(disconnectSFX, 0.7f);
+            }
             onDisconnectEarly.Invoke(bothPulled);
 
             yield return new WaitForSeconds(0.1f);
             sparkParticle.SetActive(true);
-            apparatusAudio?.PlayOneShot(removeFromMachineSFX);
+            if (apparatusAudio != null)
+            {
+                apparatusAudio.PlayOneShot(removeFromMachineSFX);
+            }
 
             if (IsHost && Random.Range(0, 100) < 70 && roundManager.minEnemiesToSpawn < 2)
             {

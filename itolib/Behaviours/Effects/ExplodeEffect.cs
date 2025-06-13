@@ -129,7 +129,7 @@ namespace itolib.Behaviours.Effects
 
             if (explosionPrefab == null)
             {
-                explosionPrefab = StartOfRound.Instance?.explosionPrefab;
+                explosionPrefab = StartOfRound.Instance != null ? StartOfRound.Instance.explosionPrefab : null;
                 VanillaExplosion = true;
             }
         }
@@ -190,8 +190,8 @@ namespace itolib.Behaviours.Effects
 
                 float distanceFromBlast = Vector3.Distance(explosionOrigin, targetTransform.position);
 
-                float? damageRange = damageBounds?.bounds.extents.sqrMagnitude,
-                    killRange = killBounds?.bounds.extents.sqrMagnitude;
+                float? damageRange = damageBounds != null ? damageBounds.bounds.extents.sqrMagnitude : null,
+                    killRange = killBounds != null ? killBounds.bounds.extents.sqrMagnitude : null;
 
                 float damageTime = 1 - (distanceFromBlast / damageRange) ?? 0.0f;
 
@@ -221,8 +221,8 @@ namespace itolib.Behaviours.Effects
                     {
                         _ = landmine.StartCoroutine(landmine.TriggerOtherMineDelayed(landmine));
                     }
-                    else if (objectHit.TryGetComponent(out EnemyAICollisionDetect enemyCollision) && enemyCollision.mainScript?.IsOwner == true
-                        && distanceFromBlast < damageRange)
+                    else if (objectHit.TryGetComponent(out EnemyAICollisionDetect enemyCollision) && enemyCollision.mainScript != null
+                        && enemyCollision.mainScript.IsOwner && distanceFromBlast < damageRange)
                     {
                         enemyCollision.mainScript.HitEnemyOnLocalClient(Mathf.RoundToInt(enemyDamageCurve.Evaluate(damageTime)));
                         enemyCollision.mainScript.HitFromExplosion(distanceFromBlast);
@@ -251,7 +251,10 @@ namespace itolib.Behaviours.Effects
             yield return new WaitForSeconds(despawnTimer);
 
             // Despawn and destroy.
-            parentNetworkObject?.Despawn(true);
+            if (parentNetworkObject != null)
+            {
+                parentNetworkObject.Despawn(true);
+            }
         }
     }
 }

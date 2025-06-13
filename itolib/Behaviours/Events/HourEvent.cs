@@ -12,7 +12,7 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        public bool HasRun { get; private set; } = false;
+        public bool HasRun { get; private set; }
 
         /// <summary>
         ///     TODO.

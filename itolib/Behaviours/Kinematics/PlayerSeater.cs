@@ -14,11 +14,6 @@ namespace itolib.Behaviours.Kinematics
     public class PlayerSeater : PlayerAttachable
     {
         /// <summary>
-        ///     TODO.
-        /// </summary>
-        public InputAction? ActionToUnseat { get; private set; }
-
-        /// <summary>
         ///     Key required to be pressed for the player to unsit. See 'UnityEngine.InputSystem.Key' for number values. Leaving it at '-1' allows players to
         ///     remain attached until being detached through other means (e.g. 'detachTimer').
         /// </summary>
@@ -32,6 +27,12 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         [Tooltip("")]
         public bool hidePlayerItem = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool enterVehicleAnimation;
 
         /// <summary>
         ///     TODO.
@@ -57,17 +58,26 @@ namespace itolib.Behaviours.Kinematics
         ///     TODO.
         /// </summary>
         [HideInInspector]
+        private InputAction? playerAction;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
         public Transform playerCamera = null!;
 
-        private void Awake()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Awake()
         {
-            AttachCondition = player => !player.isPlayerDead && !player.inAnimationWithEnemy && !player.inSpecialInteractAnimation;
-            DetachCondition = player => player.isPlayerDead || (ActionToUnseat != null && ActionToUnseat.IsPressed());
+            attachCondition = player => !player.isPlayerDead && !player.inAnimationWithEnemy && !player.inSpecialInteractAnimation;
+            detachCondition = player => player.isPlayerDead || (playerAction != null && playerAction.IsPressed());
 
             if (actionToUnseat.Length > 0)
             {
                 // Get action (key) that must be pressed, if one is set.
-                ActionToUnseat = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToUnseat);
+                playerAction = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToUnseat);
             }
         }
 
@@ -76,15 +86,15 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         public override void Update()
         {
-            if (LocalPlayerAttached && AttachedPlayer != null)
+            if (localPlayerAttached && attachedPlayer != null)
             {
                 if (cameraTurnSpeed > 0.0f && playerCamera != null)
                 {
-                    AttachedPlayerTransform.rotation = Quaternion.Lerp(AttachedPlayerTransform.rotation, transform.rotation, Time.deltaTime * cameraTurnSpeed);
+                    attachedPlayerTransform.rotation = Quaternion.Lerp(attachedPlayerTransform.rotation, transform.rotation, Time.deltaTime * cameraTurnSpeed);
 
-                    playerCamera.localEulerAngles = new(Mathf.LerpAngle(playerCamera.localEulerAngles.x, AttachedPlayer.syncFullCameraRotation.x,
-                        cameraTurnSpeed * Time.deltaTime), Mathf.LerpAngle(playerCamera.localEulerAngles.y, AttachedPlayer.syncFullCameraRotation.y,
-                        cameraTurnSpeed * Time.deltaTime), Mathf.LerpAngle(playerCamera.localEulerAngles.z, AttachedPlayer.syncFullCameraRotation.z,
+                    playerCamera.localEulerAngles = new(Mathf.LerpAngle(playerCamera.localEulerAngles.x, attachedPlayer.syncFullCameraRotation.x,
+                        cameraTurnSpeed * Time.deltaTime), Mathf.LerpAngle(playerCamera.localEulerAngles.y, attachedPlayer.syncFullCameraRotation.y,
+                        cameraTurnSpeed * Time.deltaTime), Mathf.LerpAngle(playerCamera.localEulerAngles.z, attachedPlayer.syncFullCameraRotation.z,
                         cameraTurnSpeed * Time.deltaTime));
                 }
             }
@@ -97,7 +107,7 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         public override void AttachPlayerLocal(PlayerControllerB player)
         {
-            if (player.IsLocalClient())
+            if (!player.IsLocalClient())
             {
                 return;
             }
@@ -117,16 +127,16 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         public override void DetachPlayerLocal()
         {
-            if (AttachedPlayer == null || (!attachLocally && AttachedPlayer.IsLocalClient()))
+            if (attachedPlayer == null || (!attachLocally && !attachedPlayer.IsLocalClient()))
             {
                 return;
             }
 
-            PlayerSitLocal(AttachedPlayer, true);
+            PlayerSitLocal(attachedPlayer, true);
 
             if (IsSpawned)
             {
-                PlayerSitServerRpc(AttachedPlayer, unsit: true);
+                PlayerSitServerRpc(attachedPlayer, unsit: true);
             }
 
             base.DetachPlayerLocal();
@@ -161,7 +171,11 @@ namespace itolib.Behaviours.Kinematics
         {
             if (!unsit)
             {
-                // player.inVehicleAnimation = true;
+                if (enterVehicleAnimation)
+                {
+                    player.inVehicleAnimation = true;
+                }
+
                 player.syncFullCameraRotation = player.gameplayCamera.transform.localEulerAngles;
 
                 player.Crouch(false);

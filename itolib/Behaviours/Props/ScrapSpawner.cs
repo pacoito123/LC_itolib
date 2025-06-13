@@ -57,7 +57,7 @@ namespace itolib.Behaviours.Props
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class ScrapSpawner : NetworkedSpawner
+    public class ScrapSpawner : NetworkedSpawner<GrabbableObject>
     {
         /// <summary>
         ///     Seeded Random instance initialized with the current map seed.
@@ -135,17 +135,23 @@ namespace itolib.Behaviours.Props
                 return PrefabToSpawn;
             }
 
-            if (itemToSpawn?.spawnPrefab?.TryGetComponent(out NetworkObject itemNetworkObject) == true)
+            if (itemToSpawn == null)
+            {
+                return null;
+            }
+
+            if (itemToSpawn.spawnPrefab != null && itemToSpawn.spawnPrefab.TryGetComponent(out NetworkObject itemNetworkObject))
             {
                 return itemNetworkObject;
             }
-            else if (StartOfRound.Instance?.allItemsList.itemsList.Find(item => string.CompareOrdinal(item.name, itemToSpawn?.name) == 0)?.spawnPrefab
-                .TryGetComponent(out NetworkObject blankReferenceNetworkObject) == true)
+            else
             {
-                return blankReferenceNetworkObject;
-            }
+                Item? item = StartOfRound.Instance != null ? StartOfRound.Instance.allItemsList.itemsList.Find(item =>
+                    string.CompareOrdinal(item.name, itemToSpawn.name) == 0) : null;
 
-            return null;
+                return (item != null && item.spawnPrefab != null && item.spawnPrefab.TryGetComponent(out NetworkObject blankReferenceNetworkObject))
+                    ? blankReferenceNetworkObject : null;
+            }
         }
 
         /// <summary>
@@ -158,9 +164,13 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            if (Random == null && StartOfRound.Instance != null)
+            if (StartOfRound.Instance != null)
             {
-                Random = new(StartOfRound.Instance.randomMapSeed + 44);
+                Random ??= new(StartOfRound.Instance.randomMapSeed + 44);
+            }
+            else
+            {
+                Random ??= new();
             }
 
             if (spawnLocations.Count == 0)
@@ -195,14 +205,13 @@ namespace itolib.Behaviours.Props
             }
 
             GameObject itemPrefab = Instantiate(PrefabToSpawn.gameObject, spawnLocation.position, Quaternion.identity,
-                RoundManager.Instance.spawnedScrapContainer);
+                RoundManager.Instance != null ? RoundManager.Instance.spawnedScrapContainer : null);
 
-            if (itemPrefab.TryGetComponent(out NetworkObject itemNetworkObject)
-                && itemPrefab.TryGetComponent(out GrabbableObject item))
+            if (itemPrefab.TryGetComponent(out GrabbableObject item) && item.itemProperties != null)
             {
                 int scrapValue = Random.Next(overrideMinValue < 0 ? item.itemProperties.minValue : overrideMinValue,
                     overrideMaxValue < 0 ? item.itemProperties.maxValue : overrideMaxValue);
-                if (applyScrapMultiplier)
+                if (applyScrapMultiplier && RoundManager.Instance != null)
                 {
                     scrapValue = (int)(scrapValue * RoundManager.Instance.scrapValueMultiplier);
                 }
@@ -218,7 +227,7 @@ namespace itolib.Behaviours.Props
                     scrapValue = scrapValue
                 };
 
-                PrefabInstances.Add(itemNetworkObject);
+                PrefabInstances.Add(item);
                 ItemsToSync.Add(serializedItem);
             }
         }
@@ -235,9 +244,9 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            if (activationTime is ActivationTime.HazardSpawn or ActivationTime.ScrapSpawn)
+            if (activationTime is ActivationTime.HazardSpawn or ActivationTime.ScrapSpawn && StartOfRound.Instance != null)
             {
-                StartOfRound.Instance?.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
+                StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
             }
         }
 
@@ -248,9 +257,9 @@ namespace itolib.Behaviours.Props
         {
             Random = null!;
 
-            if (activationTime is ActivationTime.HazardSpawn or ActivationTime.ScrapSpawn)
+            if (activationTime is ActivationTime.HazardSpawn or ActivationTime.ScrapSpawn && StartOfRound.Instance != null)
             {
-                StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncAllItemValuesServerRpc);
+                StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SyncAllItemValuesServerRpc);
             }
 
             base.OnDestroy();
@@ -277,7 +286,7 @@ namespace itolib.Behaviours.Props
         /// <param name="itemReference"></param>
         /// <param name="syncedItem"></param>
         [ClientRpc]
-        public void SyncItemValuesClientRpc(NetworkObjectReference itemReference, SyncedItem syncedItem)
+        public void SyncItemValuesClientRpc(NetworkBehaviourReference itemReference, SyncedItem syncedItem)
         {
             _ = StartCoroutine(SyncItemValuesOnSpawn(itemReference, syncedItem));
         }
@@ -288,19 +297,19 @@ namespace itolib.Behaviours.Props
         /// <param name="itemReference"></param>
         /// <param name="syncedItem"></param>
         /// <returns></returns>
-        private IEnumerator SyncItemValuesOnSpawn(NetworkObjectReference itemReference, SyncedItem syncedItem)
+        private IEnumerator SyncItemValuesOnSpawn(NetworkBehaviourReference itemReference, SyncedItem syncedItem)
         {
-            NetworkObject itemNetworkObject;
+            GrabbableObject item;
 
             float startTime = Time.realtimeSinceStartup;
-            while (!itemReference.TryGet(out itemNetworkObject) && Time.realtimeSinceStartup - startTime < 8f)
+            while (!itemReference.TryGet(out item) && Time.realtimeSinceStartup - startTime < 8f)
             {
                 yield return new WaitForSeconds(0.03f);
             }
 
             yield return new WaitForEndOfFrame();
 
-            if (!itemNetworkObject.TryGetComponent(out GrabbableObject item))
+            if (item == null)
             {
                 yield break;
             }

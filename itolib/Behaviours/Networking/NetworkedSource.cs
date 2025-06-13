@@ -58,9 +58,9 @@ namespace itolib.Behaviours.Networking
         {
             base.OnNetworkSpawn();
 
-            if (IsHost && syncedSource?.playOnAwake == true)
+            if (IsHost && StartOfRound.Instance != null && syncedSource != null && syncedSource.playOnAwake)
             {
-                StartOfRound.Instance?.StartNewRoundEvent.AddListener(PlayNetworkedAudio);
+                StartOfRound.Instance.StartNewRoundEvent.AddListener(PlayNetworkedAudio);
             }
         }
 
@@ -69,9 +69,9 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         public override void OnDestroy()
         {
-            if (IsHost && syncedSource?.playOnAwake == true)
+            if (IsHost && StartOfRound.Instance != null && syncedSource != null && syncedSource.playOnAwake)
             {
-                StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PlayNetworkedAudio);
+                StartOfRound.Instance.StartNewRoundEvent.RemoveListener(PlayNetworkedAudio);
             }
 
             base.OnDestroy();
@@ -84,7 +84,7 @@ namespace itolib.Behaviours.Networking
         public float GetRandomPitch()
         {
             return (minPitch != 1.0f && minPitch < maxPitch) ? Random.Range(minPitch, maxPitch)
-                : syncedSource?.pitch ?? 1.0f;
+                : (syncedSource != null) ? syncedSource.pitch : 1.0f;
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         public void PlayNetworkedAudio()
         {
-            if (syncedSource?.clip != null)
+            if (syncedSource != null && syncedSource.clip != null)
             {
                 float pitch = GetRandomPitch();
 
@@ -132,7 +132,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="pitch"></param>
         private void PlayAudioLocal(float pitch)
         {
-            if (syncedSource?.clip != null)
+            if (syncedSource != null && syncedSource.clip != null)
             {
                 syncedSource.pitch = pitch;
                 syncedSource.Play();
@@ -261,9 +261,9 @@ namespace itolib.Behaviours.Networking
         [ClientRpc]
         public void PlaySurfaceHitClientRpc(NetworkBehaviourReference playerWhoCalled, int surfaceID)
         {
-            if (playerWhoCalled.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            if (syncedSource != null && playerWhoCalled.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
-                syncedSource?.PlayOneShot(StartOfRound.Instance.footstepSurfaces[surfaceID].hitSurfaceSFX);
+                syncedSource.PlayOneShot(StartOfRound.Instance.footstepSurfaces[surfaceID].hitSurfaceSFX);
             }
         }
 
@@ -273,9 +273,9 @@ namespace itolib.Behaviours.Networking
         /// <param name="surfaceID"></param>
         private void PlaySurfaceHitLocal(int surfaceID)
         {
-            if (StartOfRound.Instance.footstepSurfaces[surfaceID] != null)
+            if (syncedSource != null && StartOfRound.Instance != null && StartOfRound.Instance.footstepSurfaces[surfaceID] != null)
             {
-                syncedSource?.PlayOneShot(StartOfRound.Instance.footstepSurfaces[surfaceID].hitSurfaceSFX);
+                syncedSource.PlayOneShot(StartOfRound.Instance.footstepSurfaces[surfaceID].hitSurfaceSFX);
             }
         }
     }

@@ -16,11 +16,6 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public InputAction? ActionToTrigger { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [Header("Movement Sensor")]
         [Tooltip("")]
         public float triggerInterval = 1.0f;
@@ -53,15 +48,28 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        [HideInInspector]
+        private InputAction? playerAction;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void Awake()
         {
-            AttachCondition = player => !player.isPlayerDead;
-            DetachCondition = player => player.isPlayerDead;
+            attachCondition = player => !player.isPlayerDead;
+            detachCondition = player => player.isPlayerDead;
 
             if (actionToTrigger.Length > 0)
             {
                 // Get action (or key) that triggers this sensor.
-                ActionToTrigger = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToTrigger);
+                playerAction = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToTrigger);
+
+                // Disable if action is not found. 
+                if (playerAction == null)
+                {
+                    // TODO: Show warning.
+                    enabled = false;
+                }
             }
         }
 
@@ -70,10 +78,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public void OnEnable()
         {
-            if (ActionToTrigger == null)
-            {
-                enabled = false;
-            }
+            timer = triggerInterval;
         }
 
         /// <summary>
@@ -81,33 +86,31 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void Update()
         {
+            if (localPlayerAttached && attachedPlayer != null)
+            {
+                if (timer < triggerInterval)
+                {
+                    timer += Time.deltaTime;
+
+                    return;
+                }
+
+                if ((holdAction && !playerAction!.IsPressed()) || (!holdAction && !playerAction!.WasPerformedThisFrame()))
+                {
+                    return;
+                }
+
+                onMovementDetected.Invoke(attachedPlayer);
+
+                if (IsSpawned) // TODO: Separate local effect field?
+                {
+                    PlayerMovedServerRpc(attachedPlayer);
+                }
+
+                timer = 0.0f;
+            }
+
             base.Update();
-
-            if (!LocalPlayerAttached || AttachedPlayer == null)
-            {
-                timer = triggerInterval;
-                return;
-            }
-
-            if (timer < triggerInterval)
-            {
-                timer += Time.deltaTime;
-                return;
-            }
-
-            if ((holdAction && !ActionToTrigger!.IsPressed()) || (!holdAction && !ActionToTrigger!.WasPerformedThisFrame()))
-            {
-                return;
-            }
-
-            onMovementDetected.Invoke(AttachedPlayer);
-
-            if (IsSpawned) // TODO: Separate local effect field?
-            {
-                PlayerMovedServerRpc(AttachedPlayer);
-            }
-
-            timer = 0.0f;
         }
 
         /// <summary>

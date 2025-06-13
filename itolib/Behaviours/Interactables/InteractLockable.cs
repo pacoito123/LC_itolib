@@ -1,3 +1,4 @@
+using System.Globalization;
 using UnityEngine;
 
 namespace itolib.Behaviours.Interactables
@@ -10,12 +11,12 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public bool WasUnlockedLastFrame { get; private set; } = false;
+        public bool WasUnlockedLastFrame { get; private set; }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public bool StartedLocked { get; private set; } = false;
+        public bool StartedLocked { get; private set; }
 
         /// <summary>
         ///     TODO.
@@ -146,9 +147,9 @@ namespace itolib.Behaviours.Interactables
         {
             if (isLocked)
             {
-                doorTrigger.disabledHoverTip = GameNetworkManager.Instance.localPlayerController.currentlyHeldObjectServer?.itemProperties.itemId == 14
-                    ? StartOfRound.Instance.localPlayerUsingController ? doorLockedKeyControllerMessage : doorLockedKeyMessage
-                    : doorLockedMessage;
+                doorTrigger.disabledHoverTip = (GameNetworkManager.Instance.localPlayerController.currentlyHeldObjectServer != null
+                    && GameNetworkManager.Instance.localPlayerController.currentlyHeldObjectServer.itemProperties.itemId == 14)
+                    ? StartOfRound.Instance.localPlayerUsingController ? doorLockedKeyControllerMessage : doorLockedKeyMessage : doorLockedMessage;
 
                 if (playersPickingDoor > 0)
                 {
@@ -160,7 +161,7 @@ namespace itolib.Behaviours.Interactables
                 if (isPickingLock)
                 {
                     lockPickTimeLeft -= Time.deltaTime;
-                    doorTrigger.disabledHoverTip = string.Format(lockPickUnlockTimerMessage, (int)lockPickTimeLeft);
+                    doorTrigger.disabledHoverTip = string.Format(CultureInfo.InvariantCulture, lockPickUnlockMessage, (int)lockPickTimeLeft);
 
                     if (IsServer && lockPickTimeLeft < 0.0f)
                     {
@@ -187,6 +188,8 @@ namespace itolib.Behaviours.Interactables
                     doorTrigger.holdTip = doorUnlockMessage;
 
                     WasUnlockedLastFrame = true;
+
+                    enabled = false;
                 }
             }
         }

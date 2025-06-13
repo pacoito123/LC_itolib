@@ -265,23 +265,23 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="variantIndex"></param>
-        public override void LoadItemSaveData(int variantIndex)
+        /// <param name="saveData"></param>
+        public override void LoadItemSaveData(int saveData)
         {
-            if (variantIndex < 0)
+            if (saveData < 0)
             {
                 return;
             }
 
-            if (saveMeshVariant && variantIndex < itemProperties.meshVariants.Length
+            if (saveMeshVariant && saveData < itemProperties.meshVariants.Length
                 && mainObjectRenderer.TryGetComponent(out MeshFilter itemMesh))
             {
-                itemMesh.mesh = itemProperties.meshVariants[variantIndex]; // TODO: Test sharedMesh
+                itemMesh.mesh = itemProperties.meshVariants[saveData]; // TODO: Test sharedMesh
             }
 
-            if (saveMaterialVariant && variantIndex < itemProperties.materialVariants.Length)
+            if (saveMaterialVariant && saveData < itemProperties.materialVariants.Length)
             {
-                mainObjectRenderer.sharedMaterial = itemProperties.materialVariants[variantIndex];
+                mainObjectRenderer.sharedMaterial = itemProperties.materialVariants[saveData];
             }
         }
 

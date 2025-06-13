@@ -34,7 +34,11 @@ namespace itolib.Behaviours.Kinematics
         /// <param name="hitInfo"></param>
         public override void PerformHitLocal(HitInfo hitInfo)
         {
-            hittableBody?.AddForce(hitForce * hitInfo.damage * hitInfo.direction, forceMode);
+            if (hittableBody != null)
+            {
+                hittableBody.AddForce(hitForce * hitInfo.damage * hitInfo.direction, forceMode);
+            }
+
             onHit.Invoke();
 
             if (hitInfo.playerWhoHit != null)

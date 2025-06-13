@@ -155,7 +155,7 @@ namespace itolib.Behaviours.Detectors
         [ServerRpc(RequireOwnership = false)]
         public void RegionEnteredServerRpc(NetworkBehaviourReference playerReference, bool exit = false)
         {
-            RegionEnteredClientRpc(playerReference);
+            RegionEnteredClientRpc(playerReference, exit);
         }
 
         /// <summary>

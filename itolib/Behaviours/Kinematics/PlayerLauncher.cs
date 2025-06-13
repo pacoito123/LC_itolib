@@ -3,7 +3,6 @@ using itolib.Behaviours.Effects;
 using itolib.Enums;
 using System;
 using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace itolib.Behaviours.Kinematics
@@ -150,40 +149,10 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Space(3.0f)]
-        [Header("DEPRECATED")]
-        [Obsolete("Add to 'forcesToApply' instead.")]
-        [Tooltip("")]
-        public int forceToApply = 0;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Obsolete("Add to 'forcesToApply' instead.")]
-        [Tooltip("")]
-        public Vector3 forceDirection = Vector3.forward;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Obsolete("Add to 'forcesToApply' instead.")]
-        [Tooltip("")]
-        public RotationSource considerRotationFrom = RotationSource.Absolute;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Obsolete("Add to 'forcesToApply' instead.")]
-        [Tooltip("")]
-        public Vector3 additionalForce = Vector3.zero;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         public void Awake()
         {
-            AttachCondition = player => !player.isPlayerDead && !(crouchingPreventsLaunch && player.isCrouching);
-            DetachCondition = player => player.isPlayerDead || (landingDetaches && player.thisController?.isGrounded == true);
+            attachCondition = player => !player.isPlayerDead && !(crouchingPreventsLaunch && player.isCrouching);
+            detachCondition = player => player.isPlayerDead || (landingDetaches && player.thisController != null && player.thisController.isGrounded);
         }
 
         /// <summary>
@@ -191,7 +160,7 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         public override void Update()
         {
-            if (AttachedPlayer != null)
+            if (attachedPlayer != null)
             {
                 fallTime += Time.deltaTime;
 
@@ -209,7 +178,7 @@ namespace itolib.Behaviours.Kinematics
 
                 if (negateFallDamage)
                 {
-                    AttachedPlayer.takingFallDamage = false;
+                    attachedPlayer.takingFallDamage = false;
                 }
             }
 
@@ -227,7 +196,7 @@ namespace itolib.Behaviours.Kinematics
             }
             else
             {
-                AttachPlayerServerRpc(GameNetworkManager.Instance.localPlayerController.GetComponent<NetworkObject>());
+                AttachPlayerServerRpc(GameNetworkManager.Instance.localPlayerController);
             }
         }
 
@@ -265,7 +234,7 @@ namespace itolib.Behaviours.Kinematics
                 player.ResetFallGravity();
             }
 
-            if (!LocalPlayerAttached)
+            if (!localPlayerAttached)
             {
                 return;
             }
@@ -290,23 +259,23 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         public override void DetachPlayerLocal()
         {
-            if (AttachedPlayer != null)
+            if (attachedPlayer != null)
             {
                 playerModelTransform.localRotation = Quaternion.identity;
                 fallTime = 0.0f;
 
-                AttachedPlayer.disableMoveInput = false;
-                AttachedPlayer.disableLookInput = false;
+                attachedPlayer.disableMoveInput = false;
+                attachedPlayer.disableLookInput = false;
 
-                if (dropHeldItemAtEnd && !AttachedPlayer.throwingObject && AttachedPlayer.isHoldingObject
-                    && AttachedPlayer.currentlyHeldObjectServer != null)
+                if (dropHeldItemAtEnd && !attachedPlayer.throwingObject && attachedPlayer.isHoldingObject
+                    && attachedPlayer.currentlyHeldObjectServer != null)
                 {
-                    AttachedPlayer.DiscardHeldObject();
+                    attachedPlayer.DiscardHeldObject();
                 }
 
                 if (dropPlayerItemsAtEnd)
                 {
-                    AttachedPlayer.DropAllHeldItemsAndSync();
+                    attachedPlayer.DropAllHeldItemsAndSync();
                 }
             }
 

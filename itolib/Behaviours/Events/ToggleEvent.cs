@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Events
 {
@@ -13,20 +14,30 @@ namespace itolib.Behaviours.Events
         /// </summary>
         [Header("Toggle Event")]
         [Tooltip("")]
-        public UnityEvent onEnable = new();
+        [FormerlySerializedAs("onEnable")]
+        public UnityEvent toggleOn = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent onDisable = new();
+        [FormerlySerializedAs("onDisable")]
+        public UnityEvent toggleOff = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Awake()
+        {
+            enabled = false;
+        }
 
         /// <summary>
         ///     TODO.
         /// </summary>
         public void OnEnable()
         {
-            onEnable.Invoke();
+            toggleOn.Invoke();
         }
 
         /// <summary>
@@ -34,7 +45,7 @@ namespace itolib.Behaviours.Events
         /// </summary>
         public void OnDisable()
         {
-            onDisable.Invoke();
+            toggleOff.Invoke();
         }
     }
 }

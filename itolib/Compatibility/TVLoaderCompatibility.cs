@@ -7,10 +7,10 @@ using UnityEngine.Video;
 namespace itolib.Compatibility
 {
     /// <summary>
-    ///     TODO.
+    ///     Compatibility between DungeonTelevision and TVLoader.
     /// </summary>
     [HarmonyPatch]
-    internal class TVLoaderCompatibility
+    internal sealed class TVLoaderCompatibility
     {
         /// <summary>
         ///     Whether TVLoader is present in the BepInEx Chainloader or not.

@@ -13,7 +13,10 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public void Start()
         {
-            StartOfRound.Instance?.StartNewRoundEvent.AddListener(DeactivateSpookyFog);
+            if (StartOfRound.Instance != null)
+            {
+                StartOfRound.Instance.StartNewRoundEvent.AddListener(DeactivateSpookyFog);
+            }
         }
 
         /// <summary>
@@ -21,7 +24,10 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public void OnDestroy()
         {
-            StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(DeactivateSpookyFog);
+            if (StartOfRound.Instance != null)
+            {
+                StartOfRound.Instance.StartNewRoundEvent.RemoveListener(DeactivateSpookyFog);
+            }
         }
 
         /// <summary>
@@ -29,16 +35,19 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public void DeactivateSpookyFog()
         {
-            _ = StartCoroutine(DeactivateSpookyFogDelayed());
+            if (RoundManager.Instance != null && RoundManager.Instance.indoorFog != null)
+            {
+                _ = StartCoroutine(DeactivateSpookyFogDelayed());
+            }
         }
 
         /// <summary>
         ///     Coroutine to turn off the 'SpookyFog' GameObject after 5 seconds.
         /// </summary>
-        private IEnumerator DeactivateSpookyFogDelayed()
+        private static IEnumerator DeactivateSpookyFogDelayed()
         {
             yield return new WaitForSeconds(5.0f);
-            RoundManager.Instance?.indoorFog?.gameObject.SetActive(false);
+            RoundManager.Instance.indoorFog.gameObject.SetActive(false);
         }
     }
 }

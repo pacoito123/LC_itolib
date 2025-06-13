@@ -1,3 +1,4 @@
+using System;
 using GameNetcodeStuff;
 using itolib.Extensions;
 using Unity.Netcode;
@@ -10,6 +11,7 @@ namespace itolib.Behaviours.Interactables
     /// <summary>
     ///     TODO.
     /// </summary>
+    [Obsolete("Use a regular InteractTrigger along with PlayerSeater and GrabbablePlatform instead.")]
     public class InteractSeatable : InteractTrigger
     {
         /// <summary>
@@ -20,17 +22,12 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     Whether or not the local player is sitting on this object.
         /// </summary>
-        public bool LocalPlayerSeated { get; private set; } = false;
+        public bool LocalPlayerSeated { get; private set; }
 
         /// <summary>
         ///     
         /// </summary>
         public Vector3 PlayerExitPoint { get; private set; } = Vector3.zero;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public InputAction? ActionToExit { get; private set; }
 
         /// <summary>
         ///     Key required to be held for the player to hang on to the platform. See 'UnityEngine.InputSystem.Key' for number values. Leaving it at '-1' allows players to
@@ -59,6 +56,12 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         [Tooltip("")]
         public UnityEvent onPlayerStand = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        private InputAction? playerAction;
 
         /// <summary>
         ///     Set default seat properties.
@@ -98,7 +101,7 @@ namespace itolib.Behaviours.Interactables
                 }
             });
 
-            ActionToExit = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToExit);
+            playerAction = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToExit);
         }
 
         /// <summary>
@@ -108,12 +111,12 @@ namespace itolib.Behaviours.Interactables
         {
             base.Update();
 
-            if (SittingPlayer == null || ActionToExit == null)
+            if (!LocalPlayerSeated || SittingPlayer == null || playerAction == null)
             {
                 return;
             }
 
-            if (LocalPlayerSeated && ActionToExit.IsPressed())
+            if (playerAction.WasPressedThisFrame())
             {
                 ExitChairLocal(true);
                 ExitChairServerRpc();

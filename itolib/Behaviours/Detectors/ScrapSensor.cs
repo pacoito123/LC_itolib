@@ -56,7 +56,7 @@ namespace itolib.Behaviours.Detectors
                 if (itemCollider.TryGetComponent(out GrabbableObject item)
                     && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
                 {
-                    FoundItemsEachClientRpc(item.GetComponent<NetworkObject>());
+                    FoundItemsEachClientRpc(item);
                     itemsFound++;
                 }
             }
@@ -76,7 +76,7 @@ namespace itolib.Behaviours.Detectors
                 && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
             {
                 onRegionEntered.Invoke(item);
-                RegionEnteredServerRpc(item.GetComponent<NetworkObject>());
+                RegionEnteredServerRpc(item);
             }
         }
 
@@ -90,7 +90,7 @@ namespace itolib.Behaviours.Detectors
                 && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
             {
                 onRegionExited.Invoke(item);
-                RegionEnteredServerRpc(item.GetComponent<NetworkObject>(), exit: true);
+                RegionEnteredServerRpc(item, exit: true);
             }
         }
 
@@ -157,7 +157,7 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="item"></param>
-        public void DropItem(GrabbableObject item)
+        public static void DropItem(GrabbableObject item)
         {
             if (item is ItemGrabbable grabbable)
             {
@@ -177,25 +177,24 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="scrapReference"></param>
+        /// <param name="itemReference"></param>
         [ClientRpc]
-        public void FoundItemsEachClientRpc(NetworkObjectReference scrapReference)
+        public void FoundItemsEachClientRpc(NetworkBehaviourReference itemReference)
         {
-            if (scrapReference.TryGet(out NetworkObject scrapNetworkObject)
-                && scrapNetworkObject.TryGetComponent(out GrabbableObject scrap))
+            if (itemReference.TryGet(out GrabbableObject item))
             {
-                onObjectsEach.Invoke(scrap);
+                onObjectsEach.Invoke(item);
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="scrapFound"></param>
+        /// <param name="itemsFound"></param>
         [ClientRpc]
-        public void FoundItemsAnyClientRpc(int scrapFound)
+        public void FoundItemsAnyClientRpc(int itemsFound)
         {
-            onObjectsAny.Invoke(scrapFound);
+            onObjectsAny.Invoke(itemsFound);
         }
 
         /// <summary>
@@ -204,9 +203,9 @@ namespace itolib.Behaviours.Detectors
         /// <param name="itemReference"></param>
         /// <param name="exit"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void RegionEnteredServerRpc(NetworkObjectReference itemReference, bool exit = false)
+        public void RegionEnteredServerRpc(NetworkBehaviourReference itemReference, bool exit = false)
         {
-            RegionEnteredClientRpc(itemReference);
+            RegionEnteredClientRpc(itemReference, exit);
         }
 
         /// <summary>
@@ -215,10 +214,9 @@ namespace itolib.Behaviours.Detectors
         /// <param name="itemReference"></param>
         /// <param name="exit"></param>
         [ClientRpc]
-        public void RegionEnteredClientRpc(NetworkObjectReference itemReference, bool exit = false)
+        public void RegionEnteredClientRpc(NetworkBehaviourReference itemReference, bool exit = false)
         {
-            if (itemReference.TryGet(out NetworkObject itemNetworkObject)
-                && itemNetworkObject.TryGetComponent(out GrabbableObject item) && !item.IsOwner)
+            if (itemReference.TryGet(out GrabbableObject item) && !item.IsOwner)
             {
                 if (!exit)
                 {

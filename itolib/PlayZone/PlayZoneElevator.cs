@@ -239,14 +239,20 @@ namespace itolib.PlayZone
                         elevatorSource.Play();
                     }
 
-                    elevatorAnimator?.SetBool("ElevatorGoingUp", up);
+                    if (elevatorAnimator != null)
+                    {
+                        elevatorAnimator.SetBool("ElevatorGoingUp", up);
+                    }
                     onElevatorTravelStart.Invoke(up);
 
                     CurrentState = newState;
 
                     break;
                 case ElevatorState.Deactivated:
-                    elevatorAnimator?.SetTrigger("Deactivated");
+                    if (elevatorAnimator != null)
+                    {
+                        elevatorAnimator.SetTrigger("Deactivated");
+                    }
 
                     CurrentState = newState;
 
@@ -375,11 +381,11 @@ namespace itolib.PlayZone
             switch (CurrentState)
             {
                 case ElevatorState.IdleUp:
-                    if (doorAnimatorUpper?.GetBool("Open") == !open)
+                    if (doorAnimatorUpper != null && doorAnimatorUpper.GetBool("Open") == !open)
                     {
-                        if (doorAudioOpen != null)
+                        if (doorSourceUpper != null && doorAudioOpen != null)
                         {
-                            doorSourceUpper?.PlayOneShot(doorAudioOpen);
+                            doorSourceUpper.PlayOneShot(doorAudioOpen);
                         }
 
                         doorAnimatorUpper.SetBool("Open", open);
@@ -396,11 +402,11 @@ namespace itolib.PlayZone
 
                     break;
                 case ElevatorState.IdleDown:
-                    if (doorAnimatorLower?.GetBool("Open") == !open)
+                    if (doorAnimatorLower != null && doorAnimatorLower.GetBool("Open") == !open)
                     {
-                        if (doorAudioOpen != null)
+                        if (doorSourceLower != null && doorAudioOpen != null)
                         {
-                            doorSourceLower?.PlayOneShot(doorAudioOpen);
+                            doorSourceLower.PlayOneShot(doorAudioOpen);
                         }
 
                         doorAnimatorLower.SetBool("Open", open);
@@ -444,23 +450,23 @@ namespace itolib.PlayZone
                     break;
             }
 
-            if (doorAnimatorLower?.GetBool("Open") == true)
+            if (doorAnimatorLower != null && doorAnimatorLower.GetBool("Open"))
             {
-                doorAnimatorLower?.SetBool("Open", false);
+                doorAnimatorLower.SetBool("Open", false);
 
-                if (doorAudioOpen != null)
+                if (doorSourceLower != null && doorAudioOpen != null)
                 {
-                    doorSourceLower?.PlayOneShot(doorAudioClose);
+                    doorSourceLower.PlayOneShot(doorAudioClose);
                 }
             }
 
-            if (doorAnimatorUpper?.GetBool("Open") == true)
+            if (doorAnimatorUpper != null && doorAnimatorUpper.GetBool("Open"))
             {
-                doorAnimatorUpper?.SetBool("Open", false);
+                doorAnimatorUpper.SetBool("Open", false);
 
-                if (doorAudioOpen != null)
+                if (doorSourceUpper != null && doorAudioOpen != null)
                 {
-                    doorSourceUpper?.PlayOneShot(doorAudioClose);
+                    doorSourceUpper.PlayOneShot(doorAudioClose);
                 }
             }
 
@@ -487,13 +493,16 @@ namespace itolib.PlayZone
                 elevatorSource.PlayOneShot(elevatorAudioFinish);
             }
 
-            if (doorAudioOpen != null)
+            if (doorSourceLower != null && doorAudioOpen != null)
             {
-                doorSourceLower?.PlayOneShot(doorAudioOpen);
+                doorSourceLower.PlayOneShot(doorAudioOpen);
             }
 
-            doorAnimatorLower?.SetBool("Open", true);
-            doorAnimatorUpper?.SetBool("Open", false);
+            if (doorAnimatorLower != null && doorAnimatorUpper != null)
+            {
+                doorAnimatorLower.SetBool("Open", true);
+                doorAnimatorUpper.SetBool("Open", false);
+            }
         }
     }
 }

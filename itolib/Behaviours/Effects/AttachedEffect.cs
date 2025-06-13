@@ -13,7 +13,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public int ObjectID { get; set; } = 0;
+        public int ObjectID { get; set; }
 
         /// <summary>
         ///     TODO.
@@ -23,7 +23,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public IPooledObject Next { get; set; } = null!;
+        public IPooledObject NextPooledObject { get; set; } = null!;
 
         /// <summary>
         ///     TODO.
@@ -82,7 +82,7 @@ namespace itolib.Behaviours.Effects
             CurrentPosition = transform;
 
             TakenBy = null!;
-            Next = null!;
+            NextPooledObject = null!;
             TargetPosition = null!;
 
             enabled = false;
@@ -132,6 +132,8 @@ namespace itolib.Behaviours.Effects
                     effect.TargetPosition = effect.TakenBy.transform;
 
                     effect.onAttach.Invoke(gameObject);
+
+                    enabled = true;
                 }
             }
         }
@@ -164,6 +166,8 @@ namespace itolib.Behaviours.Effects
                 {
                     effect.onDetach.Invoke(gameObject);
                     effect.TargetPosition = null!;
+
+                    enabled = false;
                 }
             }
         }

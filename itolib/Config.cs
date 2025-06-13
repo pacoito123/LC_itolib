@@ -35,7 +35,7 @@ namespace itolib
         /// </summary>
         /// <remarks>Obtained from: https://lethal.wiki/dev/intermediate/custom-configs#better-configuration</remarks>
         /// <param name="config">The config file to clear orphaned entries from.</param>
-        private void ClearOrphanedEntries(ConfigFile config)
+        private static void ClearOrphanedEntries(ConfigFile config)
         {
             // Obtain 'OrphanedEntries' dictionary from ConfigFile through reflection.
             PropertyInfo orphanedEntriesProp = AccessTools.Property(typeof(ConfigFile), "OrphanedEntries");

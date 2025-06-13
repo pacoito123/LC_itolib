@@ -10,12 +10,12 @@ namespace itolib.Behaviours.Networking
     /// <summary>
     ///     TODO.
     /// </summary>
-    public abstract class NetworkedSpawner : NetworkBehaviour, IDungeonCompleteReceiver
+    public abstract class NetworkedSpawner<T> : NetworkBehaviour, IDungeonCompleteReceiver where T : MonoBehaviour
     {
         /// <summary>
         ///     TODO.
         /// </summary>
-        public List<NetworkObject?> PrefabInstances { get; private set; } = [];
+        public List<T?> PrefabInstances { get; private set; } = [];
 
         /// <summary>
         ///     TODO.
@@ -65,10 +65,11 @@ namespace itolib.Behaviours.Networking
 
             for (int i = 0; i < PrefabInstances.Count; i++)
             {
-                NetworkObject? prefabToSpawn = PrefabInstances[i];
-                if (prefabToSpawn != null && !prefabToSpawn.IsSpawned)
+                T? prefabInstance = PrefabInstances[i];
+                if (prefabInstance != null && prefabInstance.TryGetComponent(out NetworkObject prefabNetworkObject)
+                    && !prefabNetworkObject.IsSpawned)
                 {
-                    prefabToSpawn.Spawn(destroyWithScene);
+                    prefabNetworkObject.Spawn(destroyWithScene);
                 }
             }
 
@@ -102,7 +103,10 @@ namespace itolib.Behaviours.Networking
                     DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(PerformSpawn);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(PerformSpawn);
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.AddListener(PerformSpawn);
+                    }
                     break;
                 case ActivationTime.Immediate:
                     PerformSpawn();
@@ -128,7 +132,10 @@ namespace itolib.Behaviours.Networking
                     DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(PerformSpawn);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(PerformSpawn);
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(PerformSpawn);
+                    }
                     break;
                 case ActivationTime.Immediate:
                 case ActivationTime.DungeonComplete:

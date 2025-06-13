@@ -39,14 +39,14 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnDungeonComplete(Dungeon _)
+        public void OnDungeonComplete(Dungeon dungeon)
         {
             if (!NetworkManager.Singleton.IsHost)
             {
                 return;
             }
 
-            SelectableLevel? currentLevel = LevelManager.CurrentExtendedLevel?.SelectableLevel;
+            SelectableLevel? currentLevel = LevelManager.CurrentExtendedLevel != null ? LevelManager.CurrentExtendedLevel.SelectableLevel : null;
             ExtendedDungeonFlow? currentDungeon = DungeonManager.CurrentExtendedDungeonFlow;
 
             if (currentLevel == null || currentDungeon == null)

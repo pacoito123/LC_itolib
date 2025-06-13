@@ -50,7 +50,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public static List<GrabbableObject?>? AvailableScrap { get; private set; }
+        public static List<GrabbableObject>? AvailableScrap { get; private set; }
 
         /// <summary>
         ///     TODO.
@@ -139,7 +139,10 @@ namespace itolib.Behaviours.Props
                     DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(TeleportScrap);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(TeleportScrap);
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.AddListener(TeleportScrap);
+                    }
                     break;
                 case ActivationTime.Immediate:
                 case ActivationTime.DungeonComplete:
@@ -168,7 +171,10 @@ namespace itolib.Behaviours.Props
                     DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(TeleportScrap);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(TeleportScrap);
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(TeleportScrap);
+                    }
                     break;
                 case ActivationTime.Immediate:
                 case ActivationTime.DungeonComplete:
@@ -193,8 +199,8 @@ namespace itolib.Behaviours.Props
 
             AvailableScrap ??= [.. spawnedScrap];
 
-            _ = AvailableScrap.RemoveAll(item => item == null || item.isInShipRoom || item.isInElevator
-                || item.itemProperties?.isScrap == false || item is LungProp || item.TryGetComponent(out NavMeshAgent agent));
+            _ = AvailableScrap.RemoveAll(item => item == null || item.isInShipRoom || item.isInElevator || item.itemProperties == null
+                || !item.itemProperties.isScrap || item is LungProp || item.TryGetComponent(out NavMeshAgent agent));
         }
 
         /// <summary>
@@ -211,14 +217,16 @@ namespace itolib.Behaviours.Props
 
             for (int i = 0; i < itemsToTeleport; i++)
             {
-                Vector3 teleportPosition = transform.position;
-                Quaternion teleportRotation = Quaternion.identity; // TODO: Randomize rotation option
+                transform.GetPositionAndRotation(out Vector3 teleportPosition, out Quaternion teleportRotation);
 
                 if (teleportPoints?.Count > 0)
                 {
                     int positionIndex = Random.Next(0, teleportPoints.Count);
-                    teleportPosition = teleportPoints[positionIndex]?.position ?? transform.position;
-                    teleportRotation = teleportPoints[positionIndex]?.rotation ?? transform.rotation;
+
+                    if (teleportPoints[positionIndex] != null)
+                    {
+                        teleportPoints[positionIndex].GetPositionAndRotation(out teleportPosition, out teleportRotation);
+                    }
 
                     if (exhaustivePoints)
                     {
@@ -247,8 +255,12 @@ namespace itolib.Behaviours.Props
                 {
                     for (int j = 0; j < AvailableScrap.Count; j++)
                     {
-                        if (specificItems.FindIndex(specificItem => string.CompareOrdinal(AvailableScrap[j]?
-                            .itemProperties?.itemName, specificItem) == 0) >= 0)
+                        if (AvailableScrap[j] == null || AvailableScrap[j].itemProperties == null)
+                        {
+                            continue;
+                        }
+
+                        if (specificItems.FindIndex(specificItem => string.CompareOrdinal(AvailableScrap[j].itemProperties.itemName, specificItem) == 0) >= 0)
                         {
                             TeleportData teleport = new()
                             {
@@ -256,7 +268,7 @@ namespace itolib.Behaviours.Props
                                 rotation = teleportRotation
                             };
 
-                            TeleportScrapClientRpc(AvailableScrap[j]?.GetComponent<NetworkObject>(), teleport);
+                            TeleportScrapClientRpc(AvailableScrap[j], teleport);
                             AvailableScrap.RemoveAt(j);
 
                             break;
@@ -266,14 +278,20 @@ namespace itolib.Behaviours.Props
                 else
                 {
                     int index = Random.Next(0, AvailableScrap.Count);
+                    GrabbableObject? item = AvailableScrap[index];
+
+                    if (item == null)
+                    {
+                        return;
+                    }
 
                     TeleportData teleport = new()
                     {
                         position = teleportPosition,
-                        rotation = AvailableScrap[index]?.transform.rotation ?? transform.rotation
+                        rotation = item.transform.rotation
                     };
 
-                    TeleportScrapClientRpc(AvailableScrap[index]?.GetComponent<NetworkObject>(), teleport);
+                    TeleportScrapClientRpc(item, teleport);
                     AvailableScrap.RemoveAt(index);
                 }
             }
@@ -283,7 +301,7 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         [ClientRpc]
-        public void TeleportScrapClientRpc(NetworkObjectReference itemReference, TeleportData teleport)
+        public void TeleportScrapClientRpc(NetworkBehaviourReference itemReference, TeleportData teleport)
         {
             _ = StartCoroutine(TeleportScrapDelayed(itemReference, teleport));
         }
@@ -294,19 +312,19 @@ namespace itolib.Behaviours.Props
         /// <param name="itemReference"></param>
         /// <param name="teleport"></param>
         /// <returns></returns>
-        private IEnumerator TeleportScrapDelayed(NetworkObjectReference itemReference, TeleportData teleport)
+        private IEnumerator TeleportScrapDelayed(NetworkBehaviourReference itemReference, TeleportData teleport)
         {
-            NetworkObject itemNetworkObject;
+            GrabbableObject item;
 
             float startTime = Time.realtimeSinceStartup;
-            while (!itemReference.TryGet(out itemNetworkObject) && Time.realtimeSinceStartup - startTime < 8f)
+            while (!itemReference.TryGet(out item) && Time.realtimeSinceStartup - startTime < 8f)
             {
                 yield return new WaitForSeconds(0.03f);
             }
 
             yield return new WaitForEndOfFrame();
 
-            if (!itemNetworkObject.TryGetComponent(out GrabbableObject item))
+            if (item == null)
             {
                 yield break;
             }

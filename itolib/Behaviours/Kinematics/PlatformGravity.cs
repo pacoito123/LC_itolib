@@ -19,34 +19,33 @@ namespace itolib.Behaviours.Kinematics
 
         private void Awake()
         {
-            // if (applyReducedMotion && Plugin.Settings.REDUCE_MOTION_SICKNESS.Value)
             if (applyReducedMotion)
             {
                 disablePhysicsRegion = true;
             }
         }
 
-        private void OnTriggerEnter(Collider other)
+        /* private void OnTriggerEnter(Collider other)
         {
-            /* if (other.CompareTag("Player") && other.TryGetComponent(out Rigidbody rigidbody))
+            if (other.CompareTag("Player") && other.TryGetComponent(out Rigidbody rigidbody))
             {
                 rigidbody.useGravity = false;
                 rigidbody.constraints = (RigidbodyConstraints)4;
 
                 Plugin.StaticLogger.LogInfo("Enter");
-            } */
-        }
+            }
+        } */
 
-        private void OnTriggerExit(Collider other)
+        /* private void OnTriggerExit(Collider other)
         {
-            /* if (other.CompareTag("Player") && other.TryGetComponent(out Rigidbody rigidbody))
+            if (other.CompareTag("Player") && other.TryGetComponent(out Rigidbody rigidbody))
             {
                 rigidbody.useGravity = true;
                 rigidbody.constraints = 0;
 
                 Plugin.StaticLogger.LogInfo("Exit");
-            } */
-        }
+            }
+        } */
 
         /// <summary>
         ///     TODO.
@@ -65,7 +64,7 @@ namespace itolib.Behaviours.Kinematics
         {
             if (player.IsOwner)
             {
-                player.transform.SetParent(null);
+                CancelPlayerMomentumLocal(player);
                 CancelPlayerMomentumServerRpc(player);
             }
         }
@@ -89,8 +88,17 @@ namespace itolib.Behaviours.Kinematics
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
-                player.transform.SetParent(null);
+                CancelPlayerMomentumLocal(player);
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="player"></param>
+        public void CancelPlayerMomentumLocal(PlayerControllerB player)
+        {
+            player.transform.SetParent(null);
         }
     }
 }

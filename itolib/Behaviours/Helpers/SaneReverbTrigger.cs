@@ -10,19 +10,37 @@ namespace itolib.Behaviours.Helpers
         /// <summary>
         ///     TODO.
         /// </summary>
-        public float TimeSinceLastCheck { get; private set; } = 0.0f;
+        public float delayCheck;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public float delayCheck = 0.0f;
+        public bool onlyOnEnter;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        public float timeSinceLastCheck;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         public void Awake()
         {
-            TimeSinceLastCheck = delayCheck;
+            timeSinceLastCheck = delayCheck;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="other"></param>
+        public void OnTriggerEnter(Collider other)
+        {
+            if (onlyOnEnter)
+            {
+                base.OnTriggerStay(other);
+            }
         }
 
         /// <summary>
@@ -31,6 +49,11 @@ namespace itolib.Behaviours.Helpers
         /// <param name="other"></param>
         public new void OnTriggerStay(Collider other)
         {
+            if (onlyOnEnter)
+            {
+                return;
+            }
+
             if (delayCheck == 0)
             {
                 base.OnTriggerStay(other);
@@ -38,72 +61,16 @@ namespace itolib.Behaviours.Helpers
                 return;
             }
 
-            if (TimeSinceLastCheck <= delayCheck)
+            if (timeSinceLastCheck <= delayCheck)
             {
-                TimeSinceLastCheck += Time.deltaTime;
+                timeSinceLastCheck += Time.deltaTime;
 
                 return;
             }
 
-            TimeSinceLastCheck = 0.0f;
+            timeSinceLastCheck = 0.0f;
 
             base.OnTriggerStay(other);
         }
-
-        /* /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="other"></param>
-        public void OnTriggerEnter(Collider other)
-        {
-            if (elevatorTriggerForProps)
-            {
-                if (setInElevatorTrigger && other.CompareTag("Enemy") && TryGetComponent(out Collider enemy)
-                    && enemy.bounds.Contains(other.transform.position))
-                {
-                    if (other.TryGetComponent(out EnemyAICollisionDetect collisionDetect))
-                    {
-                        collisionDetect.mainScript.isInsidePlayerShip = isShipRoom;
-
-                        if (collisionDetect.mainScript.isInsidePlayerShip != isShipRoom)
-                        {
-                            StartOfRound.Instance.SetPlayerSafeInShip();
-                        }
-                    }
-
-                    return;
-                }
-
-                if (other.tag.StartsWith("PlayerRagdoll") && other.TryGetComponent(out DeadBodyInfo ragdoll))
-                {
-                    if (ragdoll.attachedTo != null && ragdoll.attachedLimb != null)
-                    {
-                        return;
-                    }
-
-                    ragdoll.parentedToShip = setInElevatorTrigger;
-                    if (ragdoll.attachedLimb == null || ragdoll.attachedTo == null)
-                    {
-                        if (setInElevatorTrigger)
-                        {
-                            ragdoll.transform.SetParent(StartOfRound.Instance.elevatorTransform);
-                        }
-                        else
-                        {
-                            ragdoll.transform.SetParent(null);
-                        }
-                    }
-                }
-            }
-
-            if (other.gameObject.CompareTag("Player") && !(GameNetworkManager.Instance.localPlayerController == null))
-            {
-                playerScript = other.gameObject.GetComponent<PlayerControllerB>();
-                if (!(playerScript == null) && playerScript.isPlayerControlled)
-                {
-                    ChangeAudioReverbForPlayer(playerScript);
-                }
-            }
-        } */
     }
 }

@@ -6,10 +6,10 @@ using WeatherRegistry.Networking;
 namespace itolib.Compatibility
 {
     /// <summary>
-    ///     TODO.
+    ///     Compatibility between WeatherConditional and WeatherRegistry.
     /// </summary>
     [HarmonyPatch]
-    internal class WeatherRegistryCompatibility
+    internal sealed class WeatherRegistryCompatibility
     {
         /// <summary>
         ///     Whether WeatherRegistry is present in the BepInEx Chainloader or not.

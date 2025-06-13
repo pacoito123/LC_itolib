@@ -69,18 +69,18 @@ namespace itolib.Behaviours.Materials
 
         private void OnEnable()
         {
-            if (activationTime is ActivationTime.StartOfRound)
+            if (activationTime is ActivationTime.StartOfRound && StartOfRound.Instance != null)
             {
-                StartOfRound.Instance?.StartNewRoundEvent.AddListener(SwapMaterials);
+                StartOfRound.Instance.StartNewRoundEvent.AddListener(SwapMaterials);
             }
         }
 
         private void OnDisable()
         {
             // TODO: Switch to regular C# events?
-            if (activationTime is ActivationTime.StartOfRound)
+            if (activationTime is ActivationTime.StartOfRound && StartOfRound.Instance != null)
             {
-                StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SwapMaterials);
+                StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SwapMaterials);
             }
         }
 

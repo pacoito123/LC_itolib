@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     TODO.
         /// </summary>
-        public bool IsProgressive { get; private set; } = false;
+        public bool IsProgressive { get; private set; }
 
         /// <summary>
         ///     TODO.

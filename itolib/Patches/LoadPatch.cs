@@ -7,7 +7,7 @@ namespace itolib.Patches
     ///     TODO.
     /// </summary>
     [HarmonyPatch]
-    internal class LoadPatch
+    internal sealed class LoadPatch
     {
         public static bool FirstLoad { get; private set; } = true;
 

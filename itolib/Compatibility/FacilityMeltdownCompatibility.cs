@@ -7,12 +7,12 @@ using Unity.Netcode;
 namespace itolib.Compatibility
 {
     /// <summary>
-    ///     TODO.
+    ///     Compatibility between TwinApparatus and FacilityMeltdown.
     /// </summary>
-    internal class FacilityMeltdownCompatibility
+    internal sealed class FacilityMeltdownCompatibility
     {
         /// <summary>
-        ///     Whether WeatherRegistry is present in the BepInEx Chainloader or not.
+        ///     Whether FacilityMeltdown is present in the BepInEx Chainloader or not.
         /// </summary>
         public static bool Enabled
         {
@@ -46,7 +46,7 @@ namespace itolib.Compatibility
         {
             if (bothPulled && NetworkManager.Singleton.IsHost)
             {
-                MeltdownAPI.StartMeltdown(Plugin.GUID);
+                MeltdownAPI.StartMeltdown(Plugin.PLUGIN_GUID);
             }
         }
     }

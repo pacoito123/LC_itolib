@@ -158,7 +158,8 @@ namespace itolib.Behaviours.Interactables
             onPurchase.Invoke();
 
             // Instantiate purchasable object instance and spawn it on all clients. TODO: Handle through PrefabSpawner instead.
-            GameObject purchasable = Instantiate(spawnPrefab, spawnTransform.position, spawnTransform.rotation, RoundManager.Instance?.mapPropsContainer?.transform);
+            GameObject purchasable = Instantiate(spawnPrefab, spawnTransform.position, spawnTransform.rotation, (RoundManager.Instance != null
+                && RoundManager.Instance.mapPropsContainer != null) ? RoundManager.Instance.mapPropsContainer.transform : null);
             if (purchasable.TryGetComponent(out NetworkObject networkObject))
             {
                 networkObject.Spawn(true);

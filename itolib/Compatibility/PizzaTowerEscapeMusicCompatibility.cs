@@ -5,12 +5,12 @@ using System.Runtime.CompilerServices;
 namespace itolib.Compatibility
 {
     /// <summary>
-    ///     TODO.
+    ///     Compatibility between TwinApparatus and PizzaTowerEscapeMusic.
     /// </summary>
-    public class PizzaTowerEscapeMusicCompatibility
+    internal sealed class PizzaTowerEscapeMusicCompatibility
     {
         /// <summary>
-        ///     Whether WeatherRegistry is present in the BepInEx Chainloader or not.
+        ///     Whether PizzaTowerEscapeMusic is present in the BepInEx Chainloader or not.
         /// </summary>
         public static bool Enabled
         {
@@ -30,7 +30,7 @@ namespace itolib.Compatibility
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public static void SwitchTwin(TwinApparatus? twin)
         {
-            if (twin?.isLungDocked == true)
+            if (twin != null && twin.isLungDocked)
             {
                 GameEventListener.dockedApparatus = twin;
             }

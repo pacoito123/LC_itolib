@@ -38,9 +38,28 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        public void Awake()
+        {
+            if (sunTexture == null)
+            {
+                Transform? sunTransform = TimeOfDay.Instance != null ? TimeOfDay.Instance.sunAnimator.transform.Find("SunTexture") : null;
+                FoundSun = sunTransform != null && sunTransform.TryGetComponent(out sunTexture);
+            }
+            else
+            {
+                FoundSun = true;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void Start()
         {
-            FoundSun = sunTexture != null || (TimeOfDay.Instance?.sunAnimator.transform.Find("SunTexture")?.TryGetComponent(out sunTexture) ?? false);
+            if (!FoundSun)
+            {
+                enabled = false;
+            }
         }
 
         /// <summary>
@@ -56,8 +75,11 @@ namespace itolib.Behaviours.Effects
             DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onPlayerEnterDungeon.AddListener(HideSun);
             DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onPlayerExitDungeon.AddListener(RevealSun);
 
-            StartOfRound.Instance?.playerTeleportedEvent.AddListener(ToggleSunOnTeleport);
-            StartOfRound.Instance?.CameraSwitchEvent.AddListener(ToggleSunOnSpectatorSwitch);
+            if (StartOfRound.Instance != null)
+            {
+                StartOfRound.Instance.playerTeleportedEvent.AddListener(ToggleSunOnTeleport);
+                StartOfRound.Instance.CameraSwitchEvent.AddListener(ToggleSunOnSpectatorSwitch);
+            }
         }
 
         /// <summary>
@@ -73,8 +95,11 @@ namespace itolib.Behaviours.Effects
             DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onPlayerEnterDungeon.RemoveListener(HideSun);
             DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onPlayerExitDungeon.RemoveListener(RevealSun);
 
-            StartOfRound.Instance?.playerTeleportedEvent.RemoveListener(ToggleSunOnTeleport);
-            StartOfRound.Instance?.CameraSwitchEvent.RemoveListener(ToggleSunOnSpectatorSwitch);
+            if (StartOfRound.Instance != null)
+            {
+                StartOfRound.Instance.playerTeleportedEvent.RemoveListener(ToggleSunOnTeleport);
+                StartOfRound.Instance.CameraSwitchEvent.RemoveListener(ToggleSunOnSpectatorSwitch);
+            }
         }
 
         /// <summary>
@@ -86,13 +111,13 @@ namespace itolib.Behaviours.Effects
             ulong playerID = pair.Item2.actualClientId;
             PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
 
-            if (playerID != localPlayer.actualClientId
-                || (localPlayer.isPlayerDead && localPlayer.spectatedPlayerScript?.actualClientId != playerID))
+            if (playerID != localPlayer.actualClientId || (localPlayer.isPlayerDead && localPlayer.spectatedPlayerScript != null
+                && localPlayer.spectatedPlayerScript.actualClientId != playerID))
             {
                 return;
             }
 
-            if (FoundSun && sunTexture?.enabled == true)
+            if (FoundSun && sunTexture != null && sunTexture.enabled)
             {
                 sunTexture.enabled = false;
             }
@@ -109,8 +134,8 @@ namespace itolib.Behaviours.Effects
             ulong playerID = pair.Item2.actualClientId;
             PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
 
-            if (playerID != localPlayer.actualClientId
-                || (localPlayer.isPlayerDead && localPlayer.spectatedPlayerScript?.actualClientId != playerID))
+            if (playerID != localPlayer.actualClientId || (localPlayer.isPlayerDead && localPlayer.spectatedPlayerScript != null
+                && localPlayer.spectatedPlayerScript.actualClientId != playerID))
             {
                 return;
             }

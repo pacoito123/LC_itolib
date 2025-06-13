@@ -20,7 +20,7 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public float KickTimer { get; private set; } = 0.0f;
+        public float KickTimer { get; private set; }
 
         /// <summary>
         ///     TODO.
@@ -290,7 +290,11 @@ namespace itolib.Behaviours.Grabbables
             item.hasHitGround = false;
 
             itemTransform.SetParent(setInElevator ? StartOfRound.Instance.elevatorTransform : StartOfRound.Instance.propsContainer, true);
-            LastKickedBy?.SetItemInElevator(setInElevator, setInShipRoom, item);
+
+            if (LastKickedBy != null)
+            {
+                LastKickedBy.SetItemInElevator(setInElevator, setInShipRoom, item);
+            }
 
             item.startFallingPosition = itemTransform.GetParent().InverseTransformPoint(itemTransform.position + (Vector3.up * 0.07f));
             item.targetFloorPosition = destination;

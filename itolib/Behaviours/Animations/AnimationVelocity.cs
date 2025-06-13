@@ -20,7 +20,7 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        public float InitialSpeed { get; private set; } = 0.0f;
+        public float InitialSpeed { get; private set; }
 
         /// <summary>
         ///     TODO.
@@ -96,13 +96,6 @@ namespace itolib.Behaviours.Animations
         {
             base.OnNetworkSpawn();
 
-            if (animator == null && !TryGetComponent(out animator))
-            {
-                Plugin.StaticLogger.LogWarning($"Could not find Animator for AnimationVelocity component in GameObject '{gameObject.name}'.");
-                enabled = false;
-                return;
-            }
-
             if (!IsHost)
             {
                 return;
@@ -124,7 +117,10 @@ namespace itolib.Behaviours.Animations
                     DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(SyncSpeed);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(SyncSpeed);
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncSpeed);
+                    }
                     break;
                 case ActivationTime.DungeonComplete:
                 case ActivationTime.Manual:
@@ -136,10 +132,27 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
+        public void OnEnable()
+        {
+            if (animator == null && !TryGetComponent(out animator))
+            {
+                Plugin.StaticLogger.LogWarning($"Could not find Animator for AnimationVelocity component in GameObject '{gameObject.name}'.");
+                enabled = false;
+
+                return;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void FixedUpdate()
         {
             if (targetReached)
             {
+                // Disable update loop.
+                enabled = false;
+
                 return;
             }
 
@@ -173,7 +186,10 @@ namespace itolib.Behaviours.Animations
                     DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(SyncSpeed);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(SyncSpeed);
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SyncSpeed);
+                    }
                     break;
                 case ActivationTime.Immediate:
                 case ActivationTime.DungeonComplete:
@@ -246,6 +262,9 @@ namespace itolib.Behaviours.Animations
 
             transitionTimer = 0.0f;
             targetReached = false;
+
+            // Enable update loop.
+            enabled = true;
         }
 
         /// <summary>

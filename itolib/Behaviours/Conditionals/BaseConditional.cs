@@ -26,12 +26,12 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     TODO.
         /// </summary>
-        public List<GameObject> objectsToEnable;
+        public List<GameObject?> objectsToEnable;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public List<GameObject> objectsToDisable;
+        public List<GameObject?> objectsToDisable;
 
         /// <summary>
         ///     TODO.
@@ -49,8 +49,20 @@ namespace itolib.Behaviours.Conditionals
         /// <param name="undo"></param>
         public readonly void Apply(bool undo = false)
         {
-            objectsToEnable?.ForEach(weatherEffect => weatherEffect?.SetActive(!undo));
-            objectsToDisable?.ForEach(weatherEffect => weatherEffect?.SetActive(undo));
+            objectsToEnable?.ForEach(weatherEffect =>
+            {
+                if (weatherEffect != null)
+                {
+                    weatherEffect.SetActive(!undo);
+                }
+            });
+            objectsToDisable?.ForEach(weatherEffect =>
+            {
+                if (weatherEffect != null)
+                {
+                    weatherEffect.SetActive(undo);
+                }
+            });
 
             if (!undo)
             {
@@ -99,7 +111,10 @@ namespace itolib.Behaviours.Conditionals
                     DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(ApplyConditional);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.AddListener(ApplyConditional);
+                    if (StartOfRound.Instance)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.AddListener(ApplyConditional);
+                    }
                     break;
                 case ActivationTime.DungeonComplete:
                 case ActivationTime.Manual:
@@ -122,7 +137,10 @@ namespace itolib.Behaviours.Conditionals
                     DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(ApplyConditional);
                     break;
                 case ActivationTime.StartOfRound:
-                    StartOfRound.Instance?.StartNewRoundEvent.RemoveListener(ApplyConditional);
+                    if (StartOfRound.Instance)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(ApplyConditional);
+                    }
                     break;
                 case ActivationTime.Immediate:
                 case ActivationTime.DungeonComplete:
