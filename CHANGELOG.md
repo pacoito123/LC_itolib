@@ -1,5 +1,23 @@
 # Changelog
 
+## [v0.2.0]
+
+Did some pretty substantial refactoring; added and fixed a couple things, too.
+
+- Added some stuff to `ExplodeEffect`:
+  - Made `ExplodeEffect` able to target any object that implements the `IHittable` interface.
+  - Added separate enemy and `IHittable` curves to `ExplodeEffect`, to deal specific damage to non-player targets.
+  - Replaced `damageRange` and `killRange` with `damageBounds` and `killBounds`, for visualization purposes.
+- Added player sinking curve overriding to `PlayerHinderer`, to control how deep the player actually sinks before dying.
+- Added `OutOfBoundsAdjuster`, which just moves the current moon's `OutOfBoundsTrigger` to the lowest point in the dungeon + a specified additional offset.
+  - Intended for more vertically-oriented dungeons.
+- Made `DetectRegion` actually take region rotation into account when performing searches.
+- Did a lot of refactoring under the hood, based on [IAmBatby](https://github.com/IAmBatby)'s suggestions and feedback!
+  - Made scripts with update loops disable themselves when not in use, the most important one being `PlayerAttachable`.
+  - Removed all uses of null propagation on `UnityObject` stuff, fixing some rare `NullReferenceException` errors.
+  - Switched from using `NetworkObjectReferences` to `NetworkBehaviourReferences` when networking stuff, thus skipping a step.
+  - Some other miscellaneous tweaks and fixes here and there.
+
 ## [v0.1.4]
 
 Reworked `PlayerLauncher` a bit, fixed [WeatherRegistry](https://thunderstore.io/c/lethal-company/p/mrov/WeatherRegistry) compatibility.
