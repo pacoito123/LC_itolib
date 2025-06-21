@@ -7,7 +7,7 @@ using UnityEngine;
 namespace itolib.Behaviours.Materials
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a material swap to perform on activation.
     /// </summary>
     [Serializable]
     public struct MaterialSwap
@@ -16,7 +16,7 @@ namespace itolib.Behaviours.Materials
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string searchKeyword;
+        public string searchKeyword = string.Empty;
 
         /// <summary>
         ///     TODO.
@@ -28,46 +28,79 @@ namespace itolib.Behaviours.Materials
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public List<GameObject> affectedObjects;
+        public List<GameObject?> affectedObjects;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool affectChildren = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         public MaterialSwap()
         {
-            searchKeyword = "";
-            replacementMaterial = null;
             affectedObjects = [];
         }
     }
 
     /// <summary>
-    ///     TODO.
+    ///     Swaps materials based on a given word search. Can perform multiple at a time, on various different objects.
     /// </summary>
     public class MaterialSwapper : MonoBehaviour, IDungeonCompleteReceiver
     {
         /// <summary>
-        ///     TODO.
+        ///     List of material swaps to perform.
         /// </summary>
         [Header("Material Swapper")]
-        [Tooltip("")]
+        [Tooltip("List of material swaps to perform.")]
         public List<MaterialSwap> materialSwaps = [];
+
+        /// <summary>
+        ///     The number of swaps done at a time per activation. If set to a value of <b>1</b> (for example) it'll sequentially go down the
+        ///     list of swaps and perform them one by one, each time it's activated. If left at the default value of <b>0</b> it'll perform all swaps at once.
+        /// </summary>
+        [Tooltip("The number of swaps done at a time per activation. If set to a value of 1 (for example) it'll sequentially go down the "
+            + "list of swaps and perform them one by one, each time it's activated. If left at the default value of 0 it'll perform all swaps at once.")]
+        [Min(0)]
+        public int swapsPerActivation;
+
+        /// <summary>
+        ///     Activation time for the automatic material swap.
+        /// </summary>
+        /// <remarks><b>NOTE:</b> Can be set to <c>Manual</c> to disable the automatic swap, but is not required for triggering manual swaps afterwards.</remarks>
+        [Tooltip("Activation time for the automatic material swap. NOTE: Can be set to Manual to disable the automatic swap, but is not required for "
+            + "triggering manual swaps afterwards.")]
+        public ActivationTime activationTime = ActivationTime.DungeonComplete;
+
+        /// <summary>
+        ///     Current 
+        /// </summary>
+        [HideInInspector]
+        public int swapIndex;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        public ActivationTime activationTime = ActivationTime.DungeonComplete;
-
-        private void Start()
+        public void Start()
         {
+            // 
+            if (swapsPerActivation <= 0 || swapsPerActivation > materialSwaps.Count)
+            {
+                swapsPerActivation = materialSwaps.Count;
+            }
+
             if (activationTime is ActivationTime.Immediate)
             {
                 SwapMaterials();
             }
         }
 
-        private void OnEnable()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void OnEnable()
         {
             if (activationTime is ActivationTime.StartOfRound && StartOfRound.Instance != null)
             {
@@ -75,9 +108,11 @@ namespace itolib.Behaviours.Materials
             }
         }
 
-        private void OnDisable()
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void OnDisable()
         {
-            // TODO: Switch to regular C# events?
             if (activationTime is ActivationTime.StartOfRound && StartOfRound.Instance != null)
             {
                 StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SwapMaterials);
@@ -89,51 +124,69 @@ namespace itolib.Behaviours.Materials
         /// </summary>
         public void SwapMaterials()
         {
-            foreach (MaterialSwap swap in materialSwaps)
+            if (materialSwaps.Count == 0)
             {
+                Plugin.StaticLogger.LogWarning($"Could not perform material swapping, as there are no swaps defined for MaterialSwapper component in "
+                    + "GameObject '{gameObject.name}'.");
+
+                return;
+            }
+
+            for (int i = 0; i < swapsPerActivation; i++, swapIndex++)
+            {
+                if (swapIndex >= materialSwaps.Count)
+                {
+                    swapIndex = 0;
+                }
+
+                MaterialSwap swap = materialSwaps[swapIndex];
+
                 if (swap.replacementMaterial == null)
                 {
                     continue;
                 }
 
-                foreach (GameObject affectedObject in swap.affectedObjects)
+                foreach (GameObject? affectedObject in swap.affectedObjects)
                 {
                     if (affectedObject == null)
                     {
                         continue;
                     }
 
-                    foreach (MeshRenderer renderer in affectedObject.GetComponentsInChildren<MeshRenderer>())
+                    if (swap.affectChildren)
                     {
-                        Material[] materials = renderer.sharedMaterials;
-
-                        for (int i = 0; i < materials.Length; i++)
+                        foreach (Renderer renderer in affectedObject.GetComponentsInChildren<Renderer>())
                         {
-                            if (materials[i].name.Contains(swap.searchKeyword, StringComparison.OrdinalIgnoreCase))
-                            {
-                                materials[i] = swap.replacementMaterial;
-                            }
+                            PerformSwap(renderer, swap.searchKeyword, swap.replacementMaterial);
                         }
-
-                        renderer.sharedMaterials = materials;
                     }
-
-                    foreach (SkinnedMeshRenderer skinnedRenderer in affectedObject.GetComponentsInChildren<SkinnedMeshRenderer>())
+                    else if (affectedObject.TryGetComponent(out Renderer renderer))
                     {
-                        Material[] materials = skinnedRenderer.sharedMaterials;
-
-                        for (int i = 0; i < materials.Length; i++)
-                        {
-                            if (materials[i].name.Contains(swap.searchKeyword, StringComparison.OrdinalIgnoreCase))
-                            {
-                                materials[i] = swap.replacementMaterial;
-                            }
-                        }
-
-                        skinnedRenderer.sharedMaterials = materials;
+                        PerformSwap(renderer, swap.searchKeyword, swap.replacementMaterial);
                     }
                 }
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="renderer"></param>
+        /// <param name="searchKeyword"></param>
+        /// <param name="replacementMaterial"></param>
+        private static void PerformSwap(Renderer renderer, string searchKeyword, Material replacementMaterial)
+        {
+            Material[] materials = renderer.sharedMaterials;
+
+            for (int i = 0; i < materials.Length; i++)
+            {
+                if (materials[i].name.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase))
+                {
+                    materials[i] = replacementMaterial;
+                }
+            }
+
+            renderer.sharedMaterials = materials;
         }
 
         /// <summary>

@@ -1,3 +1,4 @@
+using itolib.Extensions;
 using LethalLevelLoader;
 using UnityEngine.Events;
 
@@ -30,7 +31,7 @@ namespace itolib.Behaviours.Props
 
             foreach (ExtendedStoryLog extendedStoryLog in DungeonManager.CurrentExtendedDungeonFlow.ExtendedMod.ExtendedStoryLogs)
             {
-                if (string.CompareOrdinal(extendedStoryLog.sceneName, DungeonManager.CurrentExtendedDungeonFlow.DungeonName) == 0
+                if (extendedStoryLog.sceneName.CompareOrdinal(DungeonManager.CurrentExtendedDungeonFlow.DungeonName)
                     && storyLogID == extendedStoryLog.storyLogID)
                 {
                     // Publicized LLL for access to 'ExtendedStoryLog.newStoryLogID' specifically...

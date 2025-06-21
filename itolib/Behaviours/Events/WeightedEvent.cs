@@ -5,7 +5,6 @@ using itolib.Extensions;
 using LethalLevelLoader;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -109,9 +108,13 @@ namespace itolib.Behaviours.Events
                 Random ??= new(StartOfRound.Instance.randomMapSeed + 66);
             }
 
-            List<int> propWeights = [.. eventEntries.Select(prop => prop.weight)];
-            AllWeightsCumulative = new(propWeights.Count);
+            List<int> propWeights = new(eventEntries.Count);
+            for (int i = 0; i < eventEntries.Count; i++)
+            {
+                propWeights.Add(eventEntries[i].weight);
+            }
 
+            AllWeightsCumulative = new(propWeights.Count);
             for (int i = 0; i < propWeights.Count; i++)
             {
                 TotalWeight += propWeights[i];

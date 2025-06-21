@@ -3,7 +3,6 @@ using itolib.Extensions;
 using itolib.Behaviours.Networking;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -83,7 +82,7 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         public void Start()
         {
-            healthConditions = [.. healthConditions.OrderByDescending(condition => condition.healthAmount)];
+            healthConditions.Sort((conditionA, conditionB) => conditionB.healthAmount - conditionA.healthAmount);
         }
 
         /// <summary>

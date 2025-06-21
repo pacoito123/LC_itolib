@@ -52,12 +52,6 @@ namespace itolib.Behaviours.Effects
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public Collider? damageBounds;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
         public Collider? killBounds;
 
         /// <summary>
@@ -139,12 +133,15 @@ namespace itolib.Behaviours.Effects
         /// </summary>
 		public override void CheckObjectsInRegion()
         {
-            if (explosionPrefab == null)
+            if (explosionPrefab == null || regionCollider == null)
             {
                 return;
             }
 
-            Vector3 explosionOrigin = transform.position;
+            float sqrMaxDamageRange = (regionCollider.bounds.max - regionCollider.bounds.center).sqrMagnitude;
+
+            Vector3 explosionOrigin = (regionCollider != null && regionCollider.enabled && regionCollider.gameObject.activeInHierarchy)
+                ? regionCollider.bounds.center : transform.position;
             Instantiate(explosionPrefab, explosionOrigin, VanillaExplosion ? Quaternion.Euler(-90f, 0f, 0f)
                 : Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform).SetActive(true);
 
@@ -188,12 +185,8 @@ namespace itolib.Behaviours.Effects
                 GameObject objectHit = colliderHit.gameObject;
                 Transform targetTransform = objectHit.transform;
 
-                float distanceFromBlast = Vector3.Distance(explosionOrigin, targetTransform.position);
-
-                float? damageRange = damageBounds != null ? damageBounds.bounds.extents.sqrMagnitude : null,
-                    killRange = killBounds != null ? killBounds.bounds.extents.sqrMagnitude : null;
-
-                float damageTime = 1 - (distanceFromBlast / damageRange) ?? 0.0f;
+                float sqrDistanceFromBlast = (targetTransform.position - explosionOrigin).sqrMagnitude,
+                    damageTime = sqrDistanceFromBlast / sqrMaxDamageRange;
 
                 // TODO: Parameterize more stuff?
                 if (!Physics.Linecast(explosionOrigin, targetTransform.position + (Vector3.up * 0.3f), coverMask,
@@ -201,14 +194,14 @@ namespace itolib.Behaviours.Effects
                 {
                     if (!localPlayerHit && objectHit.TryGetComponent(out PlayerControllerB player) && player.IsOwner)
                     {
-                        if (distanceFromBlast < killRange)
+                        if (killBounds != null && killBounds.bounds.Contains(targetTransform.position))
                         {
                             Vector3 launchVelocity = Vector3.Normalize(player.gameplayCamera.transform.position - explosionOrigin) * 80.0f /
                                 Vector3.Distance(player.gameplayCamera.transform.position, explosionOrigin);
 
                             player.KillPlayer(launchVelocity, true, CauseOfDeath.Blast);
                         }
-                        else if (distanceFromBlast <= damageRange)
+                        else if (sqrDistanceFromBlast <= sqrMaxDamageRange)
                         {
                             Vector3 launchVelocity = Vector3.Normalize(player.gameplayCamera.transform.position - explosionOrigin) * 80.0f /
                                 Vector3.Distance(player.gameplayCamera.transform.position, explosionOrigin);
@@ -217,19 +210,22 @@ namespace itolib.Behaviours.Effects
                                 true, CauseOfDeath.Blast, 0, false, launchVelocity);
                         }
                     }
-                    else if (objectHit.TryGetComponent(out Landmine landmine) && !landmine.hasExploded && distanceFromBlast < damageRange)
+                    else if (sqrDistanceFromBlast <= sqrMaxDamageRange)
                     {
-                        _ = landmine.StartCoroutine(landmine.TriggerOtherMineDelayed(landmine));
-                    }
-                    else if (objectHit.TryGetComponent(out EnemyAICollisionDetect enemyCollision) && enemyCollision.mainScript != null
-                        && enemyCollision.mainScript.IsOwner && distanceFromBlast < damageRange)
-                    {
-                        enemyCollision.mainScript.HitEnemyOnLocalClient(Mathf.RoundToInt(enemyDamageCurve.Evaluate(damageTime)));
-                        enemyCollision.mainScript.HitFromExplosion(distanceFromBlast);
-                    }
-                    else if (objectHit.TryGetComponent(out IHittable hittable) && distanceFromBlast <= damageRange)
-                    {
-                        _ = hittable.Hit(Mathf.RoundToInt(otherDamageCurve.Evaluate(damageTime)), explosionOrigin);
+                        if (objectHit.TryGetComponent(out Landmine landmine) && !landmine.hasExploded)
+                        {
+                            _ = landmine.StartCoroutine(landmine.TriggerOtherMineDelayed(landmine));
+                        }
+                        else if (objectHit.TryGetComponent(out EnemyAICollisionDetect enemyCollision) && enemyCollision.mainScript != null
+                            && enemyCollision.mainScript.IsOwner)
+                        {
+                            enemyCollision.mainScript.HitEnemyOnLocalClient(Mathf.RoundToInt(enemyDamageCurve.Evaluate(damageTime)));
+                            enemyCollision.mainScript.HitFromExplosion(distance: 0.0f); // Distance parameter appears to be unused.
+                        }
+                        else if (objectHit.TryGetComponent(out IHittable hittable))
+                        {
+                            _ = hittable.Hit(Mathf.RoundToInt(otherDamageCurve.Evaluate(damageTime)), explosionOrigin);
+                        }
                     }
                 }
             }

@@ -1,4 +1,5 @@
 using itolib.Behaviours.Detectors;
+using itolib.Extensions;
 using UnityEngine;
 
 namespace itolib.Behaviours.Props
@@ -65,7 +66,7 @@ namespace itolib.Behaviours.Props
             {
                 if (OverlapBuffer![i].TryGetComponent(out ConnectorMerger connector))
                 {
-                    if (connector == this || (nameFilter.Length > 0 && string.CompareOrdinal(nameFilter, connector.nameFilter) != 0))
+                    if (connector == this || (nameFilter.Length > 0 && nameFilter.CompareOrdinal(connector.nameFilter)))
                     {
                         continue;
                     }

@@ -1,5 +1,7 @@
 using itolib.Behaviours.Networking;
 using itolib.Enums;
+using itolib.Extensions;
+using LethalLevelLoader;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -67,6 +69,11 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        public List<Item> ItemPool { get; private set; } = [];
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public List<SyncedItem> ItemsToSync { get; private set; } = [];
 
         /// <summary>
@@ -74,18 +81,54 @@ namespace itolib.Behaviours.Props
         /// </summary>
         [Header("Item Spawner")]
         [Tooltip("")]
-        public Item? itemToSpawn;
+        public List<Item?> itemsToSpawn = [];
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        public List<ContentTag?> tagsToSpawn = [];
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [Min(0)]
+        public int minItems;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [Min(0)]
+        public int maxItems;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool exhaustivePool;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool exhaustiveLocations;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(5.0f)]
+        [Header("Item Properties")]
+        [Tooltip("")]
+        [Min(-1)]
         public int overrideMinValue = -1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        [Min(-1)]
         public int overrideMaxValue = -1;
 
         /// <summary>
@@ -109,6 +152,8 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Space(5.0f)]
+        [Header("Position")]
         [Tooltip("")]
         public bool fallToGround = true;
 
@@ -116,13 +161,29 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool randomizePosition = false;
+        public bool randomizePosition;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(5.0f)]
+        [Header("Other")]
+        [Tooltip("")]
+        public bool skipInactive = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool skipInactive = true;
+        public bool seededRandom = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(5.0f)]
+        [Header("DEPRECATED")]
+        [Obsolete("Use 'itemsToSpawn' instead.")]
+        public Item? itemToSpawn;
 
         /// <summary>
         ///     TODO.
@@ -130,28 +191,20 @@ namespace itolib.Behaviours.Props
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
-            if (PrefabToSpawn != null)
+            if (ItemPool.Count > 0)
             {
-                return PrefabToSpawn;
+                int poolIndex = Random.Next(0, ItemPool.Count);
+                Item randomItem = ItemPool[poolIndex];
+
+                if (exhaustivePool)
+                {
+                    ItemPool.RemoveAt(poolIndex);
+                }
+
+                return randomItem.spawnPrefab.GetComponent<NetworkObject>();
             }
 
-            if (itemToSpawn == null)
-            {
-                return null;
-            }
-
-            if (itemToSpawn.spawnPrefab != null && itemToSpawn.spawnPrefab.TryGetComponent(out NetworkObject itemNetworkObject))
-            {
-                return itemNetworkObject;
-            }
-            else
-            {
-                Item? item = StartOfRound.Instance != null ? StartOfRound.Instance.allItemsList.itemsList.Find(item =>
-                    string.CompareOrdinal(item.name, itemToSpawn.name) == 0) : null;
-
-                return (item != null && item.spawnPrefab != null && item.spawnPrefab.TryGetComponent(out NetworkObject blankReferenceNetworkObject))
-                    ? blankReferenceNetworkObject : null;
-            }
+            return null;
         }
 
         /// <summary>
@@ -159,7 +212,7 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public override void PerformSpawn()
         {
-            if (!IsHost || PrefabToSpawn == null)
+            if (!IsHost)
             {
                 return;
             }
@@ -173,16 +226,44 @@ namespace itolib.Behaviours.Props
                 Random ??= new();
             }
 
-            if (spawnLocations.Count == 0)
+            if (spawnLocations.Count > 0)
             {
-                SpawnItem(transform);
+                if (skipInactive)
+                {
+                    _ = spawnLocations.RemoveAll(spawnLocation => spawnLocation == null || !spawnLocation.gameObject.activeInHierarchy);
+                }
+
+                if (spawnLocations.Count == 0)
+                {
+                    return;
+                }
+
+                int itemsAmount = minItems < maxItems ? Random.Next(minItems, maxItems) : minItems;
+
+                if (itemsAmount > 0)
+                {
+                    for (int i = 0; i < itemsAmount; i++)
+                    {
+                        int locationIndex = Random.Next(0, spawnLocations.Count);
+                        SpawnItem(spawnLocations[locationIndex]);
+
+                        if (exhaustiveLocations)
+                        {
+                            spawnLocations.RemoveAt(locationIndex);
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < spawnLocations.Count; i++)
+                    {
+                        SpawnItem(spawnLocations[i]);
+                    }
+                }
             }
             else
             {
-                for (int i = 0; i < spawnLocations.Count; i++)
-                {
-                    SpawnItem(spawnLocations[i]);
-                }
+                SpawnItem(transform);
             }
 
             base.PerformSpawn();
@@ -199,12 +280,14 @@ namespace itolib.Behaviours.Props
         /// <param name="spawnLocation"></param>
         private void SpawnItem(Transform spawnLocation)
         {
-            if (PrefabToSpawn == null || (skipInactive && !spawnLocation.gameObject.activeInHierarchy))
+            NetworkObject? itemToSpawn = GetPrefabToSpawn();
+
+            if (itemToSpawn == null || (skipInactive && !spawnLocation.gameObject.activeInHierarchy))
             {
                 return;
             }
 
-            GameObject itemPrefab = Instantiate(PrefabToSpawn.gameObject, spawnLocation.position, Quaternion.identity,
+            GameObject itemPrefab = Instantiate(itemToSpawn.gameObject, spawnLocation.position, Quaternion.identity,
                 RoundManager.Instance != null ? RoundManager.Instance.spawnedScrapContainer : null);
 
             if (itemPrefab.TryGetComponent(out GrabbableObject item) && item.itemProperties != null)
@@ -237,6 +320,46 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public override void Start()
         {
+            for (int i = 0; i < tagsToSpawn.Count; i++)
+            {
+                if (tagsToSpawn[i] != null)
+                {
+                    for (int j = 0; j < PatchedContent.ExtendedItems.Count; j++)
+                    {
+                        ExtendedItem extendedItem = PatchedContent.ExtendedItems[j];
+
+                        if (extendedItem.ContentTags.Contains(tagsToSpawn[i])
+                            && !ItemPool.Contains(extendedItem.Item))
+                        {
+                            ItemPool.Add(extendedItem.Item);
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < itemsToSpawn.Count; i++)
+            {
+                Item? itemToSpawn = itemsToSpawn[i];
+
+                if (itemToSpawn != null)
+                {
+                    if (itemToSpawn.spawnPrefab != null)
+                    {
+                        ItemPool.Add(itemToSpawn);
+                    }
+                    else
+                    {
+                        ExtendedItem? extendedItem = PatchedContent.ExtendedItems.Find(extendedItem =>
+                            extendedItem.Item.name.CompareOrdinal(itemToSpawn.name));
+
+                        if (extendedItem != null && !ItemPool.Contains(extendedItem.Item))
+                        {
+                            ItemPool.Add(extendedItem.Item);
+                        }
+                    }
+                }
+            }
+
             base.Start();
 
             if (!NetworkManager.Singleton.IsHost)
@@ -304,7 +427,7 @@ namespace itolib.Behaviours.Props
             float startTime = Time.realtimeSinceStartup;
             while (!itemReference.TryGet(out item) && Time.realtimeSinceStartup - startTime < 8f)
             {
-                yield return new WaitForSeconds(0.03f);
+                yield return new WaitForSeconds(0.03f); // TODO: Replace with better method.
             }
 
             yield return new WaitForEndOfFrame();

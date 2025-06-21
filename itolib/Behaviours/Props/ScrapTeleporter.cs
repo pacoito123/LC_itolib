@@ -1,4 +1,5 @@
 using itolib.Enums;
+using itolib.Extensions;
 using LethalLevelLoader;
 using System;
 using System.Collections;
@@ -260,7 +261,7 @@ namespace itolib.Behaviours.Props
                             continue;
                         }
 
-                        if (specificItems.FindIndex(specificItem => string.CompareOrdinal(AvailableScrap[j].itemProperties.itemName, specificItem) == 0) >= 0)
+                        if (specificItems.FindIndex(specificItem => specificItem.CompareOrdinal(AvailableScrap[j].itemProperties.itemName)) >= 0)
                         {
                             TeleportData teleport = new()
                             {

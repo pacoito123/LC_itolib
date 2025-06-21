@@ -1,3 +1,4 @@
+using itolib.Extensions;
 using LethalLevelLoader;
 using Unity.Netcode;
 using UnityEngine;
@@ -18,7 +19,7 @@ namespace itolib.Behaviours.Helpers
             {
                 if (field == null)
                 {
-                    OldBirdEnemyType = OriginalContent.Enemies.Find(enemy => string.CompareOrdinal(enemy.enemyName, "RadMech") == 0);
+                    OldBirdEnemyType = OriginalContent.Enemies.Find(enemy => enemy.enemyName.CompareOrdinal("RadMech"));
                 }
 
                 return field;

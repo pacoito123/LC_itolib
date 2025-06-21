@@ -359,7 +359,7 @@ namespace itolib.Behaviours.Grabbables
 
                         for (int j = 0; j < StartOfRound.Instance.footstepSurfaces.Length; j++)
                         {
-                            if (string.CompareOrdinal(StartOfRound.Instance.footstepSurfaces[j].surfaceTag, objectHit.tag) == 0)
+                            if (objectHit.tag.CompareOrdinal(StartOfRound.Instance.footstepSurfaces[j].surfaceTag))
                             {
                                 surfaceIndex = j;
 

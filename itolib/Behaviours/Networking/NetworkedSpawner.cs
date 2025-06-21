@@ -20,11 +20,6 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        public NetworkObject? PrefabToSpawn { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [Header("Network Spawner")]
         [Tooltip("")]
         public List<Transform> spawnLocations = [];
@@ -87,11 +82,6 @@ namespace itolib.Behaviours.Networking
             if (!NetworkManager.Singleton.IsHost)
             {
                 return;
-            }
-
-            if (PrefabToSpawn == null)
-            {
-                PrefabToSpawn = GetPrefabToSpawn();
             }
 
             switch (activationTime)

@@ -73,7 +73,13 @@ namespace itolib.Behaviours.Kinematics
         {
             attachCondition = player => !player.isPlayerDead && !player.inAnimationWithEnemy && !player.inSpecialInteractAnimation;
             detachCondition = player => player.isPlayerDead || (playerAction != null && playerAction.IsPressed());
+        }
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void Start()
+        {
             if (actionToUnseat.Length > 0)
             {
                 // Get action (key) that must be pressed, if one is set.

@@ -1,3 +1,4 @@
+using itolib.Extensions;
 using System;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -168,7 +169,7 @@ namespace itolib.Behaviours.Detectors
                     string search = !filter.objectSearch ? enemyCollision.mainScript.enemyType.enemyName : enemyCollision.mainScript.gameObject.name;
 
                     if ((filter.fuzzySearch && search.Contains(filter.enemyName, StringComparison.OrdinalIgnoreCase))
-                        || string.CompareOrdinal(search, filter.enemyName) == 0)
+                        || search.CompareOrdinal(filter.enemyName))
                     {
                         if (++enemyAmounts[i] >= filter.amount)
                         {
@@ -199,6 +200,7 @@ namespace itolib.Behaviours.Detectors
                 if (enemyFilters.Count == 0 || !filterExiting)
                 {
                     RegionEnteredClientRpc(enemyCollision.mainScript, exit: true);
+
                     return;
                 }
 
@@ -207,7 +209,7 @@ namespace itolib.Behaviours.Detectors
                     EnemyFilter filter = enemyFilters[i];
                     string search = filter.objectSearch ? enemyCollision.mainScript.enemyType.enemyName : enemyCollision.mainScript.gameObject.name;
 
-                    if ((filter.fuzzySearch && search.Contains(filter.enemyName)) || string.CompareOrdinal(search, filter.enemyName) == 0)
+                    if ((filter.fuzzySearch && search.Contains(filter.enemyName)) || search.CompareOrdinal(filter.enemyName))
                     {
                         if (subtractOnExit)
                         {

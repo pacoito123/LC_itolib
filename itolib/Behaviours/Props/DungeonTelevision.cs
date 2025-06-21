@@ -1,4 +1,5 @@
 using itolib.Compatibility;
+using itolib.Extensions;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Video;
@@ -20,7 +21,7 @@ namespace itolib.Behaviours.Props
                 if (field == null && StartOfRound.Instance != null)
                 {
                     field = StartOfRound.Instance.unlockablesList.unlockables.Find(unlockable =>
-                        string.CompareOrdinal(unlockable.unlockableName, "Television") == 0);
+                        unlockable.unlockableName.CompareOrdinal("Television"));
                 }
 
                 return field;

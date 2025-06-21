@@ -200,22 +200,23 @@ namespace itolib.Behaviours.Detectors
             // Perform non-allocating overlapping Collider search.
             if (regionCollider is BoxCollider box)
             {
-                ObjectsFound = Physics.OverlapBoxNonAlloc(transform.TransformPoint(box.center), box.size * 0.5f, OverlapBuffer,
-                    regionCollider.transform.rotation, layerMask, QueryTriggerInteraction.Collide);
+                Vector3 halfExtents = Vector3.Scale(box.size, box.transform.lossyScale) * 0.5f;
+
+                ObjectsFound = Physics.OverlapBoxNonAlloc(box.transform.TransformPoint(box.center), halfExtents, OverlapBuffer,
+                    box.transform.rotation, layerMask, QueryTriggerInteraction.Collide);
             }
             else if (regionCollider is SphereCollider sphere)
             {
-                ObjectsFound = Physics.OverlapSphereNonAlloc(transform.TransformPoint(sphere.center), sphere.radius, OverlapBuffer,
+                ObjectsFound = Physics.OverlapSphereNonAlloc(sphere.transform.TransformPoint(sphere.center), sphere.radius, OverlapBuffer,
                     layerMask, QueryTriggerInteraction.Collide);
             }
             else if (regionCollider is CapsuleCollider capsule)
             {
-                Vector3 direction = new() { [capsule.direction] = 1 };
+                Vector3 direction = capsule.transform.rotation * new Vector3() { [capsule.direction] = 1 };
                 float offset = (capsule.height * 0.5f) - capsule.radius;
 
-                // TODO: Test if works when rotated.
-                ObjectsFound = Physics.OverlapCapsuleNonAlloc(transform.TransformPoint(capsule.center - (offset * direction)),
-                    transform.TransformPoint(capsule.center + (offset * direction)), capsule.radius, OverlapBuffer, layerMask,
+                ObjectsFound = Physics.OverlapCapsuleNonAlloc(capsule.transform.TransformPoint(capsule.center - (offset * direction)),
+                    capsule.transform.TransformPoint(capsule.center + (offset * direction)), capsule.radius, OverlapBuffer, layerMask,
                     QueryTriggerInteraction.Collide);
             }
             else

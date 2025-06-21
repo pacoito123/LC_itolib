@@ -1,6 +1,5 @@
 using itolib.Behaviours.Grabbables;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
@@ -20,7 +19,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public List<MeshRenderer> DisabledRenderers { get; private set; } = [];
+        public List<Renderer> DisabledRenderers { get; private set; } = [];
 
         /// <summary>
         ///     TODO.
@@ -100,12 +99,18 @@ namespace itolib.Behaviours.Detectors
         /// <param name="item"></param>
         public void DisableItemCollider(GrabbableObject item)
         {
-            item.GetComponentsInChildren<Collider>().Where(collider =>
-                collider.enabled && collider.gameObject.layer != LayerMask.NameToLayer("ScanNode")).ToList().ForEach(collider =>
+            Collider[] colliders = item.GetComponentsInChildren<Collider>();
+
+            for (int i = 0; i < colliders.Length; i++)
             {
-                collider.enabled = false;
-                DisabledColliders.Add(collider);
-            });
+                Collider? collider = colliders[i];
+
+                if (collider != null && collider.enabled && collider.gameObject.layer != LayerMask.NameToLayer("ScanNode"))
+                {
+                    collider.enabled = false;
+                    DisabledColliders.Add(collider);
+                }
+            }
         }
 
         /// <summary>
@@ -114,11 +119,18 @@ namespace itolib.Behaviours.Detectors
         /// <param name="item"></param>
         public void DisableItemRenderer(GrabbableObject item)
         {
-            item.GetComponentsInChildren<MeshRenderer>().Where(renderer => renderer.enabled).ToList().ForEach(renderer =>
+            Renderer[] renderers = item.GetComponentsInChildren<Renderer>();
+
+            for (int i = 0; i < renderers.Length; i++)
             {
-                renderer.enabled = false;
-                DisabledRenderers.Add(renderer);
-            });
+                Renderer? renderer = renderers[i];
+
+                if (renderer != null && renderer.enabled)
+                {
+                    renderer.enabled = false;
+                    DisabledRenderers.Add(renderer);
+                }
+            }
         }
 
         /// <summary>

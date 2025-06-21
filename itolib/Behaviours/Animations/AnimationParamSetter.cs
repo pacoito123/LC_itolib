@@ -1,6 +1,5 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
-using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -58,13 +57,18 @@ namespace itolib.Behaviours.Animations
         public void SwitchParam(string paramName)
         {
             int paramID = Animator.StringToHash(paramName);
-            if (animator.parameters.Any(param => param.nameHash == paramID))
+            for (int i = 0; i < animator.parameters.Length; i++)
             {
-                SwitchParamLocal(paramID);
-
-                if (IsSpawned)
+                if (animator.parameters[i].nameHash == paramID)
                 {
-                    SwitchParamServerRpc(GameNetworkManager.Instance.localPlayerController, paramID);
+                    SwitchParamLocal(paramID);
+
+                    if (IsSpawned)
+                    {
+                        SwitchParamServerRpc(GameNetworkManager.Instance.localPlayerController, paramID);
+                    }
+
+                    break;
                 }
             }
         }

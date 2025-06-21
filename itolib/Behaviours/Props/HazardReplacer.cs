@@ -1,4 +1,5 @@
 using DunGen;
+using itolib.Extensions;
 using LethalLevelLoader;
 using System;
 using System.Collections.Generic;
@@ -72,7 +73,7 @@ namespace itolib.Behaviours.Props
                 SpawnableMapObject? originalHazard = null;
                 for (int j = 0; j < hazardNames.Length; j++)
                 {
-                    if (string.CompareOrdinal(hazardReplacements[i].originalHazard, hazardNames[j]) == 0)
+                    if (hazardReplacements[i].originalHazard.CompareOrdinal(hazardNames[j]))
                     {
                         originalHazard = currentLevel.spawnableMapObjects[j];
 
@@ -91,7 +92,7 @@ namespace itolib.Behaviours.Props
                 SpawnableMapObject? replacingHazard = null;
                 for (int j = 0; j < extendedHazardNames.Length; j++)
                 {
-                    if (string.CompareOrdinal(hazardReplacements[i].replacingHazard, extendedHazardNames[j]) == 0)
+                    if (hazardReplacements[i].replacingHazard.CompareOrdinal(extendedHazardNames[j]))
                     {
                         replacingHazard = currentDungeon.SpawnableMapObjects[j];
 

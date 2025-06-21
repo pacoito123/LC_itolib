@@ -36,7 +36,7 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public override void PerformSpawn()
         {
-            if (!NetworkManager.Singleton.IsHost || PrefabToSpawn == null)
+            if (!NetworkManager.Singleton.IsHost || prefabToSpawn == null)
             {
                 return;
             }
@@ -62,12 +62,12 @@ namespace itolib.Behaviours.Props
         /// <param name="spawnLocation"></param>
         private void SpawnPrefab(Transform spawnLocation)
         {
-            if (PrefabToSpawn == null || !spawnLocation.gameObject.activeInHierarchy)
+            if (prefabToSpawn == null || !spawnLocation.gameObject.activeInHierarchy)
             {
                 return;
             }
 
-            GameObject prefab = Instantiate(PrefabToSpawn.gameObject, spawnLocation.position, spawnLocation.rotation,
+            GameObject prefab = Instantiate(prefabToSpawn.gameObject, spawnLocation.position, spawnLocation.rotation,
                 (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null) ?
                     RoundManager.Instance.mapPropsContainer.transform : null);
 

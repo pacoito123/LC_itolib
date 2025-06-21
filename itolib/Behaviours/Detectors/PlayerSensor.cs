@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using GameNetcodeStuff;
 using itolib.Extensions;
 using Unity.Netcode;
@@ -38,34 +39,40 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void CheckObjectsInRegion()
         {
-            base.CheckObjectsInRegion();
+            base.CheckObjectsInRegion(); // TODO: Do AABB checks on all players instead of overlap stuff.
 
             if (!IsHost)
             {
                 return;
             }
 
-            int playersFound = 0,
-                playersFoundAlive = 0;
+            List<ulong> playersFound = new(StartOfRound.Instance.allPlayerScripts.Length);
+            int playersFoundAlive = 0;
 
             for (int i = 0; i < ObjectsFound; i++)
             {
                 if (OverlapBuffer![i].TryGetComponent(out PlayerControllerB player))
                 {
+                    if (playersFound.Contains(player.actualClientId))
+                    {
+                        continue;
+                    }
+
                     FoundPlayersEachClientRpc(player);
-                    playersFound++;
 
                     if (player.isActiveAndEnabled && !player.isPlayerDead)
                     {
                         FoundPlayersAliveEachClientRpc(player);
                         playersFoundAlive++;
                     }
+
+                    playersFound.Add(player.actualClientId);
                 }
             }
 
-            if (playersFound > 0)
+            if (playersFound.Count > 0)
             {
-                FoundPlayersAnyClientRpc(playersFound);
+                FoundPlayersAnyClientRpc(playersFound.Count);
 
                 if (playersFoundAlive > 0)
                 {

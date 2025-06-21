@@ -1,4 +1,5 @@
 using itolib.Compatibility;
+using itolib.Extensions;
 using System;
 
 namespace itolib.Behaviours.Conditionals
@@ -80,18 +81,20 @@ namespace itolib.Behaviours.Conditionals
 
             for (int i = 0; i < conditionalOverrides.Count; i++)
             {
-                if (string.CompareOrdinal(weatherName, conditionalOverrides[i].nameToSearch) == 0)
+                if (weatherName.CompareOrdinal(conditionalOverrides[i].nameToSearch))
                 {
                     conditionalOverrides[i].Apply(undo);
+
                     return;
                 }
                 else if (conditionalOverrides[i].alsoAppliesTo.Count > 0)
                 {
                     for (int j = 0; j < conditionalOverrides[i].alsoAppliesTo.Count; j++)
                     {
-                        if (string.CompareOrdinal(weatherName, conditionalOverrides[i].alsoAppliesTo[j]) == 0)
+                        if (weatherName.CompareOrdinal(conditionalOverrides[i].alsoAppliesTo[j]))
                         {
                             conditionalOverrides[i].Apply(undo);
+
                             return;
                         }
                     }

@@ -1,3 +1,5 @@
+using itolib.Extensions;
+
 namespace itolib.Behaviours.Conditionals
 {
     /// <summary>
@@ -25,18 +27,20 @@ namespace itolib.Behaviours.Conditionals
             {
                 string planetName = GetNumberlessPlanetName(objectToCheck.PlanetName).TrimEnd('\0');
 
-                if (string.CompareOrdinal(planetName, conditionalOverrides[i].nameToSearch) == 0)
+                if (planetName.CompareOrdinal(conditionalOverrides[i].nameToSearch))
                 {
                     conditionalOverrides[i].Apply(undo);
+
                     return;
                 }
                 else if (conditionalOverrides[i].alsoAppliesTo.Count > 0)
                 {
                     for (int j = 0; j < conditionalOverrides[i].alsoAppliesTo.Count; j++)
                     {
-                        if (string.CompareOrdinal(planetName, conditionalOverrides[i].alsoAppliesTo[j]) == 0)
+                        if (planetName.CompareOrdinal(conditionalOverrides[i].alsoAppliesTo[j]))
                         {
                             conditionalOverrides[i].Apply(undo);
+
                             return;
                         }
                     }
