@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Behaviours.Helpers;
 using itolib.Interfaces;
 using UnityEngine;
 using UnityEngine.Events;
@@ -8,33 +9,8 @@ namespace itolib.Behaviours.Effects
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class AttachedEffect : MonoBehaviour, IPooledObject
+    public class AttachedEffect : PooledObject<GameObject>
     {
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public int ObjectID { get; set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public GameObject TakenBy { get; set; } = null!;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public IPooledObject NextPooledObject { get; set; } = null!;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public Transform CurrentPosition { get; private set; } = null!;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public Transform TargetPosition { get; private set; } = null!;
-
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -46,7 +22,15 @@ namespace itolib.Behaviours.Effects
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        [Min(1)]
         public int maxInstances = 8;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [Min(0)]
+        public int prepareInstances = 1;
 
         /// <summary>
         ///     TODO.
@@ -70,22 +54,22 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public IPooledObject pooledSelf = null!;
+        public Transform currentPosition = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        public Transform targetPosition = null!;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void Awake()
         {
-            pooledSelf = this;
-            CurrentPosition = transform;
+            currentPosition = transform;
+            targetPosition = null!;
 
-            TakenBy = null!;
-            NextPooledObject = null!;
-            TargetPosition = null!;
-
-            enabled = false;
+            base.Awake();
         }
 
         /// <summary>
@@ -93,12 +77,12 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public void Update()
         {
-            if (!followObject || TargetPosition == null)
+            if (!followObject || targetPosition == null)
             {
                 return;
             }
 
-            CurrentPosition.position = TargetPosition.position;
+            currentPosition.position = targetPosition.position;
             // CurrentPosition.SetPositionAndRotation(TargetPosition.position, TargetPosition.rotation);
         }
 
@@ -124,16 +108,16 @@ namespace itolib.Behaviours.Effects
         /// <param name="gameObject"></param>
         public void Attach(GameObject gameObject)
         {
-            if (pooledSelf.TryAssignInstance(gameObject, maxInstances, out IPooledObject instance))
+            if (PooledSelf.TryAssignInstance(gameObject, maxInstances, out IPooledObject<GameObject> instance))
             {
                 if (instance is AttachedEffect effect)
                 {
-                    effect.CurrentPosition.position = effect.TakenBy.transform.position;
-                    effect.TargetPosition = effect.TakenBy.transform;
+                    effect.currentPosition.position = effect.TakenBy.transform.position;
+                    effect.targetPosition = effect.TakenBy.transform;
 
                     effect.onAttach.Invoke(gameObject);
 
-                    enabled = true;
+                    effect.enabled = true;
                 }
             }
         }
@@ -160,14 +144,14 @@ namespace itolib.Behaviours.Effects
         /// <param name="gameObject"></param>
         public void Detach(GameObject gameObject)
         {
-            if (pooledSelf.TryFreeInstance(gameObject, out IPooledObject instance))
+            if (PooledSelf.TryFreeInstance(gameObject, out IPooledObject<GameObject> instance))
             {
                 if (instance is AttachedEffect effect)
                 {
                     effect.onDetach.Invoke(gameObject);
-                    effect.TargetPosition = null!;
+                    effect.targetPosition = null!;
 
-                    enabled = false;
+                    effect.enabled = false;
                 }
             }
         }
@@ -176,12 +160,20 @@ namespace itolib.Behaviours.Effects
         ///     TODO.
         /// </summary>
         /// <returns></returns> 
-        public IPooledObject CreateInstance()
+        public override IPooledObject<GameObject> CreateInstance()
         {
             AttachedEffect instance = Instantiate(effectToAttach, transform.GetParent(), false);
             instance.name = name;
 
             return instance;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void CreateInstances(int instances)
+        {
+            throw new System.NotImplementedException(); // TODO: Actually implement...
         }
     }
 }

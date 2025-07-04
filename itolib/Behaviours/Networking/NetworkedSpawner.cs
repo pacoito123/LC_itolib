@@ -22,11 +22,30 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         [Header("Network Spawner")]
         [Tooltip("")]
-        public List<Transform> spawnLocations = [];
+        public List<Transform?>? spawnLocations;
 
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public bool exhaustiveLocations;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public List<BoxCollider?>? spawnAreas = [];
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool exhaustiveAreas;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(5.0f)]
         [Tooltip("")]
         public ActivationTime activationTime = ActivationTime.DungeonComplete;
 
@@ -67,19 +86,16 @@ namespace itolib.Behaviours.Networking
                     prefabNetworkObject.Spawn(destroyWithScene);
                 }
             }
-
-            if (destroySpawner) // TODO: Move elsewhere?
-            {
-                Destroy(gameObject);
-            }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public virtual void Start()
+        public override void OnNetworkSpawn()
         {
-            if (!NetworkManager.Singleton.IsHost)
+            base.OnNetworkSpawn();
+
+            if (!IsHost)
             {
                 return;
             }
@@ -111,7 +127,7 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnDestroy()
+        public override void OnNetworkDespawn()
         {
             switch (activationTime)
             {
@@ -134,7 +150,7 @@ namespace itolib.Behaviours.Networking
                     break;
             }
 
-            base.OnDestroy();
+            base.OnNetworkDespawn();
         }
 
         /// <summary>

@@ -58,7 +58,7 @@ namespace itolib.Behaviours.Effects
                 return;
             }
 
-            int damageTaken = (minDamage < maxDamage) ? Random.Range(minDamage, maxDamage + 1) : minDamage;
+            int damageTaken = Random.Range(minDamage, maxDamage + 1);
             playerHurt.DamagePlayer(damageTaken, playDamageSFX, true, deathCause,
                 deathAnimation, false, deathLaunchForce);
         }

@@ -1,3 +1,4 @@
+using DunGen;
 using itolib.Enums;
 using LethalLevelLoader;
 using System;
@@ -79,7 +80,7 @@ namespace itolib.Behaviours.Conditionals
     ///     TODO.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class BaseConditional<T> : MonoBehaviour
+    public abstract class BaseConditional<T> : MonoBehaviour, IDungeonCompleteReceiver
     {
         /// <summary>
         ///     TODO.
@@ -179,5 +180,17 @@ namespace itolib.Behaviours.Conditionals
         /// <param name="objectToCheck"></param>
         /// <param name="undo"></param>
         public abstract void ApplyConditional(T objectToCheck, bool undo);
+
+        /// <summary>
+        ///     <c>DunGen</c> listener called when generation finishes, but before blockers and connectors are placed.
+        /// </summary>
+        /// <param name="dungeon">Dungeon that just finished generating.</param>
+        public void OnDungeonComplete(Dungeon dungeon)
+        {
+            if (activationTime is ActivationTime.DungeonComplete)
+            {
+                ApplyConditional();
+            }
+        }
     }
 }

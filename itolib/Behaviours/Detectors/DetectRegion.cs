@@ -234,7 +234,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     <c>DunGen</c> listener called when generation finishes, but before blockers and connectors are placed.
         /// </summary>
-        /// <param name="dungeon"></param>
+        /// <param name="dungeon">Dungeon that just finished generating.</param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
             if (activationTime is ActivationTime.DungeonComplete)

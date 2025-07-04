@@ -94,13 +94,20 @@ namespace itolib.Behaviours.Props
         /// </summary>
         [Tooltip("")]
         [Min(0)]
+        public bool requireAllTags;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [Min(-1)]
         public int minItems;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [Min(0)]
+        [Min(-1)]
         public int maxItems;
 
         /// <summary>
@@ -108,12 +115,6 @@ namespace itolib.Behaviours.Props
         /// </summary>
         [Tooltip("")]
         public bool exhaustivePool;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public bool exhaustiveLocations;
 
         /// <summary>
         ///     TODO.
@@ -153,7 +154,7 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         [Space(5.0f)]
-        [Header("Position")]
+        [Header("Position & Rotation")]
         [Tooltip("")]
         public bool fallToGround = true;
 
@@ -162,6 +163,12 @@ namespace itolib.Behaviours.Props
         /// </summary>
         [Tooltip("")]
         public bool randomizePosition;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool applyRestingRotation;
 
         /// <summary>
         ///     TODO.
@@ -180,10 +187,8 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Space(5.0f)]
-        [Header("DEPRECATED")]
-        [Obsolete("Use 'itemsToSpawn' instead.")]
-        public Item? itemToSpawn;
+        [Tooltip("")]
+        public bool respectSingleItemDay;
 
         /// <summary>
         ///     TODO.
@@ -217,47 +222,50 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            if (StartOfRound.Instance != null)
+            Random ??= (StartOfRound.Instance != null) ? new(StartOfRound.Instance.randomMapSeed + 44) : new();
+
+            int itemsAmount = Random.Next(minItems, maxItems);
+            if (itemsAmount == 0)
             {
-                Random ??= new(StartOfRound.Instance.randomMapSeed + 44);
-            }
-            else
-            {
-                Random ??= new();
+                return;
             }
 
-            if (spawnLocations.Count > 0)
+            _ = spawnLocations?.RemoveAll(spawnLocation => spawnLocation == null || (skipInactive && !spawnLocation.gameObject.activeInHierarchy));
+            _ = spawnAreas?.RemoveAll(spawnArea => spawnArea == null || (skipInactive && !spawnArea.gameObject.activeInHierarchy));
+
+            if (spawnLocations?.Count > 0)
             {
-                if (skipInactive)
+                if (itemsAmount == -1)
                 {
-                    _ = spawnLocations.RemoveAll(spawnLocation => spawnLocation == null || !spawnLocation.gameObject.activeInHierarchy);
+                    itemsAmount = spawnLocations.Count;
                 }
 
-                if (spawnLocations.Count == 0)
+                for (int i = 0; i < itemsAmount && spawnLocations.Count > 0; i++)
                 {
-                    return;
-                }
+                    int locationIndex = Random.Next(0, spawnLocations.Count);
+                    SpawnItem(spawnLocations[locationIndex]!);
 
-                int itemsAmount = minItems < maxItems ? Random.Next(minItems, maxItems) : minItems;
-
-                if (itemsAmount > 0)
-                {
-                    for (int i = 0; i < itemsAmount; i++)
+                    if (exhaustiveLocations)
                     {
-                        int locationIndex = Random.Next(0, spawnLocations.Count);
-                        SpawnItem(spawnLocations[locationIndex]);
-
-                        if (exhaustiveLocations)
-                        {
-                            spawnLocations.RemoveAt(locationIndex);
-                        }
+                        spawnLocations.RemoveAt(locationIndex);
                     }
                 }
-                else
+            }
+            else if (spawnAreas?.Count > 0)
+            {
+                if (itemsAmount == -1)
                 {
-                    for (int i = 0; i < spawnLocations.Count; i++)
+                    itemsAmount = spawnAreas.Count;
+                }
+
+                for (int i = 0; i < itemsAmount && spawnAreas.Count > 0; i++)
+                {
+                    int areaIndex = Random.Next(0, spawnAreas.Count);
+                    SpawnItem(spawnAreas[areaIndex]!);
+
+                    if (exhaustiveAreas)
                     {
-                        SpawnItem(spawnLocations[i]);
+                        spawnAreas.RemoveAt(areaIndex);
                     }
                 }
             }
@@ -282,27 +290,63 @@ namespace itolib.Behaviours.Props
         {
             NetworkObject? itemToSpawn = GetPrefabToSpawn();
 
-            if (itemToSpawn == null || (skipInactive && !spawnLocation.gameObject.activeInHierarchy))
+            if (itemToSpawn != null)
             {
-                return;
+                SpawnItem(itemToSpawn, spawnLocation.position, spawnLocation.rotation);
             }
+        }
 
-            GameObject itemPrefab = Instantiate(itemToSpawn.gameObject, spawnLocation.position, Quaternion.identity,
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="spawnArea"></param>
+        private void SpawnItem(BoxCollider spawnArea)
+        {
+            NetworkObject? itemToSpawn = GetPrefabToSpawn();
+
+            if (itemToSpawn != null)
+            {
+                Vector3 extents = spawnArea.size / 2.0f;
+                Vector3 point = new(((float)Random.NextDouble() * extents.x * 2) - extents.x,
+                    ((float)Random.NextDouble() * extents.y * 2) - extents.y,
+                    ((float)Random.NextDouble() * extents.z * 2) - extents.z);
+
+                Vector3 spawnPosition = spawnArea.transform.TransformPoint(point + spawnArea.center); // TODO: Maybe find point in NavMesh instead?
+
+                SpawnItem(itemToSpawn, spawnPosition, Quaternion.identity);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="itemToSpawn"></param>
+        /// <param name="spawnPosition"></param>
+        /// <param name="spawnRotation"></param>
+        private void SpawnItem(NetworkObject itemToSpawn, Vector3 spawnPosition, Quaternion spawnRotation)
+        {
+            GameObject itemObj = Instantiate(itemToSpawn.gameObject, spawnPosition, Quaternion.identity,
                 RoundManager.Instance != null ? RoundManager.Instance.spawnedScrapContainer : null);
 
-            if (itemPrefab.TryGetComponent(out GrabbableObject item) && item.itemProperties != null)
+            if (itemObj.TryGetComponent(out GrabbableObject item) && item.itemProperties != null)
             {
                 int scrapValue = Random.Next(overrideMinValue < 0 ? item.itemProperties.minValue : overrideMinValue,
                     overrideMaxValue < 0 ? item.itemProperties.maxValue : overrideMaxValue);
+
                 if (applyScrapMultiplier && RoundManager.Instance != null)
                 {
                     scrapValue = (int)(scrapValue * RoundManager.Instance.scrapValueMultiplier);
                 }
 
+                if (applyRestingRotation)
+                {
+                    spawnRotation *= Quaternion.Euler(item.itemProperties.restingRotation);
+                }
+
                 SyncedItem serializedItem = new()
                 {
-                    position = spawnLocation.position,
-                    rotation = spawnLocation.rotation * Quaternion.Euler(item.itemProperties.restingRotation),
+                    position = spawnPosition,
+                    rotation = spawnRotation,
                     meshVariant = (allowMeshVariants && item.itemProperties.meshVariants.Length > 0)
                         ? Random.Next(0, item.itemProperties.meshVariants.Length) : -1,
                     materialVariant = (allowMaterialVariants && item.itemProperties.materialVariants.Length > 0)
@@ -318,22 +362,37 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Start()
+        public void Awake()
         {
-            for (int i = 0; i < tagsToSpawn.Count; i++)
+            for (int i = 0; i < PatchedContent.ExtendedItems.Count; i++)
             {
-                if (tagsToSpawn[i] != null)
-                {
-                    for (int j = 0; j < PatchedContent.ExtendedItems.Count; j++)
-                    {
-                        ExtendedItem extendedItem = PatchedContent.ExtendedItems[j];
+                ExtendedItem extendedItem = PatchedContent.ExtendedItems[i];
 
-                        if (extendedItem.ContentTags.Contains(tagsToSpawn[i])
-                            && !ItemPool.Contains(extendedItem.Item))
+                int tagsFound = 0;
+
+                for (int j = 0; j < tagsToSpawn.Count; j++)
+                {
+                    ContentTag? tagToSpawn = tagsToSpawn[j];
+
+                    if (tagToSpawn == null || tagToSpawn.contentTagName.IsNullOrEmpty())
+                    {
+                        continue;
+                    }
+
+                    if (extendedItem.ContentTags.Find(tagToSpawn.CompareTag) != null)
+                    {
+                        tagsFound++;
+
+                        if (!requireAllTags)
                         {
-                            ItemPool.Add(extendedItem.Item);
+                            break;
                         }
                     }
+                }
+
+                if ((requireAllTags && tagsFound == tagsToSpawn.Count) || (!requireAllTags && tagsFound > 0))
+                {
+                    ItemPool.Add(extendedItem.Item);
                 }
             }
 
@@ -341,33 +400,36 @@ namespace itolib.Behaviours.Props
             {
                 Item? itemToSpawn = itemsToSpawn[i];
 
-                if (itemToSpawn != null)
+                if (itemToSpawn == null || ItemPool.Contains(itemToSpawn))
                 {
-                    if (itemToSpawn.spawnPrefab != null)
-                    {
-                        ItemPool.Add(itemToSpawn);
-                    }
-                    else
-                    {
-                        ExtendedItem? extendedItem = PatchedContent.ExtendedItems.Find(extendedItem =>
-                            extendedItem.Item.name.CompareOrdinal(itemToSpawn.name));
+                    continue;
+                }
 
-                        if (extendedItem != null && !ItemPool.Contains(extendedItem.Item))
-                        {
-                            ItemPool.Add(extendedItem.Item);
-                        }
+                if (itemToSpawn.spawnPrefab == null)
+                {
+                    ExtendedItem? extendedItem = PatchedContent.ExtendedItems.Find(extendedItem =>
+                        extendedItem.Item.name.CompareOrdinal(itemToSpawn.name));
+
+                    if (extendedItem != null && !ItemPool.Contains(extendedItem.Item))
+                    {
+                        ItemPool.Add(extendedItem.Item);
                     }
                 }
+                else
+                {
+                    ItemPool.Add(itemToSpawn);
+                }
             }
+        }
 
-            base.Start();
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
 
-            if (!NetworkManager.Singleton.IsHost)
-            {
-                return;
-            }
-
-            if (activationTime is ActivationTime.HazardSpawn or ActivationTime.ScrapSpawn && StartOfRound.Instance != null)
+            if (IsHost && activationTime is ActivationTime.HazardSpawn or ActivationTime.ScrapSpawn && StartOfRound.Instance != null)
             {
                 StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
             }
@@ -376,7 +438,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnDestroy()
+        public override void OnNetworkDespawn()
         {
             Random = null!;
 
@@ -385,7 +447,7 @@ namespace itolib.Behaviours.Props
                 StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SyncAllItemValuesServerRpc);
             }
 
-            base.OnDestroy();
+            base.OnNetworkDespawn();
         }
 
         /// <summary>

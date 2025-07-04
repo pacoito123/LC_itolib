@@ -25,7 +25,7 @@ namespace itolib
         /// <summary>
         ///     TODO.
         /// </summary>
-        public const string PLUGIN_GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.2.0";
+        public const string PLUGIN_GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.3.0";
         internal static ManualLogSource StaticLogger { get; private set; } = null!;
 
         /// <summary>
@@ -47,6 +47,7 @@ namespace itolib
                 NetcodePatcher();
 
                 // Apply all patches.
+                // Harmony.PatchAll(typeof(DoorwayPatch));
                 Harmony.PatchAll(typeof(LoadPatch));
                 // ...
 

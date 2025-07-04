@@ -1,4 +1,6 @@
 using itolib.Behaviours.Networking;
+using itolib.Enums;
+using LethalLevelLoader;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -34,9 +36,72 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        public void Start()
+        {
+            if (!NetworkManager.Singleton.IsHost || IsSpawned)
+            {
+                return;
+            }
+
+            switch (activationTime)
+            {
+                case ActivationTime.ScrapSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(PerformSpawn);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(PerformSpawn);
+                    break;
+                case ActivationTime.StartOfRound:
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.AddListener(PerformSpawn);
+                    }
+                    break;
+                case ActivationTime.Immediate:
+                    PerformSpawn();
+                    break;
+                case ActivationTime.DungeonComplete:
+                case ActivationTime.Manual:
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void OnDestroy()
+        {
+            switch (activationTime)
+            {
+                case ActivationTime.ScrapSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(PerformSpawn);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(PerformSpawn);
+                    break;
+                case ActivationTime.StartOfRound:
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(PerformSpawn);
+                    }
+                    break;
+                case ActivationTime.Immediate:
+                case ActivationTime.DungeonComplete:
+                case ActivationTime.Manual:
+                default:
+                    break;
+            }
+
+            base.OnDestroy();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void PerformSpawn()
         {
-            if (!NetworkManager.Singleton.IsHost || prefabToSpawn == null)
+            if (!NetworkManager.Singleton.IsHost || prefabToSpawn == null || spawnLocations == null)
             {
                 return;
             }
@@ -54,15 +119,20 @@ namespace itolib.Behaviours.Props
             }
 
             base.PerformSpawn();
+
+            if (destroySpawner && TryGetComponent(out NetworkObject networkObject))
+            {
+                networkObject.Despawn(destroy: true);
+            }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
         /// <param name="spawnLocation"></param>
-        private void SpawnPrefab(Transform spawnLocation)
+        private void SpawnPrefab(Transform? spawnLocation)
         {
-            if (prefabToSpawn == null || !spawnLocation.gameObject.activeInHierarchy)
+            if (prefabToSpawn == null || spawnLocation == null || !spawnLocation.gameObject.activeInHierarchy)
             {
                 return;
             }

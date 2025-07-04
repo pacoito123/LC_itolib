@@ -178,21 +178,21 @@ namespace itolib.Behaviours.Grabbables
                 return;
             }
 
-            int clip = audioClips.Length > 1 ? Random.Range(0, audioClips.Length) : 0;
+            int clip = Random.Range(0, audioClips.Length);
 
             int clipFar = -1;
             if (audioClipsFar?.Length > 0)
             {
-                clipFar = audioClipsFar.Length > 1 ? Random.Range(0, audioClips.Length) : 0;
+                clipFar = Random.Range(0, audioClips.Length);
             }
 
-            float volume = (minVolume < maxVolume) ? Random.Range(minVolume, maxVolume) : minVolume;
-            float pitch = (minPitch < maxPitch) ? Random.Range(minPitch, maxPitch) : minPitch;
+            float volume = Random.Range(minVolume, maxVolume),
+                pitch = Random.Range(minPitch, maxPitch);
 
             float loudness = volume;
             if (!volumeIsLoudness)
             {
-                loudness = (minLoudness < maxLoudness) ? Random.Range(minLoudness, maxLoudness) : minLoudness;
+                loudness = Random.Range(minLoudness, maxLoudness);
             }
 
             PlayNetworkedAudio(clip, clipFar, volume, pitch, loudness);

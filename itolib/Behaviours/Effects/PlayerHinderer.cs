@@ -16,6 +16,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Player Hinderer")]
         [Tooltip("")]
+        [Min(0.01f)]
         public float hinderedMultiplier = 2.5f;
 
         /// <summary>
@@ -222,6 +223,20 @@ namespace itolib.Behaviours.Effects
             }
 
             base.DetachPlayerLocal();
+        }
+
+        /// <summary>
+        ///     Drains a player... Ayo?
+        /// </summary>
+        /// <param name="drainAmount">Amount to drain from the attached player.</param>
+        public void DrainPlayer(float drainAmount)
+        {
+            if (attachedPlayer == null || attachedPlayer.isExhausted)
+            {
+                return;
+            }
+
+            attachedPlayer.sprintMeter = Mathf.Clamp(attachedPlayer.sprintMeter - drainAmount, 0.0f, 1.0f);
         }
 
         /// <summary>

@@ -35,6 +35,12 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public bool actionRequiresStamina;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Header("Events")]
         [Tooltip("")]
         public UnityEvent<PlayerControllerB> onMovementDetected = new();
@@ -67,7 +73,7 @@ namespace itolib.Behaviours.Detectors
                 // Disable if action is not found. 
                 if (playerAction == null)
                 {
-                    // TODO: Show warning.
+                    // TODO: Log warning.
                     enabled = false;
                 }
             }
@@ -96,6 +102,11 @@ namespace itolib.Behaviours.Detectors
                 }
 
                 if ((holdAction && !playerAction!.IsPressed()) || (!holdAction && !playerAction!.WasPerformedThisFrame()))
+                {
+                    return;
+                }
+
+                if (actionRequiresStamina && attachedPlayer.isExhausted)
                 {
                     return;
                 }

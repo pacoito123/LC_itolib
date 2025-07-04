@@ -1,7 +1,9 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using LethalLevelLoader;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Effects
 {
@@ -27,13 +29,15 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent<bool> onSunHidden = new();
+        [FormerlySerializedAs("onSunHidden")]
+        public UnityEvent<bool> onDungeonEntered = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<bool> onSunRevealed = new();
+        [FormerlySerializedAs("onSunRevealed")]
+        public UnityEvent<bool> onDungeonExited = new();
 
         /// <summary>
         ///     TODO.
@@ -42,7 +46,8 @@ namespace itolib.Behaviours.Effects
         {
             if (sunTexture == null)
             {
-                Transform? sunTransform = TimeOfDay.Instance != null ? TimeOfDay.Instance.sunAnimator.transform.Find("SunTexture") : null;
+                Transform? sunTransform = (TimeOfDay.Instance != null && TimeOfDay.Instance.sunAnimator != null)
+                    ? TimeOfDay.Instance.sunAnimator.transform.Find("SunTexture") : null;
                 FoundSun = sunTransform != null && sunTransform.TryGetComponent(out sunTexture);
             }
             else
@@ -78,7 +83,6 @@ namespace itolib.Behaviours.Effects
             if (StartOfRound.Instance != null)
             {
                 StartOfRound.Instance.playerTeleportedEvent.AddListener(ToggleSunOnTeleport);
-                StartOfRound.Instance.CameraSwitchEvent.AddListener(ToggleSunOnSpectatorSwitch);
             }
         }
 
@@ -98,8 +102,35 @@ namespace itolib.Behaviours.Effects
             if (StartOfRound.Instance != null)
             {
                 StartOfRound.Instance.playerTeleportedEvent.RemoveListener(ToggleSunOnTeleport);
-                StartOfRound.Instance.CameraSwitchEvent.RemoveListener(ToggleSunOnSpectatorSwitch);
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="reveal"></param>
+        public void HideSun(PlayerControllerB player, bool reveal = false)
+        {
+            if (!player.IsLocalClient() || !player.isPlayerControlled)
+            {
+                return;
+            }
+
+            if (FoundSun && sunTexture != null && sunTexture.enabled != reveal)
+            {
+                sunTexture.enabled = reveal;
+            }
+
+            if (!reveal)
+            {
+                onDungeonEntered.Invoke(FoundSun);
+            }
+            else
+            {
+                onDungeonExited.Invoke(FoundSun);
+            }
+
         }
 
         /// <summary>
@@ -108,21 +139,7 @@ namespace itolib.Behaviours.Effects
         /// <param name="pair"></param>
         public void HideSun((EntranceTeleport, PlayerControllerB) pair)
         {
-            ulong playerID = pair.Item2.actualClientId;
-            PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
-
-            if (playerID != localPlayer.actualClientId || (localPlayer.isPlayerDead && localPlayer.spectatedPlayerScript != null
-                && localPlayer.spectatedPlayerScript.actualClientId != playerID))
-            {
-                return;
-            }
-
-            if (FoundSun && sunTexture != null && sunTexture.enabled)
-            {
-                sunTexture.enabled = false;
-            }
-
-            onSunHidden.Invoke(FoundSun);
+            HideSun(pair.Item2, reveal: false);
         }
 
         /// <summary>
@@ -131,21 +148,7 @@ namespace itolib.Behaviours.Effects
         /// <param name="pair"></param>
         public void RevealSun((EntranceTeleport, PlayerControllerB) pair)
         {
-            ulong playerID = pair.Item2.actualClientId;
-            PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
-
-            if (playerID != localPlayer.actualClientId || (localPlayer.isPlayerDead && localPlayer.spectatedPlayerScript != null
-                && localPlayer.spectatedPlayerScript.actualClientId != playerID))
-            {
-                return;
-            }
-
-            if (FoundSun && sunTexture != null && !sunTexture.enabled)
-            {
-                sunTexture.enabled = true;
-            }
-
-            onSunRevealed.Invoke(FoundSun);
+            HideSun(pair.Item2, reveal: true);
         }
 
         /// <summary>
@@ -154,42 +157,7 @@ namespace itolib.Behaviours.Effects
         /// <param name="player"></param>
         public void ToggleSunOnTeleport(PlayerControllerB player)
         {
-            if (player.isPlayerDead || !player.isPlayerControlled)
-            {
-                return;
-            }
-
-            if (player.isInsideFactory)
-            {
-                HideSun(new(null!, player));
-            }
-            else
-            {
-                RevealSun(new(null!, player));
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public void ToggleSunOnSpectatorSwitch()
-        {
-            PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
-            if (!localPlayer.isPlayerDead || StartOfRound.Instance.overrideSpectateCamera
-                || localPlayer.spectatedPlayerScript == null || localPlayer.spectatedPlayerScript.isPlayerDead)
-            {
-                return;
-            }
-
-            PlayerControllerB spectatedPlayer = GameNetworkManager.Instance.localPlayerController;
-            if (spectatedPlayer.isInsideFactory)
-            {
-                HideSun(new(null!, spectatedPlayer));
-            }
-            else
-            {
-                RevealSun(new(null!, spectatedPlayer));
-            }
+            HideSun(player, reveal: !player.isInsideFactory);
         }
     }
 }

@@ -71,6 +71,12 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        public bool filterIsBlacklist = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         public bool filterExiting = false;
 
         /// <summary>
@@ -132,8 +138,45 @@ namespace itolib.Behaviours.Detectors
                 if (OverlapBuffer![i].TryGetComponent(out EnemyAICollisionDetect enemyCollision)
                     && enemyCollision.mainScript != null)
                 {
-                    FoundEnemiesEachClientRpc(enemyCollision.mainScript);
-                    enemiesFound++;
+                    if (enemyFilters.Count == 0)
+                    {
+                        FoundEnemiesEachClientRpc(enemyCollision.mainScript);
+                        enemiesFound++;
+                        continue;
+                    }
+
+                    bool blacklistedEnemy = false;
+                    for (int j = 0; j < enemyFilters.Count; j++)
+                    {
+                        EnemyFilter filter = enemyFilters[j];
+                        string search = !filter.objectSearch ? enemyCollision.mainScript.enemyType.enemyName : enemyCollision.mainScript.gameObject.name;
+
+                        if ((filter.fuzzySearch && search.Contains(filter.enemyName, StringComparison.OrdinalIgnoreCase))
+                            || search.CompareOrdinal(filter.enemyName))
+                        {
+                            if (filterIsBlacklist)
+                            {
+                                blacklistedEnemy = true;
+                                break;
+                            }
+
+                            if (++enemyAmounts[j] >= filter.amount)
+                            {
+                                onFilterAmountMet.Invoke(filter);
+                                enemyAmounts[j] = 0;
+                            }
+
+                            FoundEnemiesEachClientRpc(enemyCollision.mainScript);
+                            enemiesFound++;
+                            break;
+                        }
+                    }
+
+                    if (filterIsBlacklist && !blacklistedEnemy)
+                    {
+                        FoundEnemiesEachClientRpc(enemyCollision.mainScript);
+                        enemiesFound++;
+                    }
                 }
             }
 
@@ -156,10 +199,9 @@ namespace itolib.Behaviours.Detectors
             if (other.TryGetComponent(out EnemyAICollisionDetect enemyCollision)
                 && enemyCollision.mainScript != null)
             {
-                RegionEnteredClientRpc(enemyCollision.mainScript);
-
                 if (enemyFilters.Count == 0)
                 {
+                    RegionEnteredClientRpc(enemyCollision.mainScript);
                     return;
                 }
 
@@ -171,6 +213,11 @@ namespace itolib.Behaviours.Detectors
                     if ((filter.fuzzySearch && search.Contains(filter.enemyName, StringComparison.OrdinalIgnoreCase))
                         || search.CompareOrdinal(filter.enemyName))
                     {
+                        if (filterIsBlacklist)
+                        {
+                            return;
+                        }
+
                         if (++enemyAmounts[i] >= filter.amount)
                         {
                             onFilterAmountMet.Invoke(filter);
@@ -180,6 +227,11 @@ namespace itolib.Behaviours.Detectors
                         RegionEnteredClientRpc(enemyCollision.mainScript);
                         break;
                     }
+                }
+
+                if (filterIsBlacklist)
+                {
+                    RegionEnteredClientRpc(enemyCollision.mainScript);
                 }
             }
         }
@@ -200,7 +252,6 @@ namespace itolib.Behaviours.Detectors
                 if (enemyFilters.Count == 0 || !filterExiting)
                 {
                     RegionEnteredClientRpc(enemyCollision.mainScript, exit: true);
-
                     return;
                 }
 

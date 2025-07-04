@@ -15,7 +15,7 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     Seeded Random instance initialized with the current map seed.
         /// </summary>
-        public static System.Random SeededRandom { get; internal set; } = null!;
+        public static System.Random Random { get; internal set; } = null!;
 
         /// <summary>
         ///     TODO.
@@ -101,8 +101,8 @@ namespace itolib.Behaviours.Animations
                 return;
             }
 
-            SeededRandom ??= new(StartOfRound.Instance.randomMapSeed + 33);
-            InitialSpeed = minStartingSpeed != maxStartingSpeed ? ((float)SeededRandom.NextDouble() * (maxStartingSpeed - minStartingSpeed))
+            Random ??= new(StartOfRound.Instance.randomMapSeed + 33);
+            InitialSpeed = minStartingSpeed < maxStartingSpeed ? ((float)Random.NextDouble() * (maxStartingSpeed - minStartingSpeed))
                 + minStartingSpeed : minStartingSpeed;
 
             switch (activationTime)
@@ -175,7 +175,7 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         public override void OnDestroy()
         {
-            SeededRandom = null!;
+            Random = null!;
 
             switch (activationTime)
             {
@@ -272,7 +272,7 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         public void RerollSpeed()
         {
-            SyncSpeed(Random.Range(minStartingSpeed, maxStartingSpeed));
+            SyncSpeed(UnityEngine.Random.Range(minStartingSpeed, maxStartingSpeed));
         }
 
         /// <summary>
@@ -328,8 +328,8 @@ namespace itolib.Behaviours.Animations
             transitionTimer = 0.0f;
             targetReached = true;
 
-            animator.SetFloat(speedParameter, initialSpeed);
             animator.Play(initialState);
+            animator.SetFloat(speedParameter, initialSpeed);
         }
     }
 }

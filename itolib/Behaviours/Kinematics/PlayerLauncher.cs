@@ -4,6 +4,7 @@ using itolib.Enums;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Kinematics
 {
@@ -58,63 +59,83 @@ namespace itolib.Behaviours.Kinematics
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool landingDetaches = true;
+        [Min(0)]
+        public float launchSpeed;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool negateFallDamage = false;
+        [FormerlySerializedAs("landingDetaches")]
+        public bool detachOnLand = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool disableMovement = false;
+        public bool detachOnPeak;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool crouchingPreventsLaunch = false;
+        public bool negateFallDamage;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool disableMovement;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool crouchingPreventsLaunch;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool rocketJump = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Dropping")]
         [Tooltip("")]
-        public bool dropPlayerItemsAtStart = false;
+        public bool dropPlayerItemsAtStart;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool dropPlayerItemsAtEnd = false;
+        public bool dropPlayerItemsAtEnd;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool dropHeldItemAtStart = false;
+        public bool dropHeldItemAtStart;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool dropHeldItemAtEnd = false;
+        public bool dropHeldItemAtEnd;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Camera")]
         [Tooltip("")]
-        public bool lockCamera = false;
+        public bool lockCamera;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool rotateCamera = false;
+        public bool rotateCamera;
 
         /// <summary>
         ///     TODO.
@@ -126,7 +147,7 @@ namespace itolib.Behaviours.Kinematics
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public Vector3 targetAngle = Vector3.zero;
+        public Vector3 targetAngle;
 
         /// <summary>
         ///     TODO.
@@ -149,10 +170,17 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
+        [HideInInspector]
+        public Vector3 targetForce;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void Awake()
         {
             attachCondition = player => !player.isPlayerDead && !(crouchingPreventsLaunch && player.isCrouching);
-            detachCondition = player => player.isPlayerDead || (landingDetaches && player.thisController != null && player.thisController.isGrounded);
+            detachCondition = player => player.isPlayerDead || (detachOnLand && player.thisController != null && player.thisController.isGrounded)
+                || (detachOnPeak && fallTime * launchSpeed > 1.0f);
         }
 
         /// <summary>
@@ -163,6 +191,12 @@ namespace itolib.Behaviours.Kinematics
             if (attachedPlayer != null)
             {
                 fallTime += Time.deltaTime;
+
+                if (launchSpeed > 0.0f)
+                {
+                    // attachedPlayer.externalForceAutoFade = Vector3.Lerp(Vector3.zero, targetForce, fallTime * launchSpeed);
+                    attachedPlayer.externalForceAutoFade = Vector3.Lerp(attachedPlayer.externalForceAutoFade, targetForce, fallTime * launchSpeed);
+                }
 
                 if (rotateCamera)
                 {
@@ -209,19 +243,12 @@ namespace itolib.Behaviours.Kinematics
             base.AttachPlayerLocal(player);
 
             playerModelTransform = player.meshContainer.transform;
+            // player.externalForceAutoFade = Vector3.zero;
 
-            /* player.externalForceAutoFade = (forceToApply * (considerRotationFrom switch
-            {
-                RotationSource.Player => playerModelTransform.rotation * forceDirection,
-                RotationSource.Launcher => transform.rotation * forceDirection,
-                RotationSource.Absolute or _ => forceDirection
-            })) + additionalForce; */
-
-            player.externalForceAutoFade = Vector3.zero;
-
+            targetForce = Vector3.zero;
             foreach (LaunchParameters launch in forcesToApply)
             {
-                player.externalForceAutoFade += launch.forceToApply * (launch.considerRotationFrom switch
+                targetForce += launch.forceToApply * (launch.considerRotationFrom switch
                 {
                     RotationSource.Player => playerModelTransform.rotation * launch.forceDirection,
                     RotationSource.Launcher => transform.rotation * launch.forceDirection,
@@ -229,9 +256,25 @@ namespace itolib.Behaviours.Kinematics
                 });
             }
 
+            if (launchSpeed == 0.0f)
+            {
+                player.externalForceAutoFade += targetForce;
+            }
+
             if (negateFallDamage)
             {
                 player.ResetFallGravity();
+            }
+
+            if (!rocketJump && player.jumpCoroutine != null)
+            {
+                player.StopCoroutine(player.jumpCoroutine);
+                player.jumpCoroutine = null;
+
+                player.isJumping = false;
+                player.isFallingFromJump = false;
+
+                player.playerBodyAnimator.SetBool("Jumping", false);
             }
 
             if (!localPlayerAttached)

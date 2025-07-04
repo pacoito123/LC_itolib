@@ -202,8 +202,8 @@ namespace itolib.Behaviours.Events
                 return;
             }
 
-            int rollsToPerform = (minRolls < maxRolls) ? (seededRandom ? Random.Next(minRolls, maxRolls + 1)
-                : UnityEngine.Random.RandomRangeInt(minRolls, maxRolls + 1)) : minRolls;
+            int rollsToPerform = seededRandom ? Random.Next(minRolls, maxRolls + 1)
+                : UnityEngine.Random.RandomRangeInt(minRolls, maxRolls + 1);
 
             for (int i = 0; i < rollsToPerform; i++)
             {

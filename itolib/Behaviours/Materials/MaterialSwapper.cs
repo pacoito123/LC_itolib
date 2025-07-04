@@ -85,12 +85,6 @@ namespace itolib.Behaviours.Materials
         /// </summary>
         public void Start()
         {
-            // 
-            if (swapsPerActivation <= 0 || swapsPerActivation > materialSwaps.Count)
-            {
-                swapsPerActivation = materialSwaps.Count;
-            }
-
             if (activationTime is ActivationTime.Immediate)
             {
                 SwapMaterials();
@@ -130,6 +124,12 @@ namespace itolib.Behaviours.Materials
                     + "GameObject '{gameObject.name}'.");
 
                 return;
+            }
+
+            // 
+            if (swapsPerActivation <= 0 || swapsPerActivation > materialSwaps.Count)
+            {
+                swapsPerActivation = materialSwaps.Count;
             }
 
             for (int i = 0; i < swapsPerActivation; i++, swapIndex++)
