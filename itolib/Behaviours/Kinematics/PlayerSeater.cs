@@ -20,7 +20,7 @@ namespace itolib.Behaviours.Kinematics
         [Header("Player Seater")]
         [Tooltip("Key required to be pressed for the player to unsit. See 'UnityEngine.InputSystem.Key' for number values. Leaving it at '-1' allows "
             + "players to remain attached until being detached through other means (e.g. 'detachTimer').")]
-        public string actionToUnseat = "";
+        public string actionToUnseat = "Jump";
 
         /// <summary>
         ///     TODO.
@@ -63,13 +63,12 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public Transform playerCamera = null!;
+        private Transform playerCamera = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        public override void Awake()
         {
             attachCondition = player => !player.isPlayerDead && !player.inAnimationWithEnemy && !player.inSpecialInteractAnimation;
             detachCondition = player => player.isPlayerDead || (playerAction != null && playerAction.IsPressed());
@@ -78,13 +77,15 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Start()
+        public override void Start()
         {
             if (actionToUnseat.Length > 0)
             {
                 // Get action (key) that must be pressed, if one is set.
                 playerAction = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToUnseat);
             }
+
+            base.Start();
         }
 
         /// <summary>

@@ -29,7 +29,6 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        [FormerlySerializedAs("onSunHidden")]
         public UnityEvent<bool> onDungeonEntered = new();
 
         /// <summary>

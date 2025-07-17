@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using GameNetcodeStuff;
 using itolib.Extensions;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -17,6 +17,14 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         [Header("Player Sensor")]
         [Tooltip("")]
+        public bool onlyAffectLocalPlayer;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(5)]
+        [Header("Events")]
+        [Tooltip("")]
         public UnityEvent<PlayerControllerB> onPlayersAliveEach = new();
 
         /// <summary>
@@ -30,7 +38,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void Reset()
         {
-            maxObjects = 4;
+            maxObjects = 12;
             layerMask = (1 << LayerMask.NameToLayer("Player")) | (1 << LayerMask.NameToLayer("PlayerRagdoll"));
         }
 
@@ -39,12 +47,12 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void CheckObjectsInRegion()
         {
-            base.CheckObjectsInRegion(); // TODO: Do AABB checks on all players instead of overlap stuff.
-
-            if (!IsHost)
+            if (!IsHost) // TODO: Overlapping players could be desynced since it's host only...
             {
                 return;
             }
+
+            base.CheckObjectsInRegion(); // TODO: Do AABB checks on all players instead of overlap stuff.
 
             List<ulong> playersFound = new(StartOfRound.Instance.allPlayerScripts.Length);
             int playersFoundAlive = 0;
@@ -90,7 +98,10 @@ namespace itolib.Behaviours.Detectors
             {
                 onRegionEntered.Invoke(player);
 
-                RegionEnteredServerRpc(player);
+                if (!onlyAffectLocalPlayer && IsSpawned)
+                {
+                    RegionEnteredServerRpc(player);
+                }
             }
         }
 
@@ -104,7 +115,10 @@ namespace itolib.Behaviours.Detectors
             {
                 onRegionExited.Invoke(player);
 
-                RegionEnteredServerRpc(player, exit: true);
+                if (!onlyAffectLocalPlayer && IsSpawned)
+                {
+                    RegionEnteredServerRpc(player, exit: true);
+                }
             }
         }
 

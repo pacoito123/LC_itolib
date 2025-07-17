@@ -2,7 +2,6 @@ using DunGen;
 using itolib.Enums;
 using LethalLevelLoader;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -17,32 +16,44 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     TODO.
         /// </summary>
-        public string nameToSearch;
+        [Header("Conditional Override")]
+        [Tooltip("")]
+        public string nameToSearch = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public List<string> alsoAppliesTo;
+        [Tooltip("")]
+        public string[]? alsoAppliesTo = null;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public List<GameObject?> objectsToEnable;
+        [Tooltip("")]
+        public GameObject?[]? objectsToEnable = null;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public List<GameObject?> objectsToDisable;
+        [Tooltip("")]
+        public GameObject?[]? objectsToDisable = null;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent onConditionalApply;
+        [Tooltip("")]
+        public UnityEvent onConditionalApply = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent onConditionalUndo;
+        [Tooltip("")]
+        public UnityEvent onConditionalUndo = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public ConditionalOverride() { }
 
         /// <summary>
         ///     TODO.
@@ -50,20 +61,31 @@ namespace itolib.Behaviours.Conditionals
         /// <param name="undo"></param>
         public readonly void Apply(bool undo = false)
         {
-            objectsToEnable?.ForEach(weatherEffect =>
+            if (objectsToEnable != null)
             {
-                if (weatherEffect != null)
+                for (int i = 0; i < objectsToEnable.Length; i++)
                 {
-                    weatherEffect.SetActive(!undo);
+                    GameObject? objectToEnable = objectsToEnable[i];
+
+                    if (objectToEnable != null)
+                    {
+                        objectToEnable.SetActive(!undo);
+                    }
                 }
-            });
-            objectsToDisable?.ForEach(weatherEffect =>
+            }
+
+            if (objectsToDisable != null)
             {
-                if (weatherEffect != null)
+                for (int i = 0; i < objectsToDisable.Length; i++)
                 {
-                    weatherEffect.SetActive(undo);
+                    GameObject? objectToDisable = objectsToDisable[i];
+
+                    if (objectToDisable != null)
+                    {
+                        objectToDisable.SetActive(undo);
+                    }
                 }
-            });
+            }
 
             if (!undo)
             {
@@ -87,13 +109,13 @@ namespace itolib.Behaviours.Conditionals
         /// </summary>
         [Header("Base Conditional")]
         [Tooltip("")]
-        public List<ConditionalOverride> conditionalOverrides = [];
+        [SerializeField] protected ConditionalOverride[]? conditionalOverrides;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public ActivationTime activationTime = ActivationTime.StartOfRound;
+        [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
 
         /// <summary>
         ///     TODO.
@@ -154,7 +176,7 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     TODO.
         /// </summary>
-        public virtual void ApplyConditional()
+        public void ApplyConditional()
         {
             ApplyConditional(undo: false);
         }
@@ -169,7 +191,7 @@ namespace itolib.Behaviours.Conditionals
         ///     TODO.
         /// </summary>
         /// <param name="objectToCheck"></param>
-        public virtual void ApplyConditional(T objectToCheck)
+        public void ApplyConditional(T objectToCheck)
         {
             ApplyConditional(objectToCheck, undo: false);
         }

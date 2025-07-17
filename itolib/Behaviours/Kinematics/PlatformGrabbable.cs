@@ -146,27 +146,53 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        public override void Awake()
         {
+            attachCondition = player => !player.isPlayerDead && (allowTwoHanded || !player.twoHanded)
+                && (playerAction == null || playerAction.IsPressed());
+            detachCondition = player => player.isPlayerDead || (detachOnEnemyCollision && player.inAnimationWithEnemy)
+                || (detachOnSpecialAnimation && player.inSpecialInteractAnimation) || (playerAction != null && !playerAction.IsPressed());
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void Start()
+        {
+            // Cache platform transform.
+            platformTransform = transform;
+
             if (platformAnimator != null)
             {
                 platformAnimator.enabled = true;
                 platformAnimator.updateMode = AnimatorUpdateMode.AnimatePhysics; // Works much better for moving the player.
             }
 
-            // Cache platform transform.
-            platformTransform = transform;
-
-            attachCondition = player => !player.isPlayerDead && (allowTwoHanded || !player.twoHanded)
-                && (playerAction == null || playerAction.IsPressed());
-            detachCondition = player => player.isPlayerDead || (detachOnEnemyCollision && player.inAnimationWithEnemy)
-                || (detachOnSpecialAnimation && player.inSpecialInteractAnimation) || (playerAction != null && !playerAction.IsPressed());
-
             if (actionToHold.Length > 0)
             {
                 // Get action (key) that must be held, if one is set.
                 playerAction = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToHold);
             }
+
+            base.Start();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void Update()
+        {
+            // Check if a player is attached to the platform.
+            if (attachedPlayer != null)
+            {
+                // Move attached player to the platform's position, with the configured offset applied.
+                attachedPlayerTransform.position = platformTransform.position + playerOffset;
+
+                // Reset attached player's fall time to avoid instant death upon colliding with another (solid) object.
+                attachedPlayer.ResetFallGravity();
+            }
+
+            base.Update();
         }
 
         /// <summary>
@@ -229,7 +255,7 @@ namespace itolib.Behaviours.Kinematics
             }
 
             // Check if the platform has collided with a wall while the local player is attached.
-            if (detachOnWallCollision && localPlayerAttached && (collider.gameObject.layer == LayerMask.NameToLayer("Room")
+            if (detachOnWallCollision && localPlayerAttached && (collider.gameObject.layer == LayerMask.NameToLayer("Room") // TODO: LayerMask field instead.
                 || collider.gameObject.layer == LayerMask.NameToLayer("MiscLevelGeometry")))
             {
                 // Detach player from the platform if it collides with a wall.
@@ -245,24 +271,6 @@ namespace itolib.Behaviours.Kinematics
             }
 
             base.OnTriggerEnter(collider);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public override void Update()
-        {
-            // Check if a player is attached to the platform.
-            if (attachedPlayer != null)
-            {
-                // Move attached player to the platform's position, with the configured offset applied.
-                attachedPlayerTransform.position = platformTransform.position + playerOffset;
-
-                // Reset attached player's fall time to avoid instant death upon colliding with another (solid) object.
-                attachedPlayer.ResetFallGravity();
-            }
-
-            base.Update();
         }
 
         /// <summary>

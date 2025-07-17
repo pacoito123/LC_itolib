@@ -38,21 +38,27 @@ namespace itolib.Behaviours.Interactables
 
         private void Awake()
         {
+            if (twoHandedItemAllowed)
+            {
+                // Disable special character animation to allow climbing ladder with two-handed items.
+                specialCharacterAnimation = false;
+            }
+
             // Obtain and save normal player climbing speed.
             normalClimbSpeed = GameNetworkManager.Instance.localPlayerController.climbSpeed;
 
             // Add call to set player climbing speed to the ladder's specified value, upon attaching.
             onInteractEarly.AddListener(_ => GameNetworkManager.Instance.localPlayerController.climbSpeed = climbSpeed);
 
+            // Add calls to reset player climbing speed upon getting off the ladder.
+            onInteract.AddListener(resetClimbSpeed);
+            onCancelAnimation.AddListener(resetClimbSpeed);
+
             void resetClimbSpeed(PlayerControllerB _)
             {
                 // Reset player climbing speed back to previous amount.
                 GameNetworkManager.Instance.localPlayerController.climbSpeed = normalClimbSpeed;
             }
-
-            // Add calls to reset player climbing speed upon getting off the ladder.
-            onInteract.AddListener(resetClimbSpeed);
-            onCancelAnimation.AddListener(resetClimbSpeed);
         }
     }
 }

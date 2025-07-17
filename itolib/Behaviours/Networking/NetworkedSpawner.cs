@@ -22,44 +22,44 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         [Header("Network Spawner")]
         [Tooltip("")]
-        public List<Transform?>? spawnLocations;
+        [SerializeField] protected List<Transform?>? spawnLocations;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool exhaustiveLocations;
+        [SerializeField] protected bool exhaustiveLocations;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public List<BoxCollider?>? spawnAreas = [];
+        [SerializeField] protected List<BoxCollider?>? spawnAreas;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool exhaustiveAreas;
+        [SerializeField] protected bool exhaustiveAreas;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Space(5.0f)]
         [Tooltip("")]
-        public ActivationTime activationTime = ActivationTime.DungeonComplete;
+        [SerializeField] protected ActivationTime activationTime = ActivationTime.DungeonComplete;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool destroySpawner = false;
+        [SerializeField] protected bool destroySpawner = false;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool destroyWithScene = true;
+        [SerializeField] private bool destroyWithScene = true;
 
         /// <summary>
         ///     TODO.

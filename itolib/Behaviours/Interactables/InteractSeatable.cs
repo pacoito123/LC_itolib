@@ -100,6 +100,14 @@ namespace itolib.Behaviours.Interactables
                     SetPlayerOnSeatServerRpc(player);
                 }
             });
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public new void Start()
+        {
+            base.Start();
 
             playerAction = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToExit);
         }

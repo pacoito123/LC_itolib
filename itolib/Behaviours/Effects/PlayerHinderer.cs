@@ -16,6 +16,12 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Player Hinderer")]
         [Tooltip("")]
+        public Collider? hindererCollider;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         [Min(0.01f)]
         public float hinderedMultiplier = 2.5f;
 
@@ -30,14 +36,14 @@ namespace itolib.Behaviours.Effects
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool requireStamina = false;
+        public bool requireStamina;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Quicksand")]
         [Tooltip("")]
-        public bool sinkPlayer = false;
+        public bool sinkPlayer;
 
         /// <summary>
         ///     TODO.
@@ -56,13 +62,13 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Water")]
         [Tooltip("")]
-        public bool drownPlayer = false;
+        public bool drownPlayer;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool waterOverlay = false;
+        public bool waterOverlay;
 
         /// <summary>
         ///     TODO.
@@ -76,12 +82,6 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Tooltip("")]
         public UnityEvent<PlayerControllerB> onHinderStop = new();
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [HideInInspector]
-        public Collider? hindererCollider;
 
         /// <summary>
         ///     TODO.
@@ -107,17 +107,20 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        public override void Awake()
         {
             attachCondition = player => !player.isPlayerDead;
             detachCondition = player => player.isPlayerDead;
+        }
 
-            if (!TryGetComponent(out hindererCollider))
-            {
-                // Plugin.StaticLogger.LogWarning(""); // TODO: Warn collider is missing.
-            }
-
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void Start()
+        {
             defaultPlayerSinkingCurve = StartOfRound.Instance != null ? StartOfRound.Instance.playerSinkingCurve : null;
+
+            base.Start();
         }
 
         /// <summary>

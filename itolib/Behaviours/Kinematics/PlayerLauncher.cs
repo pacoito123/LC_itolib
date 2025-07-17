@@ -2,7 +2,6 @@ using GameNetcodeStuff;
 using itolib.Behaviours.Effects;
 using itolib.Enums;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -18,29 +17,24 @@ namespace itolib.Behaviours.Kinematics
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public int forceToApply;
+        public int forceToApply = 0;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public Vector3 forceDirection;
+        public Vector3 forceDirection = Vector3.zero;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public RotationSource considerRotationFrom;
+        public RotationSource considerRotationFrom = RotationSource.Absolute;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public LaunchParameters()
-        {
-            forceToApply = 0;
-            forceDirection = Vector3.zero;
-            considerRotationFrom = RotationSource.Absolute;
-        }
+        public LaunchParameters() { }
     }
 
     /// <summary>
@@ -53,7 +47,7 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         [Header("Player Launcher")]
         [Tooltip("")]
-        public List<LaunchParameters> forcesToApply = [];
+        [SerializeField] private LaunchParameters[]? forcesToApply;
 
         /// <summary>
         ///     TODO.
@@ -158,25 +152,22 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public Transform playerModelTransform = null!;
+        private Transform playerModelTransform = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public float fallTime = 0.0f;
+        private float fallTime;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public Vector3 targetForce;
+        private Vector3 targetForce;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        public override void Awake()
         {
             attachCondition = player => !player.isPlayerDead && !(crouchingPreventsLaunch && player.isCrouching);
             detachCondition = player => player.isPlayerDead || (detachOnLand && player.thisController != null && player.thisController.isGrounded)
@@ -246,8 +237,11 @@ namespace itolib.Behaviours.Kinematics
             // player.externalForceAutoFade = Vector3.zero;
 
             targetForce = Vector3.zero;
-            foreach (LaunchParameters launch in forcesToApply)
+
+            for (int i = 0; i < forcesToApply?.Length; i++)
             {
+                LaunchParameters launch = forcesToApply[i];
+
                 targetForce += launch.forceToApply * (launch.considerRotationFrom switch
                 {
                     RotationSource.Player => playerModelTransform.rotation * launch.forceDirection,

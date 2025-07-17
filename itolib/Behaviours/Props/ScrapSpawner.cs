@@ -19,27 +19,38 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public Vector3 position;
+        [Header("Synced Item")]
+        [Tooltip("")]
+        public Vector3 position = Vector3.zero;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public Quaternion rotation;
+        [Tooltip("")]
+        public Quaternion rotation = Quaternion.identity;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public int meshVariant;
+        [Tooltip("")]
+        public int scrapValue = 0;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public int materialVariant;
+        [Tooltip("")]
+        public int meshVariant = -1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public int scrapValue;
+        [Tooltip("")]
+        public int materialVariant = -1;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public SyncedItem() { }
 
         /// <summary>
         ///     TODO.
@@ -81,40 +92,40 @@ namespace itolib.Behaviours.Props
         /// </summary>
         [Header("Item Spawner")]
         [Tooltip("")]
-        public List<Item?> itemsToSpawn = [];
+        [SerializeField] private Item[]? itemsToSpawn;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public List<ContentTag?> tagsToSpawn = [];
+        [SerializeField] private ContentTag[]? tagsToSpawn;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(0)]
-        public bool requireAllTags;
+        [SerializeField] private bool requireAllTags;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(-1)]
-        public int minItems;
+        [SerializeField] private int minItems;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(-1)]
-        public int maxItems;
+        [SerializeField] private int maxItems;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool exhaustivePool;
+        [SerializeField] private bool exhaustivePool;
 
         /// <summary>
         ///     TODO.
@@ -123,32 +134,32 @@ namespace itolib.Behaviours.Props
         [Header("Item Properties")]
         [Tooltip("")]
         [Min(-1)]
-        public int overrideMinValue = -1;
+        [SerializeField] private int overrideMinValue = -1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(-1)]
-        public int overrideMaxValue = -1;
+        [SerializeField] private int overrideMaxValue = -1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool applyScrapMultiplier = true;
+        [SerializeField] private bool applyScrapMultiplier = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool allowMeshVariants = true;
+        [SerializeField] private bool allowMeshVariants = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool allowMaterialVariants = true;
+        [SerializeField] private bool allowMaterialVariants = true;
 
         /// <summary>
         ///     TODO.
@@ -156,19 +167,19 @@ namespace itolib.Behaviours.Props
         [Space(5.0f)]
         [Header("Position & Rotation")]
         [Tooltip("")]
-        public bool fallToGround = true;
+        [SerializeField] private bool fallToGround = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool randomizePosition;
+        [SerializeField] private bool randomizePosition;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool applyRestingRotation;
+        [SerializeField] private bool applyRestingRotation;
 
         /// <summary>
         ///     TODO.
@@ -176,19 +187,19 @@ namespace itolib.Behaviours.Props
         [Space(5.0f)]
         [Header("Other")]
         [Tooltip("")]
-        public bool skipInactive = true;
+        [SerializeField] private bool skipInactive = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool seededRandom = true;
+        [SerializeField] private bool seededRandom = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool respectSingleItemDay;
+        [SerializeField] private bool respectSingleItemDay;
 
         /// <summary>
         ///     TODO.
@@ -366,11 +377,16 @@ namespace itolib.Behaviours.Props
         {
             for (int i = 0; i < PatchedContent.ExtendedItems.Count; i++)
             {
+                if (tagsToSpawn == null || tagsToSpawn.Length == 0)
+                {
+                    break;
+                }
+
                 ExtendedItem extendedItem = PatchedContent.ExtendedItems[i];
 
                 int tagsFound = 0;
 
-                for (int j = 0; j < tagsToSpawn.Count; j++)
+                for (int j = 0; j < tagsToSpawn.Length; j++)
                 {
                     ContentTag? tagToSpawn = tagsToSpawn[j];
 
@@ -390,13 +406,13 @@ namespace itolib.Behaviours.Props
                     }
                 }
 
-                if ((requireAllTags && tagsFound == tagsToSpawn.Count) || (!requireAllTags && tagsFound > 0))
+                if ((requireAllTags && tagsFound == tagsToSpawn.Length) || (!requireAllTags && tagsFound > 0))
                 {
                     ItemPool.Add(extendedItem.Item);
                 }
             }
 
-            for (int i = 0; i < itemsToSpawn.Count; i++)
+            for (int i = 0; i < itemsToSpawn?.Length; i++)
             {
                 Item? itemToSpawn = itemsToSpawn[i];
 

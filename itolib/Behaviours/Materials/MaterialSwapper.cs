@@ -1,7 +1,6 @@
 using DunGen;
 using itolib.Enums;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace itolib.Behaviours.Materials
@@ -22,13 +21,13 @@ namespace itolib.Behaviours.Materials
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public Material? replacementMaterial;
+        public Material? replacementMaterial = null;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public List<GameObject?> affectedObjects;
+        public GameObject[]? affectedObjects;
 
         /// <summary>
         ///     TODO.
@@ -39,10 +38,7 @@ namespace itolib.Behaviours.Materials
         /// <summary>
         ///     TODO.
         /// </summary>
-        public MaterialSwap()
-        {
-            affectedObjects = [];
-        }
+        public MaterialSwap() { }
     }
 
     /// <summary>
@@ -55,7 +51,7 @@ namespace itolib.Behaviours.Materials
         /// </summary>
         [Header("Material Swapper")]
         [Tooltip("List of material swaps to perform.")]
-        public List<MaterialSwap> materialSwaps = [];
+        [SerializeField] private MaterialSwap[]? materialSwaps;
 
         /// <summary>
         ///     The number of swaps done at a time per activation. If set to a value of <b>1</b> (for example) it'll sequentially go down the
@@ -64,7 +60,7 @@ namespace itolib.Behaviours.Materials
         [Tooltip("The number of swaps done at a time per activation. If set to a value of 1 (for example) it'll sequentially go down the "
             + "list of swaps and perform them one by one, each time it's activated. If left at the default value of 0 it'll perform all swaps at once.")]
         [Min(0)]
-        public int swapsPerActivation;
+        [SerializeField] private int swapsPerActivation;
 
         /// <summary>
         ///     Activation time for the automatic material swap.
@@ -72,13 +68,12 @@ namespace itolib.Behaviours.Materials
         /// <remarks><b>NOTE:</b> Can be set to <c>Manual</c> to disable the automatic swap, but is not required for triggering manual swaps afterwards.</remarks>
         [Tooltip("Activation time for the automatic material swap. NOTE: Can be set to Manual to disable the automatic swap, but is not required for "
             + "triggering manual swaps afterwards.")]
-        public ActivationTime activationTime = ActivationTime.DungeonComplete;
+        [SerializeField] private ActivationTime activationTime = ActivationTime.DungeonComplete;
 
         /// <summary>
         ///     Current 
         /// </summary>
-        [HideInInspector]
-        public int swapIndex;
+        private int swapIndex;
 
         /// <summary>
         ///     TODO.
@@ -118,7 +113,7 @@ namespace itolib.Behaviours.Materials
         /// </summary>
         public void SwapMaterials()
         {
-            if (materialSwaps.Count == 0)
+            if (materialSwaps == null || materialSwaps.Length == 0)
             {
                 Plugin.StaticLogger.LogWarning($"Could not perform material swapping, as there are no swaps defined for MaterialSwapper component in "
                     + "GameObject '{gameObject.name}'.");
@@ -127,14 +122,14 @@ namespace itolib.Behaviours.Materials
             }
 
             // 
-            if (swapsPerActivation <= 0 || swapsPerActivation > materialSwaps.Count)
+            if (swapsPerActivation <= 0 || swapsPerActivation > materialSwaps.Length)
             {
-                swapsPerActivation = materialSwaps.Count;
+                swapsPerActivation = materialSwaps.Length;
             }
 
             for (int i = 0; i < swapsPerActivation; i++, swapIndex++)
             {
-                if (swapIndex >= materialSwaps.Count)
+                if (swapIndex >= materialSwaps.Length)
                 {
                     swapIndex = 0;
                 }
@@ -146,8 +141,10 @@ namespace itolib.Behaviours.Materials
                     continue;
                 }
 
-                foreach (GameObject? affectedObject in swap.affectedObjects)
+                for (int j = 0; j < swap.affectedObjects?.Length; j++)
                 {
+                    GameObject? affectedObject = swap.affectedObjects[j];
+
                     if (affectedObject == null)
                     {
                         continue;

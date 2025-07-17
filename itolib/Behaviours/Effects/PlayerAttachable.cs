@@ -130,10 +130,13 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnNetworkSpawn()
-        {
-            base.OnNetworkSpawn();
+        public abstract void Awake();
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public virtual void Start()
+        {
             // Start disabled.
             enabled = false;
         }
@@ -219,7 +222,14 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public virtual void Update()
         {
-            if (localPlayerAttached && attachedPlayer != null && detachCondition(attachedPlayer))
+            if (attachedPlayer == null)
+            {
+                enabled = false;
+
+                return;
+            }
+
+            if (localPlayerAttached && detachCondition(attachedPlayer))
             {
                 // Detach player locally, if the detach condition is met.
                 DetachPlayerLocal();

@@ -18,22 +18,27 @@ namespace itolib.ScriptableObjects
         /// <summary>
         ///     TODO.
         /// </summary>
-        [field: SerializeField] public string Section { get; set; }
+        [field: SerializeField] public string Section { get; set; } = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [field: SerializeField] public string Key { get; set; }
+        [field: SerializeField] public string Key { get; set; } = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [field: SerializeField] public bool DefaultValue { get; set; }
+        [field: SerializeField] public string Description { get; set; } = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [field: SerializeField] public string Description { get; set; }
+        [field: SerializeField] public bool DefaultValue { get; set; } = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public BoolEntry() { }
     }
 
     /// <summary>

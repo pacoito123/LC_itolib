@@ -16,33 +16,33 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Header("Item Audible")]
         [Tooltip("")]
-        public ItemGrabbable item = null!;
+        [SerializeField] private ItemGrabbable item = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Audio Clips")]
         [Tooltip("")]
-        public AudioSource? itemSource;
+        [SerializeField] private AudioSource? itemSource;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public AudioSource? itemSourceFar;
+        [SerializeField] private AudioSource? itemSourceFar;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Space(3.0f)]
         [Tooltip("")]
-        public AudioClip[]? audioClips;
+        [SerializeField] private AudioClip[]? audioClips;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public AudioClip[]? audioClipsFar;
+        [SerializeField] private AudioClip[]? audioClipsFar;
 
         /// <summary>
         ///     TODO.
@@ -51,74 +51,74 @@ namespace itolib.Behaviours.Grabbables
         [Header("Audio Properties")]
         [Tooltip("")]
         [Min(0.0f)]
-        public float audibleRange = 65.0f;
+        [SerializeField] private float audibleRange = 65.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Range(0.0f, 1.0f)]
-        public float minVolume = 1.0f;
+        [SerializeField] private float minVolume = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Range(0.0f, 1.0f)]
-        public float maxVolume = 1.0f;
+        [SerializeField] private float maxVolume = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Range(-3.0f, 3.0f)]
-        public float minPitch = 1.0f;
+        [SerializeField] private float minPitch = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Range(-3.0f, 3.0f)]
-        public float maxPitch = 1.0f;
+        [SerializeField] private float maxPitch = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Range(0.0f, 1.0f)]
-        public float minLoudness = 1.0f;
+        [SerializeField] private float minLoudness = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Range(0.0f, 1.0f)]
-        public float maxLoudness = 1.0f;
+        [SerializeField] private float maxLoudness = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Other")]
         [Tooltip("")]
-        public bool volumeIsLoudness = false;
+        [SerializeField] private bool volumeIsLoudness = false;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool transmitOverWalkie = true;
+        [SerializeField] private bool transmitOverWalkie = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool triggerFromElsewhere = false;
+        [SerializeField] private bool triggerFromElsewhere = false;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool requireHolding = true;
+        [SerializeField] private bool requireHolding = true;
 
         /// <summary>
         ///     TODO.

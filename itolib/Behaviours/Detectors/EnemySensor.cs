@@ -1,9 +1,9 @@
 using itolib.Extensions;
 using System;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Detectors
 {
@@ -16,41 +16,80 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Header("Enemy Filter")]
         [Tooltip("")]
-        public string enemyName;
+        public string enemyName = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public int amount;
+        public string[]? alsoAppliesTo = null;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool fuzzySearch;
+        [Min(1)]
+        [FormerlySerializedAs("amount")]
+        public int amountRequired = 1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool objectSearch;
+        public UnityEvent<int> onReachedAmount = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public EnemyFilter()
-        {
-            enemyName = "";
-            amount = 1;
-            fuzzySearch = false;
-            objectSearch = false;
-        }
+        [Tooltip("")]
+        public UnityEvent<int> onBelowAmount = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public UnityEvent<int> onAboveAmount = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool fuzzySearch = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool objectSearch = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool triggerOnce = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool subtractOnExit = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool isBlacklist = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public EnemyFilter() { }
     }
 
     /// <summary>
-    ///     Represents a <c>DetectRegion</c> specifically for <c>EnemyAI</c> objects, with some additional stuff.
+    ///     Represents a <c>DetectRegion</c> specifically for <c>EnemyAI</c> objects, with some additional stuff for enemy filtering.
     /// </summary>
     public class EnemySensor : DetectRegion<EnemyAI>
     {
@@ -59,37 +98,12 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         [Header("Enemy Sensor")]
         [Tooltip("")]
-        public List<EnemyFilter> enemyFilters = [];
+        [SerializeField] private EnemyFilter[]? enemyFilters;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        public UnityEvent<EnemyFilter> onFilterAmountMet = new();
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public bool filterIsBlacklist = false;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public bool filterExiting = false;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public bool subtractOnExit = false;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [HideInInspector]
-        public int[] enemyAmounts = null!;
+        private int[] enemyAmounts = null!;
 
         /// <summary>
         ///     TODO.
@@ -114,7 +128,10 @@ namespace itolib.Behaviours.Detectors
                 return;
             }
 
-            enemyAmounts = new int[enemyFilters.Count];
+            if (enemyFilters != null && enemyFilters.Length > 0)
+            {
+                enemyAmounts = new int[enemyFilters.Length];
+            }
 
             base.Start();
         }
@@ -138,44 +155,29 @@ namespace itolib.Behaviours.Detectors
                 if (OverlapBuffer![i].TryGetComponent(out EnemyAICollisionDetect enemyCollision)
                     && enemyCollision.mainScript != null)
                 {
-                    if (enemyFilters.Count == 0)
+                    if (enemyFilters == null || enemyFilters.Length == 0)
                     {
                         FoundEnemiesEachClientRpc(enemyCollision.mainScript);
                         enemiesFound++;
+
                         continue;
                     }
 
-                    bool blacklistedEnemy = false;
-                    for (int j = 0; j < enemyFilters.Count; j++)
+                    for (int j = 0; j < enemyFilters.Length; j++)
                     {
                         EnemyFilter filter = enemyFilters[j];
                         string search = !filter.objectSearch ? enemyCollision.mainScript.enemyType.enemyName : enemyCollision.mainScript.gameObject.name;
 
-                        if ((filter.fuzzySearch && search.Contains(filter.enemyName, StringComparison.OrdinalIgnoreCase))
-                            || search.CompareOrdinal(filter.enemyName))
+                        if (CheckFilter(filter, search, ref enemyAmounts[j], out bool matchedBlacklist))
                         {
-                            if (filterIsBlacklist)
-                            {
-                                blacklistedEnemy = true;
-                                break;
-                            }
-
-                            if (++enemyAmounts[j] >= filter.amount)
-                            {
-                                onFilterAmountMet.Invoke(filter);
-                                enemyAmounts[j] = 0;
-                            }
-
                             FoundEnemiesEachClientRpc(enemyCollision.mainScript);
                             enemiesFound++;
+                        }
+
+                        if (matchedBlacklist)
+                        {
                             break;
                         }
-                    }
-
-                    if (filterIsBlacklist && !blacklistedEnemy)
-                    {
-                        FoundEnemiesEachClientRpc(enemyCollision.mainScript);
-                        enemiesFound++;
                     }
                 }
             }
@@ -199,39 +201,29 @@ namespace itolib.Behaviours.Detectors
             if (other.TryGetComponent(out EnemyAICollisionDetect enemyCollision)
                 && enemyCollision.mainScript != null)
             {
-                if (enemyFilters.Count == 0)
+                if (enemyFilters == null || enemyFilters.Length == 0)
                 {
                     RegionEnteredClientRpc(enemyCollision.mainScript);
+
                     return;
                 }
 
-                for (int i = 0; i < enemyFilters.Count; i++)
+                for (int i = 0; i < enemyFilters.Length; i++)
                 {
                     EnemyFilter filter = enemyFilters[i];
                     string search = !filter.objectSearch ? enemyCollision.mainScript.enemyType.enemyName : enemyCollision.mainScript.gameObject.name;
 
-                    if ((filter.fuzzySearch && search.Contains(filter.enemyName, StringComparison.OrdinalIgnoreCase))
-                        || search.CompareOrdinal(filter.enemyName))
+                    if (CheckFilter(filter, search, ref enemyAmounts[i], out bool matchedBlacklist))
                     {
-                        if (filterIsBlacklist)
-                        {
-                            return;
-                        }
-
-                        if (++enemyAmounts[i] >= filter.amount)
-                        {
-                            onFilterAmountMet.Invoke(filter);
-                            enemyAmounts[i] = 0;
-                        }
-
                         RegionEnteredClientRpc(enemyCollision.mainScript);
+
                         break;
                     }
-                }
 
-                if (filterIsBlacklist)
-                {
-                    RegionEnteredClientRpc(enemyCollision.mainScript);
+                    if (matchedBlacklist)
+                    {
+                        break;
+                    }
                 }
             }
         }
@@ -249,25 +241,27 @@ namespace itolib.Behaviours.Detectors
             if (other.TryGetComponent(out EnemyAICollisionDetect enemyCollision)
                 && enemyCollision.mainScript != null)
             {
-                if (enemyFilters.Count == 0 || !filterExiting)
+                if (enemyFilters == null || enemyFilters.Length == 0)
                 {
                     RegionEnteredClientRpc(enemyCollision.mainScript, exit: true);
+
                     return;
                 }
 
-                for (int i = 0; i < enemyFilters.Count; i++)
+                for (int i = 0; i < enemyFilters.Length; i++)
                 {
                     EnemyFilter filter = enemyFilters[i];
-                    string search = filter.objectSearch ? enemyCollision.mainScript.enemyType.enemyName : enemyCollision.mainScript.gameObject.name;
+                    string search = !filter.objectSearch ? enemyCollision.mainScript.enemyType.enemyName : enemyCollision.mainScript.gameObject.name;
 
-                    if ((filter.fuzzySearch && search.Contains(filter.enemyName)) || search.CompareOrdinal(filter.enemyName))
+                    if (CheckFilter(filter, search, ref enemyAmounts[i], out bool matchedBlacklist, subtract: filter.subtractOnExit))
                     {
-                        if (subtractOnExit)
-                        {
-                            enemyAmounts[i]--;
-                        }
-
                         RegionEnteredClientRpc(enemyCollision.mainScript, exit: true);
+
+                        break;
+                    }
+
+                    if (matchedBlacklist)
+                    {
                         break;
                     }
                 }
@@ -316,6 +310,105 @@ namespace itolib.Behaviours.Detectors
                     onRegionExited.Invoke(enemy);
                 }
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <param name="enemyName"></param>
+        /// <param name="enemyAmount"></param>
+        /// <param name="matchedBlacklist"></param>
+        /// <param name="subtract"></param>
+        /// <returns></returns>
+        private static bool CheckFilter(EnemyFilter filter, string enemyName, ref int enemyAmount, out bool matchedBlacklist, bool subtract = false)
+        {
+            matchedBlacklist = false;
+
+            if (enemyAmount < 0)
+            {
+                return false;
+            }
+
+            if (compareNames(filter.enemyName, ref enemyAmount, out matchedBlacklist))
+            {
+                return true;
+            }
+            else if (matchedBlacklist)
+            {
+                return false;
+            }
+
+            if (filter.alsoAppliesTo?.Length > 0)
+            {
+                for (int i = 0; i < filter.alsoAppliesTo.Length; i++)
+                {
+                    if (compareNames(filter.alsoAppliesTo[i], ref enemyAmount, out matchedBlacklist))
+                    {
+                        return true;
+                    }
+                    else if (matchedBlacklist)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            bool compareNames(string filterName, ref int enemyAmount, out bool matchedBlacklist)
+            {
+                matchedBlacklist = false;
+
+                if (filterName.Length == 0 || (filter.fuzzySearch && enemyName.Contains(filterName, StringComparison.OrdinalIgnoreCase))
+                    || enemyName.CompareOrdinal(filterName) || filterName.CompareOrdinal("Any"))
+                {
+                    if (filter.isBlacklist)
+                    {
+                        matchedBlacklist = true;
+
+                        return false;
+                    }
+
+                    if (!subtract)
+                    {
+                        enemyAmount++;
+                    }
+                    else
+                    {
+                        enemyAmount--;
+                    }
+
+                    if (enemyAmount < filter.amountRequired)
+                    {
+                        filter.onBelowAmount.Invoke(enemyAmount);
+                    }
+
+                    if (enemyAmount == filter.amountRequired)
+                    {
+                        filter.onReachedAmount.Invoke(enemyAmount);
+
+                        if (filter.triggerOnce)
+                        {
+                            enemyAmount = -1;
+                        }
+                    }
+
+                    if (enemyAmount > filter.amountRequired)
+                    {
+                        filter.onAboveAmount.Invoke(enemyAmount);
+
+                        if (filter.triggerOnce)
+                        {
+                            enemyAmount = -1;
+                        }
+                    }
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            return false;
         }
     }
 }

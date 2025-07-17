@@ -20,42 +20,36 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         [Tooltip("")]
         [Min(0)]
-        public int healthAmount;
+        public int healthAmount = 0;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int> onReachedHealth;
+        public UnityEvent<int> onReachedHealth = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int> onBelowHealth;
+        public UnityEvent<int> onBelowHealth = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int> onAboveHealth;
+        public UnityEvent<int> onAboveHealth = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool runOnce;
+        public bool runOnce = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public HealthCondition()
-        {
-            onReachedHealth = new();
-            onBelowHealth = new();
-            onAboveHealth = new();
-            runOnce = true;
-        }
+        public HealthCondition() { }
     }
 
     /// <summary>
@@ -69,13 +63,13 @@ namespace itolib.Behaviours.Kinematics
         [Header("Damage Hittable")]
         [Tooltip("")]
         [Min(0)]
-        public int health;
+        [SerializeField] private int health = 1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public List<HealthCondition> healthConditions = [];
+        [SerializeField] private List<HealthCondition> healthConditions = [];
 
         /// <summary>
         ///     TODO.
@@ -91,41 +85,53 @@ namespace itolib.Behaviours.Kinematics
         /// <param name="hitInfo"></param>
         public override void PerformHitLocal(HitInfo hitInfo)
         {
-            onHit.Invoke();
-
             if (health == 0)
             {
                 return;
             }
 
+            onHit.Invoke();
+
+            if (hitInfo.hitByPlayer && hitInfo.playerReference.TryGet(out PlayerControllerB player))
+            {
+                if (player.IsLocalClient())
+                {
+                    onPlayerHitLocal.Invoke(player);
+                }
+
+                onPlayerHit.Invoke(player);
+            }
+
             health = Mathf.Clamp(health - hitInfo.damage, 0, health);
 
-            for (int i = 0; i < healthConditions.Count; i++)
+            foreach (HealthCondition healthCondition in healthConditions)
             {
-                if (health > healthConditions[i].healthAmount)
+                if (health > healthCondition.healthAmount)
                 {
-                    break;
+                    healthCondition.onAboveHealth.Invoke(health);
                 }
-                else
+
+                if (health == healthCondition.healthAmount)
                 {
-                    if (health == healthConditions[i].healthAmount)
-                    {
-                        healthConditions[i].onReachedHealth.Invoke(health);
-                    }
+                    healthCondition.onReachedHealth.Invoke(health);
+                }
 
-                    if (health < healthConditions[i].healthAmount)
-                    {
-                        healthConditions[i].onBelowHealth.Invoke(health);
-                    }
-
-                    if (health > healthConditions[i].healthAmount)
-                    {
-                        healthConditions[i].onAboveHealth.Invoke(health);
-                    }
+                if (health < healthCondition.healthAmount)
+                {
+                    healthCondition.onBelowHealth.Invoke(health);
                 }
             }
 
-            _ = healthConditions.RemoveAll(condition => health <= condition.healthAmount && condition.runOnce);
+            _ = healthConditions.RemoveAll(healthCondition => healthCondition.runOnce && health <= healthCondition.healthAmount);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="health"></param>
+        public void IncrementHealth(int health)
+        {
+            SetHealth(this.health + health);
         }
 
         /// <summary>

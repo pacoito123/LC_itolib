@@ -1,3 +1,4 @@
+using GameNetcodeStuff;
 using itolib.Behaviours.Networking;
 using itolib.Extensions;
 using UnityEngine;
@@ -36,19 +37,23 @@ namespace itolib.Behaviours.Kinematics
         {
             if (hittableBody != null)
             {
-                hittableBody.AddForce(hitForce * hitInfo.damage * hitInfo.direction, forceMode);
+                Vector3 forceToApply = hitInfo.hitByPlayer
+                    ? hitForce * hitInfo.damage * hitInfo.direction
+                    : hitForce * hitInfo.damage * (transform.rotation * hitInfo.direction);
+
+                hittableBody.AddForce(forceToApply, forceMode);
             }
 
             onHit.Invoke();
 
-            if (hitInfo.playerWhoHit != null)
+            if (hitInfo.hitByPlayer && hitInfo.playerReference.TryGet(out PlayerControllerB player))
             {
-                onPlayerHit.Invoke(hitInfo.playerWhoHit);
-
-                if (hitInfo.playerWhoHit.IsLocalClient())
+                if (player.IsLocalClient())
                 {
-                    onPlayerHitLocal.Invoke(hitInfo.playerWhoHit);
+                    onPlayerHitLocal.Invoke(player);
                 }
+
+                onPlayerHit.Invoke(player);
             }
         }
     }

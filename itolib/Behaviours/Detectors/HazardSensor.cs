@@ -22,12 +22,12 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void CheckObjectsInRegion()
         {
-            base.CheckObjectsInRegion();
-
             if (!IsHost)
             {
                 return;
             }
+
+            base.CheckObjectsInRegion();
 
             int hazardsFound = 0;
 

@@ -230,7 +230,7 @@ namespace itolib.Behaviours.Grabbables
             {
                 onEnemyKick.Invoke();
 
-                return;
+                return; // TODO: Stops enemies from kicking ball!
             }
 
             if (item.isHeld || item.parentObject != null || (itemTransform.GetParent() != RoundManager.Instance.spawnedScrapContainer

@@ -1,3 +1,4 @@
+using DunGen.Graph;
 using itolib.Extensions;
 
 namespace itolib.Behaviours.Conditionals
@@ -5,7 +6,7 @@ namespace itolib.Behaviours.Conditionals
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class MoonConditional : BaseConditional<SelectableLevel>
+    public class DungeonConditional : BaseConditional<DungeonFlow>
     {
         /// <summary>
         ///     TODO.
@@ -13,7 +14,13 @@ namespace itolib.Behaviours.Conditionals
         /// <param name="undo"></param>
         public override void ApplyConditional(bool undo)
         {
-            ApplyConditional(StartOfRound.Instance.currentLevel, undo);
+            if (RoundManager.Instance == null || RoundManager.Instance.dungeonGenerator == null || RoundManager.Instance.dungeonGenerator.Generator == null
+                || RoundManager.Instance.dungeonGenerator.Generator.DungeonFlow == null)
+            {
+                return;
+            }
+
+            ApplyConditional(RoundManager.Instance.dungeonGenerator.Generator.DungeonFlow, undo);
         }
 
         /// <summary>
@@ -21,15 +28,15 @@ namespace itolib.Behaviours.Conditionals
         /// </summary>
         /// <param name="objectToCheck"></param>
         /// <param name="undo"></param>
-        public override void ApplyConditional(SelectableLevel objectToCheck, bool undo)
+        public override void ApplyConditional(DungeonFlow objectToCheck, bool undo)
         {
-            string planetName = objectToCheck.GetNumberlessPlanetName();
+            string dungeonName = objectToCheck.name;
 
             for (int i = 0; i < conditionalOverrides?.Length; i++)
             {
                 ConditionalOverride overrideEntry = conditionalOverrides[i];
 
-                if (planetName.CompareOrdinal(overrideEntry.nameToSearch))
+                if (dungeonName.CompareOrdinal(overrideEntry.nameToSearch))
                 {
                     overrideEntry.Apply(undo);
 
@@ -39,7 +46,7 @@ namespace itolib.Behaviours.Conditionals
                 {
                     for (int j = 0; j < overrideEntry.alsoAppliesTo.Length; j++)
                     {
-                        if (planetName.CompareOrdinal(overrideEntry.alsoAppliesTo[j]))
+                        if (dungeonName.CompareOrdinal(overrideEntry.alsoAppliesTo[j]))
                         {
                             overrideEntry.Apply(undo);
 

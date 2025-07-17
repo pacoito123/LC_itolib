@@ -16,33 +16,38 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        public int damage;
+        [Header("Hit Info")]
+        [Tooltip("")]
+        public int damage = 1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public Vector3 direction;
+        [Tooltip("")]
+        public Vector3 direction = Vector3.zero;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public PlayerControllerB? playerWhoHit;
+        [Tooltip("")]
+        public int hitID = 1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public int hitID;
+        [HideInInspector]
+        public bool hitByPlayer = false;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public HitInfo()
-        {
-            damage = 1;
-            direction = Vector3.zero;
-            playerWhoHit = null;
-            hitID = 1;
-        }
+        [HideInInspector]
+        public NetworkBehaviourReference playerReference = default;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public HitInfo() { }
 
         /// <summary>
         ///     TODO.
@@ -53,6 +58,13 @@ namespace itolib.Behaviours.Networking
         {
             serializer.SerializeValue(ref damage);
             serializer.SerializeValue(ref direction);
+            serializer.SerializeValue(ref hitID);
+            serializer.SerializeValue(ref hitByPlayer);
+
+            if (hitByPlayer)
+            {
+                serializer.SerializeValue(ref playerReference);
+            }
         }
     }
 
@@ -66,25 +78,27 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         [Header("Networked Hittable")]
         [Tooltip("")]
-        public HitInfo defaultHit;
+        [SerializeField] private HitInfo defaultHit;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(5)]
+        [Header("Events")]
+        [Tooltip("")]
+        [SerializeField] protected UnityEvent onHit = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent onHit = new();
+        [SerializeField] protected UnityEvent<PlayerControllerB> onPlayerHit = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB> onPlayerHit = new();
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public UnityEvent<PlayerControllerB> onPlayerHitLocal = new();
+        [SerializeField] protected UnityEvent<PlayerControllerB> onPlayerHitLocal = new();
 
         /// <summary>
         ///     TODO.
@@ -97,12 +111,15 @@ namespace itolib.Behaviours.Networking
         /// <returns></returns>
         public virtual bool Hit(int force, Vector3 hitDirection, PlayerControllerB? playerWhoHit = null, bool playHitSFX = false, int hitID = -1)
         {
-            PerformHit(new()
+            bool hitByPlayer = playerWhoHit != null;
+
+            PerformHit(new HitInfo()
             {
                 damage = force,
                 direction = hitDirection,
-                playerWhoHit = playerWhoHit,
-                hitID = hitID
+                hitID = hitID,
+                hitByPlayer = hitByPlayer,
+                playerReference = hitByPlayer ? playerWhoHit : default
             });
 
             return true;

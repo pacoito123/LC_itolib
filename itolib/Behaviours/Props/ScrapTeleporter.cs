@@ -58,63 +58,63 @@ namespace itolib.Behaviours.Props
         /// </summary>
         [Header("Scrap Teleporter")]
         [Tooltip("")]
-        public List<string>? specificItems;
+        [SerializeField] private string[]? specificItems;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public List<Transform>? teleportPoints;
+        [SerializeField] private List<Transform>? teleportPoints;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public List<BoxCollider>? teleportAreas;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        [Min(0)]
-        public int minAmount = 0;
+        [SerializeField] private List<BoxCollider>? teleportAreas;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(0)]
-        public int maxAmount = 1;
+        [SerializeField] private int minAmount = 0;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool fallToGround = true;
+        [Min(0)]
+        [SerializeField] private int maxAmount = 1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool randomizePosition = false;
+        [SerializeField] private bool fallToGround = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool exhaustivePoints = false;
+        [SerializeField] private bool randomizePosition = false;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool exhaustiveAreas = false;
+        [SerializeField] private bool exhaustivePoints = false;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public ActivationTime activationTime = ActivationTime.StartOfRound;
+        [SerializeField] private bool exhaustiveAreas = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
 
         /// <summary>
         ///     TODO.
@@ -252,7 +252,7 @@ namespace itolib.Behaviours.Props
                     }
                 }
 
-                if (specificItems?.Count > 0)
+                if (specificItems?.Length > 0)
                 {
                     for (int j = 0; j < AvailableScrap.Count; j++)
                     {
@@ -261,17 +261,29 @@ namespace itolib.Behaviours.Props
                             continue;
                         }
 
-                        if (specificItems.FindIndex(specificItem => specificItem.CompareOrdinal(AvailableScrap[j].itemProperties.itemName)) >= 0)
+                        bool foundItem = false;
+
+                        for (int k = 0; k < specificItems.Length; k++)
                         {
-                            TeleportData teleport = new()
+                            if (specificItems[k].CompareOrdinal(AvailableScrap[j].itemProperties.itemName))
                             {
-                                position = teleportPosition,
-                                rotation = teleportRotation
-                            };
+                                TeleportData teleport = new()
+                                {
+                                    position = teleportPosition,
+                                    rotation = teleportRotation
+                                };
 
-                            TeleportScrapClientRpc(AvailableScrap[j], teleport);
-                            AvailableScrap.RemoveAt(j);
+                                TeleportScrapClientRpc(AvailableScrap[j], teleport);
+                                AvailableScrap.RemoveAt(j);
 
+                                foundItem = true;
+
+                                break;
+                            }
+                        }
+
+                        if (foundItem)
+                        {
                             break;
                         }
                     }

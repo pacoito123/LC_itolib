@@ -2,7 +2,6 @@ using DunGen;
 using itolib.Extensions;
 using LethalLevelLoader;
 using System;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -17,14 +16,20 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Header("Hazard Replacement")]
         [Tooltip("")]
-        public string originalHazard;
+        public string originalHazard = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string replacingHazard;
+        public string replacingHazard = string.Empty;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public HazardReplacement() { }
     }
 
     /// <summary>
@@ -35,7 +40,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public List<HazardReplacement> hazardReplacements = [];
+        [SerializeField] private HazardReplacement[]? hazardReplacements;
 
         /// <summary>
         ///     TODO.
@@ -47,11 +52,18 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
+            if (hazardReplacements == null)
+            {
+                // TODO: Log warning.
+                return;
+            }
+
             SelectableLevel? currentLevel = LevelManager.CurrentExtendedLevel != null ? LevelManager.CurrentExtendedLevel.SelectableLevel : null;
             ExtendedDungeonFlow? currentDungeon = DungeonManager.CurrentExtendedDungeonFlow;
 
             if (currentLevel == null || currentDungeon == null)
             {
+                // TODO: Log warning.
                 return;
             }
 
@@ -67,8 +79,7 @@ namespace itolib.Behaviours.Props
                 extendedHazardNames[i] = currentDungeon.SpawnableMapObjects[i].prefabToSpawn.name;
             }
 
-            int count = hazardReplacements.Count;
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < hazardReplacements.Length; i++)
             {
                 SpawnableMapObject? originalHazard = null;
                 for (int j = 0; j < hazardNames.Length; j++)

@@ -79,21 +79,23 @@ namespace itolib.Behaviours.Conditionals
 
             string weatherName = $"{objectToCheck}";
 
-            for (int i = 0; i < conditionalOverrides.Count; i++)
+            for (int i = 0; i < conditionalOverrides?.Length; i++)
             {
-                if (weatherName.CompareOrdinal(conditionalOverrides[i].nameToSearch))
+                ConditionalOverride overrideEntry = conditionalOverrides[i];
+
+                if (weatherName.CompareOrdinal(overrideEntry.nameToSearch))
                 {
-                    conditionalOverrides[i].Apply(undo);
+                    overrideEntry.Apply(undo);
 
                     return;
                 }
-                else if (conditionalOverrides[i].alsoAppliesTo.Count > 0)
+                else if (overrideEntry.alsoAppliesTo?.Length > 0)
                 {
-                    for (int j = 0; j < conditionalOverrides[i].alsoAppliesTo.Count; j++)
+                    for (int j = 0; j < overrideEntry.alsoAppliesTo.Length; j++)
                     {
-                        if (weatherName.CompareOrdinal(conditionalOverrides[i].alsoAppliesTo[j]))
+                        if (weatherName.CompareOrdinal(overrideEntry.alsoAppliesTo[j]))
                         {
-                            conditionalOverrides[i].Apply(undo);
+                            overrideEntry.Apply(undo);
 
                             return;
                         }
@@ -127,6 +129,7 @@ namespace itolib.Behaviours.Conditionals
             if (IsProgressive && CurrentWeather != LevelWeatherType.None)
             {
                 ApplyConditional(CurrentWeather, weatherTypes[0]);
+
                 return;
             }
 
@@ -135,6 +138,7 @@ namespace itolib.Behaviours.Conditionals
             if (incomingWeather.Contains('>'))
             {
                 IsProgressive = true;
+
                 return;
             }
             else if (incomingWeather.Contains('+'))
@@ -146,6 +150,7 @@ namespace itolib.Behaviours.Conditionals
                         ApplyConditional(weather);
                     }
                 }
+
                 return;
             }
 

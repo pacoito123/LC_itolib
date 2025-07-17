@@ -27,6 +27,12 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        public bool useLocalRotation;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
@@ -38,7 +44,7 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public void Start()
         {
-            if (!NetworkManager.Singleton.IsHost || IsSpawned)
+            if (!NetworkManager.Singleton.IsHost || IsSpawned) // TODO: Won't work well for in-scene placed objects
             {
                 return;
             }
@@ -101,12 +107,12 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public override void PerformSpawn()
         {
-            if (!NetworkManager.Singleton.IsHost || prefabToSpawn == null || spawnLocations == null)
+            if (!NetworkManager.Singleton.IsHost || prefabToSpawn == null)
             {
                 return;
             }
 
-            if (spawnLocations.Count == 0)
+            if (spawnLocations == null || spawnLocations.Count == 0)
             {
                 SpawnPrefab(transform);
             }
@@ -120,7 +126,7 @@ namespace itolib.Behaviours.Props
 
             base.PerformSpawn();
 
-            if (destroySpawner && TryGetComponent(out NetworkObject networkObject))
+            if (destroySpawner && TryGetComponent(out NetworkObject networkObject) && networkObject.IsSpawned)
             {
                 networkObject.Despawn(destroy: true);
             }
@@ -137,8 +143,8 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            GameObject prefab = Instantiate(prefabToSpawn.gameObject, spawnLocation.position, spawnLocation.rotation,
-                (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null) ?
+            GameObject prefab = Instantiate(prefabToSpawn.gameObject, spawnLocation.position, !useLocalRotation ?
+                spawnLocation.rotation : spawnLocation.localRotation, (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null) ?
                     RoundManager.Instance.mapPropsContainer.transform : null);
 
             if (parentTransform != null)

@@ -17,44 +17,37 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool AlreadySeen { get; internal set; }
+        public bool AlreadySeen { get; private set; } = false;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string headerText;
+        public string headerText = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string bodyText;
+        public string bodyText = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool showOnce;
+        public bool showOnce = false;
 
         /// <summary>
         ///     TODO.
         /// </summary> 
-        public Notification()
-        {
-            headerText = "";
-            bodyText = "";
-
-            showOnce = false;
-            AlreadySeen = false;
-        }
+        public Notification() { }
 
         /// <summary>
         ///     TODO.
         /// </summary>
         public void SetNotificationSeen()
         {
-            AlreadySeen = true;
+            AlreadySeen = true; // TODO: Do without mutating struct. Whole separate notification system maybe?
         }
     }
 

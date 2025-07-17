@@ -142,8 +142,11 @@ namespace itolib.Behaviours.Effects
 
             Vector3 explosionOrigin = (regionCollider != null && regionCollider.enabled && regionCollider.gameObject.activeInHierarchy)
                 ? regionCollider.bounds.center : transform.position;
-            Instantiate(explosionPrefab, explosionOrigin, VanillaExplosion ? Quaternion.Euler(-90f, 0f, 0f)
-                : Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform).SetActive(true);
+            if (spawnExplosionEffect)
+            {
+                Instantiate(explosionPrefab, explosionOrigin, VanillaExplosion ? Quaternion.Euler(-90f, 0f, 0f)
+                    : Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform).SetActive(true);
+            }
 
             float shakeDistance = Vector3.Distance(GameNetworkManager.Instance.localPlayerController.transform.position, explosionOrigin);
 
@@ -162,6 +165,11 @@ namespace itolib.Behaviours.Effects
             else if (veryStrongCameraShakeDistance > 0 && shakeDistance < veryStrongCameraShakeDistance)
             {
                 HUDManager.Instance.ShakeCamera(ScreenShakeType.VeryStrong);
+            }
+
+            if (!IsHost)
+            {
+                return;
             }
 
             base.CheckObjectsInRegion();
@@ -230,7 +238,7 @@ namespace itolib.Behaviours.Effects
                 }
             }
 
-            if (IsHost && parentNetworkObject != null && parentNetworkObject.IsSpawned)
+            if (parentNetworkObject != null && parentNetworkObject.IsSpawned)
             {
                 // Despawn after the configured amount of time.
                 _ = StartCoroutine(DespawnDelayed());

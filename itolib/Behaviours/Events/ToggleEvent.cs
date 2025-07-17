@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
@@ -7,6 +8,7 @@ namespace itolib.Behaviours.Events
     /// <summary>
     ///     TODO.
     /// </summary>
+    [Obsolete("DOESN'T WORK AS INTENDED...")]
     public class ToggleEvent : MonoBehaviour // TODO: Networked?
     {
         /// <summary>

@@ -55,28 +55,29 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         [HideInInspector]
-        private InputAction? playerAction;
+        protected InputAction? playerAction;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        public override void Awake()
         {
             attachCondition = player => !player.isPlayerDead;
             detachCondition = player => player.isPlayerDead;
+        }
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void Start()
+        {
             if (actionToTrigger.Length > 0)
             {
                 // Get action (or key) that triggers this sensor.
                 playerAction = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToTrigger);
-
-                // Disable if action is not found. 
-                if (playerAction == null)
-                {
-                    // TODO: Log warning.
-                    enabled = false;
-                }
             }
+
+            base.Start();
         }
 
         /// <summary>
@@ -92,6 +93,8 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void Update()
         {
+            base.Update();
+
             if (localPlayerAttached && attachedPlayer != null)
             {
                 if (timer < triggerInterval)
@@ -120,8 +123,6 @@ namespace itolib.Behaviours.Detectors
 
                 timer = 0.0f;
             }
-
-            base.Update();
         }
 
         /// <summary>
