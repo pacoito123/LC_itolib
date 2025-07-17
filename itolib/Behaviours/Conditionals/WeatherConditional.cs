@@ -22,7 +22,7 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Start()
+        protected override void Start()
         {
             if (CrowdControlCompatibility.Enabled)
             {
@@ -41,7 +41,7 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnDestroy()
+        protected override void OnDestroy()
         {
             if (WeatherRegistryCompatibility.Enabled)
             {

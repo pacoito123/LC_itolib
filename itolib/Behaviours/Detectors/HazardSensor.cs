@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Reset()
+        protected override void Reset()
         {
             maxObjects = 8;
             layerMask = 1 << LayerMask.NameToLayer("MapHazards");
@@ -31,9 +31,9 @@ namespace itolib.Behaviours.Detectors
 
             int hazardsFound = 0;
 
-            for (int i = 0; i < ObjectsFound; i++)
+            for (int i = 0; i < objectsFound; i++)
             {
-                if (OverlapBuffer != null && OverlapBuffer![i].transform.root.TryGetComponent(out NetworkObject hazardNetworkObject)
+                if (overlapBuffer != null && overlapBuffer![i].transform.root.TryGetComponent(out NetworkObject hazardNetworkObject)
                     && hazardNetworkObject.IsSpawned)
                 {
                     FoundHazardsEachClientRpc(hazardNetworkObject);
@@ -52,7 +52,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="hazardReference"></param>
         [ClientRpc]
-        public void FoundHazardsEachClientRpc(NetworkObjectReference hazardReference)
+        private void FoundHazardsEachClientRpc(NetworkObjectReference hazardReference)
         {
             if (hazardReference.TryGet(out NetworkObject hazardNetworkObject))
             {
@@ -65,7 +65,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="hazardsFound"></param>
         [ClientRpc]
-        public void FoundHazardsAnyClientRpc(int hazardsFound)
+        private void FoundHazardsAnyClientRpc(int hazardsFound)
         {
             onObjectsAny.Invoke(hazardsFound);
         }

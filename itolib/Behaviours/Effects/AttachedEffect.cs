@@ -16,55 +16,55 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Attached Effect")]
         [Tooltip("")]
-        public AttachedEffect effectToAttach = null!;
+        [SerializeField] private AttachedEffect effectToAttach = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(1)]
-        public int maxInstances = 8;
+        [SerializeField] private int maxInstances = 8;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(0)]
-        public int prepareInstances = 1;
+        [SerializeField] private int prepareInstances = 1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool followObject = true;
+        [SerializeField] private bool followObject = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent<GameObject> onAttach = new();
+        [SerializeField] private UnityEvent<GameObject> onAttach = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<GameObject> onDetach = new();
+        [SerializeField] private UnityEvent<GameObject> onDetach = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public Transform currentPosition = null!;
+        private Transform currentPosition = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public Transform targetPosition = null!;
+        private Transform targetPosition = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Awake()
+        protected override void Awake()
         {
             currentPosition = transform;
             targetPosition = null!;
@@ -75,7 +75,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Update()
+        private void Update()
         {
             if (!followObject || targetPosition == null)
             {
@@ -89,6 +89,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="player"></param>
         public void AttachPlayer(PlayerControllerB player)
         {
             Attach(player.gameObject);
@@ -97,6 +98,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="enemy"></param>
         public void AttachEnemy(EnemyAI enemy)
         {
             Attach(enemy.gameObject);
@@ -105,10 +107,19 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="item"></param>
+        public void AttachItem(GrabbableObject item)
+        {
+            Attach(item.gameObject);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="gameObject"></param>
         public void Attach(GameObject gameObject)
         {
-            if (PooledSelf.TryAssignInstance(gameObject, maxInstances, out IPooledObject<GameObject> instance))
+            if (pooledSelf.TryAssignInstance(gameObject, maxInstances, out IPooledObject<GameObject> instance))
             {
                 if (instance is AttachedEffect effect)
                 {
@@ -125,6 +136,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="player"></param>
         public void DetachPlayer(PlayerControllerB player)
         {
             Detach(player.gameObject);
@@ -133,6 +145,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="enemy"></param>
         public void DetachEnemy(EnemyAI enemy)
         {
             Detach(enemy.gameObject);
@@ -141,10 +154,19 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="item"></param>
+        public void DetachItem(GrabbableObject item)
+        {
+            Detach(item.gameObject);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="gameObject"></param>
         public void Detach(GameObject gameObject)
         {
-            if (PooledSelf.TryFreeInstance(gameObject, out IPooledObject<GameObject> instance))
+            if (pooledSelf.TryFreeInstance(gameObject, out IPooledObject<GameObject> instance))
             {
                 if (instance is AttachedEffect effect)
                 {
@@ -173,7 +195,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         public override void CreateInstances(int instances)
         {
-            throw new System.NotImplementedException(); // TODO: Actually implement...
+            // TODO: Actually implement...
         }
     }
 }

@@ -13,39 +13,39 @@ namespace itolib.Behaviours.Effects
         ///     Minimum damage value to inflict on a player.
         /// </summary>
         [Tooltip("Minimum damage value to inflict on a player.")]
-        public int minDamage = 0;
+        [SerializeField] private int minDamage;
 
         /// <summary>
         ///     Maximum damage value to inflict on a player.
         /// </summary>
         [Tooltip("Maximum damage value to inflict on a player.")]
-        public int maxDamage = 0;
+        [SerializeField] private int maxDamage;
 
         /// <summary>
         ///     Whether or not to play the vanilla player damage sound effect.
         /// </summary>
         [Header("Audio")]
         [Tooltip("Whether or not to play the vanilla player damage sound effect.")]
-        public bool playDamageSFX = true;
+        [SerializeField] private bool playDamageSFX = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Death")]
         [Tooltip("")]
-        public CauseOfDeath deathCause = CauseOfDeath.Unknown;
+        [SerializeField] private CauseOfDeath deathCause = CauseOfDeath.Unknown;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public int deathAnimation = 0;
+        [SerializeField] private int deathAnimation;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public Vector3 deathLaunchForce = Vector3.zero;
+        [SerializeField] private Vector3 deathLaunchForce = Vector3.zero;
 
         /// <summary>
         ///     TODO.

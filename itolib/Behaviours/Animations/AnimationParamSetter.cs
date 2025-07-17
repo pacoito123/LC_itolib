@@ -13,33 +13,33 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        public int TargetedParamID { get; private set; } = -1;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [Header("Animation Param Setter")]
         [Tooltip("")]
-        public Animator animator = null!;
+        [SerializeField] private Animator animator = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string defaultParameterName = "";
+        [SerializeField] private string defaultParameterName = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        private int targetedParamID = -1;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void Awake()
         {
-            TargetedParamID = Animator.StringToHash(defaultParameterName);
+            targetedParamID = Animator.StringToHash(defaultParameterName);
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnEnable()
+        private void OnEnable()
         {
             if (animator == null)
             {
@@ -57,6 +57,7 @@ namespace itolib.Behaviours.Animations
         public void SwitchParam(string paramName)
         {
             int paramID = Animator.StringToHash(paramName);
+
             for (int i = 0; i < animator.parameters.Length; i++)
             {
                 if (animator.parameters[i].nameHash == paramID)
@@ -79,7 +80,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="paramID"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SwitchParamServerRpc(NetworkBehaviourReference playerReference, int paramID)
+        private void SwitchParamServerRpc(NetworkBehaviourReference playerReference, int paramID)
         {
             SwitchParamClientRpc(playerReference, paramID);
         }
@@ -90,7 +91,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="paramID"></param>
         [ClientRpc]
-        public void SwitchParamClientRpc(NetworkBehaviourReference playerReference, int paramID)
+        private void SwitchParamClientRpc(NetworkBehaviourReference playerReference, int paramID)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
@@ -102,9 +103,9 @@ namespace itolib.Behaviours.Animations
         ///     TODO.
         /// </summary>
         /// <param name="paramID"></param>
-        private void SwitchParamLocal(int paramID)
+        public void SwitchParamLocal(int paramID)
         {
-            TargetedParamID = paramID;
+            targetedParamID = paramID;
         }
 
         /// <summary>
@@ -113,7 +114,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="value"></param>
         public void SetBool(bool value)
         {
-            if (TargetedParamID != -1 && animator.GetBool(TargetedParamID) != value)
+            if (targetedParamID != -1 && animator.GetBool(targetedParamID) != value)
             {
                 SetBoolLocal(value);
 
@@ -130,7 +131,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="value"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SetBoolServerRpc(NetworkBehaviourReference playerReference, bool value)
+        private void SetBoolServerRpc(NetworkBehaviourReference playerReference, bool value)
         {
             SetBoolClientRpc(playerReference, value);
         }
@@ -141,7 +142,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="value"></param>
         [ClientRpc]
-        public void SetBoolClientRpc(NetworkBehaviourReference playerReference, bool value)
+        private void SetBoolClientRpc(NetworkBehaviourReference playerReference, bool value)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
@@ -153,9 +154,9 @@ namespace itolib.Behaviours.Animations
         ///     TODO.
         /// </summary>
         /// <param name="value"></param>
-        private void SetBoolLocal(bool value)
+        public void SetBoolLocal(bool value)
         {
-            animator.SetBool(TargetedParamID, value);
+            animator.SetBool(targetedParamID, value);
         }
 
         /// <summary>
@@ -164,7 +165,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="value"></param>
         public void SetFloat(float value)
         {
-            if (TargetedParamID != -1 && animator.GetFloat(TargetedParamID) != value)
+            if (targetedParamID != -1 && animator.GetFloat(targetedParamID) != value)
             {
                 SetFloatLocal(value);
 
@@ -181,7 +182,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="value"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SetFloatServerRpc(NetworkBehaviourReference playerReference, float value)
+        private void SetFloatServerRpc(NetworkBehaviourReference playerReference, float value)
         {
             SetFloatClientRpc(playerReference, value);
         }
@@ -192,7 +193,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="value"></param>
         [ClientRpc]
-        public void SetFloatClientRpc(NetworkBehaviourReference playerReference, float value)
+        private void SetFloatClientRpc(NetworkBehaviourReference playerReference, float value)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
@@ -204,9 +205,9 @@ namespace itolib.Behaviours.Animations
         ///     TODO.
         /// </summary>
         /// <param name="value"></param>
-        private void SetFloatLocal(float value)
+        public void SetFloatLocal(float value)
         {
-            animator.SetFloat(TargetedParamID, value);
+            animator.SetFloat(targetedParamID, value);
         }
 
         /// <summary>
@@ -215,7 +216,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="value"></param>
         public void SetInt(int value)
         {
-            if (TargetedParamID != -1 && animator.GetInteger(TargetedParamID) != value)
+            if (targetedParamID != -1 && animator.GetInteger(targetedParamID) != value)
             {
                 SetIntLocal(value);
 
@@ -232,7 +233,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="value"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SetIntServerRpc(NetworkBehaviourReference playerReference, int value)
+        private void SetIntServerRpc(NetworkBehaviourReference playerReference, int value)
         {
             SetIntClientRpc(playerReference, value);
         }
@@ -243,7 +244,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="value"></param>
         [ClientRpc]
-        public void SetIntClientRpc(NetworkBehaviourReference playerReference, int value)
+        private void SetIntClientRpc(NetworkBehaviourReference playerReference, int value)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
@@ -255,9 +256,67 @@ namespace itolib.Behaviours.Animations
         ///     TODO.
         /// </summary>
         /// <param name="value"></param>
-        private void SetIntLocal(int value)
+        public void SetIntLocal(int value)
         {
-            animator.SetInteger(TargetedParamID, value);
+            animator.SetInteger(targetedParamID, value);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="reset"></param>
+        public void SetTrigger(bool reset)
+        {
+            if (targetedParamID != -1)
+            {
+                SetTriggerLocal(reset);
+
+                if (IsSpawned)
+                {
+                    SetTriggerServerRpc(GameNetworkManager.Instance.localPlayerController, reset);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="reset"></param>
+        [ServerRpc(RequireOwnership = false)]
+        private void SetTriggerServerRpc(NetworkBehaviourReference playerReference, bool reset)
+        {
+            SetTriggerClientRpc(playerReference, reset);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="reset"></param>
+        [ClientRpc]
+        private void SetTriggerClientRpc(NetworkBehaviourReference playerReference, bool reset)
+        {
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            {
+                SetTriggerLocal(reset);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="reset"></param>
+        public void SetTriggerLocal(bool reset)
+        {
+            if (!reset)
+            {
+                animator.SetTrigger(targetedParamID);
+            }
+            else
+            {
+                animator.ResetTrigger(targetedParamID);
+            }
         }
     }
 }

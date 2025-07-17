@@ -18,49 +18,47 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         [Header("Movement Sensor")]
         [Tooltip("")]
-        public float triggerInterval = 1.0f;
+        [SerializeField] private float triggerInterval = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string actionToTrigger = "Move";
+        [SerializeField] protected string actionToTrigger = "Move";
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool holdAction = true;
+        [SerializeField] protected bool holdAction = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool actionRequiresStamina;
+        [SerializeField] private bool actionRequiresStamina;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB> onMovementDetected = new();
+        [SerializeField] protected UnityEvent<PlayerControllerB> onMovementDetected = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public float timer = 0.0f;
+        private float timer;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
         protected InputAction? playerAction;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Awake()
+        protected override void Awake()
         {
             attachCondition = player => !player.isPlayerDead;
             detachCondition = player => player.isPlayerDead;
@@ -69,7 +67,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Start()
+        protected override void Start()
         {
             if (actionToTrigger.Length > 0)
             {
@@ -83,7 +81,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnEnable()
+        private void OnEnable()
         {
             timer = triggerInterval;
         }
@@ -91,7 +89,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Update()
+        protected override void Update()
         {
             base.Update();
 
@@ -130,7 +128,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="playerReference"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void PlayerMovedServerRpc(NetworkBehaviourReference playerReference)
+        private void PlayerMovedServerRpc(NetworkBehaviourReference playerReference)
         {
             PlayerMovedClientRpc(playerReference);
         }
@@ -140,7 +138,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void PlayerMovedClientRpc(NetworkBehaviourReference playerReference)
+        private void PlayerMovedClientRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {

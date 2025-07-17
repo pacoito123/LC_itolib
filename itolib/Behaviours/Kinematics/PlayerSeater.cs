@@ -57,7 +57,6 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
         private InputAction? playerAction;
 
         /// <summary>
@@ -68,7 +67,7 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Awake()
+        protected override void Awake()
         {
             attachCondition = player => !player.isPlayerDead && !player.inAnimationWithEnemy && !player.inSpecialInteractAnimation;
             detachCondition = player => player.isPlayerDead || (playerAction != null && playerAction.IsPressed());
@@ -77,7 +76,7 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Start()
+        protected override void Start()
         {
             if (actionToUnseat.Length > 0)
             {
@@ -91,7 +90,7 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Update()
+        protected override void Update()
         {
             if (localPlayerAttached && attachedPlayer != null)
             {

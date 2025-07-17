@@ -14,17 +14,17 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public List<Collider> DisabledColliders { get; private set; } = [];
+        private readonly List<Collider> disabledColliders = [];
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public List<Renderer> DisabledRenderers { get; private set; } = [];
+        private readonly List<Renderer> disabledRenderers = [];
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Reset()
+        protected override void Reset()
         {
             layerMask = (1 << LayerMask.NameToLayer("Props")) | (1 << LayerMask.NameToLayer("PhysicsObject"));
         }
@@ -48,9 +48,9 @@ namespace itolib.Behaviours.Detectors
 
             int itemsFound = 0;
 
-            for (int i = 0; i < ObjectsFound; i++)
+            for (int i = 0; i < objectsFound; i++)
             {
-                Collider itemCollider = OverlapBuffer![i];
+                Collider itemCollider = overlapBuffer![i];
 
                 if (itemCollider.TryGetComponent(out GrabbableObject item)
                     && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
@@ -69,7 +69,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnTriggerEnter(Collider other)
+        protected override void OnTriggerEnter(Collider other)
         {
             if (other.TryGetComponent(out GrabbableObject item) && item.IsOwner
                 && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
@@ -83,7 +83,7 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="other"></param>
-        public override void OnTriggerExit(Collider other)
+        protected override void OnTriggerExit(Collider other)
         {
             if (other.TryGetComponent(out GrabbableObject item) && item.IsOwner
                 && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
@@ -108,7 +108,7 @@ namespace itolib.Behaviours.Detectors
                 if (collider != null && collider.enabled && collider.gameObject.layer != LayerMask.NameToLayer("ScanNode"))
                 {
                     collider.enabled = false;
-                    DisabledColliders.Add(collider);
+                    disabledColliders.Add(collider);
                 }
             }
         }
@@ -128,7 +128,7 @@ namespace itolib.Behaviours.Detectors
                 if (renderer != null && renderer.enabled)
                 {
                     renderer.enabled = false;
-                    DisabledRenderers.Add(renderer);
+                    disabledRenderers.Add(renderer);
                 }
             }
         }
@@ -138,15 +138,15 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public void EnableItemRenderers()
         {
-            for (int i = 0; i < DisabledRenderers.Count; i++)
+            for (int i = 0; i < disabledRenderers.Count; i++)
             {
-                if (DisabledRenderers[i] != null)
+                if (disabledRenderers[i] != null)
                 {
-                    DisabledRenderers[i].enabled = true;
+                    disabledRenderers[i].enabled = true;
                 }
             }
 
-            DisabledRenderers.Clear();
+            disabledRenderers.Clear();
         }
 
         /// <summary>
@@ -154,15 +154,15 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public void EnableItemColliders()
         {
-            for (int i = 0; i < DisabledColliders.Count; i++)
+            for (int i = 0; i < disabledColliders.Count; i++)
             {
-                if (DisabledColliders[i] != null)
+                if (disabledColliders[i] != null)
                 {
-                    DisabledColliders[i].enabled = true;
+                    disabledColliders[i].enabled = true;
                 }
             }
 
-            DisabledColliders.Clear();
+            disabledColliders.Clear();
         }
 
         /// <summary>
@@ -191,7 +191,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="itemReference"></param>
         [ClientRpc]
-        public void FoundItemsEachClientRpc(NetworkBehaviourReference itemReference)
+        private void FoundItemsEachClientRpc(NetworkBehaviourReference itemReference)
         {
             if (itemReference.TryGet(out GrabbableObject item))
             {
@@ -204,7 +204,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="itemsFound"></param>
         [ClientRpc]
-        public void FoundItemsAnyClientRpc(int itemsFound)
+        private void FoundItemsAnyClientRpc(int itemsFound)
         {
             onObjectsAny.Invoke(itemsFound);
         }
@@ -215,7 +215,7 @@ namespace itolib.Behaviours.Detectors
         /// <param name="itemReference"></param>
         /// <param name="exit"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void RegionEnteredServerRpc(NetworkBehaviourReference itemReference, bool exit = false)
+        private void RegionEnteredServerRpc(NetworkBehaviourReference itemReference, bool exit = false)
         {
             RegionEnteredClientRpc(itemReference, exit);
         }
@@ -226,7 +226,7 @@ namespace itolib.Behaviours.Detectors
         /// <param name="itemReference"></param>
         /// <param name="exit"></param>
         [ClientRpc]
-        public void RegionEnteredClientRpc(NetworkBehaviourReference itemReference, bool exit = false)
+        private void RegionEnteredClientRpc(NetworkBehaviourReference itemReference, bool exit = false)
         {
             if (itemReference.TryGet(out GrabbableObject item) && !item.IsOwner)
             {

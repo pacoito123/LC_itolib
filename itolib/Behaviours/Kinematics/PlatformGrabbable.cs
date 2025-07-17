@@ -10,7 +10,7 @@ namespace itolib.Behaviours.Kinematics
     /// <summary>
     ///     Represents a platform players can grab and hold on to.
     /// </summary>
-    public class PlatformGrabbable : PlayerAttachable
+    public class PlatformGrabbable : PlayerAttachable // TODO: Deprecate and rewrite some stuff
     {
         /// <summary>
         ///     Synchronized value for the animation variant to play when the player attaches.
@@ -38,7 +38,7 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         [Tooltip("Name of the animation state to play once a player grabs the platform. Make sure to leave out any numbers at the end if using animation variants. "
             + "Optional if already playing an animation, or the platform is stationary.")]
-        public string stateName = "";
+        public string stateName = string.Empty;
 
         /// <summary>
         ///     Value for the animation variant to play when the player attaches, which is appended to 'stateName'. Should only be updated in the editor, or in-game
@@ -62,7 +62,7 @@ namespace itolib.Behaviours.Kinematics
         [Header("Controls")]
         [Tooltip("Key required to be held for the player to hang on to the platform. See 'UnityEngine.InputSystem.Key' for number values. Leaving it at '-1' allows "
             + "players to remain attached without holding anything, until being detached through other means (e.g. 'detachTimer').")]
-        public string actionToHold = "";
+        public string actionToHold = string.Empty;
 
         /// <summary>
         ///     Allow players to carry two-handed items while grabbing on to the platform.
@@ -134,19 +134,17 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
         private InputAction? playerAction;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
         private Transform platformTransform = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Awake()
+        protected override void Awake()
         {
             attachCondition = player => !player.isPlayerDead && (allowTwoHanded || !player.twoHanded)
                 && (playerAction == null || playerAction.IsPressed());
@@ -157,7 +155,7 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Start()
+        protected override void Start()
         {
             // Cache platform transform.
             platformTransform = transform;
@@ -180,7 +178,7 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Update()
+        protected override void Update()
         {
             // Check if a player is attached to the platform.
             if (attachedPlayer != null)
@@ -237,7 +235,7 @@ namespace itolib.Behaviours.Kinematics
         ///     TODO.
         /// </summary>
         /// <param name="collider"></param>
-        public override void OnTriggerEnter(Collider collider)
+        protected override void OnTriggerEnter(Collider collider)
         {
             // Check if an enemy collided with the platform while the local player is attached.
             if (detachOnEnemyCollision && localPlayerAttached && collider.TryGetComponent(out EnemyAI _))

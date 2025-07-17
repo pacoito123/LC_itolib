@@ -3,7 +3,6 @@ using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Detectors
 {
@@ -31,7 +30,6 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         [Tooltip("")]
         [Min(1)]
-        [FormerlySerializedAs("amount")]
         public int amountRequired = 1;
 
         /// <summary>
@@ -108,7 +106,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Reset()
+        protected override void Reset()
         {
             layerMask = 1 << LayerMask.NameToLayer("Enemies");
         }
@@ -116,7 +114,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Start()
+        protected override void Start()
         {
             if (!IsHost)
             {
@@ -150,9 +148,9 @@ namespace itolib.Behaviours.Detectors
 
             int enemiesFound = 0;
 
-            for (int i = 0; i < ObjectsFound; i++)
+            for (int i = 0; i < objectsFound; i++)
             {
-                if (OverlapBuffer![i].TryGetComponent(out EnemyAICollisionDetect enemyCollision)
+                if (overlapBuffer![i].TryGetComponent(out EnemyAICollisionDetect enemyCollision)
                     && enemyCollision.mainScript != null)
                 {
                     if (enemyFilters == null || enemyFilters.Length == 0)
@@ -191,7 +189,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnTriggerEnter(Collider other)
+        protected override void OnTriggerEnter(Collider other)
         {
             if (!IsHost)
             {
@@ -231,7 +229,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnTriggerExit(Collider other)
+        protected override void OnTriggerExit(Collider other)
         {
             if (!IsHost)
             {
@@ -273,7 +271,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="enemyReference"></param>
         [ClientRpc]
-        public void FoundEnemiesEachClientRpc(NetworkBehaviourReference enemyReference)
+        private void FoundEnemiesEachClientRpc(NetworkBehaviourReference enemyReference)
         {
             if (enemyReference.TryGet(out EnemyAI enemy))
             {
@@ -286,7 +284,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="enemiesFound"></param>
         [ClientRpc]
-        public void FoundEnemiesAnyClientRpc(int enemiesFound)
+        private void FoundEnemiesAnyClientRpc(int enemiesFound)
         {
             onObjectsAny.Invoke(enemiesFound);
         }
@@ -297,7 +295,7 @@ namespace itolib.Behaviours.Detectors
         /// <param name="enemyReference"></param>
         /// <param name="exit"></param>
         [ClientRpc]
-        public void RegionEnteredClientRpc(NetworkBehaviourReference enemyReference, bool exit = false)
+        private void RegionEnteredClientRpc(NetworkBehaviourReference enemyReference, bool exit = false)
         {
             if (enemyReference.TryGet(out EnemyAI enemy))
             {

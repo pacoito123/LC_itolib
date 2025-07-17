@@ -3,7 +3,6 @@ using itolib.Extensions;
 using LethalLevelLoader;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Effects
 {
@@ -15,52 +14,52 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public bool FoundSun { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [Header("Sun Screen")]
         [Tooltip("")]
-        public MeshRenderer? sunTexture;
+        [SerializeField] private MeshRenderer? sunTexture;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent<bool> onDungeonEntered = new();
+        [SerializeField] private UnityEvent<bool> onDungeonEntered = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [FormerlySerializedAs("onSunRevealed")]
-        public UnityEvent<bool> onDungeonExited = new();
+        [SerializeField] private UnityEvent<bool> onDungeonExited = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        private bool foundSun;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void Awake()
         {
             if (sunTexture == null)
             {
                 Transform? sunTransform = (TimeOfDay.Instance != null && TimeOfDay.Instance.sunAnimator != null)
                     ? TimeOfDay.Instance.sunAnimator.transform.Find("SunTexture") : null;
-                FoundSun = sunTransform != null && sunTransform.TryGetComponent(out sunTexture);
+
+                foundSun = sunTransform != null && sunTransform.TryGetComponent(out sunTexture);
             }
             else
             {
-                FoundSun = true;
+                foundSun = true;
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Start()
+        private void Start()
         {
-            if (!FoundSun)
+            if (!foundSun)
             {
                 enabled = false;
             }
@@ -69,7 +68,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnEnable()
+        private void OnEnable()
         {
             if (DungeonManager.CurrentExtendedDungeonFlow == null)
             {
@@ -88,7 +87,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnDisable()
+        private void OnDisable()
         {
             if (DungeonManager.CurrentExtendedDungeonFlow == null)
             {
@@ -109,25 +108,25 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         /// <param name="player"></param>
         /// <param name="reveal"></param>
-        public void HideSun(PlayerControllerB player, bool reveal = false)
+        private void HideSun(PlayerControllerB player, bool reveal = false)
         {
             if (!player.IsLocalClient() || !player.isPlayerControlled)
             {
                 return;
             }
 
-            if (FoundSun && sunTexture != null && sunTexture.enabled != reveal)
+            if (foundSun && sunTexture != null && sunTexture.enabled != reveal)
             {
                 sunTexture.enabled = reveal;
             }
 
             if (!reveal)
             {
-                onDungeonEntered.Invoke(FoundSun);
+                onDungeonEntered.Invoke(foundSun);
             }
             else
             {
-                onDungeonExited.Invoke(FoundSun);
+                onDungeonExited.Invoke(foundSun);
             }
 
         }
@@ -136,7 +135,7 @@ namespace itolib.Behaviours.Effects
         ///     TODO.
         /// </summary>
         /// <param name="pair"></param>
-        public void HideSun((EntranceTeleport, PlayerControllerB) pair)
+        private void HideSun((EntranceTeleport, PlayerControllerB) pair)
         {
             HideSun(pair.Item2, reveal: false);
         }
@@ -145,7 +144,7 @@ namespace itolib.Behaviours.Effects
         ///     TODO.
         /// </summary>
         /// <param name="pair"></param>
-        public void RevealSun((EntranceTeleport, PlayerControllerB) pair)
+        private void RevealSun((EntranceTeleport, PlayerControllerB) pair)
         {
             HideSun(pair.Item2, reveal: true);
         }
@@ -154,7 +153,7 @@ namespace itolib.Behaviours.Effects
         ///     TODO.
         /// </summary>
         /// <param name="player"></param>
-        public void ToggleSunOnTeleport(PlayerControllerB player)
+        private void ToggleSunOnTeleport(PlayerControllerB player)
         {
             HideSun(player, reveal: !player.isInsideFactory);
         }

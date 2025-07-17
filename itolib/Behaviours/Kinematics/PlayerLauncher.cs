@@ -3,7 +3,6 @@ using itolib.Behaviours.Effects;
 using itolib.Enums;
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Kinematics
 {
@@ -54,20 +53,19 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         [Tooltip("")]
         [Min(0)]
-        public float launchSpeed;
+        [SerializeField] private float launchSpeed;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [FormerlySerializedAs("landingDetaches")]
-        public bool detachOnLand = true;
+        [SerializeField] private bool detachOnLand = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool detachOnPeak;
+        [SerializeField] private bool detachOnPeak;
 
         /// <summary>
         ///     TODO.
@@ -167,7 +165,7 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Awake()
+        protected override void Awake()
         {
             attachCondition = player => !player.isPlayerDead && !(crouchingPreventsLaunch && player.isCrouching);
             detachCondition = player => player.isPlayerDead || (detachOnLand && player.thisController != null && player.thisController.isGrounded)
@@ -177,7 +175,7 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Update()
+        protected override void Update()
         {
             if (attachedPlayer != null)
             {

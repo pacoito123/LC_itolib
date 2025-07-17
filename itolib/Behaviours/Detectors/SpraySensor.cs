@@ -116,7 +116,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Start()
+        protected override void Start()
         {
             sprayThresholds.Sort((thresholdA, thresholdB) => thresholdB.spraysRequired - thresholdA.spraysRequired);
 

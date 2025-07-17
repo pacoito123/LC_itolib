@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     Wait until the round starts to deactivate interior fog.
         /// </summary>
-        public void Start()
+        private void Start()
         {
             if (StartOfRound.Instance != null)
             {
@@ -22,7 +22,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     Unsubscribe from the StartNewRound event when destroyed.
         /// </summary>
-        public void OnDestroy()
+        private void OnDestroy()
         {
             if (StartOfRound.Instance != null)
             {
@@ -33,7 +33,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     Simply turn off the 'SpookyFog' GameObject.
         /// </summary>
-        public void DeactivateSpookyFog()
+        private void DeactivateSpookyFog()
         {
             if (RoundManager.Instance != null && RoundManager.Instance.indoorFog != null)
             {

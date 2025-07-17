@@ -49,7 +49,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnEnable()
+        private void OnEnable()
         {
             if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null)
             {

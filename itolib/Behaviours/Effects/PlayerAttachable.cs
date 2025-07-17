@@ -5,7 +5,6 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Effects
 {
@@ -19,123 +18,115 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Attach")]
         [Tooltip("Callback invoked immediately after a player attaches, with the player in question as parameter.")]
-        public UnityEvent<PlayerControllerB> onAttach = new();
+        [SerializeField] private UnityEvent<PlayerControllerB> onAttach = new();
 
         /// <summary>
         ///     Whether players can attach multiple times to the same object or not.
         /// </summary>
         [Tooltip("Whether players can attach multiple times to the same object or not.")]
-        public bool triggerOnce = false;
+        [SerializeField] protected bool triggerOnce;
 
         /// <summary>
         ///     Whether players automatically attach upon entering the attach region or not.
         /// </summary>
         [Tooltip("Whether players automatically attach upon entering the attach region or not.")]
-        public bool attachOnEnter = true;
+        [SerializeField] protected bool attachOnEnter = true;
 
         /// <summary>
         ///     Callback invoked immediately before a player detaches, with the player in question as parameter.
         /// </summary>
         [Header("Detach")]
         [Tooltip("Callback invoked immediately before a player detaches, with the player in question as parameter.")]
-        public UnityEvent<PlayerControllerB> onDetach = new();
+        [SerializeField] private UnityEvent<PlayerControllerB> onDetach = new();
 
         /// <summary>
         ///     Delay in seconds until the player is forcibly detached. Can be left at '0' to attach to the player for an indefinite amount of time.
         /// </summary>
         [Tooltip("Delay in seconds until the player is forcibly detached. Can be left at '0' to attach to the player for an indefinite amount of time.")]
-        public float detachTimer = 0.0f;
+        [SerializeField] protected float detachTimer;
 
         /// <summary>
         ///     Whether players automatically detach upon leaving the attach region or not.
         /// </summary>
         [Tooltip("Whether players automatically detach upon leaving the attach region or not.")]
-        public bool detachOnExit = false;
+        [SerializeField] protected bool detachOnExit;
 
         /// <summary>
         ///     Parent NetworkObject to despawn once detached, if set to despawn upon detaching.
         /// </summary>
         [Header("Despawn")]
         [Tooltip("Parent NetworkObject to despawn once detached, if set to despawn upon detaching.")]
-        public NetworkObject? parentNetworkObject;
+        [SerializeField] protected NetworkObject? parentNetworkObject;
 
         /// <summary>
         ///     Callback invoked immediately before despawning.
         /// </summary>
         [Tooltip("Callback invoked when despawning.")]
-        public UnityEvent onDespawn = new();
+        [SerializeField] private UnityEvent onDespawn = new();
 
         /// <summary>
         ///     Destroy and despawn after the player detaches.
         /// </summary>
         [Tooltip("Destroy and despawn after the player detaches.")]
-        public bool despawnOnDetach = false;
+        [SerializeField] protected bool despawnOnDetach;
 
         /// <summary>
         ///     Delay in seconds until despawning after detaching the player, to allow effects to play.
         /// </summary>
         [Tooltip("Delay in seconds until despawning after detaching the player, to allow effects to play.")]
-        public float despawnTimer = 0.0f;
+        [SerializeField] protected float despawnTimer;
 
         /// <summary>
         ///     Whether players attach locally, otherwise only one player can attach at a time.
         /// </summary>
         [Header("Other")]
         [Tooltip("Whether players attach locally, otherwise only one player can attach at a time.")]
-        [FormerlySerializedAs("isLocalEffect")]
-        public bool attachLocally = false;
+        [SerializeField] protected bool attachLocally;
 
         /// <summary>
         ///     The player that's currently attached.
         /// </summary>
-        [HideInInspector]
         protected PlayerControllerB? attachedPlayer;
 
         /// <summary>
         ///     Cached transform of the currently attached player (if there is one).
         /// </summary>
-        [HideInInspector]
         protected Transform attachedPlayerTransform = null!;
 
         /// <summary>
         ///     Cached transform of the currently attached player's gameplay camera (if there is one).
         /// </summary>
-        [HideInInspector]
         protected Transform attachedPlayerGameplayCamera = null!;
 
         /// <summary>
         ///     Whether or not the local player is attached.
         /// </summary>
-        [HideInInspector]
         protected bool localPlayerAttached;
 
         /// <summary>
         ///     Whether or not a player has attached once already.
         /// </summary>
-        [HideInInspector]
         protected bool hasTriggered;
 
         /// <summary>
         ///     Condition needed for the player to be attached.
         /// </summary>
-        [HideInInspector]
         protected Predicate<PlayerControllerB> attachCondition = _ => true;
 
         /// <summary>
         ///     Condition needed for the player to be detached.
         /// </summary>
-        [HideInInspector]
         protected Predicate<PlayerControllerB> detachCondition = _ => false;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public abstract void Awake();
+        protected abstract void Awake();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public virtual void Start()
+        protected virtual void Start()
         {
             // Start disabled.
             enabled = false;
@@ -145,7 +136,7 @@ namespace itolib.Behaviours.Effects
         ///     Attach upon coming into contact with a player.
         /// </summary>
         /// <param name="collider">Collider to attempt to attach to.</param>
-        public virtual void OnTriggerEnter(Collider collider)
+        protected virtual void OnTriggerEnter(Collider collider)
         {
             // Check if player should attach upon entering the attach region.
             if (!attachOnEnter)
@@ -192,7 +183,7 @@ namespace itolib.Behaviours.Effects
         ///     Detach player upon exiting the attach region.
         /// </summary>
         /// <param name="collider">Collider to attempt to detach.</param>
-        public virtual void OnTriggerExit(Collider collider)
+        protected virtual void OnTriggerExit(Collider collider)
         {
             // Check if player should detach upon leaving the attach region.
             if (!detachOnExit)
@@ -220,7 +211,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     Check if detach condition is met, in order to detach the player.
         /// </summary>
-        public virtual void Update()
+        protected virtual void Update()
         {
             if (attachedPlayer == null)
             {
@@ -295,7 +286,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         /// <param name="playerReference">NetworkObject reference of the player to attach.</param>
         [ServerRpc(RequireOwnership = false)]
-        public void AttachPlayerServerRpc(NetworkBehaviourReference playerReference)
+        protected void AttachPlayerServerRpc(NetworkBehaviourReference playerReference)
         {
             if (attachedPlayer == null)
             {
@@ -309,7 +300,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         /// <param name="playerReference">NetworkObject reference of the player to attach.</param>
         [ClientRpc]
-        public void AttachPlayerClientRpc(NetworkBehaviourReference playerReference)
+        private void AttachPlayerClientRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
@@ -321,7 +312,7 @@ namespace itolib.Behaviours.Effects
         ///     Detach player on the server.
         /// </summary>
         [ServerRpc(RequireOwnership = false)]
-        public void DetachPlayerServerRpc()
+        protected void DetachPlayerServerRpc()
         {
             // Detach the player on all clients.
             DetachPlayerClientRpc();
@@ -337,7 +328,7 @@ namespace itolib.Behaviours.Effects
         ///     Detach player on clients.
         /// </summary>
         [ClientRpc]
-        public void DetachPlayerClientRpc()
+        private void DetachPlayerClientRpc()
         {
             if (attachedPlayer != null)
             {
@@ -348,7 +339,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     Coroutine to detach the player after a specified amount of time passes without the detach condition being met.
         /// </summary>
-        public virtual IEnumerator DetachPlayerDelayed()
+        private IEnumerator DetachPlayerDelayed()
         {
             if (!localPlayerAttached)
             {
@@ -371,7 +362,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     Coroutine to despawn after a specified amount of time passes after detaching.
         /// </summary>
-        public virtual IEnumerator DespawnDelayed()
+        private IEnumerator DespawnDelayed()
         {
             yield return new WaitForSeconds(despawnTimer);
 

@@ -120,7 +120,7 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     TODO.
         /// </summary>
-        public virtual void Start()
+        protected virtual void Start()
         {
             switch (activationTime)
             {
@@ -149,7 +149,7 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     TODO.
         /// </summary>
-        public virtual void OnDestroy()
+        protected virtual void OnDestroy()
         {
             switch (activationTime)
             {

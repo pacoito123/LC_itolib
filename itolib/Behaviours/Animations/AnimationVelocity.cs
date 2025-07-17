@@ -27,67 +27,63 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         [Header("Animation Velocity")]
         [Tooltip("")]
-        public Animator animator = null!;
+        [SerializeField] private Animator animator = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string initialState = "";
+        [SerializeField] private string initialState = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string speedParameter = "";
+        [SerializeField] private string speedParameter = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public float minStartingSpeed = 1.0f;
+        [SerializeField] private float minStartingSpeed = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public float maxStartingSpeed = 1.0f;
+        [SerializeField] private float maxStartingSpeed = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public float stoppingSpeed = 1.0f;
+        [SerializeField] private float stoppingSpeed = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public ActivationTime activationTime = ActivationTime.StartOfRound;
+        [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public float transitionTimer;
+        private float transitionTimer;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public bool targetReached = true;
+        private bool targetReached = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public float previousTarget;
+        private float previousTarget;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public float currentTarget;
+        private float currentTarget;
 
         /// <summary>
         ///     TODO.
@@ -132,7 +128,7 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnEnable()
+        private void OnEnable()
         {
             if (animator == null && !TryGetComponent(out animator))
             {
@@ -146,7 +142,7 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void FixedUpdate()
+        private void FixedUpdate()
         {
             if (targetReached)
             {
@@ -233,7 +229,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="targetSpeed"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void ChangeSpeedServerRpc(NetworkBehaviourReference playerReference, float targetSpeed)
+        private void ChangeSpeedServerRpc(NetworkBehaviourReference playerReference, float targetSpeed)
         {
             ChangeSpeedClientRpc(playerReference, targetSpeed);
         }
@@ -244,7 +240,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="targetSpeed"></param>
         [ClientRpc]
-        public void ChangeSpeedClientRpc(NetworkBehaviourReference playerReference, float targetSpeed)
+        private void ChangeSpeedClientRpc(NetworkBehaviourReference playerReference, float targetSpeed)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
@@ -296,7 +292,7 @@ namespace itolib.Behaviours.Animations
         ///     TODO.
         /// </summary>
         [ServerRpc(RequireOwnership = false)]
-        public void SyncSpeedServerRpc(NetworkBehaviourReference playerReference, float initialSpeed)
+        private void SyncSpeedServerRpc(NetworkBehaviourReference playerReference, float initialSpeed)
         {
             SyncSpeedClientRpc(playerReference, initialSpeed);
         }
@@ -307,7 +303,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="playerReference"></param>
         /// <param name="initialSpeed"></param>
         [ClientRpc]
-        public void SyncSpeedClientRpc(NetworkBehaviourReference playerReference, float initialSpeed)
+        private void SyncSpeedClientRpc(NetworkBehaviourReference playerReference, float initialSpeed)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {

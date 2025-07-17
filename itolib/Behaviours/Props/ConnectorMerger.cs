@@ -12,37 +12,37 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public int ConnectorsFound { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [Header("Connector Merger")]
         [Tooltip("")]
-        public float tolerance = 1.0f;
+        [SerializeField] private float tolerance = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool moveToCenter = true;
+        [SerializeField] private bool moveToCenter = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public int priority = 1;
+        [SerializeField] private int priority = 1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string nameFilter = "";
+        [SerializeField] private string nameFilter = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Reset()
+        private int connectorsFound;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        protected override void Reset()
         {
             maxObjects = 8;
             layerMask = 1 << LayerMask.NameToLayer("Room");
@@ -60,11 +60,11 @@ namespace itolib.Behaviours.Props
 
             base.CheckObjectsInRegion();
 
-            ConnectorsFound = 0;
+            connectorsFound = 0;
 
-            for (int i = 0; i < ObjectsFound; i++)
+            for (int i = 0; i < objectsFound; i++)
             {
-                if (OverlapBuffer![i].TryGetComponent(out ConnectorMerger connector))
+                if (overlapBuffer![i].TryGetComponent(out ConnectorMerger connector))
                 {
                     if (connector == this || (nameFilter.Length > 0 && nameFilter.CompareOrdinal(connector.nameFilter)))
                     {
@@ -81,14 +81,14 @@ namespace itolib.Behaviours.Props
                     if (magnitude < tolerance)
                     {
                         onObjectsEach.Invoke(connector);
-                        ConnectorsFound++;
+                        connectorsFound++;
                     }
                 }
             }
 
-            if (ConnectorsFound > 0)
+            if (connectorsFound > 0)
             {
-                onObjectsAny.Invoke(ConnectorsFound);
+                onObjectsAny.Invoke(connectorsFound);
             }
         }
 

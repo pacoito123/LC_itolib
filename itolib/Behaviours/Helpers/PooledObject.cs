@@ -10,11 +10,6 @@ namespace itolib.Behaviours.Helpers
     public abstract class PooledObject<T> : MonoBehaviour, IPooledObject<T> where T : Object
     {
         /// <summary>
-        ///     Cached instance of the current object as an <c>IPooledObject</c>, to avoid having to cast. 
-        /// </summary>
-        public IPooledObject<T> PooledSelf { get; set; } = default!;
-
-        /// <summary>
         ///     Instance number for the <c>PooledObject</c>'s current pool. Intended for tracking and/or limiting the amount of created instances.
         /// </summary>
         public int ObjectID { get; set; }
@@ -30,11 +25,16 @@ namespace itolib.Behaviours.Helpers
         public IPooledObject<T> NextPooledObject { get; set; } = null!;
 
         /// <summary>
+        ///     Cached instance of the current object as an <c>IPooledObject</c>, to avoid having to cast. 
+        /// </summary>
+        protected IPooledObject<T> pooledSelf = default!;
+
+        /// <summary>
         ///     Initialize some fields.
         /// </summary>
-        public virtual void Awake()
+        protected virtual void Awake()
         {
-            PooledSelf = this;
+            pooledSelf = this;
 
             enabled = false;
         }

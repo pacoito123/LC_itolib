@@ -1,3 +1,4 @@
+using System;
 using itolib.Behaviours.Detectors;
 using UnityEngine;
 
@@ -6,30 +7,31 @@ namespace itolib.Behaviours.Props
     /// <summary>
     ///     TODO.
     /// </summary>
+    [Obsolete("Will likely be merged into ConnectorMerger, heh.")]
     public class WallBreaker : DetectRegion<WallBreaker>
     {
         /// <summary>
         ///     TODO.
         /// </summary>
-        public int BlockersFound { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [Header("Wall Breaker")]
         [Tooltip("")]
-        public float tolerance = 1.0f;
+        [SerializeField] private float tolerance = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool disableSelf = true;
+        [SerializeField] private bool disableSelf = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Reset()
+        private int blockersFound;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        protected override void Reset()
         {
             maxObjects = 8;
             layerMask = 1 << LayerMask.NameToLayer("Room");
@@ -38,7 +40,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Start()
+        protected override void Start()
         {
             if (disableSelf)
             {
@@ -60,11 +62,11 @@ namespace itolib.Behaviours.Props
 
             base.CheckObjectsInRegion();
 
-            BlockersFound = 0;
+            blockersFound = 0;
 
-            for (int i = 0; i < ObjectsFound; i++)
+            for (int i = 0; i < objectsFound; i++)
             {
-                if (OverlapBuffer![i].TryGetComponent(out WallBreaker blocker))
+                if (overlapBuffer![i].TryGetComponent(out WallBreaker blocker))
                 {
                     if (blocker == this)
                     {
@@ -76,14 +78,14 @@ namespace itolib.Behaviours.Props
                     if (magnitude < tolerance)
                     {
                         onObjectsEach.Invoke(blocker);
-                        BlockersFound++;
+                        blockersFound++;
                     }
                 }
             }
 
-            if (BlockersFound > 0)
+            if (blockersFound > 0)
             {
-                onObjectsAny.Invoke(BlockersFound);
+                onObjectsAny.Invoke(blockersFound);
             }
         }
 

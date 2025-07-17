@@ -16,78 +16,77 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Player Hinderer")]
         [Tooltip("")]
-        public Collider? hindererCollider;
+        [SerializeField] private Collider? hindererCollider;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(0.01f)]
-        public float hinderedMultiplier = 2.5f;
+        [SerializeField] private float hinderedMultiplier = 2.5f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Jumping")]
         [Tooltip("")]
-        public bool allowJumping = true;
+        [SerializeField] private bool allowJumping = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool requireStamina;
+        [SerializeField] private bool requireStamina;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Quicksand")]
         [Tooltip("")]
-        public bool sinkPlayer;
+        [SerializeField] private bool sinkPlayer;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public float sinkingSpeedMultiplier = 0.21f;
+        [SerializeField] private float sinkingSpeedMultiplier = 0.21f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public AnimationCurve? playerSinkingCurveOverride;
+        [SerializeField] private AnimationCurve? playerSinkingCurveOverride;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Water")]
         [Tooltip("")]
-        public bool drownPlayer;
+        [SerializeField] private bool drownPlayer;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool waterOverlay;
+        [SerializeField] private bool waterOverlay;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB> onHinderStart = new();
+        [SerializeField] private UnityEvent<PlayerControllerB> onHinderStart = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB> onHinderStop = new();
+        [SerializeField] private UnityEvent<PlayerControllerB> onHinderStop = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public AnimationCurve? defaultPlayerSinkingCurve;
+        private AnimationCurve? defaultPlayerSinkingCurve;
 
         /// <summary>
         ///     TODO.
@@ -107,7 +106,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Awake()
+        protected override void Awake()
         {
             attachCondition = player => !player.isPlayerDead;
             detachCondition = player => player.isPlayerDead;
@@ -116,7 +115,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Start()
+        protected override void Start()
         {
             defaultPlayerSinkingCurve = StartOfRound.Instance != null ? StartOfRound.Instance.playerSinkingCurve : null;
 
@@ -126,7 +125,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Update()
+        protected override void Update()
         {
             if (localPlayerAttached && attachedPlayer != null)
             {
@@ -234,7 +233,7 @@ namespace itolib.Behaviours.Effects
         /// <param name="drainAmount">Amount to drain from the attached player.</param>
         public void DrainPlayer(float drainAmount)
         {
-            if (attachedPlayer == null || attachedPlayer.isExhausted)
+            if (attachedPlayer == null || attachedPlayer.isExhausted || !attachedPlayer.IsLocalClient())
             {
                 return;
             }
@@ -248,7 +247,7 @@ namespace itolib.Behaviours.Effects
         /// <param name="playerReference"></param>
         /// <param name="stop"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void HinderPlayerServerRpc(NetworkBehaviourReference playerReference, bool stop = false)
+        private void HinderPlayerServerRpc(NetworkBehaviourReference playerReference, bool stop = false)
         {
             HinderPlayerClientRpc(playerReference, stop);
         }
@@ -259,7 +258,7 @@ namespace itolib.Behaviours.Effects
         /// <param name="playerReference"></param>
         /// <param name="stop"></param>
         [ClientRpc]
-        public void HinderPlayerClientRpc(NetworkBehaviourReference playerReference, bool stop = false)
+        private void HinderPlayerClientRpc(NetworkBehaviourReference playerReference, bool stop = false)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {

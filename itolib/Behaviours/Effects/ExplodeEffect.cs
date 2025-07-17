@@ -14,45 +14,40 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public bool VanillaExplosion { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [Header("Explode Effect")]
         [Tooltip("")]
-        public GameObject? explosionPrefab;
+        [SerializeField] private GameObject? explosionPrefab;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool spawnExplosionEffect = true;
+        [SerializeField] private bool spawnExplosionEffect = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Damage")]
         [Tooltip("")]
-        public AnimationCurve damageCurve = AnimationCurve.Constant(0.0f, 1.0f, 50.0f);
+        [SerializeField] private AnimationCurve damageCurve = AnimationCurve.Constant(0.0f, 1.0f, 50.0f);
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public AnimationCurve enemyDamageCurve = AnimationCurve.Constant(0.0f, 1.0f, 6.0f);
+        [SerializeField] private AnimationCurve enemyDamageCurve = AnimationCurve.Constant(0.0f, 1.0f, 6.0f);
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public AnimationCurve otherDamageCurve = AnimationCurve.Constant(0.0f, 1.0f, 1.0f);
+        [SerializeField] private AnimationCurve otherDamageCurve = AnimationCurve.Constant(0.0f, 1.0f, 1.0f);
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public Collider? killBounds;
+        [SerializeField] private Collider? killBounds;
 
         /// <summary>
         ///     TODO.
@@ -60,53 +55,58 @@ namespace itolib.Behaviours.Effects
         [Header("Camera Shake")]
         [Tooltip("")]
         [Min(0.0f)]
-        public float smallCameraShakeDistance = 25.0f;
+        [SerializeField] private float smallCameraShakeDistance = 25.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(0.0f)]
-        public float bigCameraShakeDistance = 14.0f;
+        [SerializeField] private float bigCameraShakeDistance = 14.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(0.0f)]
-        public float longCameraShakeDistance = 0.0f;
+        [SerializeField] private float longCameraShakeDistance = 0.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(0.0f)]
-        public float veryStrongCameraShakeDistance = 0.0f;
+        [SerializeField] private float veryStrongCameraShakeDistance = 0.0f;
 
         /// <summary>
         ///     Parent NetworkObject to despawn.
         /// </summary>
         [Header("Despawn")]
         [Tooltip("Parent NetworkObject to despawn.")]
-        public NetworkObject? parentNetworkObject;
+        [SerializeField] private NetworkObject? parentNetworkObject;
 
         /// <summary>
         ///     Delay in seconds until despawning, to allow effects to play.
         /// </summary>
         [Tooltip("Delay in seconds until despawning, to allow effects to play.")]
-        public float despawnTimer = 0.0f;
+        [SerializeField] private float despawnTimer = 0.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Collision")]
         [Tooltip("")]
-        public LayerMask coverMask;
+        [SerializeField] private LayerMask coverMask;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Reset()
+        private bool useVanillaExplosion;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        protected override void Reset()
         {
             layerMask = (1 << LayerMask.NameToLayer("Player")) | (1 << LayerMask.NameToLayer("Enemies"))
                 | (1 << LayerMask.NameToLayer("MapHazards"));
@@ -117,14 +117,14 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Start()
+        protected override void Start()
         {
             base.Start();
 
             if (explosionPrefab == null)
             {
                 explosionPrefab = StartOfRound.Instance != null ? StartOfRound.Instance.explosionPrefab : null;
-                VanillaExplosion = true;
+                useVanillaExplosion = true;
             }
         }
 
@@ -144,7 +144,7 @@ namespace itolib.Behaviours.Effects
                 ? regionCollider.bounds.center : transform.position;
             if (spawnExplosionEffect)
             {
-                Instantiate(explosionPrefab, explosionOrigin, VanillaExplosion ? Quaternion.Euler(-90f, 0f, 0f)
+                Instantiate(explosionPrefab, explosionOrigin, useVanillaExplosion ? Quaternion.Euler(-90f, 0f, 0f)
                     : Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform).SetActive(true);
             }
 
@@ -174,16 +174,16 @@ namespace itolib.Behaviours.Effects
 
             base.CheckObjectsInRegion();
 
-            if (OverlapBuffer == null || OverlapBuffer.Length == 0)
+            if (overlapBuffer == null || overlapBuffer.Length == 0)
             {
                 return;
             }
 
             bool localPlayerHit = false;
 
-            for (int i = 0; i < ObjectsFound; i++)
+            for (int i = 0; i < objectsFound; i++)
             {
-                Collider? colliderHit = OverlapBuffer[i];
+                Collider? colliderHit = overlapBuffer[i];
 
                 if (colliderHit == null || !colliderHit.enabled) // Skip disabled colliders.
                 {
@@ -250,7 +250,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     Coroutine to despawn after a specified amount of time passes.
         /// </summary>
-        public virtual IEnumerator DespawnDelayed()
+        private IEnumerator DespawnDelayed()
         {
             yield return new WaitForSeconds(despawnTimer);
 

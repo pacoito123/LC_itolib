@@ -17,7 +17,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         [Header("Player Sensor")]
         [Tooltip("")]
-        public bool onlyAffectLocalPlayer;
+        [SerializeField] private bool onlyAffectLocalPlayer;
 
         /// <summary>
         ///     TODO.
@@ -25,18 +25,18 @@ namespace itolib.Behaviours.Detectors
         [Space(5)]
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB> onPlayersAliveEach = new();
+        [SerializeField] private UnityEvent<PlayerControllerB> onPlayersAliveEach = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int> onPlayersAliveAny = new();
+        [SerializeField] private UnityEvent<int> onPlayersAliveAny = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void Reset()
+        protected override void Reset()
         {
             maxObjects = 12;
             layerMask = (1 << LayerMask.NameToLayer("Player")) | (1 << LayerMask.NameToLayer("PlayerRagdoll"));
@@ -57,9 +57,9 @@ namespace itolib.Behaviours.Detectors
             List<ulong> playersFound = new(StartOfRound.Instance.allPlayerScripts.Length);
             int playersFoundAlive = 0;
 
-            for (int i = 0; i < ObjectsFound; i++)
+            for (int i = 0; i < objectsFound; i++)
             {
-                if (OverlapBuffer![i].TryGetComponent(out PlayerControllerB player))
+                if (overlapBuffer![i].TryGetComponent(out PlayerControllerB player))
                 {
                     if (playersFound.Contains(player.actualClientId))
                     {
@@ -92,7 +92,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnTriggerEnter(Collider other)
+        protected override void OnTriggerEnter(Collider other)
         {
             if (other.TryGetComponent(out PlayerControllerB player) && player.IsLocalClient())
             {
@@ -109,7 +109,7 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="other"></param>
-        public override void OnTriggerExit(Collider other)
+        protected override void OnTriggerExit(Collider other)
         {
             if (other.TryGetComponent(out PlayerControllerB player) && player.IsLocalClient())
             {
@@ -127,7 +127,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void FoundPlayersEachClientRpc(NetworkBehaviourReference playerReference)
+        private void FoundPlayersEachClientRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
@@ -140,7 +140,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void FoundPlayersAliveEachClientRpc(NetworkBehaviourReference playerReference)
+        private void FoundPlayersAliveEachClientRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
@@ -153,7 +153,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="playersFound"></param>
         [ClientRpc]
-        public void FoundPlayersAnyClientRpc(int playersFound)
+        private void FoundPlayersAnyClientRpc(int playersFound)
         {
             onObjectsAny.Invoke(playersFound);
         }
@@ -163,7 +163,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="playersFound"></param>
         [ClientRpc]
-        public void FoundPlayersAliveAnyClientRpc(int playersFound)
+        private void FoundPlayersAliveAnyClientRpc(int playersFound)
         {
             onPlayersAliveAny.Invoke(playersFound);
         }
@@ -174,7 +174,7 @@ namespace itolib.Behaviours.Detectors
         /// <param name="playerReference"></param>
         /// <param name="exit"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void RegionEnteredServerRpc(NetworkBehaviourReference playerReference, bool exit = false)
+        private void RegionEnteredServerRpc(NetworkBehaviourReference playerReference, bool exit = false)
         {
             RegionEnteredClientRpc(playerReference, exit);
         }
@@ -185,7 +185,7 @@ namespace itolib.Behaviours.Detectors
         /// <param name="playerReference"></param>
         /// <param name="exit"></param>
         [ClientRpc]
-        public void RegionEnteredClientRpc(NetworkBehaviourReference playerReference, bool exit = false)
+        private void RegionEnteredClientRpc(NetworkBehaviourReference playerReference, bool exit = false)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
