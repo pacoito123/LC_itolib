@@ -112,7 +112,7 @@ namespace itolib.Behaviours.Networking
         [Header("Audible Properties")]
         [Tooltip("")]
         [Min(0.0f)]
-        public float audibleRange = 0.0f;
+        [SerializeField] private float audibleRange = 0.0f;
 
         /// <summary>
         ///     TODO.
@@ -169,7 +169,7 @@ namespace itolib.Behaviours.Networking
         {
             base.OnNetworkSpawn();
 
-            if (IsHost && StartOfRound.Instance != null && syncedSource != null && syncedSource.playOnAwake)
+            if (IsHost && syncedSource != null && syncedSource.playOnAwake)
             {
                 PlayAudio();
             }
@@ -195,7 +195,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="playerReference"></param>
         /// <param name="audioProperties"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void PlayAudioServerRpc(NetworkBehaviourReference playerReference, SyncedAudioProperties audioProperties)
+        private void PlayAudioServerRpc(NetworkBehaviourReference playerReference, SyncedAudioProperties audioProperties)
         {
             PlayAudioClientRpc(playerReference, audioProperties);
         }
@@ -206,7 +206,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="playerReference"></param>
         /// <param name="audioProperties"></param>
         [ClientRpc]
-        public void PlayAudioClientRpc(NetworkBehaviourReference playerReference, SyncedAudioProperties audioProperties)
+        private void PlayAudioClientRpc(NetworkBehaviourReference playerReference, SyncedAudioProperties audioProperties)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
@@ -282,7 +282,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="playerReference"></param>
         /// <param name="audioProperties"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void PlayOneShotServerRpc(int clip, NetworkBehaviourReference playerReference, SyncedAudioProperties audioProperties)
+        private void PlayOneShotServerRpc(int clip, NetworkBehaviourReference playerReference, SyncedAudioProperties audioProperties)
         {
             PlayOneShotClientRpc(clip, playerReference, audioProperties);
         }
@@ -294,7 +294,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="playerReference"></param>
         /// <param name="audioProperties"></param>
         [ClientRpc]
-        public void PlayOneShotClientRpc(int clip, NetworkBehaviourReference playerReference, SyncedAudioProperties audioProperties)
+        private void PlayOneShotClientRpc(int clip, NetworkBehaviourReference playerReference, SyncedAudioProperties audioProperties)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {

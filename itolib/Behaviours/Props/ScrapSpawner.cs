@@ -280,7 +280,7 @@ namespace itolib.Behaviours.Props
                     }
                 }
             }
-            else
+            else if (!skipInactive)
             {
                 SpawnItem(transform);
             }

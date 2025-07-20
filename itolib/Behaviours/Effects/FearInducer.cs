@@ -77,7 +77,7 @@ namespace itolib.Behaviours.Effects
             if (GameNetworkManager.Instance.localPlayerController.HasLineOfSightToPosition(transform.position,
                 lookAngle, lookRange, proximityRange))
             {
-                float fearLevel = fearDistanceCurve.Evaluate(distance / lookRange);
+                float fearLevel = fearDistanceCurve.Evaluate(1 - (distance / lookRange));
                 GameNetworkManager.Instance.localPlayerController.JumpToFearLevel(fearLevel, true);
 
                 onPlayerSpook.Invoke(fearLevel);
