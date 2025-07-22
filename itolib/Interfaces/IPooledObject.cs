@@ -31,12 +31,6 @@ namespace itolib.Interfaces
         IPooledObject<T> CreateInstance();
 
         /// <summary>
-        ///     Instantiates multiple instances of the pooled object, to have prepared.
-        /// </summary>
-        /// <param name="instances">The number of instances to create.</param>
-        void CreateInstances(int instances);
-
-        /// <summary>
         ///     Attempt to assign a given <c><typeparamref name="T"/></c> to a new or existing pooled object instance.
         /// </summary>
         /// <param name="taker">External <c><typeparamref name="T"/></c> attempting to grab a pooled object instance.</param>
@@ -47,7 +41,7 @@ namespace itolib.Interfaces
         {
             pooledObject = null!;
 
-            if (TakenBy == null)
+            if (TakenBy == null || ReferenceEquals(taker, TakenBy))
             {
                 // Use the current (ownerless) pooled object instance.
                 pooledObject = this;
@@ -95,6 +89,26 @@ namespace itolib.Interfaces
 
             // Check next linked pooled object instance, or return false if there are no more instances left.
             return NextPooledObject != null && NextPooledObject.TryFreeInstance(possibleOwner, out pooledObject);
+        }
+
+        /// <summary>
+        ///     Instantiates multiple instances of the pooled object, to have prepared.
+        /// </summary>
+        /// <param name="instancesLeft">The number of instances left to prepare.</param>
+        void PrepareInstances(int instancesLeft)
+        {
+            // Finish creating instances, if none are left to prepare.
+            if (instancesLeft == 0)
+            {
+                return;
+            }
+
+            // Create a new pooled object instance.
+            NextPooledObject = CreateInstance();
+            NextPooledObject.ObjectID = ObjectID + 1;
+
+            // Continue creating instances, recursively.
+            NextPooledObject.PrepareInstances(instancesLeft - 1);
         }
     }
 }

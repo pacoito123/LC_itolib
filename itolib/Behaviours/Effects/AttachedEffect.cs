@@ -9,28 +9,15 @@ namespace itolib.Behaviours.Effects
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class AttachedEffect : PooledObject<GameObject>
+    public class AttachedEffect : PooledObject<Collider>
     {
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Space(5.0f)]
         [Header("Attached Effect")]
         [Tooltip("")]
         [SerializeField] private AttachedEffect effectToAttach = null!;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        [Min(1)]
-        [SerializeField] private int maxInstances = 8;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        [Min(0)]
-        [SerializeField] private int prepareInstances = 1;
 
         /// <summary>
         ///     TODO.
@@ -77,6 +64,22 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         private void Update()
         {
+            if (TakenBy == null)
+            {
+                TakenBy = null!; // Needed for destroyed objects...
+
+                enabled = false;
+
+                return;
+            }
+
+            if (!TakenBy.enabled)
+            {
+                Detach(TakenBy);
+
+                return;
+            }
+
             if (!followObject || targetPosition == null)
             {
                 return;
@@ -92,7 +95,7 @@ namespace itolib.Behaviours.Effects
         /// <param name="player"></param>
         public void AttachPlayer(PlayerControllerB player)
         {
-            Attach(player.gameObject);
+            Attach(player.GetComponent<Collider>());
         }
 
         /// <summary>
@@ -101,7 +104,7 @@ namespace itolib.Behaviours.Effects
         /// <param name="enemy"></param>
         public void AttachEnemy(EnemyAI enemy)
         {
-            Attach(enemy.gameObject);
+            Attach(enemy.GetComponent<Collider>());
         }
 
         /// <summary>
@@ -110,23 +113,28 @@ namespace itolib.Behaviours.Effects
         /// <param name="item"></param>
         public void AttachItem(GrabbableObject item)
         {
-            Attach(item.gameObject);
+            Attach(item.GetComponent<Collider>());
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="gameObject"></param>
-        public void Attach(GameObject gameObject)
+        /// <param name="collider"></param>
+        public void Attach(Collider collider)
         {
-            if (pooledSelf.TryAssignInstance(gameObject, maxInstances, out IPooledObject<GameObject> instance))
+            if (collider == null || !collider.enabled)
+            {
+                return;
+            }
+
+            if (pooledSelf.TryAssignInstance(collider, maxInstances - 1, out IPooledObject<Collider> instance))
             {
                 if (instance is AttachedEffect effect)
                 {
-                    effect.currentPosition.position = effect.TakenBy.transform.position;
                     effect.targetPosition = effect.TakenBy.transform;
+                    effect.currentPosition.position = effect.targetPosition.position;
 
-                    effect.onAttach.Invoke(gameObject);
+                    effect.onAttach.Invoke(collider.gameObject);
 
                     effect.enabled = true;
                 }
@@ -139,7 +147,7 @@ namespace itolib.Behaviours.Effects
         /// <param name="player"></param>
         public void DetachPlayer(PlayerControllerB player)
         {
-            Detach(player.gameObject);
+            Detach(player.GetComponent<Collider>());
         }
 
         /// <summary>
@@ -148,7 +156,7 @@ namespace itolib.Behaviours.Effects
         /// <param name="enemy"></param>
         public void DetachEnemy(EnemyAI enemy)
         {
-            Detach(enemy.gameObject);
+            Detach(enemy.GetComponent<Collider>());
         }
 
         /// <summary>
@@ -157,20 +165,25 @@ namespace itolib.Behaviours.Effects
         /// <param name="item"></param>
         public void DetachItem(GrabbableObject item)
         {
-            Detach(item.gameObject);
+            Detach(item.GetComponent<Collider>());
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="gameObject"></param>
-        public void Detach(GameObject gameObject)
+        /// <param name="collider"></param>
+        public void Detach(Collider collider)
         {
-            if (pooledSelf.TryFreeInstance(gameObject, out IPooledObject<GameObject> instance))
+            if (collider == null)
+            {
+                return;
+            }
+
+            if (pooledSelf.TryFreeInstance(collider, out IPooledObject<Collider> instance))
             {
                 if (instance is AttachedEffect effect)
                 {
-                    effect.onDetach.Invoke(gameObject);
+                    effect.onDetach.Invoke(collider.gameObject);
                     effect.targetPosition = null!;
 
                     effect.enabled = false;
@@ -182,20 +195,12 @@ namespace itolib.Behaviours.Effects
         ///     TODO.
         /// </summary>
         /// <returns></returns> 
-        public override IPooledObject<GameObject> CreateInstance()
+        public override IPooledObject<Collider> CreateInstance()
         {
             AttachedEffect instance = Instantiate(effectToAttach, transform.GetParent(), false);
             instance.name = name;
 
             return instance;
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public override void CreateInstances(int instances)
-        {
-            // TODO: Actually implement...
         }
     }
 }
