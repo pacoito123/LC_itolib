@@ -28,7 +28,7 @@ namespace itolib.Compatibility
         /// </summary>
         /// <param name="twin"></param>
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        public static void SwitchTwin(TwinApparatus? twin)
+        internal static void SwitchTwin(TwinApparatus? twin)
         {
             if (twin != null && twin.isLungDocked)
             {

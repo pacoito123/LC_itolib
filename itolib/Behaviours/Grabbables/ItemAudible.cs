@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
+using itolib.Interfaces;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -8,7 +9,6 @@ namespace itolib.Behaviours.Grabbables
     /// <summary>
     ///     TODO.
     /// </summary>
-    [RequireComponent(typeof(ItemGrabbable))]
     public class ItemAudible : NetworkBehaviour
     {
         /// <summary>
@@ -16,7 +16,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Header("Item Audible")]
         [Tooltip("")]
-        [SerializeField] private ItemGrabbable item = null!;
+        [SerializeField] private GrabbableObject item = null!;
 
         /// <summary>
         ///     TODO.
@@ -123,7 +123,12 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        private IEventfulItem? eventfulSelf;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void Awake()
         {
             if (item == null && !TryGetComponent(out item))
             {
@@ -133,9 +138,11 @@ namespace itolib.Behaviours.Grabbables
                 return;
             }
 
+            eventfulSelf = item as IEventfulItem;
+
             if (!triggerFromElsewhere)
             {
-                item.onActivate.AddListener(ItemActivate);
+                eventfulSelf?.OnActivate.AddListener(ItemActivate);
             }
         }
 
@@ -166,7 +173,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="used"></param>
         /// <param name="buttonDown"></param>
-        public void ItemActivate(bool used, bool buttonDown)
+        private void ItemActivate(bool used, bool buttonDown)
         {
             if (audioClips == null)
             {
@@ -223,7 +230,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="pitch"></param>
         /// <param name="loudness"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void PlayNetworkedAudioServerRpc(NetworkBehaviourReference playerWhoCalled, int clip, int clipFar, float volume, float pitch, float loudness)
+        private void PlayNetworkedAudioServerRpc(NetworkBehaviourReference playerWhoCalled, int clip, int clipFar, float volume, float pitch, float loudness)
         {
             PlayNetworkedAudioClientRpc(playerWhoCalled, clip, clipFar, volume, pitch, loudness);
         }
@@ -238,7 +245,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="pitch"></param>
         /// <param name="loudness"></param>
         [ClientRpc]
-        public void PlayNetworkedAudioClientRpc(NetworkBehaviourReference playerWhoCalled, int clip, int clipFar, float volume, float pitch, float loudness)
+        private void PlayNetworkedAudioClientRpc(NetworkBehaviourReference playerWhoCalled, int clip, int clipFar, float volume, float pitch, float loudness)
         {
             if (playerWhoCalled.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
@@ -290,7 +297,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="playerWhoCalled"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void StopAudioServerRpc(NetworkBehaviourReference playerWhoCalled)
+        private void StopAudioServerRpc(NetworkBehaviourReference playerWhoCalled)
         {
             StopAudioClientRpc(playerWhoCalled);
         }
@@ -300,7 +307,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="playerWhoCalled"></param>
         [ClientRpc]
-        public void StopAudioClientRpc(NetworkBehaviourReference playerWhoCalled)
+        private void StopAudioClientRpc(NetworkBehaviourReference playerWhoCalled)
         {
             if (playerWhoCalled.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {

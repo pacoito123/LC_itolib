@@ -12,17 +12,17 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        public ScriptableEvent? scriptableEvent;
+        [SerializeField] private ScriptableEvent? scriptableEvent;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent actions = new();
+        [SerializeField] private UnityEvent actions = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnEnable()
+        private void OnEnable()
         {
             if (scriptableEvent != null)
             {
@@ -33,7 +33,7 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnDisable()
+        private void OnDisable()
         {
             if (scriptableEvent != null)
             {

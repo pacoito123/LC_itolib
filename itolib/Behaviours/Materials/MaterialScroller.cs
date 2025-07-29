@@ -19,31 +19,31 @@ namespace itolib.Behaviours.Materials
         ///     Current frame being displayed (can be used to start at a specific frame).
         /// </summary>
         [Tooltip("Current frame being displayed (can be used to start at a specific frame).")]
-        public int currentFrame = 1;
+        [SerializeField] private int currentFrame = 1;
 
         /// <summary>
         ///     Total number of frames in the texture.
         /// </summary>
         [Tooltip("Total number of frames in the texture.")]
-        public int frames = 60;
+        [SerializeField] private int frames = 60;
 
         /// <summary>
         ///     Axis to scroll across.
         /// </summary>
         [Tooltip("Axis to scroll across.")]
-        public char offsetAxis = 'X';
+        [SerializeField] private char offsetAxis = 'X';
 
         /// <summary>
         ///     Offset to apply every frame.
         /// </summary>
         [Tooltip("Offset to apply every frame.")]
-        public float offsetPerFrame = 0.0f;
+        [SerializeField] private float offsetPerFrame;
 
         /// <summary>
         ///     ID of the exposed offset shader property.
         /// </summary>
         [Tooltip("ID of the exposed offset shader property.")]
-        public int offsetID = 0;
+        [SerializeField] private int offsetID;
 
         private void Awake()
         {

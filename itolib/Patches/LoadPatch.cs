@@ -10,18 +10,17 @@ namespace itolib.Patches
     [HarmonyPatch]
     internal sealed class LoadPatch
     {
-        public static bool FirstLoad { get; private set; } = true;
+        private static bool firstLoad = true;
 
         [HarmonyPatch(typeof(MenuManager), nameof(MenuManager.Start))]
         [HarmonyPrefix]
         private static void MenuManagerStartPre()
         {
-            if (!FirstLoad)
+            if (!firstLoad)
             {
                 return;
             }
-
-            FirstLoad = false;
+            firstLoad = false;
 
             // Don't worry about anything going on here...
             if (BagConfigCompatibility.Enabled && !GameNetworkManager.Instance.disableSteam

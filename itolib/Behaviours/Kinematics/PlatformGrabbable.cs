@@ -49,6 +49,13 @@ namespace itolib.Behaviours.Kinematics
         public int stateVariant = -1;
 
         /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [Min(0.0f)]
+        public float grabSpeed;
+
+        /// <summary>
         ///     An offset to apply to the player's position while grabbing on to the platform.
         /// </summary>
         [Tooltip("An offset to apply to the player's position while grabbing on to the platform.")]
@@ -184,7 +191,8 @@ namespace itolib.Behaviours.Kinematics
             if (attachedPlayer != null)
             {
                 // Move attached player to the platform's position, with the configured offset applied.
-                attachedPlayerTransform.position = platformTransform.position + playerOffset;
+                attachedPlayerTransform.position = grabSpeed == 0 ? platformTransform.position + playerOffset
+                    : Vector3.Lerp(attachedPlayerTransform.position, platformTransform.position + playerOffset, Time.deltaTime * grabSpeed);
 
                 // Reset attached player's fall time to avoid instant death upon colliding with another (solid) object.
                 attachedPlayer.ResetFallGravity();

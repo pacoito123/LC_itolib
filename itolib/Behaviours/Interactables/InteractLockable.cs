@@ -11,61 +11,62 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public bool WasUnlockedLastFrame { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public bool StartedLocked { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
+        [Space(5.0f)]
         [Header("Interact Lockable")]
         [Tooltip("")]
-        public string doorHoverMessage = "Use door : [LMB]";
+        [SerializeField] private string doorHoverMessage = "Use door : [LMB]";
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string doorUnlockMessage = "";
+        [SerializeField] private string doorUnlockMessage = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string doorLockedMessage = "Locked";
+        [SerializeField] private string doorLockedMessage = "Locked";
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string doorLockedKeyMessage = "Use key: [ LMB ]";
+        [SerializeField] private string doorLockedKeyMessage = "Use key: [ LMB ]";
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string doorLockedKeyControllerMessage = "Use key: [R-trigger]";
+        [SerializeField] private string doorLockedKeyControllerMessage = "Use key: [R-trigger]";
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string lockPickHoverMessage = "Locked (pickable)";
+        [SerializeField] private string lockPickHoverMessage = "Locked (pickable)";
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string lockPickUnlockMessage = "Picking lock";
+        [SerializeField] private string lockPickUnlockMessage = "Picking lock";
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string lockPickUnlockTimerMessage = "Picking lock: {0} sec.";
+        [SerializeField] private string lockPickUnlockTimerMessage = "Picking lock: {0} sec.";
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private bool wasUnlockedLastFrame;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private bool startedLocked;
 
         /// <summary>
         ///     TODO.
@@ -76,7 +77,7 @@ namespace itolib.Behaviours.Interactables
 
             if (isLocked)
             {
-                StartedLocked = true;
+                startedLocked = true;
             }
         }
 
@@ -182,12 +183,12 @@ namespace itolib.Behaviours.Interactables
                     TryDoorHaunt();
                 }
 
-                if (StartedLocked && !WasUnlockedLastFrame && !isLocked)
+                if (startedLocked && !wasUnlockedLastFrame && !isLocked)
                 {
                     doorTrigger.hoverTip = doorHoverMessage;
                     doorTrigger.holdTip = doorUnlockMessage;
 
-                    WasUnlockedLastFrame = true;
+                    wasUnlockedLastFrame = true;
 
                     enabled = false;
                 }

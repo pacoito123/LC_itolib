@@ -18,12 +18,12 @@ namespace itolib.Patches
 
             if (a.DoorwayComponent is SpecificDoorway doorwayA)
             {
-                if (doorwayA.allowSwap)
+                if (doorwayA.AllowSwap)
                 {
                     foreach (DoorwayProxy previousProxy in previousTile.UsedDoorways)
                     {
                         if (previousProxy != a && previousProxy.DoorwayComponent is not null and SpecificDoorway previousDoorway
-                            && previousDoorway.allowSwap && previousDoorway.doorwayType == doorwayA.doorwayType)
+                            && previousDoorway.AllowSwap && previousDoorway.DoorwayType == doorwayA.DoorwayType)
                         {
                             __result = false;
                             weight = 0.0f;
@@ -49,21 +49,21 @@ namespace itolib.Patches
 
         private static bool ModifyWeights(SpecificDoorway doorway, bool next, ref float weight)
         {
-            if ((doorway.doorwayType == DoorwayType.Unspecified) || (next && doorway.doorwayType == DoorwayType.Exit && !doorway.allowSwap)
-                || (!next && doorway.doorwayType == DoorwayType.Entrance))
+            if ((doorway.DoorwayType == DoorwayType.Unspecified) || (next && doorway.DoorwayType == DoorwayType.Exit && !doorway.AllowSwap)
+                || (!next && doorway.DoorwayType == DoorwayType.Entrance))
             {
                 weight = 0.0f;
 
                 return false;
             }
 
-            if (doorway.weightOverride != 0.0f)
+            if (doorway.WeightOverride != 0.0f)
             {
-                weight = doorway.weightOverride;
+                weight = doorway.WeightOverride;
             }
             else
             {
-                weight *= doorway.weightMultiplier;
+                weight *= doorway.WeightMultiplier;
             }
 
             return true;

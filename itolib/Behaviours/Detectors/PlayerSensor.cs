@@ -47,7 +47,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void CheckObjectsInRegion()
         {
-            if (!IsHost) // TODO: Overlapping players could be desynced since it's host only...
+            if (!IsSpawned || !IsHost) // TODO: Overlapping players could be desynced since it's host-sided...
             {
                 return;
             }
@@ -57,9 +57,16 @@ namespace itolib.Behaviours.Detectors
             List<ulong> playersFound = new(StartOfRound.Instance.allPlayerScripts.Length);
             int playersFoundAlive = 0;
 
-            for (int i = 0; i < objectsFound; i++)
+            for (int i = 0; i < overlapBuffer?.Length; i++)
             {
-                if (overlapBuffer![i].TryGetComponent(out PlayerControllerB player))
+                Collider? playerCollider = overlapBuffer[i];
+
+                if (playerCollider == null || !playerCollider.enabled) // Skip disabled colliders.
+                {
+                    continue;
+                }
+
+                if (playerCollider.TryGetComponent(out PlayerControllerB player))
                 {
                     if (playersFound.Contains(player.actualClientId))
                     {

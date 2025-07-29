@@ -20,9 +20,20 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        private void Awake()
+        {
+            if (!NetworkManager.Singleton.IsHost && regionCollider != null)
+            {
+                regionCollider.enabled = false;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void CheckObjectsInRegion()
         {
-            if (!IsHost)
+            if (!IsSpawned || !IsHost)
             {
                 return;
             }
@@ -31,9 +42,16 @@ namespace itolib.Behaviours.Detectors
 
             int hazardsFound = 0;
 
-            for (int i = 0; i < objectsFound; i++)
+            for (int i = 0; i < overlapBuffer?.Length; i++)
             {
-                if (overlapBuffer != null && overlapBuffer![i].transform.root.TryGetComponent(out NetworkObject hazardNetworkObject)
+                Collider? hazardCollider = overlapBuffer[i];
+
+                if (hazardCollider == null || !hazardCollider.enabled) // Skip disabled colliders.
+                {
+                    continue;
+                }
+
+                if (hazardCollider.transform.root.TryGetComponent(out NetworkObject hazardNetworkObject)
                     && hazardNetworkObject.IsSpawned)
                 {
                     FoundHazardsEachClientRpc(hazardNetworkObject);

@@ -58,22 +58,18 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            SelectableLevel? currentLevel = LevelManager.CurrentExtendedLevel != null ? LevelManager.CurrentExtendedLevel.SelectableLevel : null;
-            ExtendedDungeonFlow? currentDungeon = DungeonManager.CurrentExtendedDungeonFlow;
-
-            if (currentLevel == null || currentDungeon == null)
-            {
-                // TODO: Log warning.
-                return;
-            }
+            SelectableLevel currentLevel = LevelManager.CurrentExtendedLevel.SelectableLevel;
+            ExtendedDungeonFlow currentDungeon = DungeonManager.CurrentExtendedDungeonFlow;
 
             string[] hazardNames = new string[currentLevel.spawnableMapObjects.Length];
+
             for (int i = 0; i < hazardNames.Length; i++)
             {
                 hazardNames[i] = currentLevel.spawnableMapObjects[i].prefabToSpawn.name;
             }
 
             string[] extendedHazardNames = new string[currentDungeon.SpawnableMapObjects.Count];
+
             for (int i = 0; i < extendedHazardNames.Length; i++)
             {
                 extendedHazardNames[i] = currentDungeon.SpawnableMapObjects[i].prefabToSpawn.name;
@@ -82,6 +78,7 @@ namespace itolib.Behaviours.Props
             for (int i = 0; i < hazardReplacements.Length; i++)
             {
                 SpawnableMapObject? originalHazard = null;
+
                 for (int j = 0; j < hazardNames.Length; j++)
                 {
                     if (hazardReplacements[i].originalHazard.CompareOrdinal(hazardNames[j]))
@@ -101,6 +98,7 @@ namespace itolib.Behaviours.Props
                 }
 
                 SpawnableMapObject? replacingHazard = null;
+
                 for (int j = 0; j < extendedHazardNames.Length; j++)
                 {
                     if (hazardReplacements[i].replacingHazard.CompareOrdinal(extendedHazardNames[j]))

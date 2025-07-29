@@ -10,7 +10,6 @@ namespace itolib.Behaviours.Grabbables
     /// <summary>
     ///     TODO.
     /// </summary>
-    [RequireComponent(typeof(ItemGrabbable))]
     public class ItemDiscardable : NetworkBehaviour
     {
         /// <summary>
@@ -18,7 +17,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Header("Item Discardable")]
         [Tooltip("")]
-        [SerializeField] private ItemGrabbable item = null!;
+        [SerializeField] private GrabbableObject item = null!;
 
         /// <summary>
         ///     TODO.

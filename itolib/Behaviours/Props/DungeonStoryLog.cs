@@ -1,5 +1,8 @@
+using GameNetcodeStuff;
 using itolib.Extensions;
 using LethalLevelLoader;
+using Unity.Netcode;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace itolib.Behaviours.Props
@@ -12,23 +15,28 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent<int> onLogSpawned = new();
+        [Space(5.0f)]
+        [Header("Dungeon Story Log")]
+        [Tooltip("")]
+        [SerializeField] private UnityEvent<int> onLogSpawned = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent<int> onAlreadyUnlocked = new();
+        [Tooltip("")]
+        [SerializeField] private UnityEvent<int> onLogCollected = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private UnityEvent<int> onAlreadyUnlocked = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         public new void Start()
         {
-            if (DungeonManager.CurrentExtendedDungeonFlow == null)
-            {
-                return;
-            }
-
             foreach (ExtendedStoryLog extendedStoryLog in DungeonManager.CurrentExtendedDungeonFlow.ExtendedMod.ExtendedStoryLogs)
             {
                 if (extendedStoryLog.sceneName.CompareOrdinal(DungeonManager.CurrentExtendedDungeonFlow.DungeonName)
@@ -49,6 +57,63 @@ namespace itolib.Behaviours.Props
                     break;
                 }
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="player"></param>
+        public void CollectLogSynced(PlayerControllerB player)
+        {
+            CollectLogLocal(player);
+            CollectLogServerRpc(player);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        [ServerRpc(RequireOwnership = false)]
+        private void CollectLogServerRpc(NetworkBehaviourReference playerReference)
+        {
+            CollectLogClientRpc(playerReference);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="playerReference"></param>
+        [ClientRpc]
+        private void CollectLogClientRpc(NetworkBehaviourReference playerReference)
+        {
+            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            {
+                CollectLogLocal(player);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="player"></param>
+        private void CollectLogLocal(PlayerControllerB player)
+        {
+            if (player.IsLocalClient())
+            {
+                CollectLog();
+                onLogCollected.Invoke(storyLogID);
+
+                return;
+            }
+
+            if (collected || storyLogID == -1)
+            {
+                return;
+            }
+            collected = true;
+
+            RemoveLogCollectible();
+            onLogCollected.Invoke(storyLogID);
         }
     }
 }

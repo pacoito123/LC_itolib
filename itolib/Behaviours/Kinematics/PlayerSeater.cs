@@ -20,49 +20,60 @@ namespace itolib.Behaviours.Kinematics
         [Header("Player Seater")]
         [Tooltip("Key required to be pressed for the player to unsit. See 'UnityEngine.InputSystem.Key' for number values. Leaving it at '-1' allows "
             + "players to remain attached until being detached through other means (e.g. 'detachTimer').")]
-        public string actionToUnseat = "Jump";
+        [SerializeField] private string actionToUnseat = "Jump";
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool hidePlayerItem = true;
+        [SerializeField] private string sittingAnimation = "SA_Truck";
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool enterVehicleAnimation;
+        [SerializeField] private bool hidePlayerItem = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private bool enterVehicleAnimation;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(0.0f)]
-        public float cameraTurnSpeed = 20.0f;
+        [SerializeField] private float cameraTurnSpeed = 20.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB> onPlayerSit = new();
+        [SerializeField] private UnityEvent<PlayerControllerB> onPlayerSit = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB> onPlayerUnsit = new();
+        [SerializeField] private UnityEvent<PlayerControllerB> onPlayerUnsit = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         private InputAction? playerAction;
 
+        /* /// <summary>
+        ///     TODO.
+        /// </summary>
+        private Transform playerCamera = null!; */
+
         /// <summary>
         ///     TODO.
         /// </summary>
-        private Transform playerCamera = null!;
+        private int sittingAnimationID = -1;
 
         /// <summary>
         ///     TODO.
@@ -84,6 +95,12 @@ namespace itolib.Behaviours.Kinematics
                 playerAction = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToUnseat);
             }
 
+            if (sittingAnimation.Length > 0)
+            {
+                // Get ID of the player sitting animation, if one is set.
+                sittingAnimationID = Animator.StringToHash(sittingAnimation);
+            }
+
             base.Start();
         }
 
@@ -94,14 +111,14 @@ namespace itolib.Behaviours.Kinematics
         {
             if (localPlayerAttached && attachedPlayer != null)
             {
-                if (cameraTurnSpeed > 0.0f && playerCamera != null)
+                if (cameraTurnSpeed > 0.0f)
                 {
                     attachedPlayerTransform.rotation = Quaternion.Lerp(attachedPlayerTransform.rotation, transform.rotation, Time.deltaTime * cameraTurnSpeed);
 
-                    playerCamera.localEulerAngles = new(Mathf.LerpAngle(playerCamera.localEulerAngles.x, attachedPlayer.syncFullCameraRotation.x,
-                        cameraTurnSpeed * Time.deltaTime), Mathf.LerpAngle(playerCamera.localEulerAngles.y, attachedPlayer.syncFullCameraRotation.y,
-                        cameraTurnSpeed * Time.deltaTime), Mathf.LerpAngle(playerCamera.localEulerAngles.z, attachedPlayer.syncFullCameraRotation.z,
-                        cameraTurnSpeed * Time.deltaTime));
+                    // attachedPlayer.syncFullRotation = attachedPlayerTransform.rotation.eulerAngles;
+
+                    /* playerCamera.rotation = Quaternion.Lerp(playerCamera.localRotation, Quaternion.Euler(attachedPlayer.syncFullCameraRotation),
+                        Time.deltaTime * cameraTurnSpeed); */
                 }
             }
 
@@ -177,11 +194,7 @@ namespace itolib.Behaviours.Kinematics
         {
             if (!unsit)
             {
-                if (enterVehicleAnimation)
-                {
-                    player.inVehicleAnimation = true;
-                }
-
+                player.inVehicleAnimation = enterVehicleAnimation;
                 player.syncFullCameraRotation = player.gameplayCamera.transform.localEulerAngles;
 
                 player.Crouch(false);
@@ -189,10 +202,11 @@ namespace itolib.Behaviours.Kinematics
 
                 if (player.IsOwner)
                 {
-                    playerCamera = player.gameplayCamera.transform;
+                    // playerCamera = player.gameplayCamera.transform;
                     player.UpdateSpecialAnimationValue(true, (short)transform.eulerAngles.y, 0.0f, false);
                 }
 
+                // TODO: Parameterize.
                 player.minVerticalClamp = 50.0f;
                 player.maxVerticalClamp = -70.0f;
                 player.horizontalClamp = 120.0f;
@@ -203,8 +217,11 @@ namespace itolib.Behaviours.Kinematics
                     player.currentlyHeldObjectServer.EnableItemMeshes(false);
                 }
 
-                player.playerBodyAnimator.ResetTrigger("SA_Truck");
-                player.playerBodyAnimator.SetTrigger("SA_Truck");
+                if (sittingAnimationID != -1)
+                {
+                    player.playerBodyAnimator.ResetTrigger(sittingAnimationID);
+                    player.playerBodyAnimator.SetTrigger(sittingAnimationID);
+                }
 
                 onPlayerSit.Invoke(player);
             }

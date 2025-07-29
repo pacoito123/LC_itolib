@@ -13,7 +13,9 @@ namespace itolib.Behaviours.Helpers
         /// <summary>
         ///     TODO.
         /// </summary>
-        public Vector3 offsetToApply = Vector3.zero;
+        [Header("OutOfBounds Adjuster")]
+        [Tooltip("")]
+        [SerializeField] private Vector3 offsetToApply = Vector3.zero;
 
         /// <summary>
         ///     TODO.

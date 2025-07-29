@@ -46,12 +46,12 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     Seeded Random instance initialized with the current map seed.
         /// </summary>
-        public static System.Random Random { get; internal set; } = null!;
+        public static System.Random Random { get; private set; } = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public static List<GrabbableObject>? AvailableScrap { get; private set; }
+        private static List<GrabbableObject>? availableScrap;
 
         /// <summary>
         ///     TODO.
@@ -158,7 +158,7 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public override void OnDestroy()
         {
-            AvailableScrap = null;
+            availableScrap = null;
             Random = null!;
 
             DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(ObtainSpawnedScrap);
@@ -191,16 +191,16 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         /// <param name="spawnedScrap"></param>
-        public void ObtainSpawnedScrap(List<GrabbableObject> spawnedScrap)
+        private void ObtainSpawnedScrap(List<GrabbableObject> spawnedScrap)
         {
-            if (!IsHost || AvailableScrap?.Count > 0)
+            if (!IsHost || availableScrap?.Count > 0)
             {
                 return;
             }
 
-            AvailableScrap ??= [.. spawnedScrap];
+            availableScrap ??= [.. spawnedScrap];
 
-            _ = AvailableScrap.RemoveAll(item => item == null || item.isInShipRoom || item.isInElevator || item.itemProperties == null
+            _ = availableScrap.RemoveAll(item => item == null || item.isInShipRoom || item.isInElevator || item.itemProperties == null
                 || !item.itemProperties.isScrap || item is LungProp || item.TryGetComponent(out NavMeshAgent agent));
         }
 
@@ -209,7 +209,7 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public void TeleportScrap()
         {
-            if (!IsHost || AvailableScrap == null || AvailableScrap.Count == 0)
+            if (!IsHost || availableScrap == null || availableScrap.Count == 0)
             {
                 return;
             }
@@ -239,7 +239,7 @@ namespace itolib.Behaviours.Props
                     int areaIndex = Random.Next(0, teleportAreas.Count);
                     BoxCollider teleportArea = teleportAreas[areaIndex];
 
-                    Vector3 extents = teleportArea.size / 2.0f;
+                    Vector3 extents = teleportArea.size * 0.5f;
                     Vector3 point = new(((float)Random.NextDouble() * 2 * extents.x) - extents.x,
                         ((float)Random.NextDouble() * 2 * extents.y) - extents.y,
                         ((float)Random.NextDouble() * 2 * extents.z) - extents.z);
@@ -254,9 +254,9 @@ namespace itolib.Behaviours.Props
 
                 if (specificItems?.Length > 0)
                 {
-                    for (int j = 0; j < AvailableScrap.Count; j++)
+                    for (int j = 0; j < availableScrap.Count; j++)
                     {
-                        if (AvailableScrap[j] == null || AvailableScrap[j].itemProperties == null)
+                        if (availableScrap[j] == null || availableScrap[j].itemProperties == null)
                         {
                             continue;
                         }
@@ -265,7 +265,7 @@ namespace itolib.Behaviours.Props
 
                         for (int k = 0; k < specificItems.Length; k++)
                         {
-                            if (specificItems[k].CompareOrdinal(AvailableScrap[j].itemProperties.itemName))
+                            if (specificItems[k].CompareOrdinal(availableScrap[j].itemProperties.itemName))
                             {
                                 TeleportData teleport = new()
                                 {
@@ -273,8 +273,8 @@ namespace itolib.Behaviours.Props
                                     rotation = teleportRotation
                                 };
 
-                                TeleportScrapClientRpc(AvailableScrap[j], teleport);
-                                AvailableScrap.RemoveAt(j);
+                                TeleportScrapClientRpc(availableScrap[j], teleport);
+                                availableScrap.RemoveAt(j);
 
                                 foundItem = true;
 
@@ -290,8 +290,8 @@ namespace itolib.Behaviours.Props
                 }
                 else
                 {
-                    int index = Random.Next(0, AvailableScrap.Count);
-                    GrabbableObject? item = AvailableScrap[index];
+                    int index = Random.Next(0, availableScrap.Count);
+                    GrabbableObject? item = availableScrap[index];
 
                     if (item == null)
                     {
@@ -305,7 +305,7 @@ namespace itolib.Behaviours.Props
                     };
 
                     TeleportScrapClientRpc(item, teleport);
-                    AvailableScrap.RemoveAt(index);
+                    availableScrap.RemoveAt(index);
                 }
             }
         }
@@ -314,7 +314,7 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         [ClientRpc]
-        public void TeleportScrapClientRpc(NetworkBehaviourReference itemReference, TeleportData teleport)
+        private void TeleportScrapClientRpc(NetworkBehaviourReference itemReference, TeleportData teleport)
         {
             _ = StartCoroutine(TeleportScrapDelayed(itemReference, teleport));
         }

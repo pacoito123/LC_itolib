@@ -93,7 +93,7 @@ namespace itolib.Behaviours.Effects
         /// </summary> 
         public void Reset()
         {
-            // This don't seem to work...
+            // Vanilla player sinking curve.
             Keyframe[] defaultSinkingKeyframes = [new(0.0f, 0.0f, 5.4615f, 5.4615f, 0.0f, 0.3333f),
                 new(0.0415f, 0.2266f, 0.4576f, 0.4576f, 0.3333f, 0.2344f),
                 new(0.3617f, 0.3527f, 0.3546f, 0.3546f, 0.3544f, 0.3333f),
@@ -178,7 +178,7 @@ namespace itolib.Behaviours.Effects
 
             onHinderStart.Invoke(player);
 
-            if (!attachLocally)
+            if (IsSpawned)
             {
                 HinderPlayerServerRpc(player);
             }
@@ -219,7 +219,7 @@ namespace itolib.Behaviours.Effects
 
             onHinderStop.Invoke(attachedPlayer);
 
-            if (!attachLocally)
+            if (IsSpawned)
             {
                 HinderPlayerServerRpc(attachedPlayer, stop: true);
             }

@@ -43,7 +43,7 @@ namespace itolib
                 // Initialize 'Config' and 'Harmony' instances.
                 // Settings = new(Config);
                 Harmony = new(PLUGIN_GUID);
-                //
+                // ...
 
                 NetcodePatcher();
 

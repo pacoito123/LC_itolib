@@ -51,7 +51,7 @@ namespace itolib.Behaviours.Helpers
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Activate()
+        private void Activate()
         {
             if (TryGetComponent(out LungProp apparatus) && !apparatus.isInShipRoom
                 && TryGetComponent(out AudioSource apparatusSource))

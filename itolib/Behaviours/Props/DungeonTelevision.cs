@@ -32,20 +32,21 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Space(5.0f)]
         [Header("Dungeon Television")]
         [Tooltip("")]
-        public InteractTrigger? tvTrigger;
+        [SerializeField] private InteractTrigger? tvTrigger;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool startDeactivated;
+        [SerializeField] private bool startDeactivated;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        private void Awake()
         {
             if (TelevisionUnlockableItem == null)
             {

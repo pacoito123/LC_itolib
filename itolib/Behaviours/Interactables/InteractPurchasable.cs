@@ -54,7 +54,7 @@ namespace itolib.Behaviours.Interactables
     /// <summary>
     ///     Represents an InteractTrigger that can spawn an object when interacted with, for a price.
     /// </summary>
-    public class InteractPurchasable : InteractTrigger
+    public class InteractPurchasable : InteractTrigger // TODO: Needs more abstraction.
     {
         /// <summary>
         ///     Cached Terminal instance, to actually interact with the shared ship credits.
@@ -64,6 +64,7 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     Prefab to spawn upon a successful transaction.
         /// </summary>
+        [Space(5.0f)]
         [Header("Purchasable Object")]
         [Tooltip("Prefab to spawn upon a successful transaction.")]
         public GameObject? spawnPrefab;
@@ -72,7 +73,7 @@ namespace itolib.Behaviours.Interactables
         ///     Position and rotation of the purchasable object when spawned.
         /// </summary>
         [Tooltip("Position and rotation of the purchasable object when spawned.")]
-        public Transform? spawnTransform;
+        [SerializeField] private Transform? spawnTransform;
 
         /// <summary>
         ///     Credits required to spawn the purchasable object. Set to -1 to disable purchasing stuff at all.
@@ -96,7 +97,7 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent onPurchaseNotify = new();
+        [SerializeField] private UnityEvent onPurchaseNotify = new();
 
         /// <summary>
         ///     TODO
@@ -104,6 +105,9 @@ namespace itolib.Behaviours.Interactables
         [Tooltip("")]
         public Notification purchaseNotification;
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         private void Awake()
         {
             if (Terminal == null)
@@ -129,7 +133,7 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="playerReference">NetworkBehaviour reference of the player attempting the purchase.</param>
         [ServerRpc(RequireOwnership = false)]
-        public void RequestPurchaseServerRpc(NetworkBehaviourReference playerReference)
+        private void RequestPurchaseServerRpc(NetworkBehaviourReference playerReference)
         {
             if (spawnPrefab == null || spawnTransform == null || Terminal == null)
             {
@@ -141,6 +145,7 @@ namespace itolib.Behaviours.Interactables
             {
                 // Send notification to the player who attempted the purchase.
                 SendNotificationClientRpc(playerReference, price);
+
                 return;
             }
 
@@ -168,7 +173,7 @@ namespace itolib.Behaviours.Interactables
         /// <param name="price">Price of the purchasable object.</param>
         /// <param name="success">Whether or not the purchase was succesful.</param>
         [ClientRpc]
-        public void SendNotificationClientRpc(NetworkBehaviourReference playerReference, int price = -1, bool success = false)
+        private void SendNotificationClientRpc(NetworkBehaviourReference playerReference, int price = -1, bool success = false)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && player.IsLocalClient())
             {

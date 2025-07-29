@@ -97,23 +97,33 @@ namespace itolib.Behaviours.Detectors
         protected int objectsFound;
 
         /// <summary>
+        ///     TODO.
+        /// </summary>
+        protected bool performedActivation;
+
+        /// <summary>
         ///     Define default values for this <c>DetectRegion</c>.
         /// </summary>
         /// <remarks>Meant for defining a default <c>LayerMask</c> value (<see cref="layerMask"/>), tailored to the specific type of object to find.</remarks>
         protected abstract void Reset();
 
         /// <summary>
-        ///     Initialize buffer array and either perform a search immediately, or subscribe to a specific event depending on the set <c>ActivationTime</c>.
+        ///      Perform search or subscribe to a specific event, depending on the set <c>ActivationTime</c>.
         /// </summary>
-        protected virtual void Start()
+        public override void OnNetworkSpawn()
         {
-            if (maxObjects > 0)
+            base.OnNetworkSpawn();
+
+            if (!IsHost || performedActivation)
             {
-                overlapBuffer = new Collider[maxObjects];
+                return;
             }
 
             switch (activationTime)
             {
+                case ActivationTime.Immediate:
+                    CheckObjectsInRegion();
+                    break;
                 case ActivationTime.ScrapSpawn:
                     DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(CheckObjectsInRegion);
                     break;
@@ -126,7 +136,6 @@ namespace itolib.Behaviours.Detectors
                         StartOfRound.Instance.StartNewRoundEvent.AddListener(CheckObjectsInRegion);
                     }
                     break;
-                case ActivationTime.Immediate:
                 case ActivationTime.DungeonComplete:
                 case ActivationTime.Manual:
                 default:
@@ -134,7 +143,7 @@ namespace itolib.Behaviours.Detectors
             }
         }
 
-        /// <summary>
+        /* /// <summary>
         ///     Perform a search every time this script is enabled, if <c>ActivationTime</c> is set to <c>Immediate</c>.
         /// </summary>
         protected virtual void OnEnable()
@@ -143,34 +152,7 @@ namespace itolib.Behaviours.Detectors
             {
                 CheckObjectsInRegion();
             }
-        }
-
-        /// <summary>
-        ///     Unsubscribe to the event that may have been subscribed to, depending on the set <c>ActivationTime</c>.
-        /// </summary>
-        protected virtual void OnDisable()
-        {
-            switch (activationTime)
-            {
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(CheckObjectsInRegion);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(CheckObjectsInRegion);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(CheckObjectsInRegion);
-                    }
-                    break;
-                case ActivationTime.Immediate:
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
-        }
+        } */
 
         /// <summary>
         ///     Listener called when any <c>Collider</c> enters the region.
@@ -190,11 +172,22 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public virtual void CheckObjectsInRegion()
         {
-            if (regionCollider == null || overlapBuffer == null)
+            if (!performedActivation)
+            {
+                UnsubscribeFromEvents();
+
+                performedActivation = true;
+            }
+
+            if (regionCollider == null || maxObjects == 0)
             {
                 return;
             }
 
+            // Initialize buffer array with the specified capacity.
+            overlapBuffer ??= new Collider[maxObjects];
+
+            // Reset number of found objects.
             objectsFound = 0;
 
             // Perform non-allocating overlapping Collider search.
@@ -232,12 +225,39 @@ namespace itolib.Behaviours.Detectors
         }
 
         /// <summary>
+        ///     Unsubscribe to the event that may have been subscribed to, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        private void UnsubscribeFromEvents()
+        {
+            switch (activationTime)
+            {
+                case ActivationTime.ScrapSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(CheckObjectsInRegion);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(CheckObjectsInRegion);
+                    break;
+                case ActivationTime.StartOfRound:
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(CheckObjectsInRegion);
+                    }
+                    break;
+                case ActivationTime.Immediate:
+                case ActivationTime.DungeonComplete:
+                case ActivationTime.Manual:
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
         ///     <c>DunGen</c> listener called when generation finishes, but before blockers and connectors are placed.
         /// </summary>
         /// <param name="dungeon">Dungeon that just finished generating.</param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
-            if (activationTime is ActivationTime.DungeonComplete)
+            if (!performedActivation && activationTime is ActivationTime.DungeonComplete)
             {
                 CheckObjectsInRegion();
             }

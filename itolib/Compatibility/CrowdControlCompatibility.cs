@@ -30,7 +30,7 @@ namespace itolib.Compatibility
         /// <summary>
         ///     TODO.
         /// </summary>
-        public static event Action<LevelWeatherType, LevelWeatherType>? OnCCWeatherChanged;
+        internal static event Action<LevelWeatherType, LevelWeatherType>? OnCCWeatherChanged;
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         [HarmonyPatch(typeof(TestMod), nameof(TestMod.CrowdControlCommands))]

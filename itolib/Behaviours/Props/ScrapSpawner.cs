@@ -1,6 +1,7 @@
 using itolib.Behaviours.Networking;
 using itolib.Enums;
 using itolib.Extensions;
+using itolib.Interfaces;
 using LethalLevelLoader;
 using System;
 using System.Collections;
@@ -70,7 +71,48 @@ namespace itolib.Behaviours.Props
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class ScrapSpawner : NetworkedSpawner<GrabbableObject>
+    [Serializable]
+    public struct ScrapWeightEntry : IWeightedEntry
+    {
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Header("Scrap Weight Entry")]
+        [Tooltip("")]
+        public Item? itemToSpawn = null;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [field: Tooltip("")]
+        [field: SerializeField] public int Weight { get; set; } = 1;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [field: Tooltip("")]
+        [field: SerializeField] public bool SingleUse { get; set; } = false;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public ScrapWeightEntry() { }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="itemWithRarity"></param>
+        public ScrapWeightEntry(SpawnableItemWithRarity itemWithRarity)
+        {
+            itemToSpawn = itemWithRarity.spawnableItem;
+            Weight = itemWithRarity.rarity;
+        }
+    }
+
+    /// <summary>
+    ///     TODO.
+    /// </summary>
+    public class ScrapSpawner : NetworkedSpawner<GrabbableObject>, IWeightedScript<ScrapWeightEntry>
     {
         /// <summary>
         ///     Seeded Random instance initialized with the current map seed.
@@ -90,9 +132,20 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Header("Item Spawner")]
-        [Tooltip("")]
-        [SerializeField] private Item[]? itemsToSpawn;
+        public int[]? CumulativeWeights { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public int TotalWeight { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [field: Header("Item Spawner")]
+        [field: Tooltip("")]
+
+        [field: SerializeField] public ScrapWeightEntry[]? WeightedEntries { get; set; }
 
         /// <summary>
         ///     TODO.
@@ -111,15 +164,7 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [Min(-1)]
-        [SerializeField] private int minItems;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        [Min(-1)]
-        [SerializeField] private int maxItems;
+        [SerializeField] private bool useMoonScrapSpawns;
 
         /// <summary>
         ///     TODO.
@@ -204,12 +249,64 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Header("== OBSOLETE ==")]
+        [Tooltip("")]
+        [Min(-1)]
+        [Obsolete("Use minSpawns instead.")]
+        [SerializeField] private int minItems;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [Min(-1)]
+        [Obsolete("Use maxSpawns instead.")]
+        [SerializeField] private int maxItems;
+
+        /// <summary>
+        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>IWeightedScript</c>, to avoid having to cast. 
+        /// </summary>
+        private IWeightedScript<ScrapWeightEntry> weightedSelf;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
-            if (ItemPool.Count > 0)
+            /* if (respectSingleItemDay)
             {
-                int poolIndex = Random.Next(0, ItemPool.Count);
+                // TODO: Spawn da item
+            } */
+
+            if (WeightedEntries?.Length > 0 && weightedSelf.TryObtainRandomEntry(out ScrapWeightEntry entry, seededRandom ? Random : null))
+            {
+                Item? itemToSpawn = entry.itemToSpawn;
+
+                if (itemToSpawn == null)
+                {
+                    // TODO: Log warning.
+                    return null;
+                }
+
+                if (itemToSpawn.spawnPrefab != null)
+                {
+                    return itemToSpawn.spawnPrefab.GetComponent<NetworkObject>();
+                }
+
+                ExtendedItem? extendedItem = PatchedContent.ExtendedItems.Find(extendedItem =>
+                    extendedItem.Item.name.CompareOrdinal(itemToSpawn.name));
+
+                if (extendedItem != null)
+                {
+                    return extendedItem.Item.spawnPrefab.GetComponent<NetworkObject>();
+                }
+            }
+
+            /* if (ItemPool.Count > 0)
+            {
+                int poolIndex = seededRandom ? Random.Next(0, ItemPool.Count)
+                    : UnityEngine.Random.RandomRangeInt(0, ItemPool.Count);
                 Item randomItem = ItemPool[poolIndex];
 
                 if (exhaustivePool)
@@ -218,7 +315,7 @@ namespace itolib.Behaviours.Props
                 }
 
                 return randomItem.spawnPrefab.GetComponent<NetworkObject>();
-            }
+            } */
 
             return null;
         }
@@ -228,14 +325,14 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public override void PerformSpawn()
         {
-            if (!IsHost)
+            if (!NetworkManager.Singleton.IsHost)
             {
                 return;
             }
 
-            Random ??= (StartOfRound.Instance != null) ? new(StartOfRound.Instance.randomMapSeed + 44) : new();
+            int itemsAmount = seededRandom ? Random.Next(minSpawns, maxSpawns + 1)
+                : UnityEngine.Random.RandomRangeInt(minSpawns, maxSpawns + 1);
 
-            int itemsAmount = Random.Next(minItems, maxItems);
             if (itemsAmount == 0)
             {
                 return;
@@ -253,7 +350,9 @@ namespace itolib.Behaviours.Props
 
                 for (int i = 0; i < itemsAmount && spawnLocations.Count > 0; i++)
                 {
-                    int locationIndex = Random.Next(0, spawnLocations.Count);
+                    int locationIndex = seededRandom ? Random.Next(0, spawnLocations.Count)
+                        : UnityEngine.Random.RandomRangeInt(0, spawnLocations.Count);
+
                     SpawnItem(spawnLocations[locationIndex]!);
 
                     if (exhaustiveLocations)
@@ -271,7 +370,9 @@ namespace itolib.Behaviours.Props
 
                 for (int i = 0; i < itemsAmount && spawnAreas.Count > 0; i++)
                 {
-                    int areaIndex = Random.Next(0, spawnAreas.Count);
+                    int areaIndex = seededRandom ? Random.Next(0, spawnAreas.Count)
+                        : UnityEngine.Random.RandomRangeInt(0, spawnAreas.Count);
+
                     SpawnItem(spawnAreas[areaIndex]!);
 
                     if (exhaustiveAreas)
@@ -317,8 +418,8 @@ namespace itolib.Behaviours.Props
 
             if (itemToSpawn != null)
             {
-                Vector3 extents = spawnArea.size / 2.0f;
-                Vector3 point = new(((float)Random.NextDouble() * extents.x * 2) - extents.x,
+                Vector3 extents = spawnArea.size * 0.5f;
+                Vector3 point = new(((float)Random.NextDouble() * extents.x * 2) - extents.x, // TODO: Seeded check
                     ((float)Random.NextDouble() * extents.y * 2) - extents.y,
                     ((float)Random.NextDouble() * extents.z * 2) - extents.z);
 
@@ -341,7 +442,7 @@ namespace itolib.Behaviours.Props
 
             if (itemObj.TryGetComponent(out GrabbableObject item) && item.itemProperties != null)
             {
-                int scrapValue = Random.Next(overrideMinValue < 0 ? item.itemProperties.minValue : overrideMinValue,
+                int scrapValue = Random.Next(overrideMinValue < 0 ? item.itemProperties.minValue : overrideMinValue, // TODO: Seeded check.
                     overrideMaxValue < 0 ? item.itemProperties.maxValue : overrideMaxValue);
 
                 if (applyScrapMultiplier && RoundManager.Instance != null)
@@ -359,9 +460,9 @@ namespace itolib.Behaviours.Props
                     position = spawnPosition,
                     rotation = spawnRotation,
                     meshVariant = (allowMeshVariants && item.itemProperties.meshVariants.Length > 0)
-                        ? Random.Next(0, item.itemProperties.meshVariants.Length) : -1,
+                        ? Random.Next(0, item.itemProperties.meshVariants.Length) : -1, // TODO: Seeded check.
                     materialVariant = (allowMaterialVariants && item.itemProperties.materialVariants.Length > 0)
-                        ? Random.Next(0, item.itemProperties.materialVariants.Length) : -1,
+                        ? Random.Next(0, item.itemProperties.materialVariants.Length) : -1, // TODO: Seeded check.
                     scrapValue = scrapValue
                 };
 
@@ -371,9 +472,56 @@ namespace itolib.Behaviours.Props
         }
 
         /// <summary>
+        ///     Cache already-cast <c>IWeightedScript</c> instance.
+        /// </summary>
+        protected override void Awake()
+        {
+            weightedSelf = this;
+
+            if (!NetworkManager.Singleton.IsHost)
+            {
+                return;
+            }
+
+            /* if (seededRandom)
+            {
+                Random ??= (StartOfRound.Instance != null) ? new(StartOfRound.Instance.randomMapSeed + 44) : new();
+            } */
+            Random ??= (StartOfRound.Instance != null) ? new(StartOfRound.Instance.randomMapSeed + 44) : new();
+
+            if (useMoonScrapSpawns)
+            {
+                List<SpawnableItemWithRarity> spawnableScrap = LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap;
+                WeightedEntries = new ScrapWeightEntry[spawnableScrap.Count];
+
+                for (int i = 0; i < spawnableScrap.Count; i++)
+                {
+                    WeightedEntries[i] = new(spawnableScrap[i]);
+                }
+            }
+
+            weightedSelf.Initialize();
+
+            base.Awake();
+        }
+
+        /// <summary>
+        ///     TOOD.
+        /// </summary>
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            if (IsHost && activationTime is ActivationTime.HazardSpawn or ActivationTime.ScrapSpawn && StartOfRound.Instance != null)
+            {
+                StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
+            }
+        }
+
+        /* /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        public override void OnNetworkSpawn()
         {
             for (int i = 0; i < PatchedContent.ExtendedItems.Count; i++)
             {
@@ -411,59 +559,19 @@ namespace itolib.Behaviours.Props
                     ItemPool.Add(extendedItem.Item);
                 }
             }
-
-            for (int i = 0; i < itemsToSpawn?.Length; i++)
-            {
-                Item? itemToSpawn = itemsToSpawn[i];
-
-                if (itemToSpawn == null || ItemPool.Contains(itemToSpawn))
-                {
-                    continue;
-                }
-
-                if (itemToSpawn.spawnPrefab == null)
-                {
-                    ExtendedItem? extendedItem = PatchedContent.ExtendedItems.Find(extendedItem =>
-                        extendedItem.Item.name.CompareOrdinal(itemToSpawn.name));
-
-                    if (extendedItem != null && !ItemPool.Contains(extendedItem.Item))
-                    {
-                        ItemPool.Add(extendedItem.Item);
-                    }
-                }
-                else
-                {
-                    ItemPool.Add(itemToSpawn);
-                }
-            }
-        }
+        } */
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnNetworkSpawn()
+        public override void OnDestroy()
         {
-            base.OnNetworkSpawn();
-
-            if (IsHost && activationTime is ActivationTime.HazardSpawn or ActivationTime.ScrapSpawn && StartOfRound.Instance != null)
+            if (seededRandom)
             {
-                StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncAllItemValuesServerRpc);
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public override void OnNetworkDespawn()
-        {
-            Random = null!;
-
-            if (activationTime is ActivationTime.HazardSpawn or ActivationTime.ScrapSpawn && StartOfRound.Instance != null)
-            {
-                StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SyncAllItemValuesServerRpc);
+                Random = null!; // TODO: Handle differently.
             }
 
-            base.OnNetworkDespawn();
+            base.OnDestroy();
         }
 
         /// <summary>
@@ -472,6 +580,11 @@ namespace itolib.Behaviours.Props
         [ServerRpc]
         public void SyncAllItemValuesServerRpc()
         {
+            if (StartOfRound.Instance != null)
+            {
+                StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SyncAllItemValuesServerRpc);
+            }
+
             for (int i = 0; i < PrefabInstances.Count; i++)
             {
                 if (PrefabInstances[i] != null)
@@ -528,7 +641,7 @@ namespace itolib.Behaviours.Props
 
             if (syncedItem.meshVariant != -1 && item.TryGetComponent(out MeshFilter itemFilter))
             {
-                itemFilter.mesh = item.itemProperties.meshVariants[syncedItem.meshVariant]; // TODO: Test with sharedMesh
+                itemFilter.sharedMesh = item.itemProperties.meshVariants[syncedItem.meshVariant]; // TODO: Test with sharedMesh
             }
             if (syncedItem.materialVariant != -1 && item.TryGetComponent(out MeshRenderer itemRenderer))
             {
@@ -538,6 +651,11 @@ namespace itolib.Behaviours.Props
             if (fallToGround)
             {
                 item.FallToGround(randomizePosition, true);
+            }
+
+            if (RoundManager.Instance != null)
+            {
+                RoundManager.Instance.totalScrapValueInLevel += syncedItem.scrapValue;
             }
         }
     }

@@ -149,7 +149,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="playerReference"></param>
         /// <param name="hitInfo"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void PerformHitServerRpc(NetworkBehaviourReference playerReference, HitInfo hitInfo)
+        private void PerformHitServerRpc(NetworkBehaviourReference playerReference, HitInfo hitInfo)
         {
             PerformHitClientRpc(playerReference, hitInfo);
         }
@@ -160,7 +160,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="playerReference"></param>
         /// <param name="hitInfo"></param>
         [ClientRpc]
-        public void PerformHitClientRpc(NetworkBehaviourReference playerReference, HitInfo hitInfo)
+        private void PerformHitClientRpc(NetworkBehaviourReference playerReference, HitInfo hitInfo)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {

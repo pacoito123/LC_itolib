@@ -28,7 +28,7 @@ namespace itolib.Compatibility
         /// <summary>
         ///     TODO.
         /// </summary>
-        public static event Action<LevelWeatherType[]>? OnWeatherEffectsApply;
+        internal static event Action<LevelWeatherType[]>? OnWeatherEffectsApply;
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         [HarmonyPatch(typeof(WeatherEffectData), "ApplyWeatherEffects")]

@@ -10,23 +10,24 @@ namespace itolib.Behaviours.Helpers
         /// <summary>
         ///     TODO.
         /// </summary>
-        public float delayCheck;
+        [Header("Sane Reverb Trigger")]
+        [Tooltip("")]
+        [SerializeField] private float delayCheck;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public bool onlyOnEnter;
+        [SerializeField] private bool onlyOnEnter;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public float timeSinceLastCheck;
+        private float timeSinceLastCheck;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        private void Awake()
         {
             timeSinceLastCheck = delayCheck;
         }
@@ -35,7 +36,7 @@ namespace itolib.Behaviours.Helpers
         ///     TODO.
         /// </summary>
         /// <param name="other"></param>
-        public void OnTriggerEnter(Collider other)
+        private void OnTriggerEnter(Collider other)
         {
             if (onlyOnEnter)
             {

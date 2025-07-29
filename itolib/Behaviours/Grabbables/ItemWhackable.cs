@@ -11,29 +11,8 @@ namespace itolib.Behaviours.Grabbables
     /// <summary>
     ///     TODO.
     /// </summary>
-    [RequireComponent(typeof(ItemGrabbable))]
     public class ItemWhackable : NetworkBehaviour
     {
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public PlayerControllerB? LastHeldBy { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public RaycastHit[]? HitBuffer { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public List<EnemyAI>? HitEnemies { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public int ObjectsHit { get; private set; }
-
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -175,20 +154,37 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public bool isHoldingButton;
+        private PlayerControllerB? lastHeldBy;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public bool reelingUp;
+        private RaycastHit[]? hitBuffer;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public Coroutine? whackingCoroutine;
+        private List<EnemyAI>? hitEnemies;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private int objectsHit;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private bool isHoldingButton;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private bool reelingUp;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private Coroutine? whackingCoroutine;
 
         private void Reset()
         {
@@ -207,7 +203,7 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        private void Awake()
         {
             if (item == null && !TryGetComponent(out item))
             {
@@ -217,17 +213,17 @@ namespace itolib.Behaviours.Grabbables
                 return;
             }
 
-            item.onActivate.AddListener(ItemActivate);
-            item.onDiscardEarly.AddListener(DiscardItemEarly);
+            item.OnActivate.AddListener(ItemActivate);
+            item.OnDiscardEarly.AddListener(DiscardItemEarly);
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Start()
+        private void Start()
         {
-            HitBuffer = new RaycastHit[maxObjectHits];
-            HitEnemies = new(maxObjectHits);
+            hitBuffer = new RaycastHit[maxObjectHits];
+            hitEnemies = new(maxObjectHits);
         }
 
         /// <summary>
@@ -235,7 +231,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="used"></param>
         /// <param name="buttonDown"></param>
-        public void ItemActivate(bool used, bool buttonDown)
+        private void ItemActivate(bool used, bool buttonDown)
         {
             if (item.playerHeldBy == null)
             {
@@ -247,7 +243,7 @@ namespace itolib.Behaviours.Grabbables
             if (!reelingUp && isHoldingButton)
             {
                 reelingUp = true;
-                LastHeldBy = item.playerHeldBy;
+                lastHeldBy = item.playerHeldBy;
 
                 if (whackingCoroutine != null)
                 {
@@ -264,15 +260,15 @@ namespace itolib.Behaviours.Grabbables
         /// <returns></returns>
         private IEnumerator HandleWhacking()
         {
-            if (LastHeldBy == null)
+            if (lastHeldBy == null)
             {
                 yield break;
             }
 
-            LastHeldBy.activatingItem = true;
-            LastHeldBy.twoHanded = true;
-            LastHeldBy.playerBodyAnimator.ResetTrigger("shovelHit");
-            LastHeldBy.playerBodyAnimator.SetBool("reelingUp", true);
+            lastHeldBy.activatingItem = true;
+            lastHeldBy.twoHanded = true;
+            lastHeldBy.playerBodyAnimator.ResetTrigger("shovelHit"); // TODO: Use ID
+            lastHeldBy.playerBodyAnimator.SetBool("reelingUp", true);
 
             onReelingStart.Invoke();
             yield return new WaitForSeconds(chargeTimer);
@@ -281,11 +277,11 @@ namespace itolib.Behaviours.Grabbables
             yield return new WaitUntil(() => !isHoldingButton || !item.isHeld);
 
             // Handle swing.
-            LastHeldBy.playerBodyAnimator.SetBool("reelingUp", false);
+            lastHeldBy.playerBodyAnimator.SetBool("reelingUp", false);
             if (item.isHeld)
             {
                 onWeaponSwing.Invoke();
-                LastHeldBy.UpdateSpecialAnimationValue(true, (short)LastHeldBy.transform.localEulerAngles.y, 0.4f, false);
+                lastHeldBy.UpdateSpecialAnimationValue(true, (short)lastHeldBy.transform.localEulerAngles.y, 0.4f, false);
             }
             // ...
 
@@ -305,50 +301,50 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void DiscardItemEarly()
+        private void DiscardItemEarly()
         {
-            if (LastHeldBy != null)
+            if (lastHeldBy != null)
             {
-                LastHeldBy.activatingItem = false;
+                lastHeldBy.activatingItem = false;
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Whack()
+        private void Whack()
         {
-            if (LastHeldBy == null)
+            if (lastHeldBy == null)
             {
                 return;
             }
 
-            LastHeldBy.activatingItem = false;
+            lastHeldBy.activatingItem = false;
 
             if (!item.isHeld)
             {
                 return;
             }
 
-            LastHeldBy.twoHanded = false;
+            lastHeldBy.twoHanded = false;
 
             bool weaponHit = false, enemyHit = false, playerHit = false;
             int surfaceIndex = -1;
 
-            Transform gameplayCamera = LastHeldBy.gameplayCamera.transform;
+            Transform gameplayCamera = lastHeldBy.gameplayCamera.transform;
 
             // TODO: Parameterize hit position, radius, and distance.
-            ObjectsHit = Physics.SphereCastNonAlloc(gameplayCamera.position + (-0.35f * gameplayCamera.right), 0.8f,
-                gameplayCamera.forward, HitBuffer, 1.5f, shovelMask, QueryTriggerInteraction.Collide);
+            objectsHit = Physics.SphereCastNonAlloc(gameplayCamera.position + (-0.35f * gameplayCamera.right), 0.8f,
+                gameplayCamera.forward, hitBuffer, 1.5f, shovelMask, QueryTriggerInteraction.Collide);
 
-            if (HitBuffer == null || ObjectsHit == 0)
+            if (hitBuffer == null || objectsHit == 0)
             {
                 return;
             }
 
-            for (int i = 0; i < ObjectsHit; i++)
+            for (int i = 0; i < objectsHit; i++)
             {
-                RaycastHit rayHit = HitBuffer[i];
+                RaycastHit rayHit = hitBuffer[i];
                 GameObject objectHit = rayHit.transform.gameObject;
 
                 if (((1 << objectHit.layer) & hitSFXMask) != 0)
@@ -368,13 +364,13 @@ namespace itolib.Behaviours.Grabbables
                         }
                     }
                 }
-                else if (objectHit.TryGetComponent(out IHittable hittable) && rayHit.transform != LastHeldBy.transform && (rayHit.point == Vector3.zero
+                else if (objectHit.TryGetComponent(out IHittable hittable) && rayHit.transform != lastHeldBy.transform && (rayHit.point == Vector3.zero
                     || !Physics.Linecast(gameplayCamera.position, rayHit.point, hitMask, QueryTriggerInteraction.Ignore)))
                 {
                     weaponHit = true;
 
                     if (objectHit.TryGetComponent(out EnemyAICollisionDetect enemyAICollision) &&
-                        (enemyAICollision.mainScript == null || HitEnemies?.Contains(enemyAICollision.mainScript) == true))
+                        (enemyAICollision.mainScript == null || hitEnemies?.Contains(enemyAICollision.mainScript) == true))
                     {
                         continue;
                     }
@@ -389,21 +385,21 @@ namespace itolib.Behaviours.Grabbables
                         playerHit = true;
                     }
 
-                    if (hittable.Hit(weaponDamage, gameplayCamera.forward, LastHeldBy, playHitSFX, hitID)
+                    if (hittable.Hit(weaponDamage, gameplayCamera.forward, lastHeldBy, playHitSFX, hitID)
                         && enemyAICollision != null)
                     {
-                        HitEnemies?.Add(enemyAICollision.mainScript);
+                        hitEnemies?.Add(enemyAICollision.mainScript);
                         enemyHit = true;
                     }
                 }
             }
 
-            HitEnemies?.Clear();
+            hitEnemies?.Clear();
 
             if (weaponHit)
             {
                 WeaponHitLocal(enemyHit, surfaceIndex);
-                WeaponHitServerRpc(LastHeldBy, enemyHit, surfaceIndex);
+                WeaponHitServerRpc(lastHeldBy, enemyHit, surfaceIndex);
             }
         }
 
@@ -414,7 +410,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="enemyHit"></param>
         /// <param name="surfaceIndex"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void WeaponHitServerRpc(NetworkBehaviourReference playerReference, bool enemyHit, int surfaceIndex)
+        private void WeaponHitServerRpc(NetworkBehaviourReference playerReference, bool enemyHit, int surfaceIndex)
         {
             WeaponHitClientRpc(playerReference, enemyHit, surfaceIndex);
         }
@@ -426,7 +422,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="enemyHit"></param>
         /// <param name="surfaceIndex"></param>
         [ClientRpc]
-        public void WeaponHitClientRpc(NetworkBehaviourReference playerReference, bool enemyHit, int surfaceIndex)
+        private void WeaponHitClientRpc(NetworkBehaviourReference playerReference, bool enemyHit, int surfaceIndex)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
@@ -476,9 +472,9 @@ namespace itolib.Behaviours.Grabbables
                 RoundManager.Instance.PlayAudibleNoise(transform.position, 17f, 0.8f, 0, false, 0);
             }
 
-            if (LastHeldBy != null)
+            if (lastHeldBy != null)
             {
-                LastHeldBy.playerBodyAnimator.SetTrigger("shovelHit");
+                lastHeldBy.playerBodyAnimator.SetTrigger("shovelHit");
             }
         }
     }

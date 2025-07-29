@@ -2,6 +2,7 @@ using DunGen;
 using GameNetcodeStuff;
 using itolib.Enums;
 using itolib.Extensions;
+using itolib.Interfaces;
 using LethalLevelLoader;
 using System;
 using System.Collections.Generic;
@@ -15,32 +16,33 @@ namespace itolib.Behaviours.Events
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct EventWithWeight
+    public struct WeightedEventEntry : IWeightedEntry
     {
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Header("Weighted Event Entry")]
         [Tooltip("")]
         public UnityEvent onEvent;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        [Min(0)]
-        public int weight;
+        [field: Tooltip("")]
+        [field: Min(0)]
+        [field: SerializeField] public int Weight { get; set; }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        public bool onlyOnce;
+        [field: Tooltip("")]
+        [field: SerializeField] public bool SingleUse { get; set; }
     }
 
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class WeightedEvent : NetworkBehaviour, IDungeonCompleteReceiver
+    public class WeightedEvent : NetworkBehaviour, IWeightedScript<WeightedEventEntry>, IDungeonCompleteReceiver
     {
         /// <summary>
         ///     Seeded Random instance initialized with the current map seed.
@@ -48,21 +50,21 @@ namespace itolib.Behaviours.Events
         public static System.Random Random { get; internal set; } = null!;
 
         /// <summary>
-        ///     TODO.
+        ///    TODO.
         /// </summary>
-        public List<int>? AllWeightsCumulative { get; private set; }
+        public int[]? CumulativeWeights { get; set; }
+
+        /// <summary>
+        ///    TODO.
+        /// </summary>
+        public int TotalWeight { get; set; }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public int TotalWeight { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Header("Weighted Event")]
-        [Tooltip("")]
-        public List<EventWithWeight> eventEntries = [];
+        [field: Header("Weighted Event")]
+        [field: Tooltip("")]
+        [field: SerializeField] public WeightedEventEntry[]? WeightedEntries { get; set; }
 
         /// <summary>
         ///     TODO.
@@ -75,26 +77,59 @@ namespace itolib.Behaviours.Events
         /// </summary>
         [Tooltip("")]
         [Min(0)]
-        public int minRolls = 1;
+        [SerializeField] private int minRolls = 1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(0)]
-        public int maxRolls = 1;
+        [SerializeField] private int maxRolls = 1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        [SerializeField] private bool seededRandom;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [SerializeField] private bool performedActivation;
+
+        /// <summary>
+        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>IWeightedScript</c>, to avoid having to cast. 
+        /// </summary>
+        public IWeightedScript<WeightedEventEntry> weightedSelf;
+
+        /// <summary>
+        ///     OBSOLETE
+        /// </summary>
+        [Space(5.0f)]
+        [Header("== OBSOLETE ==")]
+        [Obsolete("Use WeightedEventEntry list instead")]
+        public List<EventWithWeight> eventEntries = [];
+
+        /// <summary>
+        ///     OBSOLETE
+        /// </summary>
+        [Obsolete("Use SingleUse fields instead")]
         public bool exhaustiveRolls;
 
         /// <summary>
-        ///     TODO.
+        ///     Cache already-cast <c>IWeightedScript</c> instance.
         /// </summary>
-        [Tooltip("")]
-        public bool seededRandom;
+        private void Awake()
+        {
+            weightedSelf = this;
+
+            if (seededRandom)
+            {
+                Random ??= (StartOfRound.Instance != null) ? new(StartOfRound.Instance.randomMapSeed + 66) : new();
+            }
+
+            weightedSelf.Initialize();
+        }
 
         /// <summary>
         ///     TODO.
@@ -103,22 +138,9 @@ namespace itolib.Behaviours.Events
         {
             base.OnNetworkSpawn();
 
-            if (seededRandom)
+            if (!IsHost || performedActivation)
             {
-                Random ??= new(StartOfRound.Instance.randomMapSeed + 66);
-            }
-
-            List<int> propWeights = new(eventEntries.Count);
-            for (int i = 0; i < eventEntries.Count; i++)
-            {
-                propWeights.Add(eventEntries[i].weight);
-            }
-
-            AllWeightsCumulative = new(propWeights.Count);
-            for (int i = 0; i < propWeights.Count; i++)
-            {
-                TotalWeight += propWeights[i];
-                AllWeightsCumulative.Add(TotalWeight);
+                return;
             }
 
             switch (activationTime)
@@ -152,9 +174,17 @@ namespace itolib.Behaviours.Events
         {
             if (seededRandom)
             {
-                Random = null!;
+                Random = null!; // TODO: Handle some other way.
             }
 
+            base.OnDestroy();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void UnsubscribeFromEvents()
+        {
             switch (activationTime)
             {
                 case ActivationTime.ScrapSpawn:
@@ -175,8 +205,6 @@ namespace itolib.Behaviours.Events
                 default:
                     break;
             }
-
-            base.OnDestroy();
         }
 
         /// <summary>
@@ -184,7 +212,14 @@ namespace itolib.Behaviours.Events
         /// </summary> 
         public void RollFromServer()
         {
-            if (!IsHost)
+            if (!performedActivation)
+            {
+                UnsubscribeFromEvents();
+
+                performedActivation = true;
+            }
+
+            if (!NetworkManager.Singleton.IsHost)
             {
                 return;
             }
@@ -197,7 +232,7 @@ namespace itolib.Behaviours.Events
         /// </summary> 
         public void RollFromClient(PlayerControllerB player)
         {
-            if (AllWeightsCumulative == null || AllWeightsCumulative.Count == 0 || !player.IsLocalClient())
+            if (!player.IsLocalClient())
             {
                 return;
             }
@@ -207,26 +242,30 @@ namespace itolib.Behaviours.Events
 
             for (int i = 0; i < rollsToPerform; i++)
             {
-                if (AllWeightsCumulative.Count == 0)
+                if (CumulativeWeights == null || CumulativeWeights.Length == 0)
                 {
                     break;
                 }
 
-                int randomWeight = seededRandom ? Random.Next(1, TotalWeight + 1) : UnityEngine.Random.RandomRangeInt(1,
-                    TotalWeight + 1), weightIndex = AllWeightsCumulative.FindIndex(weight => randomWeight <= weight);
-
-                if (weightIndex < 0 || weightIndex >= eventEntries.Count)
+                if (weightedSelf.TryObtainRandomEntryIndex(out int weightIndex, seededRandom ? Random : null))
                 {
-                    return;
-                }
+                    InvokeEventLocal(weightIndex);
 
-                InvokeEventLocal(weightIndex);
-
-                if (IsSpawned)
-                {
-                    InvokeEventServerRpc(player, weightIndex);
+                    if (IsSpawned)
+                    {
+                        InvokeEventServerRpc(player, weightIndex);
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="index"></param>
+        public void RemoveWeight(int index)
+        {
+            weightedSelf.RemoveWeight(index);
         }
 
         /// <summary>
@@ -260,25 +299,10 @@ namespace itolib.Behaviours.Events
         /// <param name="weightIndex"></param>
         private void InvokeEventLocal(int weightIndex)
         {
-            eventEntries[weightIndex].onEvent.Invoke();
-
-            if (!exhaustiveRolls || AllWeightsCumulative == null)
+            if (weightedSelf.TryObtainEntry(out WeightedEventEntry entry, weightIndex))
             {
-                return;
+                entry.onEvent.Invoke();
             }
-
-            int weightRemoved = eventEntries[weightIndex].weight;
-            TotalWeight -= weightRemoved;
-
-            for (int i = weightIndex + 1; i < AllWeightsCumulative.Count; i++)
-            {
-                if (AllWeightsCumulative[i] > 0)
-                {
-                    AllWeightsCumulative[i] -= weightRemoved;
-                }
-            }
-
-            AllWeightsCumulative[weightIndex] = 0;
         }
 
         /// <summary>
@@ -287,10 +311,39 @@ namespace itolib.Behaviours.Events
         /// <param name="dungeon"></param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
-            if (activationTime is ActivationTime.DungeonComplete)
+            if (!performedActivation && activationTime is ActivationTime.DungeonComplete)
             {
                 RollFromServer();
+
+                performedActivation = true;
             }
         }
+    }
+
+    /// <summary>
+    ///     TODO.
+    /// </summary>
+    [Obsolete("Switch to WeightedEventEntry")]
+    [Serializable]
+    public struct EventWithWeight
+    {
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public UnityEvent onEvent;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [Min(0)]
+        public int weight;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        public bool onlyOnce;
     }
 }

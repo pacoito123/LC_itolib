@@ -29,22 +29,21 @@ namespace itolib.Compatibility
         ///     TODO.
         /// </summary>
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        public static void HalveTwinValue(TwinApparatus twinApparatus)
+        internal static void HalveTwinValue(TwinApparatus twinApparatus)
         {
             if (MeltdownPlugin.config.OverrideApparatusValue)
             {
-                twinApparatus.scrapValue /= 2;
+                twinApparatus.SetScrapValue((int)(twinApparatus.scrapValue * 0.5));
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="bothPulled"></param>
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        public static void TwinMeltdown(bool bothPulled)
+        internal static void InitiateMeltdown()
         {
-            if (bothPulled && NetworkManager.Singleton.IsHost)
+            if (NetworkManager.Singleton.IsHost)
             {
                 MeltdownAPI.StartMeltdown(Plugin.PLUGIN_GUID);
             }

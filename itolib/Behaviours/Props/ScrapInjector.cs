@@ -14,12 +14,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public SelectableLevel? CurrentLevel { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public List<SpawnableItemWithRarity>? ModifiedRarities { get; private set; }
+        private List<SpawnableItemWithRarity>? modifiedRarities;
 
         /// <summary>
         ///     TODO.
@@ -32,16 +27,10 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            CurrentLevel = LevelManager.CurrentExtendedLevel != null ? LevelManager.CurrentExtendedLevel.SelectableLevel : null;
+            SelectableLevel currentLevel = LevelManager.CurrentExtendedLevel.SelectableLevel;
             ExtendedDungeonFlow currentDungeon = DungeonManager.CurrentExtendedDungeonFlow;
 
-            if (CurrentLevel == null || currentDungeon == null)
-            {
-                return;
-            }
-
-            int scrapCount = CurrentLevel.spawnableScrap.Count;
-            ModifiedRarities = new(currentDungeon.ExtendedMod.ExtendedItems.Count);
+            modifiedRarities = new(currentDungeon.ExtendedMod.ExtendedItems.Count);
 
             foreach (ExtendedItem extendedItem in currentDungeon.ExtendedMod.ExtendedItems)
             {
@@ -54,14 +43,14 @@ namespace itolib.Behaviours.Props
 
                 if (dungeonRarity > 0)
                 {
-                    for (int i = 0; i < scrapCount; i++)
+                    for (int i = 0; i < currentLevel.spawnableScrap.Count; i++)
                     {
-                        SpawnableItemWithRarity item = CurrentLevel.spawnableScrap[i];
+                        SpawnableItemWithRarity item = currentLevel.spawnableScrap[i];
 
                         if (item.spawnableItem == extendedItem.Item && item.rarity < 1)
                         {
                             item.rarity = dungeonRarity;
-                            ModifiedRarities.Add(item);
+                            modifiedRarities.Add(item);
 
                             break;
                         }
@@ -75,15 +64,9 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public void OnDestroy()
         {
-            if (CurrentLevel == null || ModifiedRarities == null)
+            for (int i = 0; i < modifiedRarities?.Count; i++)
             {
-                return;
-            }
-
-            int count = ModifiedRarities.Count;
-            for (int i = 0; i < count; i++)
-            {
-                ModifiedRarities[i].rarity = 0;
+                modifiedRarities[i].rarity = 0;
             }
         }
     }

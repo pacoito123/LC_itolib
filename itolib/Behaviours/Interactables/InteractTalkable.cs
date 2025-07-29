@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using Unity.Netcode;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace itolib.Behaviours.Interactables
@@ -12,17 +13,21 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public bool IsActive { get; private set; }
+        [Space(5.0f)]
+        [Header("Interact Talkable")]
+        [Tooltip("")]
+        [SerializeField] private UnityEvent<PlayerControllerB> onStartTalking = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent<PlayerControllerB> onStartTalking = new();
+        [Tooltip("")]
+        [SerializeField] private UnityEvent<PlayerControllerB> onStopTalking = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public UnityEvent<PlayerControllerB> onStopTalking = new();
+        private bool isActive;
 
         /// <summary>
         ///     Set default talkable properties.
@@ -45,7 +50,7 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        private void Awake()
         {
             holdingInteractEvent.AddListener(EnableWalkieLocal);
             onStopInteract.AddListener(DisableWalkieLocal);
@@ -55,13 +60,13 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         /// <param name="_"></param>
-        public void EnableWalkieLocal(float _)
+        private void EnableWalkieLocal(float _)
         {
-            if (IsActive)
+            if (isActive)
             {
                 return;
             }
-            IsActive = true;
+            isActive = true;
 
             EnableWalkieServerRpc(GameNetworkManager.Instance.localPlayerController);
         }
@@ -71,7 +76,7 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="playerReference"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void EnableWalkieServerRpc(NetworkBehaviourReference playerReference)
+        private void EnableWalkieServerRpc(NetworkBehaviourReference playerReference)
         {
             EnableWalkieClientRpc(playerReference);
         }
@@ -81,7 +86,7 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void EnableWalkieClientRpc(NetworkBehaviourReference playerReference)
+        private void EnableWalkieClientRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
@@ -101,10 +106,10 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         /// <param name="_"></param>
-        public void DisableWalkieLocal(PlayerControllerB _)
+        private void DisableWalkieLocal(PlayerControllerB _)
         {
+            isActive = false;
             DisableWalkieServerRpc(GameNetworkManager.Instance.localPlayerController);
-            IsActive = false;
         }
 
         /// <summary>
@@ -112,7 +117,7 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="playerReference"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void DisableWalkieServerRpc(NetworkBehaviourReference playerReference)
+        private void DisableWalkieServerRpc(NetworkBehaviourReference playerReference)
         {
             DisableWalkieClientRpc(playerReference);
         }
@@ -122,7 +127,7 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void DisableWalkieClientRpc(NetworkBehaviourReference playerReference)
+        private void DisableWalkieClientRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {

@@ -114,24 +114,17 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        protected override void Start()
+        private void Awake()
         {
-            if (!IsHost)
+            if (!NetworkManager.Singleton.IsHost && regionCollider != null)
             {
-                if (regionCollider != null)
-                {
-                    regionCollider.enabled = false;
-                }
-
-                return;
+                regionCollider.enabled = false;
             }
 
-            if (enemyFilters != null && enemyFilters.Length > 0)
+            if (NetworkManager.Singleton.IsHost && enemyFilters != null && enemyFilters.Length > 0)
             {
                 enemyAmounts = new int[enemyFilters.Length];
             }
-
-            base.Start();
         }
 
         /// <summary>
@@ -139,7 +132,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void CheckObjectsInRegion()
         {
-            if (!IsHost)
+            if (!IsSpawned || !IsHost)
             {
                 return;
             }
@@ -148,9 +141,16 @@ namespace itolib.Behaviours.Detectors
 
             int enemiesFound = 0;
 
-            for (int i = 0; i < objectsFound; i++)
+            for (int i = 0; i < overlapBuffer?.Length; i++)
             {
-                if (overlapBuffer![i].TryGetComponent(out EnemyAICollisionDetect enemyCollision)
+                Collider? enemyCollider = overlapBuffer[i];
+
+                if (enemyCollider == null || !enemyCollider.enabled) // Skip disabled colliders.
+                {
+                    continue;
+                }
+
+                if (enemyCollider.TryGetComponent(out EnemyAICollisionDetect enemyCollision)
                     && enemyCollision.mainScript != null)
                 {
                     if (enemyFilters == null || enemyFilters.Length == 0)
@@ -191,7 +191,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         protected override void OnTriggerEnter(Collider other)
         {
-            if (!IsHost)
+            if (!IsSpawned || !IsHost)
             {
                 return;
             }
@@ -231,7 +231,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         protected override void OnTriggerExit(Collider other)
         {
-            if (!IsHost)
+            if (!IsSpawned || !IsHost)
             {
                 return;
             }

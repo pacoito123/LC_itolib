@@ -23,130 +23,130 @@ namespace itolib.PlayZone
         /// </summary>
         [Header("PlayZone Elevator")]
         [Tooltip("")]
-        public Animator? elevatorAnimator;
+        [SerializeField] private Animator? elevatorAnimator;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public Animator? doorAnimatorUpper;
+        [SerializeField] private Animator? doorAnimatorUpper;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public Animator? doorAnimatorLower;
+        [SerializeField] private Animator? doorAnimatorLower;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Buttons")]
         [Tooltip("")]
-        public InteractTrigger? callElevatorUpper;
+        [SerializeField] private InteractTrigger? callElevatorUpper;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public InteractTrigger? callElevatorLower;
+        [SerializeField] private InteractTrigger? callElevatorLower;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public InteractTrigger? openDoors;
+        [SerializeField] private InteractTrigger? openDoors;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public InteractTrigger? closeDoors;
+        [SerializeField] private InteractTrigger? closeDoors;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Audio")]
         [Tooltip("")]
-        public AudioSource? elevatorSource;
+        [SerializeField] private AudioSource? elevatorSource;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public AudioSource? doorSourceUpper;
+        [SerializeField] private AudioSource? doorSourceUpper;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public AudioSource? doorSourceLower;
+        [SerializeField] private AudioSource? doorSourceLower;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public AudioClip? elevatorAudioTravel;
+        [SerializeField] private AudioClip? elevatorAudioTravel;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public AudioClip? elevatorAudioFinish;
+        [SerializeField] private AudioClip? elevatorAudioFinish;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public AudioClip? doorAudioOpen;
+        [SerializeField] private AudioClip? doorAudioOpen;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public AudioClip? doorAudioClose;
+        [SerializeField] private AudioClip? doorAudioClose;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header(header: "Events")]
         [Tooltip("")]
-        public UnityEvent<bool> onElevatorTravelStart = new();
+        [SerializeField] private UnityEvent<bool> onElevatorTravelStart = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<bool> onElevatorTravelFinish = new();
+        [SerializeField] private UnityEvent<bool> onElevatorTravelFinish = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent onTopReached = new();
+        [SerializeField] private UnityEvent onTopReached = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent onBottomReached = new();
+        [SerializeField] private UnityEvent onBottomReached = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent onDeactivate = new();
+        [SerializeField] private UnityEvent onDeactivate = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<bool> onDoorsOpen = new();
+        [SerializeField] private UnityEvent<bool> onDoorsOpen = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<bool> onDoorsClose = new();
+        [SerializeField] private UnityEvent<bool> onDoorsClose = new();
 
         /// <summary>
         ///     TODO.
@@ -167,7 +167,7 @@ namespace itolib.PlayZone
         /// <param name="playerReference"></param>
         /// <param name="newState"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SwitchStateServerRpc(NetworkBehaviourReference playerReference, ElevatorState newState)
+        private void SwitchStateServerRpc(NetworkBehaviourReference playerReference, ElevatorState newState)
         {
             SwitchStateClientRpc(playerReference, newState);
         }
@@ -178,7 +178,7 @@ namespace itolib.PlayZone
         /// <param name="playerReference"></param>
         /// <param name="newState"></param>
         [ClientRpc]
-        public void SwitchStateClientRpc(NetworkBehaviourReference playerReference, ElevatorState newState)
+        private void SwitchStateClientRpc(NetworkBehaviourReference playerReference, ElevatorState newState)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
@@ -353,7 +353,7 @@ namespace itolib.PlayZone
         /// <param name="playerReference"></param>
         /// <param name="open"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void ToggleDoorsServerRpc(NetworkBehaviourReference playerReference, bool open)
+        private void ToggleDoorsServerRpc(NetworkBehaviourReference playerReference, bool open)
         {
             ToggleDoorsClientRpc(playerReference, open);
         }
@@ -364,7 +364,7 @@ namespace itolib.PlayZone
         /// <param name="playerReference"></param>
         /// <param name="open"></param>
         [ClientRpc]
-        public void ToggleDoorsClientRpc(NetworkBehaviourReference playerReference, bool open)
+        private void ToggleDoorsClientRpc(NetworkBehaviourReference playerReference, bool open)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {

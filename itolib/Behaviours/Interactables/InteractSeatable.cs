@@ -15,52 +15,49 @@ namespace itolib.Behaviours.Interactables
     public class InteractSeatable : InteractTrigger
     {
         /// <summary>
+        ///     Action required for the player to stop sitting down. See 'UnityEngine.InputSystem.Key' for number values.
+        /// </summary>
+        [Space(5.0f)]
+        [Header("Interact Seatable")]
+        [Tooltip("Action required for the player to stop sitting down. See 'UnityEngine.InputSystem.Key' for number values.")]
+        [SerializeField] private string actionToExit = string.Empty;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private AudioSource? seatableSource;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private UnityEvent onPlayerSit = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private UnityEvent onPlayerStand = new();
+
+        /// <summary>
         ///     The player currently sitting on this object.
         /// </summary>
-        public PlayerControllerB? SittingPlayer { get; private set; }
+        private PlayerControllerB? sittingPlayer;
 
         /// <summary>
         ///     Whether or not the local player is sitting on this object.
         /// </summary>
-        public bool LocalPlayerSeated { get; private set; }
+        private bool localPlayerSeated;
 
         /// <summary>
         ///     
         /// </summary>
-        public Vector3 PlayerExitPoint { get; private set; } = Vector3.zero;
-
-        /// <summary>
-        ///     Key required to be held for the player to hang on to the platform. See 'UnityEngine.InputSystem.Key' for number values. Leaving it at '-1' allows players to
-        ///     remain attached without holding anything, until being detached through other means (e.g. 'detachTimer').
-        /// </summary>
-        /// <remarks>Probably worth looking into adding controller support for this.</remarks>
-        [Header("Interact Seatable")]
-        [Tooltip("Key required to be held for the player to hang on to the platform. See 'UnityEngine.InputSystem.Key' for number values. Leaving it at '-1' allows "
-            + "players to remain attached without holding anything, until being detached through other means (e.g. 'detachTimer').")]
-        public string actionToExit = "";
+        private Vector3 playerExitPoint = Vector3.zero;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        public AudioSource? seatableSource;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public UnityEvent onPlayerSit = new();
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public UnityEvent onPlayerStand = new();
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [HideInInspector]
         private InputAction? playerAction;
 
         /// <summary>
@@ -91,7 +88,7 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        private void Awake()
         {
             onInteractEarlyOtherClients.AddListener(player =>
             {
@@ -119,7 +116,7 @@ namespace itolib.Behaviours.Interactables
         {
             base.Update();
 
-            if (!LocalPlayerSeated || SittingPlayer == null || playerAction == null)
+            if (!localPlayerSeated || sittingPlayer == null || playerAction == null)
             {
                 return;
             }
@@ -135,15 +132,15 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         /// <param name="playerSitting"></param>
-        public void SetPlayerOnSeatLocal(PlayerControllerB playerSitting)
+        private void SetPlayerOnSeatLocal(PlayerControllerB playerSitting)
         {
             if (playerSitting.IsLocalClient())
             {
-                PlayerExitPoint = playerSitting.visorCamera.transform.position;
-                LocalPlayerSeated = true;
+                playerExitPoint = playerSitting.visorCamera.transform.position;
+                localPlayerSeated = true;
             }
 
-            SittingPlayer = playerSitting;
+            sittingPlayer = playerSitting;
             interactable = false;
 
             onPlayerSit.Invoke();
@@ -152,23 +149,23 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void ExitChairLocal(bool teleport = false)
+        private void ExitChairLocal(bool teleport = false)
         {
-            if (SittingPlayer == null)
+            if (sittingPlayer == null)
             {
                 return;
             }
 
             if (teleport)
             {
-                SittingPlayer.TeleportPlayer(PlayerExitPoint);
+                sittingPlayer.TeleportPlayer(playerExitPoint);
             }
 
             onPlayerStand.Invoke();
 
-            PlayerExitPoint = Vector3.zero;
-            LocalPlayerSeated = false;
-            SittingPlayer = null;
+            playerExitPoint = Vector3.zero;
+            localPlayerSeated = false;
+            sittingPlayer = null;
 
             interactable = true;
         }
@@ -178,9 +175,9 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="playerReference"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SetPlayerOnSeatServerRpc(NetworkBehaviourReference playerReference)
+        private void SetPlayerOnSeatServerRpc(NetworkBehaviourReference playerReference)
         {
-            if (LocalPlayerSeated || SittingPlayer != null)
+            if (localPlayerSeated || sittingPlayer != null)
             {
                 return;
             }
@@ -193,7 +190,7 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void SetPlayerOnSeatClientRpc(NetworkBehaviourReference playerReference)
+        private void SetPlayerOnSeatClientRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
@@ -205,7 +202,7 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         [ServerRpc(RequireOwnership = false)]
-        public void ExitChairServerRpc()
+        private void ExitChairServerRpc()
         {
             ExitChairClientRpc();
         }
@@ -214,7 +211,7 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         [ClientRpc]
-        public void ExitChairClientRpc()
+        private void ExitChairClientRpc()
         {
             ExitChairLocal();
         }

@@ -10,7 +10,7 @@ namespace itolib.Behaviours.Networking
     /// <summary>
     ///     TODO.
     /// </summary>
-    public abstract class NetworkedSpawner<T> : NetworkBehaviour, IDungeonCompleteReceiver where T : MonoBehaviour
+    public abstract class NetworkedSpawner<T> : NetworkBehaviour, IDungeonCompleteReceiver where T : Behaviour
     {
         /// <summary>
         ///     TODO.
@@ -20,7 +20,7 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Header("Network Spawner")]
+        [Header("Networked Spawner")]
         [Tooltip("")]
         [SerializeField] protected List<Transform?>? spawnLocations;
 
@@ -45,6 +45,20 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        [Min(-1)]
+        [SerializeField] protected int minSpawns;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [Min(-1)]
+        [SerializeField] protected int maxSpawns;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Space(5.0f)]
         [Tooltip("")]
         [SerializeField] protected ActivationTime activationTime = ActivationTime.DungeonComplete;
@@ -53,13 +67,18 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [SerializeField] protected bool destroySpawner = false;
+        [SerializeField] protected bool destroySpawner;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [SerializeField] private bool destroyWithScene = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        protected bool performedActivation;
 
         /// <summary>
         ///     TODO.
@@ -72,9 +91,11 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         public virtual void PerformSpawn()
         {
-            if (!NetworkManager.Singleton.IsHost)
+            if (!performedActivation)
             {
-                return;
+                UnsubscribeFromEvents();
+
+                performedActivation = true;
             }
 
             for (int i = 0; i < PrefabInstances.Count; i++)
@@ -91,17 +112,13 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnNetworkSpawn()
+        protected virtual void Awake()
         {
-            base.OnNetworkSpawn();
-
-            if (!IsHost)
-            {
-                return;
-            }
-
             switch (activationTime)
             {
+                case ActivationTime.Immediate:
+                    PerformSpawn();
+                    break;
                 case ActivationTime.ScrapSpawn:
                     DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(PerformSpawn);
                     break;
@@ -114,9 +131,6 @@ namespace itolib.Behaviours.Networking
                         StartOfRound.Instance.StartNewRoundEvent.AddListener(PerformSpawn);
                     }
                     break;
-                case ActivationTime.Immediate:
-                    PerformSpawn();
-                    break;
                 case ActivationTime.DungeonComplete:
                 case ActivationTime.Manual:
                 default:
@@ -125,9 +139,9 @@ namespace itolib.Behaviours.Networking
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Unsubscribe to the event that may have been subscribed to, depending on the set <c>ActivationTime</c>.
         /// </summary>
-        public override void OnNetworkDespawn()
+        private void UnsubscribeFromEvents()
         {
             switch (activationTime)
             {
@@ -149,8 +163,6 @@ namespace itolib.Behaviours.Networking
                 default:
                     break;
             }
-
-            base.OnNetworkDespawn();
         }
 
         /// <summary>
@@ -159,7 +171,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="dungeon"></param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
-            if (activationTime is ActivationTime.DungeonComplete)
+            if (!performedActivation && activationTime is ActivationTime.DungeonComplete)
             {
                 PerformSpawn();
             }

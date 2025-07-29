@@ -13,14 +13,17 @@ namespace itolib.Behaviours.Helpers
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
         Unspecified = -1,
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
         Entrance,
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
         Exit
     }
 
@@ -32,42 +35,28 @@ namespace itolib.Behaviours.Helpers
         /// <summary>
         ///     TODO.
         /// </summary>
-        public new void DebugDraw()
-        {
-            if (Socket == null)
-            {
-                return;
-            }
-
-            base.DebugDraw();
-        }
+        [field: Header("Specific Doorway")]
+        [field: Tooltip("")]
+        [field: SerializeField] public DoorwayType DoorwayType { get; private set; } = DoorwayType.Unspecified;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Header("Entrance Doorway")]
-        [Tooltip("")]
-        public DoorwayType doorwayType = DoorwayType.Unspecified;
+        [field: Tooltip("")]
+        [field: SerializeField] public bool AllowSwap { get; private set; }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        [Min(0.0f)]
-        public bool allowSwap;
+        [field: Tooltip("")]
+        [field: Min(0.0f)]
+        [field: SerializeField] public float WeightOverride { get; private set; }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        [Min(0.0f)]
-        public float weightOverride = 0.0f;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        [Min(0.0f)]
-        public float weightMultiplier = 1.0f;
+        [field: Tooltip("")]
+        [field: Min(0.0f)]
+        [field: SerializeField] public float WeightMultiplier { get; private set; } = 1.0f;
     }
 }

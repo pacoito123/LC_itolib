@@ -117,9 +117,12 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        protected override void Start()
+        private void Awake()
         {
-            base.Start();
+            if (!NetworkManager.Singleton.IsHost && regionCollider != null)
+            {
+                regionCollider.enabled = false;
+            }
 
             if (explosionPrefab == null)
             {
@@ -133,16 +136,13 @@ namespace itolib.Behaviours.Effects
         /// </summary>
 		public override void CheckObjectsInRegion()
         {
-            if (explosionPrefab == null || regionCollider == null)
+            if (regionCollider == null)
             {
                 return;
             }
 
-            float sqrMaxDamageRange = (regionCollider.bounds.max - regionCollider.bounds.center).sqrMagnitude;
-
-            Vector3 explosionOrigin = (regionCollider != null && regionCollider.enabled && regionCollider.gameObject.activeInHierarchy)
-                ? regionCollider.bounds.center : transform.position;
-            if (spawnExplosionEffect)
+            Vector3 explosionOrigin = regionCollider.bounds.center;
+            if (spawnExplosionEffect && explosionPrefab != null)
             {
                 Instantiate(explosionPrefab, explosionOrigin, useVanillaExplosion ? Quaternion.Euler(-90f, 0f, 0f)
                     : Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform).SetActive(true);
@@ -167,21 +167,18 @@ namespace itolib.Behaviours.Effects
                 HUDManager.Instance.ShakeCamera(ScreenShakeType.VeryStrong);
             }
 
-            if (!IsHost)
+            if (!NetworkManager.Singleton.IsHost)
             {
                 return;
             }
 
             base.CheckObjectsInRegion();
 
-            if (overlapBuffer == null || overlapBuffer.Length == 0)
-            {
-                return;
-            }
+            float sqrMaxDamageRange = (regionCollider.bounds.max - regionCollider.bounds.center).sqrMagnitude;
 
             bool localPlayerHit = false;
 
-            for (int i = 0; i < objectsFound; i++)
+            for (int i = 0; i < overlapBuffer?.Length; i++)
             {
                 Collider? colliderHit = overlapBuffer[i];
 
@@ -194,7 +191,7 @@ namespace itolib.Behaviours.Effects
                 Transform targetTransform = objectHit.transform;
 
                 float sqrDistanceFromBlast = (targetTransform.position - explosionOrigin).sqrMagnitude,
-                    damageTime = sqrDistanceFromBlast / sqrMaxDamageRange;
+                    damageTime = Mathf.Sqrt(sqrDistanceFromBlast / sqrMaxDamageRange);
 
                 // TODO: Parameterize more stuff?
                 if (!Physics.Linecast(explosionOrigin, targetTransform.position + (Vector3.up * 0.3f), coverMask,

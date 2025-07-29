@@ -11,14 +11,14 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     The climbing speed to set when using this specific ladder.
         /// </summary>
-        [Header("Ladder")]
+        [Space(5.0f)]
+        [Header("Interact Climbable")]
         [Tooltip("The climbing speed to set when using this specific ladder.")]
-        public float climbSpeed = 15.0f;
+        [SerializeField] private float climbSpeed = 15.0f;
 
         /// <summary>
         ///     The player's regular climbing speed, to reset their climbing speed after they get off the ladder.
         /// </summary>
-        [HideInInspector]
         private float normalClimbSpeed = 3.0f;
 
         /// <summary>

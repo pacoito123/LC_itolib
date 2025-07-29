@@ -1,6 +1,5 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
-using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -9,130 +8,52 @@ namespace itolib.Behaviours.Grabbables
     /// <summary>
     ///     TODO.
     /// </summary>
-    [RequireComponent(typeof(ItemGrabbable))]
-    public class ItemThrowable : NetworkBehaviour
+    public class ItemThrowable : ItemTargetable
     {
         /// <summary>
         ///     TODO.
         /// </summary>
-        public PlayerControllerB? LastThrownBy { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public Ray ThrowRay { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [HideInInspector]
-        public RaycastHit rayHit;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public ItemGrabbable item = null!;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public Transform itemTransform = null!;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public float throwDistance = 12.0f;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public float fallDistance = 30.0f;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public float fallSpeed = 12.0f;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public float rotationSpeed = 14.0f;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public AnimationCurve? fallCurve;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public AnimationCurve? verticalFallCurve;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public AnimationCurve? verticalFallCurveNoBounce;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Space(10f)]
-        [Header("Collision")]
-        [Tooltip("")]
-        public LayerMask collisionMask = 268437761;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
+        [Space(5.0f)]
+        [Header("Item Throwable")]
+        [Space(5.0f)]
         [Header("Events")]
-        public UnityEvent<PlayerControllerB> onThrowStart = new();
+        [Tooltip("")]
+        [SerializeField] private UnityEvent<PlayerControllerB> onThrowStart = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<PlayerControllerB> onThrowFinish = new();
+        [SerializeField] private UnityEvent<PlayerControllerB> onThrowFinish = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        public UnityEvent<PlayerControllerB, int> onThrowFinishVariant = new();
+        private PlayerControllerB? lastThrownBy;
 
         /// <summary>
         ///     TODO.
-        /// </summary>
-        public void Awake()
+        /// </summary> 
+        protected override void Reset()
         {
-            if (item == null && !TryGetComponent(out item))
-            {
-                // TODO: Log warning
-                enabled = false;
+            maxDistance = 12.0f;
+            fallDistance = 30.0f;
+            fallSpeed = 12.0f;
+            rotationSpeed = 14.0f;
 
-                return;
-            }
-
-            item.onActivate.AddListener(ItemActivate);
-            item.onHitGround.AddListener(OnHitGround);
-            item.onHitGroundVariant.AddListener(OnHitGroundVariant);
+            collisionMask = 268437761; // TODO: Use bitwise operator
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Start()
+        protected override void Awake()
         {
-            item.FallWithCurveOverride = FallWithCurve;
+            base.Awake();
+
+            eventfulSelf?.OnActivate.AddListener(ItemActivate);
+            eventfulSelf?.OnGroundReached.AddListener(OnHitGround);
+            // eventfulSelf?.OnGroundReachedVariant.AddListener(OnHitGround);
         }
 
         /// <summary>
@@ -140,54 +61,46 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="used"></param>
         /// <param name="buttonDown"></param>
-        public void ItemActivate(bool used, bool buttonDown)
+        private void ItemActivate(bool used, bool buttonDown)
         {
-            if (!item.IsOwner)
+            if (item.playerHeldBy == null || !item.playerHeldBy.IsLocalClient())
             {
                 return;
             }
 
-            item.FallWithCurveOverride = FallWithCurve;
-
-            if (item.playerHeldBy != null)
+            if (TryGetDestination(out DestinationInfo playerKickInfo, item.transform, player: item.playerHeldBy))
             {
-                LastThrownBy = item.playerHeldBy;
-                onThrowStart.Invoke(LastThrownBy);
+                item.playerHeldBy.DiscardHeldObject(true, null, playerKickInfo.targetPosition, true);
 
-                SyncThrowerServerRpc(item.playerHeldBy);
-
-                item.playerHeldBy.DiscardHeldObject(true, null, GetThrowDestination(), true);
+                BeginTrajectoryLocal(playerKickInfo);
+                BeginTrajectoryServerRpc(playerKickInfo);
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnHitGround()
+        private void OnHitGround()
         {
-            if (LastThrownBy != null)
+            if (lastThrownBy != null)
             {
-                onThrowFinish.Invoke(LastThrownBy);
-                LastThrownBy = null;
+                onThrowFinish.Invoke(lastThrownBy);
+                lastThrownBy = null;
             }
         }
 
-        /// <summary>
+        /* /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnHitGroundVariant(int variantIndex)
+        private void OnHitGround(int _)
         {
-            if (LastThrownBy != null)
-            {
-                onThrowFinishVariant.Invoke(LastThrownBy, item.VariantIndex);
-                LastThrownBy = null;
-            }
-        }
+            OnHitGround();
+        } */
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void FallWithCurve()
+        protected override void FallWithCurve()
         {
             float magnitude = (item.startFallingPosition - item.targetFloorPosition).magnitude;
 
@@ -196,13 +109,10 @@ namespace itolib.Behaviours.Grabbables
             itemTransform.localPosition = Vector3.Lerp(item.startFallingPosition, item.targetFloorPosition,
                 fallCurve?.Evaluate(item.fallTime) ?? item.fallTime);
 
-            itemTransform.localPosition = magnitude > 5.0f
-                ? Vector3.Lerp(new(itemTransform.localPosition.x, item.startFallingPosition.y, itemTransform.localPosition.z),
-                    new(itemTransform.localPosition.x, item.targetFloorPosition.y, itemTransform.localPosition.z),
-                    verticalFallCurveNoBounce?.Evaluate(item.fallTime) ?? item.fallTime)
-                : Vector3.Lerp(new(itemTransform.localPosition.x, item.startFallingPosition.y, itemTransform.localPosition.z),
-                    new(itemTransform.localPosition.x, item.targetFloorPosition.y, itemTransform.localPosition.z),
-                    verticalFallCurve?.Evaluate(item.fallTime) ?? item.fallTime);
+            itemTransform.localPosition = Vector3.Lerp(new(itemTransform.localPosition.x, item.startFallingPosition.y, itemTransform.localPosition.z),
+                new(itemTransform.localPosition.x, item.targetFloorPosition.y, itemTransform.localPosition.z), magnitude > 5.0f
+                    ? (verticalFallCurveNoBounce?.Evaluate(item.fallTime) ?? item.fallTime)
+                    : (verticalFallCurve?.Evaluate(item.fallTime) ?? item.fallTime));
 
             item.fallTime += Mathf.Abs(fallSpeed * Time.deltaTime / magnitude);
         }
@@ -210,43 +120,37 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="destination"></param>
+        /// <param name="origin"></param>
         /// <returns></returns>
-        public Vector3 GetThrowDestination()
+        protected override bool TryGetDestination(out Vector3 destination, Transform origin)
         {
-            Transform cameraTransform = item.playerHeldBy.gameplayCamera.transform;
-            ThrowRay = new(cameraTransform.position, cameraTransform.forward);
+            trajectoryRay = new(item.playerHeldBy.gameplayCamera.transform.position, item.playerHeldBy.gameplayCamera.transform.forward);
 
-            Vector3 pos = Physics.Raycast(ThrowRay, out rayHit, throwDistance, collisionMask, QueryTriggerInteraction.Ignore)
-                ? ThrowRay.GetPoint(rayHit.distance - 0.05f)
-                : ThrowRay.GetPoint(throwDistance);
+            destination = Physics.Raycast(trajectoryRay, out rayHit, maxDistance, collisionMask, QueryTriggerInteraction.Ignore)
+                ? trajectoryRay.GetPoint(rayHit.distance - 0.05f)
+                : trajectoryRay.GetPoint(maxDistance);
 
-            ThrowRay = new(pos, Vector3.down);
+            trajectoryRay = new(destination, Vector3.down);
 
-            return Physics.Raycast(ThrowRay, out rayHit, fallDistance, collisionMask, QueryTriggerInteraction.Ignore)
-                ? rayHit.point + (Vector3.up * item.itemProperties.verticalOffset) : ThrowRay.GetPoint(fallDistance);
+            destination = Physics.Raycast(trajectoryRay, out rayHit, fallDistance, collisionMask, QueryTriggerInteraction.Ignore)
+                ? rayHit.point + (Vector3.up * item.itemProperties.verticalOffset) : trajectoryRay.GetPoint(fallDistance);
+
+            return true;
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
-        [ServerRpc(RequireOwnership = false)]
-        public void SyncThrowerServerRpc(NetworkBehaviourReference playerReference)
+        /// <param name="destinationInfo"></param>
+        protected override void BeginTrajectoryLocal(DestinationInfo destinationInfo)
         {
-            SyncThrowerClientRpc(playerReference);
-        }
+            base.BeginTrajectoryLocal(destinationInfo);
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        [ClientRpc]
-        public void SyncThrowerClientRpc(NetworkBehaviourReference playerReference)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            if (destinationInfo.playerInvolved && destinationInfo.playerReference.TryGet(out PlayerControllerB player))
             {
-                LastThrownBy = player;
-                onThrowStart.Invoke(LastThrownBy);
+                lastThrownBy = player;
+                onThrowStart.Invoke(player);
             }
         }
     }

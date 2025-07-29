@@ -1,4 +1,4 @@
-using itolib.Behaviours.Grabbables;
+using itolib.Interfaces;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -32,25 +32,36 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        private void Awake()
+        {
+            if (!NetworkManager.Singleton.IsHost && regionCollider != null)
+            {
+                regionCollider.enabled = false;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void CheckObjectsInRegion()
         {
-            base.CheckObjectsInRegion();
-
-            if (!IsHost)
+            if (!IsSpawned || !IsHost)
             {
-                if (regionCollider != null)
-                {
-                    regionCollider.enabled = false;
-                }
-
                 return;
             }
 
+            base.CheckObjectsInRegion();
+
             int itemsFound = 0;
 
-            for (int i = 0; i < objectsFound; i++)
+            for (int i = 0; i < overlapBuffer?.Length; i++)
             {
-                Collider itemCollider = overlapBuffer![i];
+                Collider? itemCollider = overlapBuffer[i];
+
+                if (itemCollider == null || !itemCollider.enabled) // Skip disabled colliders.
+                {
+                    continue;
+                }
 
                 if (itemCollider.TryGetComponent(out GrabbableObject item)
                     && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
@@ -171,7 +182,7 @@ namespace itolib.Behaviours.Detectors
         /// <param name="item"></param>
         public static void DropItem(GrabbableObject item)
         {
-            if (item is ItemGrabbable grabbable)
+            if (item is IEventfulItem grabbable)
             {
                 grabbable.FallWithCurveOverride = null;
             }

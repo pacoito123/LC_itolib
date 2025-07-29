@@ -53,34 +53,36 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public override void CheckObjectsInRegion()
         {
-            if (!isActiveAndEnabled)
-            {
-                return;
-            }
-
             base.CheckObjectsInRegion();
 
             connectorsFound = 0;
 
-            for (int i = 0; i < objectsFound; i++)
+            for (int i = 0; i < overlapBuffer?.Length; i++)
             {
-                if (overlapBuffer![i].TryGetComponent(out ConnectorMerger connector))
+                Collider? connectorCollider = overlapBuffer[i];
+
+                if (connectorCollider == null || !connectorCollider.enabled) // Skip disabled colliders.
                 {
-                    if (connector == this || (nameFilter.Length > 0 && nameFilter.CompareOrdinal(connector.nameFilter)))
+                    continue;
+                }
+
+                if (connectorCollider.TryGetComponent(out ConnectorMerger otherConnector))
+                {
+                    if (otherConnector == this || (nameFilter.Length > 0 && nameFilter.CompareOrdinal(otherConnector.nameFilter)))
                     {
                         continue;
                     }
 
-                    if (priority < connector.priority)
+                    if (priority < otherConnector.priority)
                     {
                         return;
                     }
 
-                    float magnitude = (transform.position - connector.transform.position).magnitude;
+                    float sqrMagnitude = (transform.position - otherConnector.transform.position).sqrMagnitude;
 
-                    if (magnitude < tolerance)
+                    if (sqrMagnitude < tolerance * tolerance)
                     {
-                        onObjectsEach.Invoke(connector);
+                        onObjectsEach.Invoke(otherConnector);
                         connectorsFound++;
                     }
                 }
@@ -90,6 +92,21 @@ namespace itolib.Behaviours.Props
             {
                 onObjectsAny.Invoke(connectorsFound);
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="otherConnector"></param>
+        public void DisableSelf(ConnectorMerger otherConnector)
+        {
+            if (moveToCenter)
+            {
+                Vector3 centerPos = Vector3.Lerp(otherConnector.transform.position, transform.position, 0.5f);
+                otherConnector.transform.position = centerPos;
+            }
+
+            gameObject.SetActive(false);
         }
 
         /// <summary>
@@ -105,6 +122,16 @@ namespace itolib.Behaviours.Props
             }
 
             connector.gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="connector"></param>
+        public void DisableBothConnectors(ConnectorMerger connector)
+        {
+            connector.gameObject.SetActive(false);
+            gameObject.SetActive(false);
         }
     }
 }

@@ -9,66 +9,65 @@ namespace itolib.Behaviours.Grabbables
     /// <summary>
     ///     TODO.
     /// </summary>
-    [RequireComponent(typeof(ItemGrabbable))]
     public class ItemWearable : NetworkBehaviour
     {
         /// <summary>
         ///     TODO.
         /// </summary>
-        public Vector3 InitialPosition { get; private set; } = Vector3.zero;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public Quaternion InitialRotation { get; private set; } = Quaternion.identity;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public Transform? BoneToAttachTo { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [Header("Item Wearable")]
         [Tooltip("")]
-        public ItemGrabbable item = null!;
+        [SerializeField] private ItemGrabbable item = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public WearablePosition wearPosition = WearablePosition.Custom;
+        [SerializeField] private WearablePosition wearPosition = WearablePosition.Custom;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public string customBone = "";
+        [SerializeField] private string customBone = string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Offset")]
         [Tooltip("")]
-        public Transform? applyOffsetTo;
+        [SerializeField] private Transform? applyOffsetTo;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public Vector3 wearPositionOffset = Vector3.zero;
+        [SerializeField] private Vector3 wearPositionOffset = Vector3.zero;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public Quaternion wearRotationOffset = Quaternion.identity;
+        [SerializeField] private Quaternion wearRotationOffset = Quaternion.identity;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        private Vector3 initialPosition = Vector3.zero;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private Quaternion initialRotation = Quaternion.identity;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private Transform? boneToAttachTo;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void Awake()
         {
             if (item == null && !TryGetComponent(out item))
             {
@@ -80,28 +79,28 @@ namespace itolib.Behaviours.Grabbables
 
             item.hideOnPocket = false;
 
-            item.onDiscardEarly.AddListener(OnDiscardEarly);
-            item.onEquip.AddListener(OnEquip);
-            item.onGrab.AddListener(SetWearablePosition);
-            item.onPocket.AddListener(OnPocket);
+            item.OnDiscardEarly.AddListener(OnDiscardEarly);
+            item.OnEquip.AddListener(OnEquip);
+            item.OnGrab.AddListener(SetWearablePosition);
+            item.OnPocket.AddListener(OnPocket);
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Start()
+        private void Start()
         {
             if (applyOffsetTo != null)
             {
-                InitialPosition = applyOffsetTo.localPosition;
-                InitialRotation = applyOffsetTo.localRotation;
+                initialPosition = applyOffsetTo.localPosition;
+                initialRotation = applyOffsetTo.localRotation;
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void SetWearablePosition()
+        private void SetWearablePosition()
         {
             if (item.playerHeldBy != null && item.playerHeldBy.IsOwner)
             {
@@ -115,7 +114,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="playerReference"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void SetWearablePositionServerRpc(NetworkBehaviourReference playerReference)
+        private void SetWearablePositionServerRpc(NetworkBehaviourReference playerReference)
         {
             SetWearablePositionClientRpc(playerReference);
         }
@@ -125,7 +124,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="playerReference"></param>
         [ClientRpc]
-        public void SetWearablePositionClientRpc(NetworkBehaviourReference playerReference)
+        private void SetWearablePositionClientRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
@@ -142,13 +141,13 @@ namespace itolib.Behaviours.Grabbables
             switch (wearPosition)
             {
                 case WearablePosition.Custom:
-                    BoneToAttachTo = player.playerBodyAnimator.transform.Find(customBone);
+                    boneToAttachTo = player.playerBodyAnimator.transform.Find(customBone);
                     break;
                 case WearablePosition.Head:
-                    BoneToAttachTo = player.IsOwner ? player.headCostumeContainerLocal : player.headCostumeContainer;
+                    boneToAttachTo = player.IsOwner ? player.headCostumeContainerLocal : player.headCostumeContainer;
                     break;
                 case WearablePosition.Belt:
-                    BoneToAttachTo = player.lowerTorsoCostumeContainer;
+                    boneToAttachTo = player.lowerTorsoCostumeContainer;
                     break;
                 default:
                     break;
@@ -158,7 +157,7 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnDiscardEarly()
+        private void OnDiscardEarly()
         {
             OnEquip();
 
@@ -168,7 +167,7 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnEquip()
+        private void OnEquip()
         {
             EquipWearable(reset: true);
         }
@@ -176,7 +175,7 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnPocket()
+        private void OnPocket()
         {
             EquipWearable(reset: false);
         }
@@ -185,7 +184,7 @@ namespace itolib.Behaviours.Grabbables
         ///     TODO.
         /// </summary>
         /// <param name="reset"></param>
-        public void EquipWearable(bool reset = false)
+        private void EquipWearable(bool reset = false)
         {
             if (item.playerHeldBy != null && item.playerHeldBy.IsOwner)
             {
@@ -200,7 +199,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="playerReference"></param>
         /// <param name="reset"></param>
         [ServerRpc(RequireOwnership = false)]
-        public void EquipWearableServerRpc(NetworkBehaviourReference playerReference, bool reset = false)
+        private void EquipWearableServerRpc(NetworkBehaviourReference playerReference, bool reset = false)
         {
             EquipWearableClientRpc(playerReference, reset);
         }
@@ -211,7 +210,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="playerReference"></param>
         /// <param name="reset"></param>
         [ClientRpc]
-        public void EquipWearableClientRpc(NetworkBehaviourReference playerReference, bool reset = false)
+        private void EquipWearableClientRpc(NetworkBehaviourReference playerReference, bool reset = false)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
@@ -232,7 +231,7 @@ namespace itolib.Behaviours.Grabbables
                 player.equippedUsableItemQE = false;
 
                 item.isPocketed = true;
-                item.parentObject = BoneToAttachTo;
+                item.parentObject = boneToAttachTo;
             }
             else
             {
@@ -241,8 +240,8 @@ namespace itolib.Behaviours.Grabbables
 
             if (applyOffsetTo != null)
             {
-                applyOffsetTo.SetLocalPositionAndRotation(!reset ? wearPositionOffset : InitialPosition,
-                    !reset ? wearRotationOffset : InitialRotation);
+                applyOffsetTo.SetLocalPositionAndRotation(!reset ? wearPositionOffset : initialPosition,
+                    !reset ? wearRotationOffset : initialRotation);
             }
         }
     }
