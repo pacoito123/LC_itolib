@@ -408,5 +408,31 @@ namespace itolib.Behaviours.Detectors
 
             return false;
         }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="enemy"></param>
+        public static void PurgeTulipSnake(EnemyAI enemy)
+        {
+            if (enemy is FlowerSnakeEnemy tulipSnake)
+            {
+                // Check if Tulip Snake is clinging to a player, and get them off if they are.
+                if (tulipSnake.clingingToPlayer != null && tulipSnake.clingingToPlayer.IsLocalClient() && tulipSnake.clingPosition == 4)
+                {
+                    tulipSnake.StopClingingOnLocalClient(true);
+                    tulipSnake.StopClingingServerRpc((int)GameNetworkManager.Instance.localPlayerController.playerClientId);
+                }
+
+                if (tulipSnake.IsHost)
+                {
+                    // Swiftly end the Tulip Snake before it can react.
+                    tulipSnake.KillEnemyOnOwnerClient(true);
+                }
+
+                // Disable Tulip Snake so it simply, abruptly vanishes.
+                tulipSnake.gameObject.SetActive(false);
+            }
+        }
     }
 }

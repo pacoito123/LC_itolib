@@ -262,15 +262,6 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="index"></param>
-        public void RemoveWeight(int index)
-        {
-            weightedSelf.RemoveWeight(index);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         /// <param name="playerReference"></param>
         /// <param name="weightIndex"></param>
         [ServerRpc(RequireOwnership = false)]

@@ -23,6 +23,12 @@ namespace itolib.Behaviours.Grabbables
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        [SerializeField] private NetworkObject parentNetworkObject = null!;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         [SerializeField] private bool disableGrabOnDiscard = false;
 
         /// <summary>
@@ -283,9 +289,9 @@ namespace itolib.Behaviours.Grabbables
                     _ = RoundManager.Instance.spawnedSyncedObjects.Remove(item.gameObject);
                 }
 
-                if (IsHost && item.IsSpawned)
+                if (IsHost && parentNetworkObject != null && parentNetworkObject.IsSpawned)
                 {
-                    item.GetComponent<NetworkObject>().Despawn(true);
+                    parentNetworkObject.Despawn(true);
                 }
             }
         }
