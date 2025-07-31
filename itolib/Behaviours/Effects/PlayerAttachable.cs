@@ -170,12 +170,6 @@ namespace itolib.Behaviours.Effects
                     // Attach player on all clients.
                     AttachPlayerServerRpc(player);
                 }
-
-                // Start timer until the player is forcibly detached, if one is set.
-                if (detachTimer > 0.0f)
-                {
-                    _ = StartCoroutine(DetachPlayerDelayed());
-                }
             }
         }
 
@@ -258,6 +252,12 @@ namespace itolib.Behaviours.Effects
 
             // Enable update loop.
             enabled = true;
+
+            // Start timer until the player is forcibly detached, if one is set.
+            if (detachTimer > 0.0f)
+            {
+                _ = StartCoroutine(DetachPlayerDelayed());
+            }
         }
 
         /// <summary>

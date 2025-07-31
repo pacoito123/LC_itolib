@@ -7,11 +7,13 @@ namespace itolib.Patches
     [HarmonyPatch]
     internal sealed class DoorwayPatch
     {
+        internal static bool specificDoorwayActive;
+
         [HarmonyPatch(typeof(DoorwayPairFinder), nameof(DoorwayPairFinder.IsValidDoorwayPairing))]
         [HarmonyPostfix]
         private static void IsValidDoorwayPairingPost(ref bool __result, DoorwayProxy a, DoorwayProxy b, TileProxy previousTile, ref float weight)
         {
-            if (!__result)
+            if (!__result || !specificDoorwayActive)
             {
                 return;
             }

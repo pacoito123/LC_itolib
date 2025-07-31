@@ -48,7 +48,7 @@ namespace itolib
                 NetcodePatcher();
 
                 // Apply all patches.
-                // Harmony.PatchAll(typeof(DoorwayPatch));
+                Harmony.PatchAll(typeof(DoorwayPatch));
                 Harmony.PatchAll(typeof(LoadPatch));
                 // ...
 

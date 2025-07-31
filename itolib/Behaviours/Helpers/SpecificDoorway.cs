@@ -1,4 +1,5 @@
 using DunGen;
+using itolib.Patches;
 using System;
 using UnityEngine;
 
@@ -30,7 +31,7 @@ namespace itolib.Behaviours.Helpers
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class SpecificDoorway : Doorway
+    public class SpecificDoorway : Doorway, IDungeonCompleteReceiver
     {
         /// <summary>
         ///     TODO.
@@ -58,5 +59,22 @@ namespace itolib.Behaviours.Helpers
         [field: Tooltip("")]
         [field: Min(0.0f)]
         [field: SerializeField] public float WeightMultiplier { get; private set; } = 1.0f;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void Awake()
+        {
+            DoorwayPatch.specificDoorwayActive = true;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="dungeon"></param>
+        public void OnDungeonComplete(Dungeon dungeon)
+        {
+            DoorwayPatch.specificDoorwayActive = false;
+        }
     }
 }
