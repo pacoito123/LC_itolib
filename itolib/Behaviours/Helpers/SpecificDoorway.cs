@@ -25,7 +25,12 @@ namespace itolib.Behaviours.Helpers
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        Exit
+        Exit,
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        Neither
     }
 
     /// <summary>

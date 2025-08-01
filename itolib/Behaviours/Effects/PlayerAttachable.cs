@@ -5,6 +5,7 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Effects
 {
@@ -81,6 +82,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         [Header("Other")]
         [Tooltip("Whether players attach locally, otherwise only one player can attach at a time.")]
+        [FormerlySerializedAs("isLocalEffect")]
         [SerializeField] protected bool attachLocally;
 
         /// <summary>

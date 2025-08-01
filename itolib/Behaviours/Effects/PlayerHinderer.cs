@@ -28,6 +28,12 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        [SerializeField] private bool muteAudio;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Header("Jumping")]
         [Tooltip("")]
         [SerializeField] private bool allowJumping = true;
@@ -156,6 +162,8 @@ namespace itolib.Behaviours.Effects
             player.isMovementHindered++;
             player.hinderedMultiplier *= hinderedMultiplier;
 
+            player.statusEffectAudio.enabled = !muteAudio;
+
             if (sinkPlayer)
             {
                 if (playerSinkingCurveOverride != null && StartOfRound.Instance != null)
@@ -196,6 +204,8 @@ namespace itolib.Behaviours.Effects
 
             attachedPlayer.isMovementHindered--;
             attachedPlayer.hinderedMultiplier /= hinderedMultiplier;
+
+            attachedPlayer.statusEffectAudio.enabled = true;
 
             if (sinkPlayer)
             {

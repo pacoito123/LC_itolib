@@ -51,7 +51,7 @@ namespace itolib.Patches
 
         private static bool ModifyWeights(SpecificDoorway doorway, bool next, ref float weight)
         {
-            if ((doorway.DoorwayType == DoorwayType.Unspecified) || (next && doorway.DoorwayType == DoorwayType.Exit && !doorway.AllowSwap)
+            if ((doorway.DoorwayType == DoorwayType.Neither) || (next && doorway.DoorwayType == DoorwayType.Exit && !doorway.AllowSwap)
                 || (!next && doorway.DoorwayType == DoorwayType.Entrance))
             {
                 weight = 0.0f;

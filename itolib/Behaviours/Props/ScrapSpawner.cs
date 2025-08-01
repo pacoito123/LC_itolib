@@ -85,6 +85,7 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         [field: Tooltip("")]
+        [field: Min(0)]
         [field: SerializeField] public int Weight { get; set; } = 1;
 
         /// <summary>
