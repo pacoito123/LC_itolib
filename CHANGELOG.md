@@ -1,5 +1,75 @@
 # Changelog
 
+## [v0.3.0]
+
+Did a couple changes, I think...
+
+- Added `SpraySensor`, for detecting if an object is being sprayed with Spray Paint, Weed Killer, or any other item that uses or inherits `SprayPaintItem`.
+  - Multiple spray 'treshholds' can be defined, each with event callbacks, to have stuff happen depending on the number of times sprayed (e.g. to have something happen after 3 sprays specifically).
+  - Does not actually hook into any `SprayPaintItem` code, so it should be compatible with anything that modifies it (e.g. [BetterSprayPaint](https://thunderstore.io/c/lethal-company/p/taffyko/BetterSprayPaint)).
+- Added `FearInducer`, which increases a player's fear level and plays the fear effect when looked at.
+  - Has some customizability for things like range, angle, and amount of fear to instill upon the player depending on how close they are.
+  - Disables itself after triggering once, but can be re-enabled to give the player another spook.
+- Added `ItemDiscardable`, for items that drop themselves from the player's inventory.
+  - Has a function to cause the item to drop itself from the player's inventory (even while pocketed), as well as a despawn timer after getting discarded.
+- Added `EventfulApparatus`, a `LungProp`-inheriting object with a bunch of events similar to `ItemGrabbable`.
+  - (PlayZone) `TwinApparatus` now inherits from `EventfulApparatus`.
+- Added `MultiAnimationEvent`, which is similar to `PlayAudioAnimationEvent` but without a few features that can be done in a better way with other components (e.g. with `NetworkedSource`), and with a list of event callbacks to execute instead of the single `OnAnimationEvent`.
+- Added `AudioGroup`, which checks objects and their children for any `AudioSource`, and allows some basic audio functions to be run on all sources at once.
+- Added `CeilingAdjuster`, which just raises whichever object it's attached to to the highest point in the dungeon + a specified additional offset.
+- Added `DungeonConditional`, for doing stuff whenever specific interiors generate.
+- Added lerping to `PlayerLauncher`, so it smoothly ramps up towards the applied force instead of immediately applying it.
+  - Ramping speed is adjustable, and it comes with a new detach condition for once the force is fully applied.
+  - Also fixed the unintended rocket jump whenever players jump right before touching the `PlayerLauncher`, but it can be turned back on!
+- Added lerping to `PlatformGrabbable`, to smoothly move the player towards the center of the platform, instead of teleporting them to it.
+  - Not teleporting instantly means the player will be slightly behind the intended position, but this grabbing speed can be adjusted.
+- Added `IEventfulItem` interface, which includes every event available in `ItemGrabbable`.
+  - Made all modular item scripts (e.g. `ItemWhackable`) require using items that implement the `IEventfulItem` interface.
+  - Made `ItemGrabbable` and `EventfulApparatus` implement `IEventfulItem`, so they're both compatible with all modular item scripts!
+- Added abstract `ItemTargetable`, which represents items that follow a trajectory towards a set destination.
+  - `ItemKickable` and `ItemThrowable` now both inherit from it, and thus share some common functionality.
+  - Both `ItemKickable` and `ItemThrowable` had some revisions done to their trajectory logic, too.
+- Added `IWeightedScript` interface, which includes a bunch of default method implementations to handle weighted randomization.
+  - `WeightedEvent` and `ScrapSpawner` now implement said interface.
+- Added generics to the `IPooledObject` interface.
+  - Now the abstract `PooledObject` contains Unity-related object pooling stuff, and `AttachedEffect` inherits from it.
+  - It also now actually supports creating a given number of instances to have ready from the start.
+- Overhauled `ScrapSpawner` a bit (using the `IWeightedScript` interface):
+  - Added a weighted list of items to spawn, instead of just a single item.
+    - Blank references (even for modded items!) should be working correctly, too.
+  - Added field to `ScrapSpawner` to allow it to use the current moon's spawn weights, instead of specifying a list.
+    - Overrides any items set in the weighted list.
+  - Added a minimum and maximum set amount of items to spawn, instead of simply spawning one at every defined location.
+  - Added able to spawn scrap at a random location within specified area bounds, instead of only at set points.
+  - Made spawned scrap actually count towards the current round's total scrap value amount.
+- Added pretty much all `ItemAudible` fields to `NetworkedSource`, and improved its networking a bit.
+  - `NetworkedSource` now has functionality to, for instance, alert nearby enemies or play sounds over the walkie.
+- Made `MaterialSwapper` able to do a set amount of swaps per activation, instead of doing all of them at once.
+  - Allows for 'cycling' through various material states by only doing a certain number at a time.
+- Improved enemy filtering for `EnemySensor`.
+  - Added callback events for individual filters, as well as enemy blacklisting.
+- Added `GrabbableObject` attaching to `AttachedEffect`.
+  - Switched `AttachedEffect` generic type to `Collider`, and made it detach upon disabling.
+- Added a sitting animation field to `PlayerSeater`, to be able to use the sofa and electric chair sitting animations, too.
+- Added a stamina requirement field for triggering `MovementSensor` events.
+- Added a player stamina draining function to `PlayerHinderer`.
+- Added field to mute quicksand sinking sounds for `PlayerHinderer`.
+- Added a networked `onLogCollected` event callback to `DungeonStoryLog`.
+- Made `DetectRegion` scripts take (lossy) scale into account when performing searches.
+- Made `InteractClimbable`'s `specialCharacterAnimation` field automatically disable itself, if `twoHandedItemAllowed` is enabled.
+  - Allows players to climb with two-handed items.
+- Merged `WallBreaker` script into `ConnectorMerger`, which can now be used to disable either connector, or both.
+- Fixed `PlayerSensor` player search counting players twice.
+- Fixed `ExplodeEffect` explosion spawning a fair distance away from where it was actually supposed to.
+  - Also fixed its `spawnExplosionEffect` field not actually doing anything.
+- Fixed all `BaseConditional` scripts not applying on dungeon completion.
+- Fixed `PrefabSpawner` not working without the spawner itself being spawned.
+  - _But who spawns the spawner?_
+- Fixed `NetworkedHittable` not actually serializing `hitID` and the player who hit when sending hit information to other clients.
+- Fixed sun not actually being hidden by the `SunScreen` script.
+  - Switching spectating camera also no longer toggles the sun, but I don't think it was even working in the first place...
+- Fixed `detachTimer` field for `PlayerAttachable` not actually starting when manually attaching the player (instead of with `attachOnEnter`).
+
 ## [v0.2.0]
 
 Did some pretty substantial refactoring; added and fixed a couple things, too.
