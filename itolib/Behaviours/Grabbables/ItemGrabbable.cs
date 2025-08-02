@@ -16,32 +16,40 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public int VariantIndex { get; private set; } = -1;
+        public Action? FallWithCurveOverride { get; set; }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Header("Item Grabbable")]
-        [Tooltip("")]
-        [SerializeField] private bool saveMaterialVariant = false;
+        public int VariantIndex { get; set; } = -1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        [SerializeField] private bool saveMeshVariant = false;
+        [field: Header("Item Grabbable")]
+        [field: Tooltip("")]
+        [field: FormerlySerializedAs("saveMaterialVariant")]
+        [field: SerializeField] public bool SaveMaterialVariant { get; set; }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        [SerializeField] internal bool hideOnPocket = true;
+        [field: Tooltip("")]
+        [field: FormerlySerializedAs("saveMeshVariant")]
+        [field: SerializeField] public bool SaveMeshVariant { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [field: Tooltip("")]
+        [field: FormerlySerializedAs("hideOnPocket")]
+        [field: SerializeField] public bool HideOnPocket { get; set; } = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [field: Space(5.0f)]
-        [field: Header("Events")]
+        [field: Header("Grabbable Events")]
         [field: Tooltip("")]
         [field: FormerlySerializedAs("onActivate")]
         [field: SerializeField] public UnityEvent<bool, bool> OnActivate { get; set; } = new();
@@ -224,11 +232,6 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public Action? FallWithCurveOverride { get; set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         public override void Start()
         {
             base.Start();
@@ -266,7 +269,7 @@ namespace itolib.Behaviours.Grabbables
         /// <returns></returns>
         public override int GetItemDataToSave()
         {
-            if (saveMeshVariant && mainObjectRenderer.TryGetComponent(out MeshFilter itemMesh))
+            if (SaveMeshVariant && mainObjectRenderer.TryGetComponent(out MeshFilter itemMesh))
             {
                 for (int i = 0; i < itemProperties.meshVariants.Length; i++)
                 {
@@ -277,7 +280,7 @@ namespace itolib.Behaviours.Grabbables
                 }
             }
 
-            if (saveMaterialVariant)
+            if (SaveMaterialVariant)
             {
                 for (int i = 0; i < itemProperties.materialVariants.Length; i++)
                 {
@@ -302,13 +305,13 @@ namespace itolib.Behaviours.Grabbables
                 return;
             }
 
-            if (saveMeshVariant && saveData < itemProperties.meshVariants.Length
+            if (SaveMeshVariant && saveData < itemProperties.meshVariants.Length
                 && mainObjectRenderer.TryGetComponent(out MeshFilter itemMesh))
             {
-                itemMesh.mesh = itemProperties.meshVariants[saveData]; // TODO: Test sharedMesh
+                itemMesh.sharedMesh = itemProperties.meshVariants[saveData];
             }
 
-            if (saveMaterialVariant && saveData < itemProperties.materialVariants.Length)
+            if (SaveMaterialVariant && saveData < itemProperties.materialVariants.Length)
             {
                 mainObjectRenderer.sharedMaterial = itemProperties.materialVariants[saveData];
             }
@@ -499,7 +502,7 @@ namespace itolib.Behaviours.Grabbables
         {
             OnPocketEarly.Invoke();
 
-            if (hideOnPocket)
+            if (HideOnPocket)
             {
                 base.PocketItem();
             }
@@ -527,7 +530,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public void SyncItemVariant()
         {
-            if (VariantIndex < 0 && (saveMeshVariant || saveMaterialVariant))
+            if (VariantIndex < 0 && (SaveMeshVariant || SaveMaterialVariant))
             {
                 SyncItemVariantServerRpc(GetItemDataToSave());
             }

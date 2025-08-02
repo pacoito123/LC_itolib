@@ -94,10 +94,10 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         private void Awake()
         {
-            if (item == null && !TryGetComponent(out item))
+            if (item == null || !TryGetComponent(out item))
             {
                 // TODO: Log warning
-                Destroy(this);
+                enabled = false;
 
                 return;
             }

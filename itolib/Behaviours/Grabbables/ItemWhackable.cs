@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
+using itolib.Interfaces;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -18,118 +19,118 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Header("Item Whackable")]
         [Tooltip("")]
-        public ItemGrabbable item = null!;
+        [SerializeField] private GrabbableObject item = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public int weaponDamage = 1;
+        [SerializeField] private int weaponDamage = 1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public int maxObjectHits = 16;
+        [SerializeField] private int maxObjectHits = 16;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public int hitID = 1;
+        [SerializeField] private int hitID = 1;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Audio")]
         [Tooltip("")]
-        public AudioSource? weaponAudio;
+        [SerializeField] private AudioSource? weaponAudio;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool playHitSFX = true;
+        [SerializeField] private bool playHitSFX = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool silentHit = false;
+        [SerializeField] private bool silentHit = false;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Speed")]
         [Tooltip("")]
-        public float chargeTimer = 0.35f;
+        [SerializeField] private float chargeTimer = 0.35f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public float hitSpeed = 0.13f;
+        [SerializeField] private float hitSpeed = 0.13f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public float hitCooldown = 0.3f;
+        [SerializeField] private float hitCooldown = 0.3f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Events")]
         [Tooltip("")]
-        public UnityEvent onReelingStart = new();
+        [SerializeField] private UnityEvent onReelingStart = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent onReelingFinish = new();
+        [SerializeField] private UnityEvent onReelingFinish = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent onWeaponSwing = new();
+        [SerializeField] private UnityEvent onWeaponSwing = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent onWeaponHit = new();
+        [SerializeField] private UnityEvent onWeaponHit = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent onWeaponHitLocal = new();
+        [SerializeField] private UnityEvent onWeaponHitLocal = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int> onWeaponHitVariant = new();
+        [SerializeField] private UnityEvent<int> onWeaponHitVariant = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int> onWeaponHitVariantLocal = new();
+        [SerializeField] private UnityEvent<int> onWeaponHitVariantLocal = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int> onSurfaceHit = new();
+        [SerializeField] private UnityEvent<int> onSurfaceHit = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent<int> onSurfaceHitLocal = new();
+        [SerializeField] private UnityEvent<int> onSurfaceHitLocal = new();
 
         /// <summary>
         ///     TODO.
@@ -137,19 +138,19 @@ namespace itolib.Behaviours.Grabbables
         [Space(10f)]
         [Header("Collision")]
         [Tooltip("")]
-        public LayerMask shovelMask;
+        [SerializeField] private LayerMask shovelMask;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public LayerMask hitMask;
+        [SerializeField] private LayerMask hitMask;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public LayerMask hitSFXMask;
+        [SerializeField] private LayerMask hitSFXMask;
 
         /// <summary>
         ///     TODO.
@@ -186,6 +187,14 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         private Coroutine? whackingCoroutine;
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private IEventfulItem? eventfulSelf;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         private void Reset()
         {
             shovelMask = (1 << LayerMask.NameToLayer("Player")) | (1 << LayerMask.NameToLayer("Props"))
@@ -205,7 +214,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         private void Awake()
         {
-            if (item == null && !TryGetComponent(out item))
+            if (item == null || !TryGetComponent(out item) || item is not IEventfulItem eventfulItem)
             {
                 // TODO: Log warning
                 enabled = false;
@@ -213,8 +222,10 @@ namespace itolib.Behaviours.Grabbables
                 return;
             }
 
-            item.OnActivate.AddListener(ItemActivate);
-            item.OnDiscardEarly.AddListener(DiscardItemEarly);
+            eventfulSelf = eventfulItem;
+
+            eventfulSelf.OnActivate.AddListener(ItemActivate);
+            eventfulSelf.OnDiscardEarly.AddListener(DiscardItemEarly);
         }
 
         /// <summary>
@@ -437,7 +448,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="surfaceIndex"></param>
         private void WeaponHitLocal(bool enemyHit, int surfaceIndex)
         {
-            if (item.VariantIndex < 0)
+            if (eventfulSelf == null || eventfulSelf.VariantIndex < 0)
             {
                 if (item.IsOwner)
                 {
@@ -450,10 +461,10 @@ namespace itolib.Behaviours.Grabbables
             {
                 if (item.IsOwner)
                 {
-                    onWeaponHitVariantLocal.Invoke(item.VariantIndex);
+                    onWeaponHitVariantLocal.Invoke(eventfulSelf.VariantIndex);
                 }
 
-                onWeaponHitVariant.Invoke(item.VariantIndex);
+                onWeaponHitVariant.Invoke(eventfulSelf.VariantIndex);
             }
 
             if (!enemyHit && surfaceIndex != -1)

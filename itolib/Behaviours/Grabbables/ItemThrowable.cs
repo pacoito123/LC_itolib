@@ -53,7 +53,7 @@ namespace itolib.Behaviours.Grabbables
 
             eventfulSelf?.OnActivate.AddListener(ItemActivate);
             eventfulSelf?.OnGroundReached.AddListener(OnHitGround);
-            // eventfulSelf?.OnGroundReachedVariant.AddListener(OnHitGround);
+            eventfulSelf?.OnGroundReachedVariant.AddListener(OnHitGround);
         }
 
         /// <summary>
@@ -89,13 +89,13 @@ namespace itolib.Behaviours.Grabbables
             }
         }
 
-        /* /// <summary>
+        /// <summary>
         ///     TODO.
         /// </summary>
         private void OnHitGround(int _)
         {
             OnHitGround();
-        } */
+        }
 
         /// <summary>
         ///     TODO.

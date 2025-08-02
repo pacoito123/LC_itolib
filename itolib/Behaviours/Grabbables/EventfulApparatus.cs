@@ -1,10 +1,11 @@
-using System;
-using System.Collections;
 using GameNetcodeStuff;
 using itolib.Behaviours.Helpers;
 using itolib.Compatibility;
 using itolib.Interfaces;
 using LethalLevelLoader;
+using System;
+using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
@@ -73,12 +74,32 @@ namespace itolib.Behaviours.Grabbables
         [field: FormerlySerializedAs("onDisplayWarning")]
         [field: SerializeField] public UnityEvent OnDisplayWarning { get; private set; } = new();
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [field: Space(5.0f)]
+        [field: Header("Item Grabbable")]
+        [field: Tooltip("")]
+        [field: SerializeField] public bool SaveMaterialVariant { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [field: Tooltip("")]
+        [field: SerializeField] public bool SaveMeshVariant { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [field: Tooltip("")]
+        [field: SerializeField] public bool HideOnPocket { get; set; } = true;
+
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [field: Space(5.0f)]
-        [field: Header("GrabbableObject Events")]
+        [field: Header("Grabbable Events")]
         [field: Tooltip("")]
         [field: SerializeField] public UnityEvent<bool, bool> OnActivate { get; set; } = new();
 
@@ -240,6 +261,11 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        public int VariantIndex { get; set; } = -1;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void Start()
         {
             // BreakerBoxInstance ??= FindObjectOfType<BreakerBox>();
@@ -378,6 +404,60 @@ namespace itolib.Behaviours.Grabbables
             if (FacilityMeltdownCompatibility.Enabled)
             {
                 OnDisconnectEarly.AddListener(FacilityMeltdownCompatibility.InitiateMeltdown);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <returns></returns>
+        public override int GetItemDataToSave()
+        {
+            if (SaveMeshVariant && mainObjectRenderer.TryGetComponent(out MeshFilter itemMesh))
+            {
+                for (int i = 0; i < itemProperties.meshVariants.Length; i++)
+                {
+                    if (itemProperties.meshVariants[i] == itemMesh.sharedMesh)
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            if (SaveMaterialVariant)
+            {
+                for (int i = 0; i < itemProperties.materialVariants.Length; i++)
+                {
+                    if (itemProperties.materialVariants[i] == mainObjectRenderer.sharedMaterial)
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="saveData"></param>
+        public override void LoadItemSaveData(int saveData)
+        {
+            if (saveData < 0)
+            {
+                return;
+            }
+
+            if (SaveMeshVariant && saveData < itemProperties.meshVariants.Length
+                && mainObjectRenderer.TryGetComponent(out MeshFilter itemMesh))
+            {
+                itemMesh.sharedMesh = itemProperties.meshVariants[saveData];
+            }
+
+            if (SaveMaterialVariant && saveData < itemProperties.materialVariants.Length)
+            {
+                mainObjectRenderer.sharedMaterial = itemProperties.materialVariants[saveData];
             }
         }
 
@@ -528,7 +608,15 @@ namespace itolib.Behaviours.Grabbables
         public override void OnHitGround()
         {
             base.OnHitGround();
-            OnGroundReached.Invoke();
+
+            if (VariantIndex < 0)
+            {
+                OnGroundReached.Invoke();
+            }
+            else
+            {
+                OnGroundReachedVariant.Invoke(VariantIndex);
+            }
         }
 
         /// <summary>
@@ -582,8 +670,57 @@ namespace itolib.Behaviours.Grabbables
         public override void PocketItem()
         {
             OnPocketEarly.Invoke();
-            base.PocketItem();
+
+            if (HideOnPocket)
+            {
+                base.PocketItem();
+            }
+
             OnPocket.Invoke();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void FallWithCurve()
+        {
+            if (FallWithCurveOverride != null)
+            {
+                FallWithCurveOverride();
+            }
+            else
+            {
+                base.FallWithCurve();
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void SyncItemVariant()
+        {
+            if (VariantIndex < 0 && (SaveMeshVariant || SaveMaterialVariant))
+            {
+                SyncItemVariantServerRpc(GetItemDataToSave());
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [ServerRpc(RequireOwnership = false)]
+        private void SyncItemVariantServerRpc(int variantIndex)
+        {
+            SyncItemVariantClientRpc(variantIndex);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [ClientRpc]
+        private void SyncItemVariantClientRpc(int variantIndex)
+        {
+            VariantIndex = variantIndex;
         }
     }
 }

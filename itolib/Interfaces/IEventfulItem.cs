@@ -98,6 +98,11 @@ namespace itolib.Interfaces
         /// <summary>
         ///     TODO.
         /// </summary>
+        UnityEvent<int> OnGroundReachedVariant { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         UnityEvent OnInspect { get; set; }
 
         /// <summary>
@@ -139,5 +144,25 @@ namespace itolib.Interfaces
         ///     TODO.
         /// </summary>
         Action? FallWithCurveOverride { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        bool HideOnPocket { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        bool SaveMaterialVariant { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        bool SaveMeshVariant { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        int VariantIndex { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 using GameNetcodeStuff;
 using itolib.Enums;
 using itolib.Extensions;
+using itolib.Interfaces;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Header("Item Wearable")]
         [Tooltip("")]
-        [SerializeField] private ItemGrabbable item = null!;
+        [SerializeField] private GrabbableObject item = null!;
 
         /// <summary>
         ///     TODO.
@@ -67,9 +68,14 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        private IEventfulItem? eventfulSelf;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         private void Awake()
         {
-            if (item == null && !TryGetComponent(out item))
+            if (item == null || !TryGetComponent(out item) || item is not IEventfulItem eventfulItem)
             {
                 // TODO: Log warning
                 enabled = false;
@@ -77,12 +83,14 @@ namespace itolib.Behaviours.Grabbables
                 return;
             }
 
-            item.hideOnPocket = false;
+            eventfulSelf = eventfulItem;
 
-            item.OnDiscardEarly.AddListener(OnDiscardEarly);
-            item.OnEquip.AddListener(OnEquip);
-            item.OnGrab.AddListener(SetWearablePosition);
-            item.OnPocket.AddListener(OnPocket);
+            eventfulSelf.HideOnPocket = false;
+
+            eventfulItem.OnDiscardEarly.AddListener(OnDiscardEarly);
+            eventfulItem.OnEquip.AddListener(OnEquip);
+            eventfulItem.OnGrab.AddListener(SetWearablePosition);
+            eventfulItem.OnPocket.AddListener(OnPocket);
         }
 
         /// <summary>

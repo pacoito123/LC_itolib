@@ -130,7 +130,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         private void Awake()
         {
-            if (item == null && !TryGetComponent(out item))
+            if (item == null || !TryGetComponent(out item) || item is not IEventfulItem eventfulItem)
             {
                 // TODO: Log warning
                 enabled = false;
@@ -138,11 +138,11 @@ namespace itolib.Behaviours.Grabbables
                 return;
             }
 
-            eventfulSelf = item as IEventfulItem;
+            eventfulSelf = eventfulItem;
 
             if (!triggerFromElsewhere)
             {
-                eventfulSelf?.OnActivate.AddListener(ItemActivate);
+                eventfulSelf.OnActivate.AddListener(ItemActivate);
             }
         }
 

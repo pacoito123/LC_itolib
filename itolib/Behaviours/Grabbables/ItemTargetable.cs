@@ -195,7 +195,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         protected virtual void Awake()
         {
-            if (item == null && !TryGetComponent(out item))
+            if (item == null || !TryGetComponent(out item) || item is not IEventfulItem eventfulItem)
             {
                 // TODO: Log warning
                 enabled = false;
@@ -203,7 +203,7 @@ namespace itolib.Behaviours.Grabbables
                 return;
             }
 
-            eventfulSelf = item as IEventfulItem;
+            eventfulSelf = eventfulItem;
         }
 
         /// <summary>
