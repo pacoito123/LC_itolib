@@ -54,7 +54,8 @@ namespace itolib.Compatibility
                 return;
             }
 
-            if (!PluginConfig.Misc.DropAll.Value || @this.objectsInBag.Count != PluginConfig.Limits.Capacity.Value || WeedKillerPrefab == null)
+            if (!PluginConfig.Misc.DropAll.Value || @this.objectsInBag.Count < 20 || WeedKillerPrefab == null
+                || @this.objectsInBag.FindIndex(item => item != null && item.itemProperties != null && item.itemProperties.itemId == 19) != -1)
             {
                 return;
             }

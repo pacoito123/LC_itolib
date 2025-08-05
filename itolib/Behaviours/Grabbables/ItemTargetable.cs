@@ -204,6 +204,9 @@ namespace itolib.Behaviours.Grabbables
             }
 
             eventfulSelf = eventfulItem;
+
+            eventfulSelf.OnGrab.AddListener(eventfulSelf.ResetCurveOverride);
+            eventfulSelf.OnEnemyGrab.AddListener(eventfulSelf.ResetCurveOverride);
         }
 
         /// <summary>
@@ -341,6 +344,19 @@ namespace itolib.Behaviours.Grabbables
 
             item.startFallingPosition = itemTransform.GetParent().InverseTransformPoint(destinationInfo.startPosition);
             item.targetFloorPosition = destinationInfo.targetPosition;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="keyframes"></param>
+        /// <param name="mode"></param>
+        public static void SetKeyframeModes(Keyframe[] keyframes, WeightedMode mode)
+        {
+            for (int i = 0; i < keyframes.Length; i++)
+            {
+                keyframes[i].weightedMode = mode;
+            }
         }
     }
 }

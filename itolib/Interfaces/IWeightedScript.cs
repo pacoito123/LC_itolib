@@ -24,23 +24,6 @@ namespace itolib.Interfaces
     /// <typeparam name="T"></typeparam>
     public interface IWeightedScript<T> where T : IWeightedEntry
     {
-        /* /// <summary>
-        ///     Obtain (or create) the seeded Random instance using the current map seed.
-        /// </summary>
-        static Random? SeededRandom
-        {
-            get
-            {
-                if (field == null)
-                {
-                    SeededRandom = new();
-                }
-
-                return field;
-            }
-            private set;
-        } */
-
         /// <summary>
         ///     TODO.
         /// </summary>

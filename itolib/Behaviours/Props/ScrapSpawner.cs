@@ -1,3 +1,4 @@
+using itolib.Behaviours.Helpers;
 using itolib.Behaviours.Networking;
 using itolib.Enums;
 using itolib.Extensions;
@@ -113,13 +114,8 @@ namespace itolib.Behaviours.Props
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class ScrapSpawner : NetworkedSpawner<GrabbableObject>, IWeightedScript<ScrapWeightEntry>
+    public class ScrapSpawner : NetworkedSpawner<GrabbableObject>, IWeightedScript<ScrapWeightEntry>, ISeededScript<ScrapSpawner>
     {
-        /// <summary>
-        ///     Seeded Random instance initialized with the current map seed.
-        /// </summary>
-        public static System.Random Random { get; private set; } = null!;
-
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -145,7 +141,6 @@ namespace itolib.Behaviours.Props
         /// </summary>
         [field: Header("Item Spawner")]
         [field: Tooltip("")]
-
         [field: SerializeField] public ScrapWeightEntry[]? WeightedEntries { get; set; }
 
         /// <summary>
@@ -248,23 +243,6 @@ namespace itolib.Behaviours.Props
         [SerializeField] private bool respectSingleItemDay;
 
         /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Header("== OBSOLETE ==")]
-        [Tooltip("")]
-        [Min(-1)]
-        [Obsolete("Use minSpawns instead.")]
-        [SerializeField] private int minItems;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        [Min(-1)]
-        [Obsolete("Use maxSpawns instead.")]
-        [SerializeField] private int maxItems;
-
-        /// <summary>
         ///     Cached instance of the current <c>WeightedEvent</c> as an <c>IWeightedScript</c>, to avoid having to cast. 
         /// </summary>
         private IWeightedScript<ScrapWeightEntry> weightedSelf;
@@ -275,12 +253,13 @@ namespace itolib.Behaviours.Props
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
-            /* if (respectSingleItemDay)
+            if (respectSingleItemDay && SimulateAnomaly.SingleItem != null)
             {
-                // TODO: Spawn da item
-            } */
+                return SimulateAnomaly.SingleItem.spawnPrefab.GetComponent<NetworkObject>();
+            }
 
-            if (WeightedEntries?.Length > 0 && weightedSelf.TryObtainRandomEntry(out ScrapWeightEntry entry, seededRandom ? Random : null))
+            if (WeightedEntries?.Length > 0 && weightedSelf.TryObtainRandomEntry(out ScrapWeightEntry entry, seededRandom
+                ? ISeededScript<ScrapSpawner>.SeededRandom : null))
             {
                 Item? itemToSpawn = entry.itemToSpawn;
 
@@ -331,7 +310,7 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            int itemsAmount = seededRandom ? Random.Next(minSpawns, maxSpawns + 1)
+            int itemsAmount = seededRandom ? ISeededScript<ScrapSpawner>.SeededRandom.Next(minSpawns, maxSpawns + 1)
                 : UnityEngine.Random.RandomRangeInt(minSpawns, maxSpawns + 1);
 
             if (itemsAmount == 0)
@@ -351,7 +330,7 @@ namespace itolib.Behaviours.Props
 
                 for (int i = 0; i < itemsAmount && spawnLocations.Count > 0; i++)
                 {
-                    int locationIndex = seededRandom ? Random.Next(0, spawnLocations.Count)
+                    int locationIndex = seededRandom ? ISeededScript<ScrapSpawner>.SeededRandom.Next(0, spawnLocations.Count)
                         : UnityEngine.Random.RandomRangeInt(0, spawnLocations.Count);
 
                     SpawnItem(spawnLocations[locationIndex]!);
@@ -371,7 +350,7 @@ namespace itolib.Behaviours.Props
 
                 for (int i = 0; i < itemsAmount && spawnAreas.Count > 0; i++)
                 {
-                    int areaIndex = seededRandom ? Random.Next(0, spawnAreas.Count)
+                    int areaIndex = seededRandom ? ISeededScript<ScrapSpawner>.SeededRandom.Next(0, spawnAreas.Count)
                         : UnityEngine.Random.RandomRangeInt(0, spawnAreas.Count);
 
                     SpawnItem(spawnAreas[areaIndex]!);
@@ -420,9 +399,12 @@ namespace itolib.Behaviours.Props
             if (itemToSpawn != null)
             {
                 Vector3 extents = spawnArea.size * 0.5f;
-                Vector3 point = new(((float)Random.NextDouble() * extents.x * 2) - extents.x, // TODO: Seeded check
-                    ((float)Random.NextDouble() * extents.y * 2) - extents.y,
-                    ((float)Random.NextDouble() * extents.z * 2) - extents.z);
+                Vector3 point = new((seededRandom ? ((float)ISeededScript<ScrapSpawner>.SeededRandom.NextDouble() * extents.x * 2)
+                    : UnityEngine.Random.Range(0, extents.x * 2)) - extents.x,
+                    (seededRandom ? ((float)ISeededScript<ScrapSpawner>.SeededRandom.NextDouble() * extents.y * 2)
+                    : UnityEngine.Random.Range(0, extents.y * 2)) - extents.y,
+                    (seededRandom ? ((float)ISeededScript<ScrapSpawner>.SeededRandom.NextDouble() * extents.z * 2)
+                    : UnityEngine.Random.Range(0, extents.z * 2)) - extents.z);
 
                 Vector3 spawnPosition = spawnArea.transform.TransformPoint(point + spawnArea.center); // TODO: Maybe find point in NavMesh instead?
 
@@ -443,8 +425,11 @@ namespace itolib.Behaviours.Props
 
             if (itemObj.TryGetComponent(out GrabbableObject item) && item.itemProperties != null)
             {
-                int scrapValue = Random.Next(overrideMinValue < 0 ? item.itemProperties.minValue : overrideMinValue, // TODO: Seeded check.
-                    overrideMaxValue < 0 ? item.itemProperties.maxValue : overrideMaxValue);
+                int minValue = overrideMinValue < 0 ? item.itemProperties.minValue : overrideMinValue,
+                    maxValue = overrideMaxValue < 0 ? item.itemProperties.maxValue : overrideMaxValue;
+
+                int scrapValue = seededRandom ? ISeededScript<ScrapSpawner>.SeededRandom.Next(minValue, maxValue)
+                    : UnityEngine.Random.RandomRangeInt(minValue, maxValue);
 
                 if (applyScrapMultiplier && RoundManager.Instance != null)
                 {
@@ -461,9 +446,11 @@ namespace itolib.Behaviours.Props
                     position = spawnPosition,
                     rotation = spawnRotation,
                     meshVariant = (allowMeshVariants && item.itemProperties.meshVariants.Length > 0)
-                        ? Random.Next(0, item.itemProperties.meshVariants.Length) : -1, // TODO: Seeded check.
+                        ? (seededRandom ? ISeededScript<ScrapSpawner>.SeededRandom.Next(0, item.itemProperties.meshVariants.Length)
+                        : UnityEngine.Random.RandomRangeInt(0, item.itemProperties.meshVariants.Length)) : -1,
                     materialVariant = (allowMaterialVariants && item.itemProperties.materialVariants.Length > 0)
-                        ? Random.Next(0, item.itemProperties.materialVariants.Length) : -1, // TODO: Seeded check.
+                        ? (seededRandom ? ISeededScript<ScrapSpawner>.SeededRandom.Next(0, item.itemProperties.materialVariants.Length)
+                        : UnityEngine.Random.RandomRangeInt(0, item.itemProperties.materialVariants.Length)) : -1,
                     scrapValue = scrapValue
                 };
 
@@ -477,18 +464,13 @@ namespace itolib.Behaviours.Props
         /// </summary>
         protected override void Awake()
         {
+            ISeededScript<ScrapSpawner>.SeedOffset = 44;
             weightedSelf = this;
 
             if (!NetworkManager.Singleton.IsHost)
             {
                 return;
             }
-
-            /* if (seededRandom)
-            {
-                Random ??= (StartOfRound.Instance != null) ? new(StartOfRound.Instance.randomMapSeed + 44) : new();
-            } */
-            Random ??= (StartOfRound.Instance != null) ? new(StartOfRound.Instance.randomMapSeed + 44) : new();
 
             if (useMoonScrapSpawns)
             {
@@ -565,19 +547,6 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnDestroy()
-        {
-            if (seededRandom)
-            {
-                Random = null!; // TODO: Handle differently.
-            }
-
-            base.OnDestroy();
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [ServerRpc]
         public void SyncAllItemValuesServerRpc()
         {
@@ -642,7 +611,7 @@ namespace itolib.Behaviours.Props
 
             if (syncedItem.meshVariant != -1 && item.TryGetComponent(out MeshFilter itemFilter))
             {
-                itemFilter.sharedMesh = item.itemProperties.meshVariants[syncedItem.meshVariant]; // TODO: Test with sharedMesh
+                itemFilter.sharedMesh = item.itemProperties.meshVariants[syncedItem.meshVariant];
             }
             if (syncedItem.materialVariant != -1 && item.TryGetComponent(out MeshRenderer itemRenderer))
             {

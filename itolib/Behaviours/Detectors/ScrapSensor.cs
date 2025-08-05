@@ -54,9 +54,9 @@ namespace itolib.Behaviours.Detectors
 
             int itemsFound = 0;
 
-            for (int i = 0; i < overlapBuffer?.Length; i++)
+            for (int i = 0; i < objectsFound; i++)
             {
-                Collider? itemCollider = overlapBuffer[i];
+                Collider? itemCollider = overlapBuffer?[i];
 
                 if (itemCollider == null || !itemCollider.enabled) // Skip disabled colliders.
                 {

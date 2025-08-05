@@ -45,8 +45,35 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        private void Start()
+        {
+            if (onlyAffectLocalPlayer)
+            {
+                maxObjects = 0;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void CheckObjectsInRegion()
         {
+            if (onlyAffectLocalPlayer)
+            {
+                base.CheckObjectsInRegion();
+
+                PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
+
+                if (!localPlayer.isPlayerDead && localPlayer.isActiveAndEnabled && regionCollider != null
+                    && regionCollider.bounds.Contains(localPlayer.transform.position))
+                {
+                    onPlayersAliveEach.Invoke(localPlayer);
+                    onPlayersAliveAny.Invoke(1);
+                }
+
+                return;
+            }
+
             if (!IsSpawned || !IsHost) // TODO: Overlapping players could be desynced since it's host-sided...
             {
                 return;
@@ -57,9 +84,9 @@ namespace itolib.Behaviours.Detectors
             List<ulong> playersFound = new(StartOfRound.Instance.allPlayerScripts.Length);
             int playersFoundAlive = 0;
 
-            for (int i = 0; i < overlapBuffer?.Length; i++)
+            for (int i = 0; i < objectsFound; i++)
             {
-                Collider? playerCollider = overlapBuffer[i];
+                Collider? playerCollider = overlapBuffer?[i];
 
                 if (playerCollider == null || !playerCollider.enabled) // Skip disabled colliders.
                 {

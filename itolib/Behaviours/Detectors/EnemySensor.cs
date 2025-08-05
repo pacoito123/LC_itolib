@@ -141,9 +141,9 @@ namespace itolib.Behaviours.Detectors
 
             int enemiesFound = 0;
 
-            for (int i = 0; i < overlapBuffer?.Length; i++)
+            for (int i = 0; i < objectsFound; i++)
             {
-                Collider? enemyCollider = overlapBuffer[i];
+                Collider? enemyCollider = overlapBuffer?[i];
 
                 if (enemyCollider == null || !enemyCollider.enabled) // Skip disabled colliders.
                 {

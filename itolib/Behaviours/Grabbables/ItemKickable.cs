@@ -58,7 +58,36 @@ namespace itolib.Behaviours.Grabbables
             fallSpeed = 12.0f;
             rotationSpeed = 14.0f;
 
-            collisionMask = 369101057; // TODO: Use bitwise operator
+            collisionMask = (1 << LayerMask.NameToLayer("Default")) | (1 << LayerMask.NameToLayer("Room"))
+                | (1 << LayerMask.NameToLayer("Colliders")) | (1 << LayerMask.NameToLayer("Terrain"))
+                | (1 << LayerMask.NameToLayer("PlaceableShipObjects")) | (1 << LayerMask.NameToLayer("Railing"));
+
+            // Soccer ball fall curves.
+            Keyframe[] soccerFallCurveKeyframes = [new(0.0f, 0.0f, 2.0f, 2.0f, 0.0f, 0.0f),
+                new(1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f)];
+            Keyframe[] soccerVerticalFallCurveKeyframes = [new(0.0f, 0.0f, 0.1169f, 0.1169f, 0.0f, 0.2723f),
+                new(0.4908f, 1.0f, 4.1147f, 0.0512f, 0.0723f, 0.5374f),
+                new(0.9394f, 1.0f, 0.086f, -0.029f, 0.1912f, 1.0f),
+                new(1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f)];
+            Keyframe[] soccerVerticalFallCurveNoBounceKeyframes = [new(0.0f, 0.0f, 0.1169f, 0.1169f, 0.0f, 0.2723f),
+                new(0.4908f, 1.0f, 4.1147f, 0.061f, 0.0723f, 0.2077f),
+                new(0.9394f, 1.0f, 0.0639f, 0.029f, 0.1981f, 1.0f),
+                new(1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f)];
+            Keyframe[] soccerVerticalOffsetKeyframes = [new(0.0f, 0.0f, 7.1366f, 7.1366f, 0.0f, 0.0494f),
+                new(0.4666f, 1.4733f, 0.0665f, 0.0665f, 0.2469f, 0.3333f),
+                new(0.7487f, 0.0f, -11.1508f, 5.0087f, 0.076f, 0.1733f),
+                new(1.0f, 0.0f, -7.1532f, -7.1532f, 0.0616f, 0.0f)];
+
+            SetKeyframeModes(soccerFallCurveKeyframes, WeightedMode.None);
+            SetKeyframeModes(soccerVerticalFallCurveKeyframes, WeightedMode.None);
+            SetKeyframeModes(soccerVerticalFallCurveNoBounceKeyframes, WeightedMode.None);
+            SetKeyframeModes(soccerVerticalOffsetKeyframes, WeightedMode.None);
+
+            fallCurve = new(soccerFallCurveKeyframes);
+            verticalFallCurve = new(soccerVerticalFallCurveKeyframes);
+            verticalFallCurveNoBounce = new(soccerVerticalFallCurveNoBounceKeyframes);
+            verticalOffsetCurve = new(soccerVerticalOffsetKeyframes);
+            // ...
         }
 
         /// <summary>

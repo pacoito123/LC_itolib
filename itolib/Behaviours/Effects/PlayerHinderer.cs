@@ -96,7 +96,7 @@ namespace itolib.Behaviours.Effects
 
         /// <summary>
         ///     TODO.
-        /// </summary> 
+        /// </summary>
         public void Reset()
         {
             // Vanilla player sinking curve.
@@ -107,6 +107,7 @@ namespace itolib.Behaviours.Effects
                 new(1.0f, 1.0f, 0.3884f, 0.3884f, 0.7641f, 0.0f)];
 
             playerSinkingCurveOverride = new(defaultSinkingKeyframes);
+            // ...
         }
 
         /// <summary>

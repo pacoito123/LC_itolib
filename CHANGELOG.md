@@ -1,5 +1,18 @@
 # Changelog
 
+## [v0.3.1]
+
+Couple small improvements and fixes.
+
+- Added `ISeededScript` interface, for scripts that need randomization using the current map seed.
+  - Only used for `ScrapSpawner` at the moment, still thinking about a few things with its implementation.
+- Made `ScrapSpawner`'s `respectSingleItemDay` field actually work, and made its `seededRandom` field affect a couple things I missed.
+- Added default curves for `ItemKickable` and `ItemThrowable` that correspond with the `Soccer ball` and `Stun grenade` curves, respectively.
+- Made `ItemTargetable`'s fall curve override be reset upon being picked up, so items don't act weird when normally dropped.
+- Switched to using an `AABB` check of the local player for `PlayerSensor`, if the `onlyAffectsLocalPlayer` field is enabled.
+  - Most likely will end up switching to `AABB` checks for all players at some point, instead of overlap stuff.
+- Fixed `DetectRegion` scripts sometimes 'remembering' objects that had been previously found, but are no longer present.
+
 ## [v0.3.0]
 
 Did a couple changes, I think...

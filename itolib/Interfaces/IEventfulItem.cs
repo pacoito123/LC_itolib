@@ -164,5 +164,22 @@ namespace itolib.Interfaces
         ///     TODO.
         /// </summary>
         int VariantIndex { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        void ResetCurveOverride()
+        {
+            FallWithCurveOverride = null;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="enemy"></param>
+        void ResetCurveOverride(EnemyAI enemy)
+        {
+            ResetCurveOverride();
+        }
     }
 }

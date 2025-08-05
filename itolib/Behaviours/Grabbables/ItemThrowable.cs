@@ -41,7 +41,30 @@ namespace itolib.Behaviours.Grabbables
             fallSpeed = 12.0f;
             rotationSpeed = 14.0f;
 
-            collisionMask = 268437761; // TODO: Use bitwise operator
+            collisionMask = (1 << LayerMask.NameToLayer("Default")) | (1 << LayerMask.NameToLayer("Room"))
+                | (1 << LayerMask.NameToLayer("Colliders")) | (1 << LayerMask.NameToLayer("Railing"));
+
+            // Stun grenade fall curves.
+            Keyframe[] grenadeFallCurveKeyframes = [new(0.0f, 0.0f, 2.0f, 2.0f, 0.0f, 0.0f),
+                new(1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f)];
+            Keyframe[] grenadeVerticalFallCurveKeyframes = [new(0.0f, 0.0f, 0.1169f, 0.1169f, 0.0f, 0.2723f),
+                new(0.4908f, 1.0f, 4.1147f, -1.8138f, 0.0723f, 0.2832f),
+                new(0.7588f, 1.0f, 1.4123f, -1.3679f, 0.32f, 0.5692f),
+                new(0.9394f, 1.0f, 0.8265f, -0.029f, 0.5375f, 1.0f),
+                new(1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f)];
+            Keyframe[] grenadeVerticalFallCurveNoBounceKeyframes = [new(0.0f, 0.0f, 0.1169f, 0.1169f, 0.0f, 0.2723f),
+                new(0.4908f, 1.0f, 4.1147f, 0.061f, 0.0723f, 0.2077f),
+                new(0.9394f, 1.0f, 0.0639f, 0.029f, 0.1981f, 1.0f),
+                new(1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f)];
+
+            SetKeyframeModes(grenadeFallCurveKeyframes, WeightedMode.None);
+            SetKeyframeModes(grenadeVerticalFallCurveKeyframes, WeightedMode.None);
+            SetKeyframeModes(grenadeVerticalFallCurveNoBounceKeyframes, WeightedMode.None);
+
+            fallCurve = new(grenadeFallCurveKeyframes);
+            verticalFallCurve = new(grenadeVerticalFallCurveKeyframes);
+            verticalFallCurveNoBounce = new(grenadeVerticalFallCurveNoBounceKeyframes);
+            // ...
         }
 
         /// <summary>

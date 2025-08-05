@@ -178,9 +178,9 @@ namespace itolib.Behaviours.Effects
 
             bool localPlayerHit = false;
 
-            for (int i = 0; i < overlapBuffer?.Length; i++)
+            for (int i = 0; i < objectsFound; i++)
             {
-                Collider? colliderHit = overlapBuffer[i];
+                Collider? colliderHit = overlapBuffer?[i];
 
                 if (colliderHit == null || !colliderHit.enabled) // Skip disabled colliders.
                 {

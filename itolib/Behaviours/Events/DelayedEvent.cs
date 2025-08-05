@@ -13,25 +13,24 @@ namespace itolib.Behaviours.Events
         /// </summary>
         [Header("Delayed Event")]
         [Tooltip("")]
-        public float delayTimer = 1.0f;
+        [field: SerializeField] private float delayTimer = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool runsContinuously;
+        [field: SerializeField] private bool runsContinuously;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public UnityEvent onDelayedEvent = new();
+        [field: SerializeField] private UnityEvent onDelayedEvent = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [HideInInspector]
-        public float timer;
+        private float timer;
 
         /// <summary>
         ///     TODO.
@@ -44,7 +43,7 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Update()
+        private void Update()
         {
             if (timer < delayTimer)
             {
@@ -64,7 +63,7 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnEnable()
+        private void OnEnable()
         {
             ResetTimer();
         }

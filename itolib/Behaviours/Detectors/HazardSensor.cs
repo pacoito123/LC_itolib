@@ -42,7 +42,7 @@ namespace itolib.Behaviours.Detectors
 
             int hazardsFound = 0;
 
-            for (int i = 0; i < overlapBuffer?.Length; i++)
+            for (int i = 0; i < objectsFound; i++)
             {
                 Collider? hazardCollider = overlapBuffer[i];
 

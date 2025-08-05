@@ -57,9 +57,9 @@ namespace itolib.Behaviours.Props
 
             connectorsFound = 0;
 
-            for (int i = 0; i < overlapBuffer?.Length; i++)
+            for (int i = 0; i < objectsFound; i++)
             {
-                Collider? connectorCollider = overlapBuffer[i];
+                Collider? connectorCollider = overlapBuffer?[i];
 
                 if (connectorCollider == null || !connectorCollider.enabled) // Skip disabled colliders.
                 {
