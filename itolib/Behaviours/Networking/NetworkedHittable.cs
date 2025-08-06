@@ -109,18 +109,22 @@ namespace itolib.Behaviours.Networking
         /// <param name="playHitSFX"></param>
         /// <param name="hitID"></param>
         /// <returns></returns>
-        public virtual bool Hit(int force, Vector3 hitDirection, PlayerControllerB? playerWhoHit = null, bool playHitSFX = false, int hitID = -1)
+        public virtual bool Hit(int force, Vector3 hitDirection, PlayerControllerB playerWhoHit = null!, bool playHitSFX = false, int hitID = -1)
         {
-            bool hitByPlayer = playerWhoHit != null;
-
-            PerformHit(new HitInfo()
+            HitInfo hitInfo = new()
             {
                 damage = force,
                 direction = hitDirection,
                 hitID = hitID,
-                hitByPlayer = hitByPlayer,
-                playerReference = hitByPlayer ? playerWhoHit : default
-            });
+                hitByPlayer = playerWhoHit != null
+            };
+
+            if (hitInfo.hitByPlayer)
+            {
+                hitInfo.playerReference = playerWhoHit;
+            }
+
+            PerformHit(hitInfo);
 
             return true;
         }

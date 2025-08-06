@@ -1,3 +1,4 @@
+using itolib.Extensions;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -44,7 +45,25 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Space(10f)]
+        [Header("Layer Mask")]
+        [Tooltip("")]
+        [SerializeField] private LayerMask layerMask;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         private Transform? localPlayerCamera;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void Reset()
+        {
+            layerMask = (1 << LayerMask.NameToLayer("Default")) | (1 << LayerMask.NameToLayer("Room"))
+                | (1 << LayerMask.NameToLayer("Foliage")) | (1 << LayerMask.NameToLayer("Colliders"))
+                | (1 << LayerMask.NameToLayer("Terrain")) | (1 << LayerMask.NameToLayer("Vehicle"));
+        }
 
         /// <summary>
         ///     TODO.
@@ -75,7 +94,7 @@ namespace itolib.Behaviours.Effects
 
             float distance = Vector3.Distance(localPlayerCamera.position, transform.position);
             if (GameNetworkManager.Instance.localPlayerController.HasLineOfSightToPosition(transform.position,
-                lookAngle, lookRange, proximityRange))
+                lookAngle, lookRange, proximityRange, layerMask))
             {
                 float fearLevel = fearDistanceCurve.Evaluate(1 - (distance / lookRange));
                 GameNetworkManager.Instance.localPlayerController.JumpToFearLevel(fearLevel, true);

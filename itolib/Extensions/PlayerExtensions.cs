@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using UnityEngine;
 
 namespace itolib.Extensions
 {
@@ -28,6 +29,26 @@ namespace itolib.Extensions
 
             return localPlayer.isPlayerDead && StartOfRound.Instance != null && !StartOfRound.Instance.overrideSpectateCamera
                 && localPlayer.spectatedPlayerScript != null && localPlayer.spectatedPlayerScript.actualClientId == player.actualClientId;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="pos"></param>
+        /// <param name="width"></param>
+        /// <param name="range"></param>
+        /// <param name="proximityAwareness"></param>
+        /// <param name="layerMask"></param>
+        /// <returns></returns>
+        public static bool HasLineOfSightToPosition(this PlayerControllerB player, Vector3 pos, float width = 45f, int range = 60,
+            float proximityAwareness = -1f, LayerMask layerMask = default)
+        {
+            float sqrDistance = (player.transform.position - pos).sqrMagnitude;
+
+            return sqrDistance < range * range && (Vector3.Angle(player.playerEye.transform.forward, pos - player.gameplayCamera.transform.position) < width
+                || (proximityAwareness > 0 && sqrDistance < proximityAwareness * proximityAwareness)) && !Physics.Linecast(player.playerEye.transform.position,
+                    pos, out player.hit, layerMask, QueryTriggerInteraction.Ignore);
         }
     }
 }

@@ -94,7 +94,22 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        [Min(0.0f)]
+        [SerializeField] private float proximityRange = -1.0f;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         [SerializeField] private UnityEvent<PlayerControllerB> onSprayPerformed = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(10f)]
+        [Header("Layer Mask")]
+        [Tooltip("")]
+        [SerializeField] private LayerMask layerMask;
 
         /// <summary>
         ///     TODO.
@@ -111,6 +126,10 @@ namespace itolib.Behaviours.Detectors
 
             actionToTrigger = "ActivateItem";
             holdAction = false;
+
+            layerMask = (1 << LayerMask.NameToLayer("Default")) | (1 << LayerMask.NameToLayer("Room"))
+                | (1 << LayerMask.NameToLayer("Foliage")) | (1 << LayerMask.NameToLayer("Colliders"))
+                | (1 << LayerMask.NameToLayer("Terrain")) | (1 << LayerMask.NameToLayer("Vehicle"));
         }
 
         /// <summary>
@@ -149,7 +168,7 @@ namespace itolib.Behaviours.Detectors
 
             if (spray.sprayCanTank > 0.0f && spray.sprayCanShakeMeter > 0.0f)
             {
-                if (player.HasLineOfSightToPosition(transform.position, sprayAngle, sprayRange, -1))
+                if (player.HasLineOfSightToPosition(transform.position, sprayAngle, sprayRange, proximityRange, layerMask))
                 {
                     PerformSprayLocal(player);
                     PerformSprayServerRpc(player);

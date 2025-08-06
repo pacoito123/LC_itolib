@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.3.2]
+
+Small fix for `NetworkedHittable`, added LayerMask fields to a couple scripts.
+
+- Fixed `NetworkedHittable` objects erroring out when hit by a non-player.
+- Added a LayerMask field to both `SpraySensor` and `FearInducer`, which determine the layers that should block the player's line of sight.
+
 ## [v0.3.1]
 
 Couple small improvements and fixes.
