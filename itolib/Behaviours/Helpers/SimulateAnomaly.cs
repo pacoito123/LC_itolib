@@ -1,3 +1,4 @@
+using itolib.Interfaces;
 using LethalLevelLoader;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ namespace itolib.Behaviours.Helpers
     /// <summary>
     ///     TODO.
     /// </summary>
-    internal sealed class SimulateAnomaly
+    internal sealed class SimulateAnomaly : ISeededScript<SimulateAnomaly>
     {
         /// <summary>
         ///     TODO.
@@ -16,29 +17,26 @@ namespace itolib.Behaviours.Helpers
         {
             get
             {
-                if (StartOfRound.Instance != null && StartOfRound.Instance.randomMapSeed != currentSeed)
+                if (field == null)
                 {
-                    currentSeed = StartOfRound.Instance.randomMapSeed;
+                    ISeededScript<SimulateAnomaly>.SeedOffset = 5;
 
                     SelectableLevel currentLevel = LevelManager.CurrentExtendedLevel.SelectableLevel;
-                    Random anomalyRandom = new(currentSeed + 5);
+                    Random anomalyRandom = ISeededScript<SimulateAnomaly>.SeededRandom;
 
                     SimulateChallengeFile(ref anomalyRandom, currentLevel);
                     int singleItemIndex = SimulateSpawnScrap(ref anomalyRandom, currentLevel);
 
                     field = (singleItemIndex != -1 && currentLevel.spawnableScrap?[singleItemIndex] != null)
                         ? currentLevel.spawnableScrap[singleItemIndex].spawnableItem : null;
+
+                    LevelManager.GlobalLevelEvents.onLevelLoaded.AddListener(ResetItem);
                 }
 
                 return field;
             }
             private set;
         }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        private static int currentSeed = -1;
 
         /// <summary>
         ///     TODO.
@@ -125,6 +123,13 @@ namespace itolib.Behaviours.Helpers
             }
 
             return singleItemIndex;
+        }
+
+        private static void ResetItem()
+        {
+            LevelManager.GlobalLevelEvents.onLevelLoaded.RemoveListener(ResetItem);
+
+            SingleItem = null;
         }
     }
 }

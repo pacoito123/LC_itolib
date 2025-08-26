@@ -1,6 +1,7 @@
 using GameNetcodeStuff;
 using itolib.Enums;
 using itolib.Extensions;
+using itolib.Interfaces;
 using LethalLevelLoader;
 using Unity.Netcode;
 using UnityEngine;
@@ -10,13 +11,8 @@ namespace itolib.Behaviours.Animations
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class AnimationVelocity : NetworkBehaviour
+    public class AnimationVelocity : NetworkBehaviour, ISeededScript<AnimationVelocity>
     {
-        /// <summary>
-        ///     Seeded Random instance initialized with the current map seed.
-        /// </summary>
-        public static System.Random Random { get; internal set; } = null!;
-
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -88,18 +84,34 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
+        private bool performedActivation;
+
+        /// <summary>
+        ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>ISeededScript</c>, to avoid having to cast. 
+        /// </summary>
+        private ISeededScript<AnimationVelocity> seededSelf;
+
+        /// <summary>
+        ///     Cache already-cast <c>ISeededScript</c> instance.
+        /// </summary>
+        private void Awake()
+        {
+            seededSelf = this;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
 
-            if (!IsHost)
+            if (!IsHost || performedActivation)
             {
                 return;
             }
 
-            Random ??= new(StartOfRound.Instance.randomMapSeed + 33);
-            InitialSpeed = minStartingSpeed < maxStartingSpeed ? ((float)Random.NextDouble() * (maxStartingSpeed - minStartingSpeed))
-                + minStartingSpeed : minStartingSpeed;
+            InitialSpeed = seededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed);
 
             switch (activationTime)
             {
@@ -169,37 +181,6 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnDestroy()
-        {
-            Random = null!;
-
-            switch (activationTime)
-            {
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(SyncSpeed);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(SyncSpeed);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SyncSpeed);
-                    }
-                    break;
-                case ActivationTime.Immediate:
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
-
-            base.OnDestroy();
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         public void ResetSpeed()
         {
             ChangeSpeed(InitialSpeed);
@@ -211,6 +192,14 @@ namespace itolib.Behaviours.Animations
         public void ResetSpeedLocal()
         {
             ChangeSpeedLocal(InitialSpeed);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void RerollSpeed()
+        {
+            SyncSpeed(seededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed));
         }
 
         /// <summary>
@@ -266,16 +255,15 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void RerollSpeed()
-        {
-            SyncSpeed(UnityEngine.Random.Range(minStartingSpeed, maxStartingSpeed));
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         public void SyncSpeed()
         {
+            if (!performedActivation)
+            {
+                UnsubscribeFromEvents();
+
+                performedActivation = true;
+            }
+
             SyncSpeed(InitialSpeed);
         }
 
@@ -326,6 +314,33 @@ namespace itolib.Behaviours.Animations
 
             animator.Play(initialState);
             animator.SetFloat(speedParameter, initialSpeed);
+        }
+
+        /// <summary>
+        ///     Unsubscribe to the event that may have been subscribed to, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        private void UnsubscribeFromEvents()
+        {
+            switch (activationTime)
+            {
+                case ActivationTime.ScrapSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(SyncSpeed);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(SyncSpeed);
+                    break;
+                case ActivationTime.StartOfRound:
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SyncSpeed);
+                    }
+                    break;
+                case ActivationTime.Immediate:
+                case ActivationTime.DungeonComplete:
+                case ActivationTime.Manual:
+                default:
+                    break;
+            }
         }
     }
 }

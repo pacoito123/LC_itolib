@@ -1,6 +1,7 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
 using itolib.Behaviours.Networking;
+using itolib.Structs;
 using System;
 using System.Collections.Generic;
 using Unity.Netcode;

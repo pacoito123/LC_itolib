@@ -1,16 +1,20 @@
 using DunGen;
 using itolib.Enums;
+using itolib.Extensions;
+using itolib.Interfaces;
 using LethalLevelLoader;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Networking
 {
     /// <summary>
     ///     TODO.
     /// </summary>
-    public abstract class NetworkedSpawner<T> : NetworkBehaviour, IDungeonCompleteReceiver where T : Behaviour
+    public abstract class NetworkedSpawner<T> : NetworkBehaviour, ISeededScript<NetworkedSpawner<T>>, IDungeonCompleteReceiver where T : Behaviour
     {
         /// <summary>
         ///     TODO.
@@ -46,15 +50,27 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [Min(-1)]
-        [SerializeField] protected int minSpawns;
+        [SerializeField] private bool skipInactive = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private bool useLocalRotation;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [Min(-1)]
-        [SerializeField] protected int maxSpawns;
+        [SerializeField] protected int minSpawns = 1;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [Min(-1)]
+        [SerializeField] protected int maxSpawns = 1;
 
         /// <summary>
         ///     TODO.
@@ -67,13 +83,26 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [SerializeField] protected bool destroySpawner;
+        [SerializeField] private bool destroyWithScene = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [SerializeField] private bool destroyWithScene = true;
+        [FormerlySerializedAs("seededRandom")]
+        [SerializeField] protected bool isSeededRandom = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private UnityEvent<T> onSpawnPerformed;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private UnityEvent<int> onSpawningFinish;
 
         /// <summary>
         ///     TODO.
@@ -81,10 +110,23 @@ namespace itolib.Behaviours.Networking
         protected bool performedActivation;
 
         /// <summary>
+        ///     Cached instance of the current <c>NetworkedSpawner</c> as an <c>ISeededScript</c>, to avoid having to cast. 
+        /// </summary>
+        protected ISeededScript<NetworkedSpawner<T>> seededSelf;
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         /// <returns></returns>
         public abstract NetworkObject? GetPrefabToSpawn();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="prefabInstance"></param>
+        /// <param name="spawnPosition"></param>
+        /// <param name="spawnRotation"></param>
+        protected abstract bool AdditionalProcessing(T prefabInstance, Vector3 spawnPosition, Quaternion spawnRotation);
 
         /// <summary>
         ///     TODO.
@@ -98,6 +140,67 @@ namespace itolib.Behaviours.Networking
                 performedActivation = true;
             }
 
+            if (!NetworkManager.Singleton.IsHost)
+            {
+                return;
+            }
+
+            int spawnAmount = isSeededRandom ? seededSelf.GetSeededRandom().Next(minSpawns, maxSpawns + 1)
+                : Random.RandomRangeInt(minSpawns, maxSpawns + 1);
+
+            if (spawnAmount == 0)
+            {
+                return;
+            }
+
+            _ = spawnLocations?.RemoveAll(spawnLocation => spawnLocation == null || (skipInactive && !spawnLocation.gameObject.activeInHierarchy));
+            _ = spawnAreas?.RemoveAll(spawnArea => spawnArea == null || (skipInactive && !spawnArea.gameObject.activeInHierarchy));
+
+            if (spawnLocations?.Count > 0)
+            {
+                if (spawnAmount == -1)
+                {
+                    spawnAmount = spawnLocations.Count;
+                }
+
+                for (int i = 0; i < spawnAmount && spawnLocations.Count > 0; i++)
+                {
+                    int locationIndex = isSeededRandom ? seededSelf.GetSeededRandom().Next(0, spawnLocations.Count)
+                        : Random.RandomRangeInt(0, spawnLocations.Count);
+
+                    PerformSpawn(spawnLocations[locationIndex]!);
+
+                    if (exhaustiveLocations)
+                    {
+                        spawnLocations.RemoveAt(locationIndex);
+                    }
+                }
+            }
+            else if (spawnAreas?.Count > 0)
+            {
+                if (spawnAmount == -1)
+                {
+                    spawnAmount = spawnAreas.Count;
+                }
+
+                for (int i = 0; i < spawnAmount && spawnAreas.Count > 0; i++)
+                {
+                    int areaIndex = isSeededRandom ? seededSelf.GetSeededRandom().Next(0, spawnAreas.Count)
+                        : Random.RandomRangeInt(0, spawnAreas.Count);
+
+                    PerformSpawn(spawnAreas[areaIndex]!);
+
+                    if (exhaustiveAreas)
+                    {
+                        spawnAreas.RemoveAt(areaIndex);
+                    }
+                }
+            }
+            else if (!skipInactive)
+            {
+                PerformSpawn(transform);
+            }
+
             for (int i = 0; i < PrefabInstances.Count; i++)
             {
                 T? prefabInstance = PrefabInstances[i];
@@ -105,7 +208,62 @@ namespace itolib.Behaviours.Networking
                     && !prefabNetworkObject.IsSpawned)
                 {
                     prefabNetworkObject.Spawn(destroyWithScene);
+
+                    onSpawnPerformed.Invoke(prefabInstance);
                 }
+            }
+
+            onSpawningFinish.Invoke(PrefabInstances.Count);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="spawnLocation"></param>
+        private void PerformSpawn(Transform spawnLocation)
+        {
+            NetworkObject? prefabToSpawn = GetPrefabToSpawn();
+
+            if (prefabToSpawn != null)
+            {
+                PerformSpawn(prefabToSpawn, spawnLocation.position, !useLocalRotation
+                    ? spawnLocation.rotation : spawnLocation.localRotation);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="spawnArea"></param>
+        private void PerformSpawn(BoxCollider spawnArea)
+        {
+            NetworkObject? prefabToSpawn = GetPrefabToSpawn();
+
+            if (prefabToSpawn != null)
+            {
+                // TODO: Maybe find point in NavMesh instead?
+                Vector3 point = spawnArea.GetPointWithin(isSeededRandom ? seededSelf.GetSeededRandom() : null);
+
+                Transform spawnTransform = spawnArea.transform;
+                Vector3 spawnPosition = spawnTransform.TransformPoint(point + spawnArea.center);
+
+                PerformSpawn(prefabToSpawn, spawnPosition, !useLocalRotation ? spawnTransform.rotation : spawnTransform.localRotation);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="prefabToSpawn"></param>
+        /// <param name="spawnPosition"></param>
+        /// <param name="spawnRotation"></param>
+        protected virtual void PerformSpawn(NetworkObject prefabToSpawn, Vector3 spawnPosition, Quaternion spawnRotation)
+        {
+            GameObject prefabObj = Instantiate(prefabToSpawn.gameObject, spawnPosition, spawnRotation);
+
+            if (prefabObj.TryGetComponent(out T prefab) && AdditionalProcessing(prefab, spawnPosition, spawnRotation))
+            {
+                PrefabInstances.Add(prefab);
             }
         }
 
@@ -114,6 +272,13 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         protected virtual void Awake()
         {
+            seededSelf = this;
+
+            if (!NetworkManager.Singleton.IsHost)
+            {
+                return;
+            }
+
             switch (activationTime)
             {
                 case ActivationTime.Immediate:

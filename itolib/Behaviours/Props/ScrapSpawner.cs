@@ -3,6 +3,7 @@ using itolib.Behaviours.Networking;
 using itolib.Enums;
 using itolib.Extensions;
 using itolib.Interfaces;
+using itolib.Structs;
 using LethalLevelLoader;
 using System;
 using System.Collections;
@@ -12,63 +13,6 @@ using UnityEngine;
 
 namespace itolib.Behaviours.Props
 {
-    /// <summary>
-    ///     TODO.
-    /// </summary>
-    [Serializable]
-    public struct SyncedItem : INetworkSerializable
-    {
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Header("Synced Item")]
-        [Tooltip("")]
-        public Vector3 position = Vector3.zero;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public Quaternion rotation = Quaternion.identity;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public int scrapValue = 0;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public int meshVariant = -1;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public int materialVariant = -1;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public SyncedItem() { }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="serializer"></param>
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref position);
-            serializer.SerializeValue(ref rotation);
-            serializer.SerializeValue(ref scrapValue);
-            serializer.SerializeValue(ref meshVariant);
-            serializer.SerializeValue(ref materialVariant);
-        }
-    }
-
     /// <summary>
     ///     TODO.
     /// </summary>
@@ -114,7 +58,7 @@ namespace itolib.Behaviours.Props
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class ScrapSpawner : NetworkedSpawner<GrabbableObject>, IWeightedScript<ScrapWeightEntry>, ISeededScript<ScrapSpawner>
+    public class ScrapSpawner : NetworkedSpawner<GrabbableObject>, IWeightedScript<ScrapWeightEntry>
     {
         /// <summary>
         ///     TODO.
@@ -124,7 +68,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public List<SyncedItem> ItemsToSync { get; private set; } = [];
+        public List<ItemInfo> ItemsToSync { get; private set; } = [];
 
         /// <summary>
         ///     TODO.
@@ -206,7 +150,7 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         [Space(5.0f)]
-        [Header("Position & Rotation")]
+        [Header("Position and Rotation")]
         [Tooltip("")]
         [SerializeField] private bool fallToGround = true;
 
@@ -225,25 +169,11 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Space(5.0f)]
-        [Header("Other")]
-        [Tooltip("")]
-        [SerializeField] private bool skipInactive = true;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        [SerializeField] private bool seededRandom = true;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [Tooltip("")]
         [SerializeField] private bool respectSingleItemDay;
 
         /// <summary>
-        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>IWeightedScript</c>, to avoid having to cast. 
+        ///     Cached instance of the current <c>ScrapSpawner</c> as an <c>IWeightedScript</c>, to avoid having to cast. 
         /// </summary>
         private IWeightedScript<ScrapWeightEntry> weightedSelf;
 
@@ -258,8 +188,8 @@ namespace itolib.Behaviours.Props
                 return SimulateAnomaly.SingleItem.spawnPrefab.GetComponent<NetworkObject>();
             }
 
-            if (WeightedEntries?.Length > 0 && weightedSelf.TryObtainRandomEntry(out ScrapWeightEntry entry, seededRandom
-                ? ISeededScript<ScrapSpawner>.SeededRandom : null))
+            if (WeightedEntries?.Length > 0 && weightedSelf.TryObtainRandomEntry(out ScrapWeightEntry entry, isSeededRandom
+                ? seededSelf.GetSeededRandom() : null))
             {
                 Item? itemToSpawn = entry.itemToSpawn;
 
@@ -305,67 +235,6 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public override void PerformSpawn()
         {
-            if (!NetworkManager.Singleton.IsHost)
-            {
-                return;
-            }
-
-            int itemsAmount = seededRandom ? ISeededScript<ScrapSpawner>.SeededRandom.Next(minSpawns, maxSpawns + 1)
-                : UnityEngine.Random.RandomRangeInt(minSpawns, maxSpawns + 1);
-
-            if (itemsAmount == 0)
-            {
-                return;
-            }
-
-            _ = spawnLocations?.RemoveAll(spawnLocation => spawnLocation == null || (skipInactive && !spawnLocation.gameObject.activeInHierarchy));
-            _ = spawnAreas?.RemoveAll(spawnArea => spawnArea == null || (skipInactive && !spawnArea.gameObject.activeInHierarchy));
-
-            if (spawnLocations?.Count > 0)
-            {
-                if (itemsAmount == -1)
-                {
-                    itemsAmount = spawnLocations.Count;
-                }
-
-                for (int i = 0; i < itemsAmount && spawnLocations.Count > 0; i++)
-                {
-                    int locationIndex = seededRandom ? ISeededScript<ScrapSpawner>.SeededRandom.Next(0, spawnLocations.Count)
-                        : UnityEngine.Random.RandomRangeInt(0, spawnLocations.Count);
-
-                    SpawnItem(spawnLocations[locationIndex]!);
-
-                    if (exhaustiveLocations)
-                    {
-                        spawnLocations.RemoveAt(locationIndex);
-                    }
-                }
-            }
-            else if (spawnAreas?.Count > 0)
-            {
-                if (itemsAmount == -1)
-                {
-                    itemsAmount = spawnAreas.Count;
-                }
-
-                for (int i = 0; i < itemsAmount && spawnAreas.Count > 0; i++)
-                {
-                    int areaIndex = seededRandom ? ISeededScript<ScrapSpawner>.SeededRandom.Next(0, spawnAreas.Count)
-                        : UnityEngine.Random.RandomRangeInt(0, spawnAreas.Count);
-
-                    SpawnItem(spawnAreas[areaIndex]!);
-
-                    if (exhaustiveAreas)
-                    {
-                        spawnAreas.RemoveAt(areaIndex);
-                    }
-                }
-            }
-            else if (!skipInactive)
-            {
-                SpawnItem(transform);
-            }
-
             base.PerformSpawn();
 
             if (activationTime is not ActivationTime.ScrapSpawn or ActivationTime.HazardSpawn)
@@ -377,63 +246,27 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="spawnLocation"></param>
-        private void SpawnItem(Transform spawnLocation)
-        {
-            NetworkObject? itemToSpawn = GetPrefabToSpawn();
-
-            if (itemToSpawn != null)
-            {
-                SpawnItem(itemToSpawn, spawnLocation.position, spawnLocation.rotation);
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="spawnArea"></param>
-        private void SpawnItem(BoxCollider spawnArea)
-        {
-            NetworkObject? itemToSpawn = GetPrefabToSpawn();
-
-            if (itemToSpawn != null)
-            {
-                Vector3 extents = spawnArea.size * 0.5f;
-                Vector3 point = new((seededRandom ? ((float)ISeededScript<ScrapSpawner>.SeededRandom.NextDouble() * extents.x * 2)
-                    : UnityEngine.Random.Range(0, extents.x * 2)) - extents.x,
-                    (seededRandom ? ((float)ISeededScript<ScrapSpawner>.SeededRandom.NextDouble() * extents.y * 2)
-                    : UnityEngine.Random.Range(0, extents.y * 2)) - extents.y,
-                    (seededRandom ? ((float)ISeededScript<ScrapSpawner>.SeededRandom.NextDouble() * extents.z * 2)
-                    : UnityEngine.Random.Range(0, extents.z * 2)) - extents.z);
-
-                Vector3 spawnPosition = spawnArea.transform.TransformPoint(point + spawnArea.center); // TODO: Maybe find point in NavMesh instead?
-
-                SpawnItem(itemToSpawn, spawnPosition, Quaternion.identity);
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="itemToSpawn"></param>
+        /// <param name="item"></param>
         /// <param name="spawnPosition"></param>
         /// <param name="spawnRotation"></param>
-        private void SpawnItem(NetworkObject itemToSpawn, Vector3 spawnPosition, Quaternion spawnRotation)
+        protected override bool AdditionalProcessing(GrabbableObject item, Vector3 spawnPosition, Quaternion spawnRotation)
         {
-            GameObject itemObj = Instantiate(itemToSpawn.gameObject, spawnPosition, Quaternion.identity,
-                RoundManager.Instance != null ? RoundManager.Instance.spawnedScrapContainer : null);
-
-            if (itemObj.TryGetComponent(out GrabbableObject item) && item.itemProperties != null)
+            if (item.itemProperties != null)
             {
                 int minValue = overrideMinValue < 0 ? item.itemProperties.minValue : overrideMinValue,
                     maxValue = overrideMaxValue < 0 ? item.itemProperties.maxValue : overrideMaxValue;
 
-                int scrapValue = seededRandom ? ISeededScript<ScrapSpawner>.SeededRandom.Next(minValue, maxValue)
+                int scrapValue = isSeededRandom ? seededSelf.GetSeededRandom().Next(minValue, maxValue)
                     : UnityEngine.Random.RandomRangeInt(minValue, maxValue);
 
-                if (applyScrapMultiplier && RoundManager.Instance != null)
+                if (RoundManager.Instance != null)
                 {
-                    scrapValue = (int)(scrapValue * RoundManager.Instance.scrapValueMultiplier);
+                    item.transform.SetParent(RoundManager.Instance.spawnedScrapContainer);
+
+                    if (applyScrapMultiplier)
+                    {
+                        scrapValue = (int)(scrapValue * RoundManager.Instance.scrapValueMultiplier);
+                    }
                 }
 
                 if (applyRestingRotation)
@@ -441,49 +274,52 @@ namespace itolib.Behaviours.Props
                     spawnRotation *= Quaternion.Euler(item.itemProperties.restingRotation);
                 }
 
-                SyncedItem serializedItem = new()
+                ItemInfo serializedItem = new()
                 {
-                    position = spawnPosition,
-                    rotation = spawnRotation,
+                    transformInfo = new()
+                    {
+                        position = spawnPosition,
+                        rotation = spawnRotation
+                    },
+                    scrapValue = scrapValue,
                     meshVariant = (allowMeshVariants && item.itemProperties.meshVariants.Length > 0)
-                        ? (seededRandom ? ISeededScript<ScrapSpawner>.SeededRandom.Next(0, item.itemProperties.meshVariants.Length)
-                        : UnityEngine.Random.RandomRangeInt(0, item.itemProperties.meshVariants.Length)) : -1,
+                        ? (isSeededRandom ? seededSelf.GetSeededRandom().Next(0, item.itemProperties.meshVariants.Length)
+                            : UnityEngine.Random.RandomRangeInt(0, item.itemProperties.meshVariants.Length)) : -1,
                     materialVariant = (allowMaterialVariants && item.itemProperties.materialVariants.Length > 0)
-                        ? (seededRandom ? ISeededScript<ScrapSpawner>.SeededRandom.Next(0, item.itemProperties.materialVariants.Length)
-                        : UnityEngine.Random.RandomRangeInt(0, item.itemProperties.materialVariants.Length)) : -1,
-                    scrapValue = scrapValue
+                        ? (isSeededRandom ? seededSelf.GetSeededRandom().Next(0, item.itemProperties.materialVariants.Length)
+                            : UnityEngine.Random.RandomRangeInt(0, item.itemProperties.materialVariants.Length)) : -1
                 };
 
-                PrefabInstances.Add(item);
                 ItemsToSync.Add(serializedItem);
+
+                return true;
             }
+
+            return false;
         }
 
         /// <summary>
-        ///     Cache already-cast <c>IWeightedScript</c> instance.
+        ///     TODO.
         /// </summary>
         protected override void Awake()
         {
-            ISeededScript<ScrapSpawner>.SeedOffset = 44;
             weightedSelf = this;
 
-            if (!NetworkManager.Singleton.IsHost)
+            if (NetworkManager.Singleton.IsHost)
             {
-                return;
-            }
-
-            if (useMoonScrapSpawns)
-            {
-                List<SpawnableItemWithRarity> spawnableScrap = LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap;
-                WeightedEntries = new ScrapWeightEntry[spawnableScrap.Count];
-
-                for (int i = 0; i < spawnableScrap.Count; i++)
+                if (useMoonScrapSpawns)
                 {
-                    WeightedEntries[i] = new(spawnableScrap[i]);
-                }
-            }
+                    List<SpawnableItemWithRarity> spawnableScrap = LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap;
+                    WeightedEntries = new ScrapWeightEntry[spawnableScrap.Count];
 
-            weightedSelf.Initialize();
+                    for (int i = 0; i < spawnableScrap.Count; i++)
+                    {
+                        WeightedEntries[i] = new(spawnableScrap[i]);
+                    }
+                }
+
+                weightedSelf.Initialize();
+            }
 
             base.Awake();
         }
@@ -570,7 +406,7 @@ namespace itolib.Behaviours.Props
         /// <param name="itemReference"></param>
         /// <param name="syncedItem"></param>
         [ClientRpc]
-        public void SyncItemValuesClientRpc(NetworkBehaviourReference itemReference, SyncedItem syncedItem)
+        public void SyncItemValuesClientRpc(NetworkBehaviourReference itemReference, ItemInfo syncedItem)
         {
             _ = StartCoroutine(SyncItemValuesOnSpawn(itemReference, syncedItem));
         }
@@ -581,7 +417,7 @@ namespace itolib.Behaviours.Props
         /// <param name="itemReference"></param>
         /// <param name="syncedItem"></param>
         /// <returns></returns>
-        private IEnumerator SyncItemValuesOnSpawn(NetworkBehaviourReference itemReference, SyncedItem syncedItem)
+        private IEnumerator SyncItemValuesOnSpawn(NetworkBehaviourReference itemReference, ItemInfo syncedItem)
         {
             GrabbableObject item;
 
@@ -602,10 +438,10 @@ namespace itolib.Behaviours.Props
             item.hasHitGround = true;
             item.reachedFloorTarget = true;
 
-            item.transform.SetPositionAndRotation(syncedItem.position, syncedItem.rotation);
+            item.transform.SetPositionAndRotation(syncedItem.transformInfo.position, syncedItem.transformInfo.rotation);
 
-            item.startFallingPosition = syncedItem.position;
-            item.targetFloorPosition = syncedItem.position;
+            item.startFallingPosition = syncedItem.transformInfo.position;
+            item.targetFloorPosition = syncedItem.transformInfo.position;
 
             item.SetScrapValue(syncedItem.scrapValue);
 

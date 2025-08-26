@@ -5,7 +5,6 @@ using itolib.Extensions;
 using itolib.Interfaces;
 using LethalLevelLoader;
 using System;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -42,13 +41,8 @@ namespace itolib.Behaviours.Events
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class WeightedEvent : NetworkBehaviour, IWeightedScript<WeightedEventEntry>, IDungeonCompleteReceiver
+    public class WeightedEvent : NetworkBehaviour, ISeededScript<WeightedEvent>, IWeightedScript<WeightedEventEntry>, IDungeonCompleteReceiver
     {
-        /// <summary>
-        ///     Seeded Random instance initialized with the current map seed.
-        /// </summary>
-        public static System.Random Random { get; internal set; } = null!;
-
         /// <summary>
         ///    TODO.
         /// </summary>
@@ -95,7 +89,12 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        [SerializeField] private bool performedActivation;
+        private bool performedActivation;
+
+        /// <summary>
+        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>ISeededScript</c>, to avoid having to cast. 
+        /// </summary>
+        private ISeededScript<WeightedEvent> seededSelf;
 
         /// <summary>
         ///     Cached instance of the current <c>WeightedEvent</c> as an <c>IWeightedScript</c>, to avoid having to cast. 
@@ -103,30 +102,12 @@ namespace itolib.Behaviours.Events
         public IWeightedScript<WeightedEventEntry> weightedSelf;
 
         /// <summary>
-        ///     OBSOLETE
-        /// </summary>
-        [Space(5.0f)]
-        [Header("== OBSOLETE ==")]
-        [Obsolete("Use WeightedEventEntry list instead")]
-        public List<EventWithWeight> eventEntries = [];
-
-        /// <summary>
-        ///     OBSOLETE
-        /// </summary>
-        [Obsolete("Use SingleUse fields instead")]
-        public bool exhaustiveRolls;
-
-        /// <summary>
-        ///     Cache already-cast <c>IWeightedScript</c> instance.
+        ///     Cache already-cast <c>IWeightedScript</c> and <c>ISeededScript</c> instances.
         /// </summary>
         private void Awake()
         {
+            seededSelf = this;
             weightedSelf = this;
-
-            if (seededRandom)
-            {
-                Random ??= (StartOfRound.Instance != null) ? new(StartOfRound.Instance.randomMapSeed + 66) : new();
-            }
 
             weightedSelf.Initialize();
         }
@@ -169,46 +150,6 @@ namespace itolib.Behaviours.Events
 
         /// <summary>
         ///     TODO.
-        /// </summary>
-        public override void OnDestroy()
-        {
-            if (seededRandom)
-            {
-                Random = null!; // TODO: Handle some other way.
-            }
-
-            base.OnDestroy();
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        private void UnsubscribeFromEvents()
-        {
-            switch (activationTime)
-            {
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(RollFromServer);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(RollFromServer);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(RollFromServer);
-                    }
-                    break;
-                case ActivationTime.Immediate:
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
         /// </summary> 
         public void RollFromServer()
         {
@@ -237,7 +178,7 @@ namespace itolib.Behaviours.Events
                 return;
             }
 
-            int rollsToPerform = seededRandom ? Random.Next(minRolls, maxRolls + 1)
+            int rollsToPerform = seededRandom ? seededSelf.GetSeededRandom().Next(minRolls, maxRolls + 1)
                 : UnityEngine.Random.RandomRangeInt(minRolls, maxRolls + 1);
 
             for (int i = 0; i < rollsToPerform; i++)
@@ -247,7 +188,7 @@ namespace itolib.Behaviours.Events
                     break;
                 }
 
-                if (weightedSelf.TryObtainRandomEntryIndex(out int weightIndex, seededRandom ? Random : null))
+                if (weightedSelf.TryObtainRandomEntryIndex(out int weightIndex, seededRandom ? seededSelf.GetSeededRandom() : null))
                 {
                     InvokeEventLocal(weightIndex);
 
@@ -299,6 +240,33 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
+        private void UnsubscribeFromEvents()
+        {
+            switch (activationTime)
+            {
+                case ActivationTime.ScrapSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(RollFromServer);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(RollFromServer);
+                    break;
+                case ActivationTime.StartOfRound:
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(RollFromServer);
+                    }
+                    break;
+                case ActivationTime.Immediate:
+                case ActivationTime.DungeonComplete:
+                case ActivationTime.Manual:
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="dungeon"></param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
@@ -309,32 +277,5 @@ namespace itolib.Behaviours.Events
                 performedActivation = true;
             }
         }
-    }
-
-    /// <summary>
-    ///     TODO.
-    /// </summary>
-    [Obsolete("Switch to WeightedEventEntry")]
-    [Serializable]
-    public struct EventWithWeight
-    {
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public UnityEvent onEvent;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        [Min(0)]
-        public int weight;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public bool onlyOnce;
     }
 }

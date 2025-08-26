@@ -1,6 +1,7 @@
 using GameNetcodeStuff;
 using itolib.Behaviours.Networking;
 using itolib.Extensions;
+using itolib.Structs;
 using UnityEngine;
 
 namespace itolib.Behaviours.Kinematics

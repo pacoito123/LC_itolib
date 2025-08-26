@@ -8,20 +8,21 @@ namespace itolib.Interfaces
     public interface IWeightedEntry
     {
         /// <summary>
-        ///     TODO.
+        ///     Weight value for this specific entry.
         /// </summary>
         int Weight { get; set; }
 
         /// <summary>
-        ///     TODO.
+        ///     Whether this specific entry can be used more than once or not.
         /// </summary>
         bool SingleUse { get; set; }
     }
 
     /// <summary>
-    ///     TODO.
+    ///     Adds weighted selection capabilities to any implementing class.
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    /// <remarks></remarks>
     public interface IWeightedScript<T> where T : IWeightedEntry
     {
         /// <summary>
