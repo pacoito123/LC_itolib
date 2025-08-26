@@ -1,7 +1,9 @@
 using itolib.Extensions;
 using System;
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.Events;
 
 namespace itolib.Behaviours.Detectors
@@ -433,6 +435,45 @@ namespace itolib.Behaviours.Detectors
                 // Disable Tulip Snake so it simply, abruptly vanishes.
                 tulipSnake.gameObject.SetActive(false);
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="enemy"></param>
+        public void FreezeEnemy(EnemyAI enemy)
+        {
+            if (!IsSpawned || !IsHost || enemy.agent == null)
+            {
+                return;
+            }
+
+            NavMeshAgent agent = enemy.agent;
+            _ = enemy.StartCoroutine(FreezeAgentDelayed(agent, agent.speed));
+
+            if (agent.isOnOffMeshLink)
+            {
+                OffMeshLinkData offMeshLinkData = agent.currentOffMeshLinkData;
+                agent.CompleteOffMeshLink();
+
+                if (offMeshLinkData.valid && offMeshLinkData.startPos != Vector3.zero)
+                {
+                    _ = agent.Warp(offMeshLinkData.startPos);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="agent"></param>
+        /// <param name="originalSpeed"></param>
+        /// <returns></returns>
+        private static IEnumerator FreezeAgentDelayed(NavMeshAgent agent, float originalSpeed)
+        {
+            agent.speed = 0.0f;
+            yield return new WaitForSeconds(1.0f);
+            agent.speed = originalSpeed;
         }
     }
 }

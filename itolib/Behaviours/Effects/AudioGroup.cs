@@ -26,6 +26,12 @@ namespace itolib.Behaviours.Effects
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        [SerializeField] private bool autoInitialize;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         [SerializeField] private ActivationTime activationTime = ActivationTime.DungeonComplete;
 
         /// <summary>
@@ -99,7 +105,10 @@ namespace itolib.Behaviours.Effects
                 }
             }
 
-            // SwitchAll(AudioAction.Initialize);
+            if (autoInitialize)
+            {
+                SwitchAll(AudioAction.Initialize);
+            }
         }
 
         /// <summary>
@@ -200,6 +209,18 @@ namespace itolib.Behaviours.Effects
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="source"></param>
+        public void SyncWith(AudioSource source)
+        {
+            for (int i = 0; i < sources?.Length; i++)
+            {
+                sources[i].time = source.time;
             }
         }
 
