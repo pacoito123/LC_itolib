@@ -65,7 +65,6 @@ namespace itolib.Behaviours.Kinematics
         ///     Key required to be held for the player to hang on to the platform. See 'UnityEngine.InputSystem.Key' for number values. Leaving it at '-1' allows players to
         ///     remain attached without holding anything, until being detached through other means (e.g. 'detachTimer').
         /// </summary>
-        /// <remarks>Probably worth looking into adding controller support for this.</remarks>
         [Header("Controls")]
         [Tooltip("Key required to be held for the player to hang on to the platform. See 'UnityEngine.InputSystem.Key' for number values. Leaving it at '-1' allows "
             + "players to remain attached without holding anything, until being detached through other means (e.g. 'detachTimer').")]

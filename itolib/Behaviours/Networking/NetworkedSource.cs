@@ -238,8 +238,8 @@ namespace itolib.Behaviours.Networking
 
                 if (audibleRange > 0.0f)
                 {
-                    RoundManager.Instance.PlayAudibleNoise(transform.position, audibleRange, !volumeIsLoudness ?
-                        audioProperties.loudness : syncedSource.volume, 0,
+                    RoundManager.Instance.PlayAudibleNoise(transform.position, audibleRange, !volumeIsLoudness
+                        ? audioProperties.loudness : syncedSource.volume, 0,
                         // item.isInElevator && StartOfRound.Instance.hangarDoorsClosed, 0);
                         false, 0); // TODO: Check ship bounds for inside closed ship.
 
@@ -251,8 +251,8 @@ namespace itolib.Behaviours.Networking
 
                 if (transmitOverWalkie)
                 {
-                    WalkieTalkie.TransmitOneShotAudio(syncedSource, syncedSource.clip, overrideWalkieVolume ?
-                        audioProperties.walkieVolume : syncedSource.volume);
+                    WalkieTalkie.TransmitOneShotAudio(syncedSource, syncedSource.clip, overrideWalkieVolume
+                        ? audioProperties.walkieVolume : syncedSource.volume);
                 }
 
                 syncedSource.volume = originalVolume;
@@ -331,8 +331,8 @@ namespace itolib.Behaviours.Networking
 
                 if (audibleRange > 0.0f)
                 {
-                    RoundManager.Instance.PlayAudibleNoise(transform.position, audibleRange, !volumeIsLoudness ?
-                        audioProperties.loudness : syncedSource.volume, 0,
+                    RoundManager.Instance.PlayAudibleNoise(transform.position, audibleRange, !volumeIsLoudness
+                        ? audioProperties.loudness : syncedSource.volume, 0,
                         // item.isInElevator && StartOfRound.Instance.hangarDoorsClosed, 0);
                         false, 0); // TODO: Check ship bounds for inside closed ship.
 
@@ -344,8 +344,8 @@ namespace itolib.Behaviours.Networking
 
                 if (transmitOverWalkie)
                 {
-                    WalkieTalkie.TransmitOneShotAudio(syncedSource, audioClips[clip], overrideWalkieVolume ?
-                        audioProperties.walkieVolume : syncedSource.volume);
+                    WalkieTalkie.TransmitOneShotAudio(syncedSource, audioClips[clip], overrideWalkieVolume
+                        ? audioProperties.walkieVolume : syncedSource.volume);
                 }
 
                 syncedSource.volume = originalVolume;

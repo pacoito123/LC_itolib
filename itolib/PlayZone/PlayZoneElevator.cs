@@ -243,6 +243,7 @@ namespace itolib.PlayZone
                     {
                         elevatorAnimator.SetBool("ElevatorGoingUp", up);
                     }
+
                     onElevatorTravelStart.Invoke(up);
 
                     CurrentState = newState;

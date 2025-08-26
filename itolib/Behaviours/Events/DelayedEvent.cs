@@ -35,7 +35,7 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void Awake()
+        private void Awake()
         {
             enabled = false;
         }

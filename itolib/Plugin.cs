@@ -14,7 +14,6 @@ namespace itolib
     ///     Wondrous gizmos and gadgets for the restless mind.
     /// </summary>
     [BepInDependency(LethalLevelLoader.Plugin.ModGUID, LethalLevelLoader.Plugin.ModVersion)]
-    [BepInDependency(BagConfig.MyPluginInfo.PLUGIN_GUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(LethalCompanyTestMod.TestMod.modGUID, BepInDependency.DependencyFlags.SoftDependency)] // Crowd Control...
     [BepInDependency(FacilityMeltdown.MeltdownPlugin.modGUID, BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency(PizzaTowerEscapeMusic.Plugin.GUID, BepInDependency.DependencyFlags.SoftDependency)]

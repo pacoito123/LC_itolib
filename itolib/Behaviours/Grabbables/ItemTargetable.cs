@@ -259,13 +259,13 @@ namespace itolib.Behaviours.Grabbables
                 setInShipRoom = StartOfRound.Instance.shipInnerRoomBounds != null
                     && StartOfRound.Instance.shipInnerRoomBounds.bounds.Contains(targetPosition);
 
-                targetPosition = StartOfRound.Instance.elevatorTransform != null ?
-                    StartOfRound.Instance.elevatorTransform.InverseTransformPoint(targetPosition) : targetPosition;
+                targetPosition = StartOfRound.Instance.elevatorTransform != null
+                    ? StartOfRound.Instance.elevatorTransform.InverseTransformPoint(targetPosition) : targetPosition;
             }
             else
             {
-                targetPosition = StartOfRound.Instance.propsContainer != null ?
-                    StartOfRound.Instance.propsContainer.InverseTransformPoint(targetPosition) : targetPosition;
+                targetPosition = StartOfRound.Instance.propsContainer != null
+                    ? StartOfRound.Instance.propsContainer.InverseTransformPoint(targetPosition) : targetPosition;
             }
 
             if (player != null)

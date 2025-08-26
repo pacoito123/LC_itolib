@@ -56,9 +56,6 @@
         <PackageReference Include="IAmBatby.LethalLevelLoader" Version="1.4.*" Publicize="true" />
         <PackageReference Include="mrov.WeatherRegistry" Version="0.7.*" />
         <PackageReference Include="mrov.MrovLib" Version="0.3.*" />
-        <Reference Include="BagConfig" Publicize="true">
-            <HintPath>managed\BagConfig.dll</HintPath>
-        </Reference>
         <Reference Include="CrowdControl" Publicize="true">
             <HintPath>managed\CrowdControl.dll</HintPath>
         </Reference>
@@ -81,7 +78,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="LICENSE" Pack="true" PackagePath="$(PackageLicenseFile)" />
+        <None Include="../LICENSE" Pack="true" PackagePath="$(PackageLicenseFile)" />
     </ItemGroup>
 
     <Target Name="NetcodePatch" AfterTargets="PostBuildEvent">

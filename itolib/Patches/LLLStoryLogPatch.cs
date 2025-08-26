@@ -20,8 +20,8 @@ namespace itolib.Patches
         internal static void CacheStoryLog(ExtendedStoryLog newStoryLog)
         {
             // Cache TerminalNode instance of the last (newly added) element in the 'Terminal.logEntryFiles' list.
-            LLLStoryLogNodes?.Add(newStoryLog.newStoryLogID, LethalLevelLoader.Patches.Terminal != null ?
-                LethalLevelLoader.Patches.Terminal.logEntryFiles[^1] : null);
+            LLLStoryLogNodes?.Add(newStoryLog.newStoryLogID, LethalLevelLoader.Patches.Terminal != null
+                ? LethalLevelLoader.Patches.Terminal.logEntryFiles[^1] : null);
         }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Awake))]
