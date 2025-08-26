@@ -330,7 +330,10 @@ namespace itolib.Behaviours.Grabbables
                 return;
             }
 
-            lastHeldBy.twoHanded = false;
+            if (!item.itemProperties.twoHanded)
+            {
+                lastHeldBy.twoHanded = false;
+            }
 
             bool weaponHit = false, enemyHit = false, playerHit = false;
             int surfaceIndex = -1;

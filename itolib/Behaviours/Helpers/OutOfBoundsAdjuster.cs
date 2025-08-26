@@ -1,5 +1,4 @@
 using DunGen;
-using Unity.AI.Navigation;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -32,17 +31,14 @@ namespace itolib.Behaviours.Helpers
 
             for (int i = 0; i < rootObjects?.Length; i++)
             {
-                if (rootObjects[i].TryGetComponent(out NavMeshSurface _))
+                OutOfBoundsTrigger? outOfBounds = rootObjects[i].GetComponentInChildren<OutOfBoundsTrigger>();
+
+                if (outOfBounds != null)
                 {
-                    OutOfBoundsTrigger? outOfBounds = rootObjects[i].GetComponentInChildren<OutOfBoundsTrigger>();
+                    outOfBounds.transform.position = new(dungeon.transform.position.x + offsetToApply.x, dungeon.transform.position.y
+                        + dungeon.Bounds.min.y + offsetToApply.y, dungeon.transform.position.z + offsetToApply.z);
 
-                    if (outOfBounds != null)
-                    {
-                        outOfBounds.transform.position = new(dungeon.transform.position.x + offsetToApply.x, dungeon.transform.position.y
-                            + dungeon.Bounds.min.y + offsetToApply.y, dungeon.transform.position.z + offsetToApply.z);
-
-                        break;
-                    }
+                    break;
                 }
             }
         }
