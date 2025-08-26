@@ -108,10 +108,8 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         protected override void Reset()
         {
-            layerMask = (1 << LayerMask.NameToLayer("Player")) | (1 << LayerMask.NameToLayer("Enemies"))
-                | (1 << LayerMask.NameToLayer("MapHazards"));
-
-            coverMask = (1 << LayerMask.NameToLayer("Room")) | (1 << LayerMask.NameToLayer("Vehicle"));
+            layerMask = LayerMask.GetMask("Player", "Enemies", "MapHazards");
+            coverMask = LayerMask.GetMask("Room", "Vehicle");
         }
 
         /// <summary>

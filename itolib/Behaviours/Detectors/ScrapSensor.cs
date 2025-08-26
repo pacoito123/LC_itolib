@@ -24,9 +24,14 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        private int scanNodeLayer;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         protected override void Reset()
         {
-            layerMask = (1 << LayerMask.NameToLayer("Props")) | (1 << LayerMask.NameToLayer("PhysicsObject"));
+            layerMask = LayerMask.GetMask("Props", "PhysicsObject");
         }
 
         /// <summary>
@@ -34,6 +39,8 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         private void Awake()
         {
+            scanNodeLayer = LayerMask.NameToLayer("ScanNode");
+
             if (!NetworkManager.Singleton.IsHost && regionCollider != null)
             {
                 regionCollider.enabled = false;
@@ -116,7 +123,7 @@ namespace itolib.Behaviours.Detectors
             {
                 Collider? collider = colliders[i];
 
-                if (collider != null && collider.enabled && collider.gameObject.layer != LayerMask.NameToLayer("ScanNode"))
+                if (collider != null && collider.enabled && collider.gameObject.layer != scanNodeLayer)
                 {
                     collider.enabled = false;
                     disabledColliders.Add(collider);

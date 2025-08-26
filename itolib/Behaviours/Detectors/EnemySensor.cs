@@ -108,7 +108,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         protected override void Reset()
         {
-            layerMask = 1 << LayerMask.NameToLayer("Enemies");
+            layerMask = LayerMask.NameToLayer("Enemies");
         }
 
         /// <summary>

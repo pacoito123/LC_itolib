@@ -15,6 +15,7 @@ namespace itolib.Behaviours.Effects
         [Header("Fear Inducer")]
         [Tooltip("")]
         [SerializeField] private UnityEvent<float> onPlayerSpook = new();
+
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -60,9 +61,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         private void Reset()
         {
-            layerMask = (1 << LayerMask.NameToLayer("Default")) | (1 << LayerMask.NameToLayer("Room"))
-                | (1 << LayerMask.NameToLayer("Foliage")) | (1 << LayerMask.NameToLayer("Colliders"))
-                | (1 << LayerMask.NameToLayer("Terrain")) | (1 << LayerMask.NameToLayer("Vehicle"));
+            layerMask = LayerMask.GetMask("Default", "Room", "Foliage", "Colliders", "Terrain", "Vehicle");
         }
 
         /// <summary>

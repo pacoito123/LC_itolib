@@ -127,9 +127,7 @@ namespace itolib.Behaviours.Detectors
             actionToTrigger = "ActivateItem";
             holdAction = false;
 
-            layerMask = (1 << LayerMask.NameToLayer("Default")) | (1 << LayerMask.NameToLayer("Room"))
-                | (1 << LayerMask.NameToLayer("Foliage")) | (1 << LayerMask.NameToLayer("Colliders"))
-                | (1 << LayerMask.NameToLayer("Terrain")) | (1 << LayerMask.NameToLayer("Vehicle"));
+            layerMask = LayerMask.GetMask("Default", "Room", "Foliage", "Colliders", "Terrain", "Vehicle");
         }
 
         /// <summary>

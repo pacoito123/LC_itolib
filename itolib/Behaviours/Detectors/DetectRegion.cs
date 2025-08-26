@@ -143,17 +143,6 @@ namespace itolib.Behaviours.Detectors
             }
         }
 
-        /* /// <summary>
-        ///     Perform a search every time this script is enabled, if <c>ActivationTime</c> is set to <c>Immediate</c>.
-        /// </summary>
-        protected virtual void OnEnable()
-        {
-            if (activationTime is ActivationTime.Immediate)
-            {
-                CheckObjectsInRegion();
-            }
-        } */
-
         /// <summary>
         ///     Listener called when any <c>Collider</c> enters the region.
         /// </summary>

@@ -197,16 +197,9 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         private void Reset()
         {
-            shovelMask = (1 << LayerMask.NameToLayer("Player")) | (1 << LayerMask.NameToLayer("Props"))
-                | (1 << LayerMask.NameToLayer("Room")) | (1 << LayerMask.NameToLayer("Colliders"))
-                | (1 << LayerMask.NameToLayer("Enemies")) | (1 << LayerMask.NameToLayer("MapHazards"))
-                | (1 << LayerMask.NameToLayer("EnemiesNotRendered")) | (1 << LayerMask.NameToLayer("Vehicle"));
-
-            hitMask = (1 << LayerMask.NameToLayer("Default")) | (1 << LayerMask.NameToLayer("Room"))
-                | (1 << LayerMask.NameToLayer("Colliders")) | (1 << LayerMask.NameToLayer("Terrain"))
-                | (1 << LayerMask.NameToLayer("Vehicle"));
-
-            hitSFXMask = (1 << LayerMask.NameToLayer("Room")) | (1 << LayerMask.NameToLayer("Colliders"));
+            shovelMask = LayerMask.GetMask("Player", "Props", "Room", "Colliders", "Enemies", "MapHazards", "EnemiesNotRendered", "Vehicle");
+            hitMask = LayerMask.GetMask("Default", "Room", "Colliders", "Terrain", "Vehicle");
+            hitSFXMask = LayerMask.GetMask("Room", "Colliders");
         }
 
         /// <summary>

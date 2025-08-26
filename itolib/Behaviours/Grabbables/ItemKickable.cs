@@ -58,9 +58,7 @@ namespace itolib.Behaviours.Grabbables
             fallSpeed = 12.0f;
             rotationSpeed = 14.0f;
 
-            collisionMask = (1 << LayerMask.NameToLayer("Default")) | (1 << LayerMask.NameToLayer("Room"))
-                | (1 << LayerMask.NameToLayer("Colliders")) | (1 << LayerMask.NameToLayer("Terrain"))
-                | (1 << LayerMask.NameToLayer("PlaceableShipObjects")) | (1 << LayerMask.NameToLayer("Railing"));
+            collisionMask = LayerMask.GetMask("Default", "Room", "Colliders", "Terrain", "PlaceableShipObjects", "Railing");
 
             // Soccer ball fall curves.
             Keyframe[] soccerFallCurveKeyframes = [new(0.0f, 0.0f, 2.0f, 2.0f, 0.0f, 0.0f),

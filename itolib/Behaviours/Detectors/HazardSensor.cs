@@ -14,7 +14,7 @@ namespace itolib.Behaviours.Detectors
         protected override void Reset()
         {
             maxObjects = 8;
-            layerMask = 1 << LayerMask.NameToLayer("MapHazards");
+            layerMask = LayerMask.NameToLayer("MapHazards");
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace itolib.Behaviours.Detectors
 
             for (int i = 0; i < objectsFound; i++)
             {
-                Collider? hazardCollider = overlapBuffer[i];
+                Collider? hazardCollider = overlapBuffer?[i];
 
                 if (hazardCollider == null || !hazardCollider.enabled) // Skip disabled colliders.
                 {

@@ -39,7 +39,7 @@ namespace itolib.Behaviours.Detectors
         protected override void Reset()
         {
             maxObjects = 12;
-            layerMask = (1 << LayerMask.NameToLayer("Player")) | (1 << LayerMask.NameToLayer("PlayerRagdoll"));
+            layerMask = LayerMask.GetMask("Player", "PlayerRagdoll");
         }
 
         /// <summary>
