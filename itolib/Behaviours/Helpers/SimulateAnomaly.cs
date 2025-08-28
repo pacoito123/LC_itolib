@@ -17,7 +17,7 @@ namespace itolib.Behaviours.Helpers
         {
             get
             {
-                if (field == null)
+                if (_isSingleItemDay == null)
                 {
                     ISeededScript<SimulateAnomaly>.SeedOffset = 5;
 
@@ -30,6 +30,8 @@ namespace itolib.Behaviours.Helpers
                     field = (singleItemIndex != -1 && currentLevel.spawnableScrap?[singleItemIndex] != null)
                         ? currentLevel.spawnableScrap[singleItemIndex].spawnableItem : null;
 
+                    _isSingleItemDay = field != null;
+
                     LevelManager.GlobalLevelEvents.onLevelLoaded.AddListener(ResetItem);
                 }
 
@@ -37,6 +39,7 @@ namespace itolib.Behaviours.Helpers
             }
             private set;
         }
+        private static bool? _isSingleItemDay;
 
         /// <summary>
         ///     TODO.
@@ -130,6 +133,7 @@ namespace itolib.Behaviours.Helpers
             LevelManager.GlobalLevelEvents.onLevelLoaded.RemoveListener(ResetItem);
 
             SingleItem = null;
+            _isSingleItemDay = null;
         }
     }
 }
