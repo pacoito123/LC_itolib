@@ -1,9 +1,8 @@
 using itolib.Enums;
 using itolib.Extensions;
 using itolib.Interfaces;
+using itolib.Structs;
 using LethalLevelLoader;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -11,34 +10,6 @@ using UnityEngine.AI;
 
 namespace itolib.Behaviours.Props
 {
-    /// <summary>
-    ///     TODO.
-    /// </summary>
-    [Serializable]
-    public struct TeleportData : INetworkSerializable
-    {
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public Vector3 position;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public Quaternion rotation;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="serializer"></param>
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref position);
-            serializer.SerializeValue(ref rotation);
-        }
-    }
-
     /// <summary>
     /// 	TODO.
     /// </summary>
@@ -48,6 +19,11 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         private static List<GrabbableObject>? availableScrap;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public NetworkList<ItemInfo> SyncedItems { get; private set; } = null!;
 
         /// <summary>
         ///     TODO.
@@ -134,6 +110,8 @@ namespace itolib.Behaviours.Props
         private void Awake()
         {
             seededSelf = this;
+
+            SyncedItems = new();
         }
 
         /// <summary>
@@ -142,6 +120,14 @@ namespace itolib.Behaviours.Props
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+
+            SyncedItems.OnListChanged += changeEvent =>
+            {
+                if (changeEvent.Type == NetworkListEvent<ItemInfo>.EventType.Add)
+                {
+                    SyncTeleportedItem(changeEvent.Value);
+                }
+            };
 
             if (!IsHost)
             {
@@ -219,7 +205,7 @@ namespace itolib.Behaviours.Props
             }
 
             int itemsToTeleport = seededRandom ? seededSelf.GetSeededRandom().Next(minAmount, maxAmount + 1)
-                : UnityEngine.Random.Range(minAmount, maxAmount + 1);
+                : Random.Range(minAmount, maxAmount + 1);
 
             for (int i = 0; i < itemsToTeleport; i++)
             {
@@ -228,7 +214,7 @@ namespace itolib.Behaviours.Props
                 if (teleportPoints?.Count > 0)
                 {
                     int positionIndex = seededRandom ? seededSelf.GetSeededRandom().Next(0, teleportPoints.Count)
-                        : UnityEngine.Random.Range(0, teleportPoints.Count);
+                        : Random.Range(0, teleportPoints.Count);
 
                     if (teleportPoints[positionIndex] != null)
                     {
@@ -243,7 +229,7 @@ namespace itolib.Behaviours.Props
                 else if (teleportAreas?.Count > 0)
                 {
                     int areaIndex = seededRandom ? seededSelf.GetSeededRandom().Next(0, teleportAreas.Count)
-                        : UnityEngine.Random.Range(0, teleportAreas.Count);
+                        : Random.Range(0, teleportAreas.Count);
                     BoxCollider teleportArea = teleportAreas[areaIndex];
 
                     // TODO: Maybe find point in NavMesh instead?
@@ -271,13 +257,24 @@ namespace itolib.Behaviours.Props
                         {
                             if (specificItems[k].CompareOrdinal(availableScrap[j].itemProperties.itemName))
                             {
-                                TeleportData teleport = new()
+                                GrabbableObject? item = availableScrap[j];
+
+                                if (item == null || !item.IsSpawned)
                                 {
-                                    position = teleportPosition,
-                                    rotation = teleportRotation
+                                    continue;
+                                }
+
+                                ItemInfo syncedItem = new()
+                                {
+                                    transformInfo = new()
+                                    {
+                                        position = teleportPosition,
+                                        rotation = teleportRotation
+                                    },
+                                    itemReference = item
                                 };
 
-                                TeleportScrapClientRpc(availableScrap[j], teleport);
+                                SyncedItems.Add(syncedItem);
                                 availableScrap.RemoveAt(j);
 
                                 foundItem = true;
@@ -295,21 +292,25 @@ namespace itolib.Behaviours.Props
                 else
                 {
                     int index = seededRandom ? seededSelf.GetSeededRandom().Next(0, availableScrap.Count)
-                        : UnityEngine.Random.Range(0, availableScrap.Count);
+                        : Random.Range(0, availableScrap.Count);
                     GrabbableObject? item = availableScrap[index];
 
-                    if (item == null)
+                    if (item == null || !item.IsSpawned)
                     {
                         return;
                     }
 
-                    TeleportData teleport = new()
+                    ItemInfo syncedItem = new()
                     {
-                        position = teleportPosition,
-                        rotation = item.transform.rotation
+                        transformInfo = new()
+                        {
+                            position = teleportPosition,
+                            rotation = item.transform.rotation
+                        },
+                        itemReference = item
                     };
 
-                    TeleportScrapClientRpc(item, teleport);
+                    SyncedItems.Add(syncedItem);
                     availableScrap.RemoveAt(index);
                 }
             }
@@ -318,43 +319,23 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        [ClientRpc]
-        private void TeleportScrapClientRpc(NetworkBehaviourReference itemReference, TeleportData teleport)
-        {
-            _ = StartCoroutine(TeleportScrapDelayed(itemReference, teleport));
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="itemReference"></param>
-        /// <param name="teleport"></param>
+        /// <param name="syncedItem"></param>
         /// <returns></returns>
-        private IEnumerator TeleportScrapDelayed(NetworkBehaviourReference itemReference, TeleportData teleport)
+        private void SyncTeleportedItem(ItemInfo syncedItem)
         {
-            GrabbableObject item;
-
-            float startTime = Time.realtimeSinceStartup;
-            while (!itemReference.TryGet(out item) && Time.realtimeSinceStartup - startTime < 8f)
+            if (!syncedItem.itemReference.TryGet(out GrabbableObject item))
             {
-                yield return new WaitForSeconds(0.03f);
-            }
-
-            yield return new WaitForEndOfFrame();
-
-            if (item == null)
-            {
-                yield break;
+                return;
             }
 
             item.fallTime = 1.0f;
             item.hasHitGround = true;
             item.reachedFloorTarget = true;
 
-            item.transform.SetPositionAndRotation(teleport.position, teleport.rotation);
+            item.transform.SetPositionAndRotation(syncedItem.transformInfo.position, syncedItem.transformInfo.rotation);
 
-            item.startFallingPosition = teleport.position;
-            item.targetFloorPosition = teleport.position;
+            item.startFallingPosition = syncedItem.transformInfo.position;
+            item.targetFloorPosition = syncedItem.transformInfo.position;
 
             if (fallToGround)
             {

@@ -2,6 +2,7 @@ using DunGen;
 using itolib.Enums;
 using itolib.Extensions;
 using itolib.Interfaces;
+using itolib.Structs;
 using LethalLevelLoader;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -95,14 +96,15 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        [SerializeField] private UnityEvent<T> onSpawnPerformed;
+        [field: Tooltip("")]
+        [field: FormerlySerializedAs("onSpawnPerformed")]
+        [field: SerializeField] public UnityEvent<T> OnSpawnPerformed { get; private set; } = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        [SerializeField] private UnityEvent<int> onSpawningFinish;
+        [field: Tooltip("")]
+        [field: SerializeField] public UnityEvent<int> OnSpawningFinish { get; private set; } = new();
 
         /// <summary>
         ///     TODO.
@@ -123,10 +125,15 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="prefabInstance"></param>
-        /// <param name="spawnPosition"></param>
-        /// <param name="spawnRotation"></param>
-        protected abstract bool AdditionalProcessing(T prefabInstance, Vector3 spawnPosition, Quaternion spawnRotation);
+        /// <param name="spawnedPrefab"></param>
+        /// <param name="spawnLocation"></param>
+        protected virtual void SpawnPerformed(T? spawnedPrefab, TransformInfo spawnLocation)
+        {
+            if (spawnedPrefab != null)
+            {
+                OnSpawnPerformed.Invoke(spawnedPrefab);
+            }
+        }
 
         /// <summary>
         ///     TODO.
@@ -209,11 +216,11 @@ namespace itolib.Behaviours.Networking
                 {
                     prefabNetworkObject.Spawn(destroyWithScene);
 
-                    onSpawnPerformed.Invoke(prefabInstance);
+                    SpawnPerformed(prefabInstance, new(prefabInstance.transform));
                 }
             }
 
-            onSpawningFinish.Invoke(PrefabInstances.Count);
+            OnSpawningFinish.Invoke(PrefabInstances.Count);
         }
 
         /// <summary>
@@ -261,7 +268,7 @@ namespace itolib.Behaviours.Networking
         {
             GameObject prefabObj = Instantiate(prefabToSpawn.gameObject, spawnPosition, spawnRotation);
 
-            if (prefabObj.TryGetComponent(out T prefab) && AdditionalProcessing(prefab, spawnPosition, spawnRotation))
+            if (prefabObj.TryGetComponent(out T prefab))
             {
                 PrefabInstances.Add(prefab);
             }

@@ -17,12 +17,6 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool AlreadySeen { get; private set; } = false;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
         public string headerText = string.Empty;
 
         /// <summary>
@@ -35,7 +29,13 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public bool showOnce = false;
+        public bool showOnce;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [HideInInspector]
+        public bool alreadySeen;
 
         /// <summary>
         ///     TODO.
@@ -47,14 +47,14 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         public void SetNotificationSeen()
         {
-            AlreadySeen = true; // TODO: Do without mutating struct. Whole separate notification system maybe?
+            alreadySeen = true; // TODO: Do without mutating struct. Whole separate notification system maybe?
         }
     }
 
     /// <summary>
-    ///     Represents an InteractTrigger that can spawn an object when interacted with, for a price.
+    ///     Represents an InteractTrigger that can perform a purchase when interacted with, if enough money is available.
     /// </summary>
-    public class InteractPurchasable : InteractTrigger // TODO: Needs more abstraction.
+    public class InteractPurchasable : InteractTrigger
     {
         /// <summary>
         ///     Cached Terminal instance, to actually interact with the shared ship credits.
@@ -62,36 +62,19 @@ namespace itolib.Behaviours.Interactables
         public static Terminal? Terminal { get; private set; }
 
         /// <summary>
-        ///     Prefab to spawn upon a successful transaction.
+        ///     Amount of credits required to perform the transaction. Set to -1 to disable purchasing altogether.
         /// </summary>
         [Space(5.0f)]
         [Header("Purchasable Object")]
-        [Tooltip("Prefab to spawn upon a successful transaction.")]
-        public GameObject? spawnPrefab;
-
-        /// <summary>
-        ///     Position and rotation of the purchasable object when spawned.
-        /// </summary>
-        [Tooltip("Position and rotation of the purchasable object when spawned.")]
-        [SerializeField] private Transform? spawnTransform;
-
-        /// <summary>
-        ///     Credits required to spawn the purchasable object. Set to -1 to disable purchasing stuff at all.
-        /// </summary>
-        [Tooltip("Credits required to spawn the purchasable object.")]
+        [Tooltip("Amount of credits required to perform the transaction. Set to -1 to disable purchasing altogether.")]
         [Range(-1, 10000)]
         public int price = -1;
 
         /// <summary>
         ///     Callback invoked when a transaction is complete but the object has not yet been spawned.
         /// </summary>
-        /// <remarks>
-        ///     NOTE: Actions won't run using the instantiated object, but they can be used to modify the prefab on the host before spawning it, which can then
-        ///     be synchronized with clients using NetworkVariables... Not ideal.
-        /// </remarks>
-        [Tooltip("Callback invoked when a transaction is complete but the object has not yet been spawned. NOTE: Actions won't run using the instantiated object, but they "
-            + "can be used to modify the prefab on the host before spawning it, which can then be synchronized with clients using NetworkVariables... Not ideal.")]
-        public UnityEvent onPurchase = new();
+        [Tooltip("Callback invoked when a transaction is complete but the object has not yet been spawned.")]
+        [SerializeField] private UnityEvent onPurchase = new();
 
         /// <summary>
         ///     TODO.
@@ -135,7 +118,7 @@ namespace itolib.Behaviours.Interactables
         [ServerRpc(RequireOwnership = false)]
         private void RequestPurchaseServerRpc(NetworkBehaviourReference playerReference)
         {
-            if (spawnPrefab == null || spawnTransform == null || Terminal == null)
+            if (Terminal == null)
             {
                 return;
             }
@@ -155,14 +138,7 @@ namespace itolib.Behaviours.Interactables
             // Invoke purchase event.
             onPurchase.Invoke();
 
-            // Instantiate purchasable object instance and spawn it on all clients. TODO: Handle through PrefabSpawner instead.
-            GameObject purchasable = Instantiate(spawnPrefab, spawnTransform.position, spawnTransform.rotation, (RoundManager.Instance != null
-                && RoundManager.Instance.mapPropsContainer != null) ? RoundManager.Instance.mapPropsContainer.transform : null);
-            if (purchasable.TryGetComponent(out NetworkObject networkObject))
-            {
-                networkObject.Spawn(true);
-            }
-
+            // Send notification to the player who completed the purchase.
             SendNotificationClientRpc(playerReference, success: true);
         }
 
@@ -179,10 +155,8 @@ namespace itolib.Behaviours.Interactables
             {
                 if (success)
                 {
-                    if (!purchaseNotification.AlreadySeen)
+                    if (!purchaseNotification.alreadySeen)
                     {
-                        /* HUDManager.Instance.DisplayTip(purchaseNotification.headerText.Replace("PRICE", $"{price}"),
-                            purchaseNotification.bodyText.Replace("PRICE", $"{price}")); */
                         HUDManager.Instance.DisplayTip(purchaseNotification.headerText, purchaseNotification.bodyText);
 
                         if (purchaseNotification.showOnce)

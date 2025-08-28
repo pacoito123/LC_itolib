@@ -1,5 +1,6 @@
 using itolib.Behaviours.Networking;
 using itolib.Extensions;
+using itolib.Structs;
 using LethalLevelLoader;
 using Unity.Netcode;
 using UnityEngine;
@@ -18,6 +19,51 @@ namespace itolib.Behaviours.Enemies
         [Header("Enemy Spawner Base")]
         [Tooltip("")]
         [SerializeField] private bool influencePowerLevels = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="spawnedPrefab"></param>
+        /// <param name="spawnLocation"></param>
+        protected override void SpawnPerformed(T? spawnedPrefab, TransformInfo spawnLocation)
+        {
+            if (spawnedPrefab == null || !spawnedPrefab.IsSpawned)
+            {
+                return;
+            }
+
+            if (RoundManager.Instance != null)
+            {
+                if (influencePowerLevels)
+                {
+                    EnemyType? enemyType = spawnedPrefab.enemyType;
+
+                    if (enemyType != null)
+                    {
+                        if (enemyType.isDaytimeEnemy)
+                        {
+                            RoundManager.Instance.currentDaytimeEnemyPower += enemyType.PowerLevel;
+                        }
+                        else if (enemyType.isOutsideEnemy)
+                        {
+                            RoundManager.Instance.currentOutsideEnemyPower += enemyType.PowerLevel;
+                        }
+                        else
+                        {
+                            RoundManager.Instance.currentEnemyPower += enemyType.PowerLevel;
+                        }
+                    }
+                }
+                else
+                {
+                    spawnedPrefab.removedPowerLevel = true;
+                }
+
+                RoundManager.Instance.SpawnedEnemies.Add(spawnedPrefab);
+            }
+
+            base.SpawnPerformed(spawnedPrefab, spawnLocation);
+        }
 
         /// <summary>
         ///     TODO.
@@ -41,48 +87,6 @@ namespace itolib.Behaviours.Enemies
                 extendedEnemy.EnemyType.name.CompareOrdinal(enemyToSpawn.name));
 
             return extendedEnemy != null ? extendedEnemy.EnemyType.enemyPrefab.GetComponent<NetworkObject>() : null;
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="enemy"></param>
-        /// <param name="spawnPosition"></param>
-        /// <param name="spawnRotation"></param>
-        /// <returns></returns>
-        protected override bool AdditionalProcessing(T enemy, Vector3 spawnPosition, Quaternion spawnRotation)
-        {
-            if (RoundManager.Instance != null)
-            {
-                if (influencePowerLevels)
-                {
-                    EnemyType? enemyType = enemy.enemyType;
-
-                    if (enemyType != null)
-                    {
-                        if (enemyType.isDaytimeEnemy)
-                        {
-                            RoundManager.Instance.currentDaytimeEnemyPower += enemyType.PowerLevel;
-                        }
-                        else if (enemyType.isOutsideEnemy)
-                        {
-                            RoundManager.Instance.currentOutsideEnemyPower += enemyType.PowerLevel;
-                        }
-                        else
-                        {
-                            RoundManager.Instance.currentEnemyPower += enemyType.PowerLevel;
-                        }
-                    }
-                }
-                else
-                {
-                    enemy.removedPowerLevel = true;
-                }
-
-                RoundManager.Instance.SpawnedEnemies.Add(enemy);
-            }
-
-            return true;
         }
     }
 }

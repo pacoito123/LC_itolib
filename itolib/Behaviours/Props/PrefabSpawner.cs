@@ -1,5 +1,5 @@
 using itolib.Behaviours.Networking;
-using System.Collections;
+using itolib.Structs;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -13,9 +13,14 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        public NetworkList<NetworkObjectReference> SyncedPrefabs { get; private set; } = null!;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Header("Prefab Spawner")]
         [Tooltip("")]
-        public NetworkObject? prefabToSpawn;
+        [SerializeField] private NetworkObject? prefabToSpawn;
 
         /// <summary>
         ///     TODO.
@@ -35,38 +40,72 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="prefab"></param>
-        /// <param name="spawnPosition"></param>
-        /// <param name="spawnRotation"></param>
-        /// <returns></returns>
-        protected override bool AdditionalProcessing(NetworkObject prefab, Vector3 spawnPosition, Quaternion spawnRotation)
+        /// <param name="spawnedPrefab"></param>
+        /// <param name="spawnLocation"></param>
+        protected override void SpawnPerformed(NetworkObject? spawnedPrefab, TransformInfo spawnLocation)
         {
-            _ = StartCoroutine(ReparentPrefabOnSpawn(prefab));
+            if (spawnedPrefab == null || !spawnedPrefab.IsSpawned)
+            {
+                return;
+            }
 
-            return true;
+            if (IsSpawned)
+            {
+                SyncedPrefabs.Add(spawnedPrefab);
+            }
+            else
+            {
+                base.SpawnPerformed(spawnedPrefab, spawnLocation);
+            }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <returns></returns>
-        private IEnumerator ReparentPrefabOnSpawn(NetworkObject prefab)
+        protected override void Awake()
         {
-            float startTime = Time.realtimeSinceStartup;
-            while (!prefab.IsSpawned && Time.realtimeSinceStartup - startTime < 8f)
-            {
-                yield return new WaitForSeconds(0.03f); // TODO: Replace with better method.
-            }
+            SyncedPrefabs = new();
 
-            yield return new WaitForEndOfFrame();
+            base.Awake();
+        }
 
-            if (parentTransform != null)
+        /// <summary>
+        ///     TOOD.
+        /// </summary>
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            SyncedPrefabs.OnListChanged += changeEvent =>
             {
-                _ = prefab.TrySetParent(parentTransform);
-            }
-            else if (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null)
+                if (changeEvent.Type == NetworkListEvent<NetworkObjectReference>.EventType.Add)
+                {
+                    if (changeEvent.Value.TryGet(out NetworkObject spawnedPrefab))
+                    {
+                        if (parentTransform != null)
+                        {
+                            spawnedPrefab.transform.SetParent(parentTransform);
+                        }
+                        else if (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null)
+                        {
+                            spawnedPrefab.transform.SetParent(RoundManager.Instance.mapPropsContainer.transform);
+                        }
+
+                        OnSpawnPerformed.Invoke(spawnedPrefab);
+                    }
+                }
+            };
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="prefab"></param>
+        public void SwitchPrefabToSpawn(NetworkObject? prefab)
+        {
+            if (prefab != null)
             {
-                _ = prefab.TrySetParent(RoundManager.Instance.mapPropsContainer.transform);
+                prefabToSpawn = prefab;
             }
         }
     }

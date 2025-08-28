@@ -50,7 +50,7 @@ namespace itolib.Structs
         /// </summary>
         [Tooltip("")]
         [Min(-1)]
-        public int nodeType = 0;
+        public int nodeType;
 
         /// <summary>
         ///     TODO.

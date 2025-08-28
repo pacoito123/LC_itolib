@@ -1,103 +1,12 @@
-using itolib.Enums;
 using itolib.Extensions;
 using itolib.Structs;
 using LethalLevelLoader;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace itolib.Behaviours.Enemies
 {
-    /// <summary>
-    ///     TODO.
-    /// </summary>
-    [Serializable]
-    public struct SyncedHive : INetworkSerializable
-    {
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Header("Synced Hive")]
-        [Tooltip("")]
-        public ItemInfo itemInfo;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Space(5.0f)]
-        [Header("Hive Override")]
-        [Tooltip("")]
-        public bool overrideHive;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public NetworkBehaviourReference hiveReference = default;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Space(5.0f)]
-        [Header("Scan Nodes")]
-        [Tooltip("")]
-        public bool overrideBeesScanNode;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public ScanNodeInfo beesScanNode;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public bool overrideHiveScanNode;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        public ScanNodeInfo hiveScanNode;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public SyncedHive() { }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="serializer"></param>
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            itemInfo.NetworkSerialize(serializer);
-
-            serializer.SerializeValue(ref overrideHive);
-            serializer.SerializeValue(ref overrideBeesScanNode);
-            serializer.SerializeValue(ref overrideHiveScanNode);
-
-            if (overrideHive)
-            {
-                serializer.SerializeValue(ref hiveReference);
-            }
-
-            if (overrideBeesScanNode)
-            {
-                beesScanNode.NetworkSerialize(serializer);
-            }
-
-            if (overrideHiveScanNode)
-            {
-                hiveScanNode.NetworkSerialize(serializer);
-            }
-        }
-    }
-
     /// <summary>
     ///     TODO.
     /// </summary>
@@ -123,7 +32,7 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
-        public List<SyncedHive> HivesToSync { get; private set; } = [];
+        public NetworkList<HiveInfo> SyncedHives { get; private set; } = null!;
 
         /// <summary>
         ///     TODO.
@@ -212,36 +121,53 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void PerformSpawn()
+        /// <param name="bees"></param>
+        /// <param name="spawnLocation"></param>
+        protected override void SpawnPerformed(RedLocustBees? bees, TransformInfo spawnLocation)
         {
-            base.PerformSpawn();
-
-            if (activationTime is not ActivationTime.ScrapSpawn or ActivationTime.HazardSpawn)
+            if (bees == null || !bees.IsSpawned)
             {
-                SyncHiveValuesServerRpc();
+                return;
             }
+
+            _ = StartCoroutine(WaitForHiveSpawn(bees, spawnLocation));
+
+            base.SpawnPerformed(bees, spawnLocation);
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
         /// <param name="bees"></param>
-        /// <param name="spawnPosition"></param>
-        /// <param name="spawnRotation"></param>
+        /// <param name="spawnLocation"></param>
         /// <returns></returns>
-        protected override bool AdditionalProcessing(RedLocustBees bees, Vector3 spawnPosition, Quaternion spawnRotation)
+        private IEnumerator WaitForHiveSpawn(RedLocustBees bees, TransformInfo spawnLocation)
         {
+            float startTime = Time.realtimeSinceStartup;
+
+            while (!bees.hasSpawnedHive && Time.realtimeSinceStartup - startTime < 8.0f)
+            {
+                yield return new WaitForSeconds(0.5f);
+            }
+
+            yield return new WaitForEndOfFrame();
+
+            if (bees.hive == null)
+            {
+                yield break;
+            }
+
             int scrapValue = -1;
 
             if (hiveMinValue != -1 && hiveMaxValue != -1)
             {
                 scrapValue = isSeededRandom ? seededSelf.GetSeededRandom().Next(hiveMinValue, hiveMaxValue)
-                    : UnityEngine.Random.RandomRangeInt(hiveMinValue, hiveMaxValue);
+                    : Random.RandomRangeInt(hiveMinValue, hiveMaxValue);
             }
             else if (overrideHive != null && overrideHive.spawnPrefab != null)
             {
                 scrapValue = isSeededRandom ? seededSelf.GetSeededRandom().Next(overrideHive.minValue, overrideHive.maxValue)
-                        : UnityEngine.Random.RandomRangeInt(overrideHive.minValue, overrideHive.maxValue);
+                        : Random.RandomRangeInt(overrideHive.minValue, overrideHive.maxValue);
             }
 
             if (scrapValue != -1)
@@ -253,7 +179,7 @@ namespace itolib.Behaviours.Enemies
 
                 if (minDistanceFromShip != -1 && maxDistanceFromShip != -1)
                 {
-                    float distanceFromShip = Vector3.Distance(spawnPosition, StartOfRound.Instance.shipLandingPosition.position),
+                    float distanceFromShip = Vector3.Distance(spawnLocation.position, StartOfRound.Instance.shipLandingPosition.position),
                         distanceTime = (distanceFromShip <= minDistanceFromShip) ? 0.0f
                             : (distanceFromShip >= maxDistanceFromShip) ? 1.0f
                             : distanceFromShip / maxDistanceFromShip;
@@ -262,24 +188,22 @@ namespace itolib.Behaviours.Enemies
                 }
             }
 
-            SyncedHive serializedHive = new()
+            HiveInfo serializedHive = new()
             {
                 itemInfo = new()
                 {
-                    transformInfo = new()
-                    {
-                        position = spawnPosition,
-                        rotation = spawnRotation
-                    },
+                    transformInfo = spawnLocation,
+                    itemReference = bees.hive,
                     scrapValue = scrapValue,
                     meshVariant = -1,
                     materialVariant = -1
-                }
+                },
+                beesReference = bees
             };
 
             if (overrideHive != null && overrideHive.spawnPrefab != null)
             {
-                GameObject hivePrefab = Instantiate(overrideHive.spawnPrefab, spawnPosition, spawnRotation,
+                GameObject hivePrefab = Instantiate(overrideHive.spawnPrefab, spawnLocation.position, spawnLocation.rotation,
                     RoundManager.Instance != null ? RoundManager.Instance.spawnedScrapContainer : null);
 
                 if (hivePrefab.TryGetComponent(out NetworkObject newHiveNetworkObject)
@@ -292,21 +216,7 @@ namespace itolib.Behaviours.Enemies
                 }
             }
 
-            if (overrideBeesScanNode)
-            {
-                serializedHive.overrideBeesScanNode = true;
-                serializedHive.beesScanNode = beesScanNode;
-            }
-
-            if (overrideHiveScanNode)
-            {
-                serializedHive.overrideHiveScanNode = true;
-                serializedHive.hiveScanNode = hiveScanNode;
-            }
-
-            HivesToSync.Add(serializedHive);
-
-            return base.AdditionalProcessing(bees, spawnPosition, spawnRotation);
+            SyncedHives.Add(serializedHive);
         }
 
         /// <summary>
@@ -342,6 +252,8 @@ namespace itolib.Behaviours.Enemies
         /// </summary>
         protected override void Awake()
         {
+            SyncedHives = new();
+
             if (NetworkManager.Singleton.IsHost)
             {
                 if (overrideHive != null && overrideHive.spawnPrefab == null)
@@ -352,10 +264,6 @@ namespace itolib.Behaviours.Enemies
                     if (extendedHive != null)
                     {
                         overrideHive = extendedHive.Item;
-                    }
-                    else
-                    {
-                        // TODO: Log warning.
                     }
                 }
             }
@@ -370,30 +278,13 @@ namespace itolib.Behaviours.Enemies
         {
             base.OnNetworkSpawn();
 
-            if (IsHost && activationTime is ActivationTime.HazardSpawn or ActivationTime.ScrapSpawn && StartOfRound.Instance != null)
+            SyncedHives.OnListChanged += changeEvent =>
             {
-                StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncHiveValuesServerRpc);
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [ServerRpc]
-        public void SyncHiveValuesServerRpc()
-        {
-            if (StartOfRound.Instance != null)
-            {
-                StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SyncHiveValuesServerRpc);
-            }
-
-            for (int i = 0; i < PrefabInstances.Count; i++)
-            {
-                if (PrefabInstances[i] != null)
+                if (changeEvent.Type == NetworkListEvent<HiveInfo>.EventType.Add)
                 {
-                    SyncHiveValuesClientRpc(PrefabInstances[i], HivesToSync[i]);
+                    SyncHiveValues(changeEvent.Value);
                 }
-            }
+            };
         }
 
         /// <summary>
@@ -422,37 +313,12 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="beesReference"></param>
         /// <param name="syncedHive"></param>
-        [ClientRpc]
-        public void SyncHiveValuesClientRpc(NetworkBehaviourReference beesReference, SyncedHive syncedHive)
+        private void SyncHiveValues(HiveInfo syncedHive)
         {
-            _ = StartCoroutine(SyncHiveValuesOnSpawn(beesReference, syncedHive));
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="beesReference"></param>
-        /// <param name="syncedHive"></param>
-        /// <returns></returns>
-        private static IEnumerator SyncHiveValuesOnSpawn(NetworkBehaviourReference beesReference, SyncedHive syncedHive)
-        {
-            RedLocustBees bees;
-
-            float startTime = Time.realtimeSinceStartup;
-            while ((!beesReference.TryGet(out bees) || bees.hive == null || !bees.hive.IsSpawned)
-                && Time.realtimeSinceStartup - startTime < 8f)
+            if (!syncedHive.beesReference.TryGet(out RedLocustBees bees))
             {
-                yield return new WaitForSeconds(0.03f); // TODO: Replace with better method.
-            }
-
-            yield return new WaitForEndOfFrame();
-
-            if (bees == null || bees.hive == null)
-            {
-                // TODO: Log warning.
-                yield break;
+                return;
             }
 
             Vector3 spawnPosition = syncedHive.itemInfo.transformInfo.position;
@@ -466,10 +332,10 @@ namespace itolib.Behaviours.Enemies
                 bees.OnSyncPositionFromServer(spawnPosition);
             }
 
-            if (syncedHive.overrideBeesScanNode)
+            if (overrideBeesScanNode)
             {
                 ScanNodeProperties? beesScanNode = bees.GetComponentInChildren<ScanNodeProperties>();
-                ScanNodeInfo beesScanNodeInfo = syncedHive.beesScanNode;
+                ScanNodeInfo beesScanNodeInfo = this.beesScanNode;
 
                 if (beesScanNode != null)
                 {
@@ -485,41 +351,28 @@ namespace itolib.Behaviours.Enemies
 
             GrabbableObject originalHive = bees.hive;
 
-            if (syncedHive.overrideHive)
+            if (syncedHive.overrideHive && syncedHive.hiveReference.TryGet(out GrabbableObject newHive))
             {
-                GrabbableObject? newHive;
+                // Vanilla item "despawning":
+                originalHive.deactivated = true;
 
-                startTime = Time.realtimeSinceStartup;
-                while (!syncedHive.hiveReference.TryGet(out newHive) && Time.realtimeSinceStartup - startTime < 8f)
+                if (originalHive.radarIcon != null)
                 {
-                    yield return new WaitForSeconds(0.03f); // TODO: Replace with better method.
+                    Destroy(originalHive.radarIcon.gameObject);
                 }
 
-                yield return new WaitForEndOfFrame();
-
-                if (newHive != null)
+                foreach (Renderer renderer in originalHive.GetComponentsInChildren<Renderer>())
                 {
-                    // Vanilla item "despawning":
-                    originalHive.deactivated = true;
-
-                    if (originalHive.radarIcon != null)
-                    {
-                        Destroy(originalHive.radarIcon.gameObject);
-                    }
-
-                    foreach (Renderer renderer in originalHive.GetComponentsInChildren<Renderer>())
-                    {
-                        renderer.enabled = false;
-                    }
-
-                    foreach (Collider collider in originalHive.GetComponentsInChildren<Collider>())
-                    {
-                        collider.enabled = false;
-                    }
-                    // ...
-
-                    bees.hive = newHive;
+                    renderer.enabled = false;
                 }
+
+                foreach (Collider collider in originalHive.GetComponentsInChildren<Collider>())
+                {
+                    collider.enabled = false;
+                }
+                // ...
+
+                bees.hive = newHive;
             }
 
             bees.lastKnownHivePosition = spawnPosition;
@@ -534,10 +387,10 @@ namespace itolib.Behaviours.Enemies
             bees.hive.startFallingPosition = spawnPosition;
             bees.hive.targetFloorPosition = spawnPosition;
 
-            if (syncedHive.overrideHiveScanNode)
+            if (overrideHiveScanNode)
             {
                 ScanNodeProperties? hiveScanNode = bees.hive.GetComponentInChildren<ScanNodeProperties>();
-                ScanNodeInfo hiveScanNodeInfo = syncedHive.hiveScanNode;
+                ScanNodeInfo hiveScanNodeInfo = this.hiveScanNode;
 
                 if (hiveScanNode != null)
                 {

@@ -8,46 +8,39 @@ namespace itolib.Structs
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct ItemInfo : INetworkSerializable, IEquatable<ItemInfo>
+    public struct HiveInfo : INetworkSerializable, IEquatable<HiveInfo>
     {
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Header("Item Info")]
+        [Header("Hive Info")]
         [Tooltip("")]
-        public TransformInfo transformInfo;
+        public ItemInfo itemInfo;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public NetworkBehaviourReference itemReference;
+        public NetworkBehaviourReference beesReference;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(5.0f)]
+        [Header("Hive Override")]
+        [Tooltip("")]
+        public bool overrideHive;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [Min(0)]
-        public int scrapValue;
+        public NetworkBehaviourReference hiveReference;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        [Min(-1)]
-        public int meshVariant = -1;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        [Min(-1)]
-        public int materialVariant = -1;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public ItemInfo() { }
+        public HiveInfo() { }
 
         /// <summary>
         ///     TODO.
@@ -56,12 +49,15 @@ namespace itolib.Structs
         /// <param name="serializer"></param>
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
-            transformInfo.NetworkSerialize(serializer);
+            itemInfo.NetworkSerialize(serializer);
 
-            serializer.SerializeValue(ref itemReference);
-            serializer.SerializeValue(ref scrapValue);
-            serializer.SerializeValue(ref meshVariant);
-            serializer.SerializeValue(ref materialVariant);
+            serializer.SerializeValue(ref beesReference);
+            serializer.SerializeValue(ref overrideHive);
+
+            if (overrideHive)
+            {
+                serializer.SerializeValue(ref hiveReference);
+            }
         }
 
         /// <summary>
@@ -69,10 +65,10 @@ namespace itolib.Structs
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public readonly bool Equals(ItemInfo other)
+        public readonly bool Equals(HiveInfo other)
         {
-            return transformInfo == other.transformInfo && itemReference.Equals(other.itemReference)
-                && scrapValue == other.scrapValue && meshVariant == other.meshVariant && materialVariant == other.materialVariant;
+            return itemInfo == other.itemInfo && beesReference.Equals(other.beesReference)
+                && overrideHive == other.overrideHive && hiveReference.Equals(other.hiveReference);
         }
 
         /// <summary>
@@ -82,7 +78,7 @@ namespace itolib.Structs
         /// <returns></returns>
         public override readonly bool Equals(object obj)
         {
-            return obj is ItemInfo info && Equals(info);
+            return obj is HiveInfo info && Equals(info);
         }
 
         /// <summary>
@@ -91,7 +87,7 @@ namespace itolib.Structs
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static bool operator ==(ItemInfo left, ItemInfo right)
+        public static bool operator ==(HiveInfo left, HiveInfo right)
         {
             return left.Equals(right);
         }
@@ -102,7 +98,7 @@ namespace itolib.Structs
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static bool operator !=(ItemInfo left, ItemInfo right)
+        public static bool operator !=(HiveInfo left, HiveInfo right)
         {
             return !(left == right);
         }
@@ -113,7 +109,7 @@ namespace itolib.Structs
         /// <returns></returns>
         public override readonly int GetHashCode()
         {
-            return HashCode.Combine(transformInfo, itemReference, scrapValue, meshVariant, materialVariant);
+            return HashCode.Combine(itemInfo, beesReference, overrideHive, hiveReference);
         }
     }
 }
