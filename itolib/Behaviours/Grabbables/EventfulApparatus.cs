@@ -17,11 +17,6 @@ namespace itolib.Behaviours.Grabbables
     /// </summary>
     public class EventfulApparatus : LungProp, IEventfulItem
     {
-        /* /// <summary>
-        ///     TODO.
-        /// </summary>
-        public static BreakerBox? BreakerBoxInstance { get; private set; } */
-
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -29,6 +24,74 @@ namespace itolib.Behaviours.Grabbables
         [Header("Eventful Apparatus")]
         [Tooltip("")]
         [SerializeField] protected AudioSource? apparatusAudio;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(5.0f)]
+        [Header("Apparatus Sequence")]
+        [Tooltip("")]
+        [SerializeField] protected bool playDisconnectSFX = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected bool playSparkPFX = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected bool playRemoveFromMachineSFX = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected bool modifyEnemySpawns = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected bool flickerLights = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected bool shutOffPower = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected bool shutOffPowerPermanently = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected bool displayRadiationWarning = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected bool awakenOldBirds = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected bool triggerFacilityMeltdown = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected bool triggerEscapeMusic = true;
 
         /// <summary>
         ///     TODO.
@@ -268,8 +331,6 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public override void Start()
         {
-            // BreakerBoxInstance ??= FindObjectOfType<BreakerBox>();
-
             if (IsHost)
             {
                 Activate();
@@ -351,38 +412,54 @@ namespace itolib.Behaviours.Grabbables
             if (apparatusAudio != null)
             {
                 apparatusAudio.Stop();
-                apparatusAudio.PlayOneShot(disconnectSFX, 0.7f);
+
+                if (playDisconnectSFX)
+                {
+                    apparatusAudio.PlayOneShot(disconnectSFX, 0.7f);
+                }
             }
             OnDisconnectEarly.Invoke();
 
             yield return new WaitForSeconds(0.1f);
-            sparkParticle.SetActive(true);
-            if (apparatusAudio != null)
+            if (playSparkPFX)
+            {
+                sparkParticle.SetActive(true);
+            }
+
+            if (apparatusAudio != null && playRemoveFromMachineSFX)
             {
                 apparatusAudio.PlayOneShot(removeFromMachineSFX);
             }
 
-            if (IsHost && UnityEngine.Random.Range(0, 100) < 70 && roundManager.minEnemiesToSpawn < 2)
+            if (modifyEnemySpawns && IsHost && UnityEngine.Random.Range(0, 100) < 70 && roundManager.minEnemiesToSpawn < 2)
             {
                 roundManager.minEnemiesToSpawn = 2;
             }
             OnDisconnect.Invoke();
 
             yield return new WaitForSeconds(1.0f);
-            roundManager.FlickerLights(false, false);
+            if (flickerLights)
+            {
+                roundManager.FlickerLights(false, false);
+            }
             OnLightsFlicker.Invoke();
 
             yield return new WaitForSeconds(2.5f);
-            roundManager.SwitchPower(false);
-            roundManager.powerOffPermanently = true;
+            if (shutOffPower)
+            {
+                roundManager.SwitchPower(false);
+                roundManager.powerOffPermanently = shutOffPowerPermanently;
+            }
             OnLightsOff.Invoke();
 
             yield return new WaitForSeconds(0.75f);
-
-            HUDManager.Instance.RadiationWarningHUD();
+            if (displayRadiationWarning)
+            {
+                HUDManager.Instance.RadiationWarningHUD();
+            }
             OnDisplayWarning.Invoke();
 
-            if (IsHost && radMechEnemyType != null)
+            if (awakenOldBirds && IsHost && radMechEnemyType != null)
             {
                 EnemyAINestSpawnObject[] enemyNests = FindObjectsByType<EnemyAINestSpawnObject>(FindObjectsSortMode.None);
                 for (int i = 0; i < enemyNests.Length; i++)
@@ -401,9 +478,14 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         protected virtual void HandleCompatibility()
         {
-            if (FacilityMeltdownCompatibility.Enabled)
+            if (triggerFacilityMeltdown && FacilityMeltdownCompatibility.Enabled)
             {
                 OnDisconnectEarly.AddListener(FacilityMeltdownCompatibility.InitiateMeltdown);
+            }
+
+            if (PizzaTowerEscapeMusicCompatibility.Enabled)
+            {
+                OnDisconnectEarly.AddListener(() => PizzaTowerEscapeMusicCompatibility.SwitchApparatus(triggerEscapeMusic ? this : null));
             }
         }
 

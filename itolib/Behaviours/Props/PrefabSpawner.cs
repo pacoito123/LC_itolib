@@ -49,6 +49,15 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
+            if (parentTransform != null)
+            {
+                _ = spawnedPrefab.TrySetParent(parentTransform);
+            }
+            else if (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null)
+            {
+                _ = spawnedPrefab.TrySetParent(RoundManager.Instance.mapPropsContainer.transform);
+            }
+
             if (IsSpawned)
             {
                 SyncedPrefabs.Add(spawnedPrefab);
@@ -82,15 +91,6 @@ namespace itolib.Behaviours.Props
                 {
                     if (changeEvent.Value.TryGet(out NetworkObject spawnedPrefab))
                     {
-                        if (parentTransform != null)
-                        {
-                            spawnedPrefab.transform.SetParent(parentTransform);
-                        }
-                        else if (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null)
-                        {
-                            spawnedPrefab.transform.SetParent(RoundManager.Instance.mapPropsContainer.transform);
-                        }
-
                         OnSpawnPerformed.Invoke(spawnedPrefab);
                     }
                 }

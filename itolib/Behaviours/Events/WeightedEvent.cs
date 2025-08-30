@@ -64,7 +64,7 @@ namespace itolib.Behaviours.Events
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public ActivationTime activationTime = ActivationTime.Manual;
+        [SerializeField] private ActivationTime activationTime = ActivationTime.Manual;
 
         /// <summary>
         ///     TODO.

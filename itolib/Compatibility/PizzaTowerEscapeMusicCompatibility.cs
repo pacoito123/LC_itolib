@@ -1,11 +1,12 @@
-using itolib.PlayZone;
+using itolib.Behaviours.Grabbables;
 using PizzaTowerEscapeMusic;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace itolib.Compatibility
 {
     /// <summary>
-    ///     Compatibility between TwinApparatus and PizzaTowerEscapeMusic.
+    ///     Compatibility for PizzaTowerEscapeMusic.
     /// </summary>
     internal sealed class PizzaTowerEscapeMusicCompatibility
     {
@@ -26,14 +27,26 @@ namespace itolib.Compatibility
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="twin"></param>
+        /// <param name="apparatus"></param>
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        internal static void SwitchTwin(TwinApparatus? twin)
+        internal static void SwitchApparatus(EventfulApparatus? apparatus)
         {
-            if (twin != null && twin.isLungDocked)
+            if (apparatus == null)
             {
-                GameEventListener.dockedApparatus = twin;
+                LungProp[] apparatuses = Object.FindObjectsByType<LungProp>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+                for (int i = 0; i < apparatuses.Length; i++)
+                {
+                    if (apparatuses[i] is not EventfulApparatus && apparatuses[i].isLungDocked)
+                    {
+                        GameEventListener.dockedApparatus = apparatuses[i];
+
+                        return;
+                    }
+                }
             }
+
+            GameEventListener.dockedApparatus = apparatus;
         }
     }
 }

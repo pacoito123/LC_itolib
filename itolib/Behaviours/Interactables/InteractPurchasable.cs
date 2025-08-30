@@ -96,7 +96,7 @@ namespace itolib.Behaviours.Interactables
             if (Terminal == null)
             {
                 // Cache Terminal instance if not already done.
-                Terminal = FindObjectOfType<Terminal>();
+                Terminal = FindFirstObjectByType<Terminal>(FindObjectsInactive.Exclude);
             }
 
             // Add action to the interact callback.

@@ -13,19 +13,19 @@ namespace itolib.Behaviours.Events
         /// </summary>
         [Header("Delayed Event")]
         [Tooltip("")]
-        [field: SerializeField] private float delayTimer = 1.0f;
+        [SerializeField] private float delayTimer = 1.0f;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [field: SerializeField] private bool runsContinuously;
+        [SerializeField] private bool runsContinuously;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [field: SerializeField] private UnityEvent onDelayedEvent = new();
+        [SerializeField] private UnityEvent onDelayedEvent = new();
 
         /// <summary>
         ///     TODO.

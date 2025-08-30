@@ -30,18 +30,21 @@ namespace itolib.PlayZone
             {
                 FacilityMeltdownCompatibility.HalveTwinValue(this);
 
-                OnDisconnectEarly.AddListener(() =>
+                if (triggerFacilityMeltdown)
                 {
-                    if (bothPulled)
+                    OnDisconnectEarly.AddListener(() =>
                     {
-                        FacilityMeltdownCompatibility.InitiateMeltdown();
-                    }
-                });
+                        if (bothPulled)
+                        {
+                            FacilityMeltdownCompatibility.InitiateMeltdown();
+                        }
+                    });
+                }
             }
 
             if (PizzaTowerEscapeMusicCompatibility.Enabled)
             {
-                OnDisconnectEarly.AddListener(() => PizzaTowerEscapeMusicCompatibility.SwitchTwin(LongLostTwin));
+                OnDisconnectEarly.AddListener(() => PizzaTowerEscapeMusicCompatibility.SwitchApparatus(triggerEscapeMusic ? LongLostTwin : null));
             }
         }
 
@@ -54,46 +57,66 @@ namespace itolib.PlayZone
             if (apparatusAudio != null)
             {
                 apparatusAudio.Stop();
-                apparatusAudio.PlayOneShot(disconnectSFX, 0.7f);
+
+                if (playDisconnectSFX)
+                {
+                    apparatusAudio.PlayOneShot(disconnectSFX, 0.7f);
+                }
             }
             OnDisconnectEarly.Invoke();
 
             yield return new WaitForSeconds(0.1f);
-            sparkParticle.SetActive(true);
-            if (apparatusAudio != null)
+            if (playSparkPFX)
+            {
+                sparkParticle.SetActive(true);
+            }
+
+            if (apparatusAudio != null && playRemoveFromMachineSFX)
             {
                 apparatusAudio.PlayOneShot(removeFromMachineSFX);
             }
 
-            if (IsHost && Random.Range(0, 100) < 70 && roundManager.minEnemiesToSpawn < 2)
+            if (modifyEnemySpawns && IsHost && Random.Range(0, 100) < 70 && roundManager.minEnemiesToSpawn < 2)
             {
                 roundManager.minEnemiesToSpawn = bothPulled ? 2 : 1;
             }
             OnDisconnect.Invoke();
 
             yield return new WaitForSeconds(1.0f);
-            roundManager.FlickerLights(false, false);
+            if (flickerLights)
+            {
+                roundManager.FlickerLights(false, false);
+            }
             OnLightsFlicker.Invoke();
 
             yield return new WaitForSeconds(2.5f);
-            roundManager.SwitchPower(false);
-            roundManager.powerOffPermanently = bothPulled;
+            if (shutOffPower)
+            {
+                roundManager.SwitchPower(false);
+                roundManager.powerOffPermanently = shutOffPowerPermanently;
+            }
             OnLightsOff.Invoke();
 
             yield return new WaitForSeconds(0.75f);
 
             if (!bothPulled) // TODO: Check if lights are on to begin with.
             {
-                roundManager.SwitchPower(!bothPulled);
-                DimLights();
+                if (shutOffPower)
+                {
+                    roundManager.SwitchPower(!bothPulled);
+                    DimLights();
+                }
 
                 yield break;
             }
 
-            HUDManager.Instance.RadiationWarningHUD();
+            if (displayRadiationWarning)
+            {
+                HUDManager.Instance.RadiationWarningHUD();
+            }
             OnDisplayWarning.Invoke();
 
-            if (bothPulled && IsHost && radMechEnemyType != null)
+            if (awakenOldBirds && bothPulled && IsHost && radMechEnemyType != null)
             {
                 EnemyAINestSpawnObject[] enemyNests = FindObjectsByType<EnemyAINestSpawnObject>(FindObjectsSortMode.None);
                 for (int i = 0; i < enemyNests.Length; i++)
