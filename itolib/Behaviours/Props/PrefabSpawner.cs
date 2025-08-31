@@ -40,6 +40,17 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <returns></returns>
+        protected override Transform? GetParentOverride()
+        {
+            return parentTransform != null ? parentTransform
+                : (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null
+                    ? RoundManager.Instance.mapPropsContainer.transform : null);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="spawnedPrefab"></param>
         /// <param name="spawnLocation"></param>
         protected override void SpawnPerformed(NetworkObject? spawnedPrefab, TransformInfo spawnLocation)
@@ -47,15 +58,6 @@ namespace itolib.Behaviours.Props
             if (spawnedPrefab == null || !spawnedPrefab.IsSpawned)
             {
                 return;
-            }
-
-            if (parentTransform != null)
-            {
-                _ = spawnedPrefab.TrySetParent(parentTransform);
-            }
-            else if (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null)
-            {
-                _ = spawnedPrefab.TrySetParent(RoundManager.Instance.mapPropsContainer.transform);
             }
 
             if (IsSpawned)

@@ -194,6 +194,15 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <returns></returns>
+        protected override Transform? GetParentOverride()
+        {
+            return RoundManager.Instance != null ? RoundManager.Instance.spawnedScrapContainer : null;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="item"></param>
         /// <param name="spawnLocation"></param>
         protected override void SpawnPerformed(GrabbableObject? item, TransformInfo spawnLocation)
@@ -216,8 +225,6 @@ namespace itolib.Behaviours.Props
 
             if (RoundManager.Instance != null)
             {
-                item.transform.SetParent(RoundManager.Instance.spawnedScrapContainer);
-
                 if (applyScrapMultiplier)
                 {
                     scrapValue = (int)(scrapValue * RoundManager.Instance.scrapValueMultiplier);

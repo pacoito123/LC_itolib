@@ -33,6 +33,24 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        [SerializeField] protected bool includeChildren;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected bool includeInsideAINodes;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected bool includeOutsideAINodes;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         [SerializeField] protected bool exhaustiveLocations;
 
         /// <summary>
@@ -121,6 +139,15 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         /// <returns></returns>
         public abstract NetworkObject? GetPrefabToSpawn();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual Transform? GetParentOverride()
+        {
+            return null;
+        }
 
         /// <summary>
         ///     TODO.
@@ -266,7 +293,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="spawnRotation"></param>
         protected virtual void PerformSpawn(NetworkObject prefabToSpawn, Vector3 spawnPosition, Quaternion spawnRotation)
         {
-            GameObject prefabObj = Instantiate(prefabToSpawn.gameObject, spawnPosition, spawnRotation);
+            GameObject prefabObj = Instantiate(prefabToSpawn.gameObject, spawnPosition, spawnRotation, GetParentOverride());
 
             if (prefabObj.TryGetComponent(out T prefab))
             {
@@ -284,6 +311,38 @@ namespace itolib.Behaviours.Networking
             if (!NetworkManager.Singleton.IsHost)
             {
                 return;
+            }
+
+            if (includeChildren && spawnLocations?.Count > 0)
+            {
+                HashSet<Transform> childLocations = [];
+
+                for (int i = 0; i < spawnLocations.Count; i++)
+                {
+                    Transform? locationRoot = spawnLocations[i];
+
+                    if (locationRoot == null || locationRoot.childCount == 0)
+                    {
+                        continue;
+                    }
+
+                    for (int j = 0; j < locationRoot.childCount; j++)
+                    {
+                        Transform locationChild = locationRoot.GetChild(j);
+
+                        if (!spawnLocations.Contains(locationChild))
+                        {
+                            _ = childLocations.Add(locationChild);
+                        }
+                    }
+                }
+
+                spawnLocations.AddRange(childLocations);
+            }
+
+            if (includeInsideAINodes || includeOutsideAINodes)
+            {
+                DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(AddAINodes);
             }
 
             switch (activationTime)
@@ -334,6 +393,45 @@ namespace itolib.Behaviours.Networking
                 case ActivationTime.Manual:
                 default:
                     break;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void AddAINodes()
+        {
+            DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(AddAINodes);
+
+            if (RoundManager.Instance != null)
+            {
+                if (includeInsideAINodes)
+                {
+                    GameObject[]? insideAINodes = RoundManager.Instance.insideAINodes;
+
+                    for (int i = 0; i < insideAINodes?.Length; i++)
+                    {
+                        if (insideAINodes[i] != null)
+                        {
+                            spawnLocations ??= [];
+                            spawnLocations.Add(insideAINodes[i].transform);
+                        }
+                    }
+                }
+
+                if (includeOutsideAINodes)
+                {
+                    GameObject[]? outsideAINodes = RoundManager.Instance.outsideAINodes;
+
+                    for (int i = 0; i < outsideAINodes?.Length; i++)
+                    {
+                        if (outsideAINodes[i] != null)
+                        {
+                            spawnLocations ??= [];
+                            spawnLocations.Add(outsideAINodes[i].transform);
+                        }
+                    }
+                }
             }
         }
 
