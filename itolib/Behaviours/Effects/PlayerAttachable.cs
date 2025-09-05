@@ -230,6 +230,22 @@ namespace itolib.Behaviours.Effects
         }
 
         /// <summary>
+        ///     Attach player for all clients.
+        /// </summary>
+        /// <param name="player">Player to attach.</param>
+        public virtual void AttachPlayer(PlayerControllerB player)
+        {
+            if (attachLocally)
+            {
+                AttachPlayerLocal(player);
+            }
+            else
+            {
+                AttachPlayerServerRpc(player);
+            }
+        }
+
+        /// <summary>
         ///     Attach player on the local client.
         /// </summary>
         /// <param name="player">Player to attach.</param>
@@ -306,6 +322,7 @@ namespace itolib.Behaviours.Effects
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
+                // Attach the player on the local client.
                 AttachPlayerLocal(player);
             }
         }

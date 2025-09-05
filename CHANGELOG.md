@@ -1,5 +1,36 @@
 # Changelog
 
+## [v0.4.0]
+
+Added a couple new spawners, several useful fields and methods, some small fixes; also did some internal refactoring a few scripts.
+
+- Added `EnemySpawner`, to spawn any number of specified enemies on demand.
+- Added `HiveSpawner`, for spawning Circuit Bees at specific locations.
+  - Has fields to override the scrap item that bees consider to be their hive, modify the scan nodes for both the bees and hive, and scale hive scrap value depending on its distance from the ship.
+- Added `EnemyAnnihilator`, to queue up the killing of any given enemies.
+  - Intended for 'temporary' enemies that despawn after a certain amount of time, but can also simply be used for general enemy killing.
+  - Can employ `EnemySpawner`'s `onSpawnPerformed` callback to add enemies to the list, as well as `EnemySensor`'s enemy filters to kill specific enemies that enter a region.
+- Added fields to `EventfulApparatus` to toggle pretty much every step of the Apparatus pulling sequence (e.g. playing particle effects, flickering lights, waking up Old Birds).
+  - Has fields for toggling triggering [FacilityMeltdown](https://thunderstore.io/c/lethal-company/p/loaforc/FacilityMeltdown) and [PizzaTowerEscapeMusic](https://thunderstore.io/c/lethal-company/p/BGN/PizzaTowerEscapeMusic), too.
+- Added some fields to `NetworkedSpawner` to include every `AINode` (inside and/or outside) in the list of spawn locations.
+  - Also added a field to include the children of any specified spawn locations as well.
+- Added function to `EnemySensor` for setting a given enemy's `NavMeshAgent` speed to 0 for one second, to semi-reliably handle any pathfinding changes for fast-moving enemies (e.g. disabling a `NavMeshObstacle` or `OffMeshLink`).
+  - Warps the enemy to the beginning of any `OffMeshLink` they may be traveling through right as they are stopped.
+  - Will _probably_ end up being moved to its own dedicated `EnemyHinderer` script at some point.
+- Added function to sync playback time for every `AudioSource` in an `AudioGroup`, as well as a field to automatically 'initialize' them all (`Play()` followed by `Pause()`).
+- Added a networked `AttachPlayer()` function to `PlayerAttachable`, instead of only having `AttachPlayerLocal()` available for manual attaching.
+- Rewrote `NetworkedSpawner`-inheriting scripts to use `NetworkLists` to sync spawned object properties with all clients, instead of periodically checking if they have spawned for the local client.
+- Improved `ISeededScript` interface and implemented it on all scripts that use randomization.
+- Reworked `ToggleEvent` and added networking to it, to properly sync toggling across clients.
+- Reworked `HourEvent` to subscribe to `TimeOfDay`'s `onHourChanged` event, instead of only checking the time after being enabled.
+- Fixed `ExplodeEffect` throwing errors if used while in orbit, due to a null check I forgor.
+- Fixed `OutOfBoundsAdjuster` not adjusting the kill floor on moons that deviate from a vanilla hierarchy a bit.
+- Fixed two-handed `ItemWhackable` items being able to be pocketed, if scrolling during the swinging animation.
+- Removed prefab spawning stuff in `InteractPurchasable`, as it can be handled better via `PrefabSpawner`.
+- Removed `AudioSource` and `Animator` stuff from `PlatformGrabbable`, as it can be handled better through other means.
+- Removed (unused) `ContentTag`-related fields in `ScrapSpawner`.
+  - Will likely re-add tag spawning at some point, but it's been unused since the addition of weighted scrap spawning.
+
 ## [v0.3.2]
 
 Small fix for `NetworkedHittable`, added LayerMask fields to a couple scripts.
