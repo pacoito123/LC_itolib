@@ -93,7 +93,11 @@ namespace itolib.Behaviours.Detectors
                 && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
             {
                 onRegionEntered.Invoke(item);
-                RegionEnteredServerRpc(item);
+
+                if (item.IsSpawned)
+                {
+                    RegionEnteredServerRpc(item);
+                }
             }
         }
 
@@ -107,7 +111,11 @@ namespace itolib.Behaviours.Detectors
                 && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
             {
                 onRegionExited.Invoke(item);
-                RegionEnteredServerRpc(item, exit: true);
+
+                if (item.IsSpawned)
+                {
+                    RegionEnteredServerRpc(item, exit: true);
+                }
             }
         }
 

@@ -67,22 +67,14 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        protected override void Start()
-        {
-            if (actionToTrigger.Length > 0)
-            {
-                // Get action (or key) that triggers this sensor.
-                playerAction = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToTrigger);
-            }
-
-            base.Start();
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         private void OnEnable()
         {
+            if (actionToTrigger.Length > 0 && playerAction == null)
+            {
+                // Get action (or key) that triggers this sensor.
+                playerAction = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToTrigger, throwIfNotFound: true);
+            }
+
             timer = triggerInterval;
         }
 
