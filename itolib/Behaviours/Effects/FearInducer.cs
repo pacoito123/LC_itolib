@@ -33,8 +33,8 @@ namespace itolib.Behaviours.Effects
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [Min(0)]
-        [SerializeField] private int lookRange = 60;
+        [Min(0.0f)]
+        [SerializeField] private float lookRange = 60.0f;
 
         /// <summary>
         ///     TODO.

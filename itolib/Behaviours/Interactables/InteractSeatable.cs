@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Interactables
     /// <summary>
     ///     TODO.
     /// </summary>
-    [Obsolete("Use a regular InteractTrigger along with PlayerSeater and GrabbablePlatform instead.")]
+    [Obsolete("Could use a regular InteractTrigger along with PlayerSeater instead.")]
     public class InteractSeatable : InteractTrigger
     {
         /// <summary>
@@ -106,7 +106,11 @@ namespace itolib.Behaviours.Interactables
         {
             base.Start();
 
-            playerAction = GameNetworkManager.Instance.localPlayerController.playerActions.m_Movement.FindAction(actionToExit);
+            // Try obtain player action required for the player to get back up.
+            if (!GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToExit))
+            {
+                Plugin.StaticLogger.LogWarning($"Could not find movement action '{actionToExit}' defined for PlayerSeater component in '{transform.name}'!");
+            }
         }
 
         /// <summary>
@@ -116,12 +120,12 @@ namespace itolib.Behaviours.Interactables
         {
             base.Update();
 
-            if (!localPlayerSeated || sittingPlayer == null || playerAction == null)
+            if (!localPlayerSeated || sittingPlayer == null)
             {
                 return;
             }
 
-            if (playerAction.WasPressedThisFrame())
+            if (playerAction == null || playerAction.WasPressedThisFrame())
             {
                 ExitChairLocal(true);
                 ExitChairServerRpc();

@@ -7,97 +7,102 @@ using UnityEngine.Events;
 namespace itolib.Behaviours.Effects
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a movement hinderance to be applied on to attaching players.
     /// </summary>
+    /// <remarks>Intended for stuff like fake water, fake quicksand, fake spider webs, or a general temporary slowing effect.</remarks>
     public class PlayerHinderer : PlayerAttachable
     {
         /// <summary>
-        ///     TODO.
+        ///     <c>Collider</c> for the hinderance region.
         /// </summary>
+        /// <remarks><b>NOTE:</b> Only needed for player drowning purposes.</remarks>
         [Header("Player Hinderer")]
-        [Tooltip("")]
+        [Tooltip("Collider for the hinderance region. NOTE: Only needed for player drowning purposes.")]
         [SerializeField] private Collider? hindererCollider;
 
         /// <summary>
-        ///     TODO.
+        ///     Multiplier for the slowness to be applied to the player.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Multiplier for the slowness to be applied to the player.")]
         [Min(0.01f)]
         [SerializeField] private float hinderedMultiplier = 2.5f;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether the vanilla quicksand and underwater sound effects should be muted or not.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Whether the vanilla quicksand and underwater sound effects should be muted or not.")]
         [SerializeField] private bool muteAudio;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether the attached player should be allowed to jump while hindered or not.
         /// </summary>
         [Header("Jumping")]
-        [Tooltip("")]
+        [Tooltip("Whether the attached player should be allowed to jump while hindered or not")]
         [SerializeField] private bool allowJumping = true;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether stamina is required to be able to jump while hindered or not.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Whether stamina is required to be able to jump while hindered or not.")]
         [SerializeField] private bool requireStamina;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether the hindrance region should act as quicksand or not.
         /// </summary>
+        /// <remarks><b>NOTE:</b> Requires a <c>Collider</c> with the <c>Gravel</c> tag to be under the region.</remarks>
         [Header("Quicksand")]
-        [Tooltip("")]
+        [Tooltip("Whether the hindrance region should act as quicksand or not. NOTE: Requires a Collider with the 'Gravel' tag to be under the region.")]
         [SerializeField] private bool sinkPlayer;
 
         /// <summary>
-        ///     TODO.
+        ///     Multiplier for the speed at which the player sinks.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Multiplier for the speed at which the player sinks.")]
         [SerializeField] private float sinkingSpeedMultiplier = 0.21f;
 
         /// <summary>
-        ///     TODO.
+        ///     <c>AnimationCurve</c> for the vertical distance that the player sinks.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("AnimationCurve for the vertical distance that the player sinks.")]
         [SerializeField] private AnimationCurve? playerSinkingCurveOverride;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether the player should be able to drown in the hinderance region or not.
         /// </summary>
+        /// <remarks><b>NOTE:</b> Not currently implemented.</remarks>
         [Header("Water")]
-        [Tooltip("")]
+        [Tooltip("Whether the player should be able to drown in the hinderance region or not. NOTE: Not currently implemented.")]
         [SerializeField] private bool drownPlayer;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether to display the underwater overlay or not.
         /// </summary>
-        [Tooltip("")]
+        /// <remarks><b>NOTE:</b> Not currently implemented.</remarks>
+        [Tooltip("Whether to display the underwater overlay or not. NOTE: Not currently implemented.")]
         [SerializeField] private bool waterOverlay;
 
         /// <summary>
-        ///     TODO.
+        ///     Callback invoked when a player begins to be hindered, with the player in question as parameter.
         /// </summary>
         [Header("Events")]
-        [Tooltip("")]
+        [Tooltip("Callback invoked when a player begins to be hindered, with the player in question as parameter.")]
         [SerializeField] private UnityEvent<PlayerControllerB> onHinderStart = new();
 
         /// <summary>
-        ///     TODO.
+        ///     Callback invoked after a player stops being hindered, with the player in question as parameter.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Callback invoked after a player stops being hindered, with the player in question as parameter.")]
         [SerializeField] private UnityEvent<PlayerControllerB> onHinderStop = new();
 
         /// <summary>
-        ///     TODO.
+        ///     Vanilla player sinking <c>AnimationCurve</c>.
         /// </summary>
         private AnimationCurve? defaultPlayerSinkingCurve;
 
         /// <summary>
-        ///     TODO.
+        ///     Set player sinking <c>AnimationCurve</c> to (approximately) the vanilla default.
         /// </summary>
-        public void Reset()
+        protected override void Reset()
         {
             // Vanilla player sinking curve.
             Keyframe[] defaultSinkingKeyframes = [new(0.0f, 0.0f, 5.4615f, 5.4615f, 0.0f, 0.3333f),
@@ -108,10 +113,13 @@ namespace itolib.Behaviours.Effects
 
             playerSinkingCurveOverride = new(defaultSinkingKeyframes);
             // ...
+
+            base.Reset();
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Attach if the player is alive.
+        ///     Detach if the player is dead.
         /// </summary>
         protected override void Awake()
         {
@@ -120,7 +128,7 @@ namespace itolib.Behaviours.Effects
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Obtain vanilla player sinking <c>AnimationCurve</c>.
         /// </summary>
         protected override void Start()
         {
@@ -130,14 +138,16 @@ namespace itolib.Behaviours.Effects
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle jumping without stamina while hindered.
         /// </summary>
         protected override void Update()
         {
             if (localPlayerAttached && attachedPlayer != null)
             {
+                // Check if player should be allowed to jump without stamina.
                 if (allowJumping && !requireStamina && attachedPlayer.isExhausted)
                 {
+                    // Set player as not exhausted, to allow them to jump.
                     attachedPlayer.isExhausted = false;
                 }
 
@@ -154,134 +164,188 @@ namespace itolib.Behaviours.Effects
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Attach player on the local client.
         /// </summary>
+        /// <param name="player">Player to attach.</param>
         public override void AttachPlayerLocal(PlayerControllerB player)
         {
             base.AttachPlayerLocal(player);
 
-            player.isMovementHindered++;
-            player.hinderedMultiplier *= hinderedMultiplier;
-
-            player.statusEffectAudio.enabled = !muteAudio;
-
-            if (sinkPlayer)
+            // Check if player was attached successfully.
+            if (attachedPlayer != null)
             {
-                if (playerSinkingCurveOverride != null && StartOfRound.Instance != null)
-                {
-                    StartOfRound.Instance.playerSinkingCurve = playerSinkingCurveOverride;
-                }
-
-                player.sourcesCausingSinking++;
-                player.sinkingSpeedMultiplier = sinkingSpeedMultiplier;
-            }
-            else if (drownPlayer || allowJumping)
-            {
-                player.isUnderwater = true;
-
-                if (drownPlayer)
-                {
-                    player.underwaterCollider = hindererCollider;
-                }
+                // Hinder player for all clients, unless not spawned or attaching locally.
+                HinderPlayer(player, stop: false);
             }
 
-            onHinderStart.Invoke(player);
-
-            if (IsSpawned)
-            {
-                HinderPlayerServerRpc(player);
-            }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Detach player on the local client.
         /// </summary>
         public override void DetachPlayerLocal()
         {
-            if (attachedPlayer == null)
+            // Check if player is attached.
+            if (attachedPlayer != null)
             {
-                return;
-            }
-
-            attachedPlayer.isMovementHindered--;
-            attachedPlayer.hinderedMultiplier /= hinderedMultiplier;
-
-            attachedPlayer.statusEffectAudio.enabled = true;
-
-            if (sinkPlayer)
-            {
-                if (playerSinkingCurveOverride != null && StartOfRound.Instance != null)
-                {
-                    StartOfRound.Instance.playerSinkingCurve = defaultPlayerSinkingCurve;
-                }
-
-                attachedPlayer.sourcesCausingSinking--;
-                attachedPlayer.sinkingSpeedMultiplier = 0.0f;
-            }
-            else if (drownPlayer || allowJumping)
-            {
-                attachedPlayer.isUnderwater = false;
-
-                if (drownPlayer)
-                {
-                    attachedPlayer.underwaterCollider = null;
-                }
-            }
-
-            onHinderStop.Invoke(attachedPlayer);
-
-            if (IsSpawned)
-            {
-                HinderPlayerServerRpc(attachedPlayer, stop: true);
+                // Stop hindering player for all clients, unless not spawned or attached locally.
+                HinderPlayer(attachedPlayer, stop: true);
             }
 
             base.DetachPlayerLocal();
         }
 
         /// <summary>
-        ///     Drains a player... Ayo?
+        ///     Hinder given player for all clients, unless not spawned or attaching locally.
         /// </summary>
-        /// <param name="drainAmount">Amount to drain from the attached player.</param>
-        public void DrainPlayer(float drainAmount)
+        /// <param name="player">Player to be hindered.</param>
+        /// <param name="stop">Whether to stop hindering the player or not.</param> 
+        private void HinderPlayer(PlayerControllerB player, bool stop)
         {
-            if (attachedPlayer == null || attachedPlayer.isExhausted || !attachedPlayer.IsLocalClient())
+            // Check if hindering the local client.
+            if (!player.IsLocalClient())
             {
                 return;
             }
 
-            attachedPlayer.sprintMeter = Mathf.Clamp(attachedPlayer.sprintMeter - drainAmount, 0.0f, 1.0f);
+            // Hinder player for the local client.
+            HinderPlayerLocal(player, stop);
+
+            if (IsSpawned) // TODO: Separate local field?
+            {
+                // Hinder player for all clients.
+                HinderPlayerServerRpc(player, stop);
+            }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Hinder given player on the server.
         /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="stop"></param>
+        /// <param name="playerReference">Network reference of the hindered player.</param>
+        /// <param name="stop">Whether to stop hindering the player or not.</param>
         [ServerRpc(RequireOwnership = false)]
-        private void HinderPlayerServerRpc(NetworkBehaviourReference playerReference, bool stop = false)
+        private void HinderPlayerServerRpc(NetworkBehaviourReference playerReference, bool stop)
         {
             HinderPlayerClientRpc(playerReference, stop);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Hinder given player on all clients.
         /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="stop"></param>
+        /// <param name="playerReference">Network reference of the hindered player.</param>
+        /// <param name="stop">Whether to stop hindering the player or not.</param>
         [ClientRpc]
-        private void HinderPlayerClientRpc(NetworkBehaviourReference playerReference, bool stop = false)
+        private void HinderPlayerClientRpc(NetworkBehaviourReference playerReference, bool stop)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
-                if (!stop)
-                {
-                    onHinderStart.Invoke(player);
-                }
-                else
-                {
-                    onHinderStop.Invoke(player);
-                }
+                HinderPlayerLocal(player, stop);
             }
+        }
+
+        /// <summary>
+        ///     Hinder given player on the local client.
+        /// </summary>
+        /// <param name="player">Player to be hindered.</param>
+        /// <param name="stop">Whether to stop hindering the player or not.</param> 
+        private void HinderPlayerLocal(PlayerControllerB player, bool stop)
+        {
+            if (!stop)
+            {
+                // Add hindrance source and multiplier.
+                player.isMovementHindered++;
+                player.hinderedMultiplier *= hinderedMultiplier;
+
+                // Enable or disable player status effect audio.
+                player.statusEffectAudio.enabled = !muteAudio;
+
+                // Check if player should be able to sink.
+                if (sinkPlayer)
+                {
+                    if (player.IsLocalClient() && playerSinkingCurveOverride != null && StartOfRound.Instance != null)
+                    {
+                        // Override vanilla player sinking curve while attached.
+                        StartOfRound.Instance.playerSinkingCurve = playerSinkingCurveOverride;
+                    }
+
+                    // Add sinking source and apply sinking speed multiplier.
+                    player.sourcesCausingSinking++;
+                    player.sinkingSpeedMultiplier = sinkingSpeedMultiplier;
+                }
+                else if (drownPlayer || allowJumping)
+                {
+                    // Set player as being underwater.
+                    player.isUnderwater = true; // Also needed to allow the player to jump while hindered.
+
+                    // Check if player should be able to drown.
+                    if (drownPlayer)
+                    {
+                        // Set player underwater collider to the specified collider.
+                        player.underwaterCollider = hindererCollider;
+
+                        // Check if water overlay should be displayed.
+                        if (waterOverlay)
+                        {
+
+                        }
+                    }
+                }
+
+                // Invoke hinder begin event.
+                onHinderStart.Invoke(player);
+            }
+            else
+            {
+                // Remove hindrance source and multiplier.
+                player.isMovementHindered--;
+                player.hinderedMultiplier /= hinderedMultiplier;
+
+                // Reenable player status effect audio.
+                player.statusEffectAudio.enabled = true;
+
+                if (sinkPlayer)
+                {
+                    if (player.IsLocalClient() && playerSinkingCurveOverride != null && StartOfRound.Instance != null)
+                    {
+                        // Restore vanilla player sinking curve after detaching.
+                        StartOfRound.Instance.playerSinkingCurve = defaultPlayerSinkingCurve;
+                    }
+
+                    // Remove sinking source and reset sinking speed multiplier.
+                    player.sourcesCausingSinking--;
+                    player.sinkingSpeedMultiplier = 0.0f;
+                }
+                else if (drownPlayer || allowJumping)
+                {
+                    // Set player as no longer underwater.
+                    player.isUnderwater = false;
+
+                    if (drownPlayer)
+                    {
+                        // Remove player underwater collider.
+                        player.underwaterCollider = null;
+                    }
+                }
+
+                // Invoke hinder stop event.
+                onHinderStop.Invoke(player);
+            }
+        }
+
+        /// <summary>
+        ///     Drains the attached player... <i>Ayo</i>?
+        /// </summary>
+        /// <param name="drainAmount">Amount to drain from the attached player.</param>
+        public void DrainPlayer(float drainAmount)
+        {
+            // Check if the local player is not attached, or is already exhausted.
+            if (!localPlayerAttached || attachedPlayer == null || attachedPlayer.isExhausted)
+            {
+                return;
+            }
+
+            // Subtract drain amount from the player's stamina.
+            attachedPlayer.sprintMeter = Mathf.Clamp(attachedPlayer.sprintMeter - drainAmount, 0.0f, 1.0f);
         }
     }
 }

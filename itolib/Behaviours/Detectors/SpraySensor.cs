@@ -9,221 +9,248 @@ using UnityEngine.Events;
 namespace itolib.Behaviours.Detectors
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a threshold for a certain number of sprays required to trigger something.
     /// </summary>
     [Serializable]
     public struct SprayThreshold
     {
         /// <summary>
-        ///     TODO.
+        ///     Number of sprays required to trigger this threshold.
         /// </summary>
         [Header("Spray Threshold")]
-        [Tooltip("")]
+        [Tooltip("Number of sprays required to trigger this threshold.")]
         [Min(1)]
         public int spraysRequired = 1;
 
         /// <summary>
-        ///     TODO.
+        ///     Callback invoked when the spray threshold is reached, with the number of sprays as parameter.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Callback invoked when the spray threshold is reached, with the number of sprays as parameter.")]
         public UnityEvent<int> onReachedThreshold = new();
 
         /// <summary>
-        ///     TODO.
+        ///     Callback invoked when a spray is detected below the spray threshold, with the number of sprays as parameter.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Callback invoked when a spray is detected below the spray threshold, with the number of sprays as parameter.")]
         public UnityEvent<int> onBelowThreshold = new();
 
         /// <summary>
-        ///     TODO.
+        ///     Callback invoked when a spray is detected above the spray threshold, with the number of sprays as parameter.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Callback invoked when a spray is detected above the spray threshold, with the number of sprays as parameter.")]
         public UnityEvent<int> onAboveThreshold = new();
 
         /// <summary>
-        ///     TODO.
+        ///     Whether the threshold should only trigger once or not.
         /// </summary>
-        [Tooltip("")]
+        /// <remarks><b>NOTE:</b> Makes <c>onAboveThreshold</c> event not be called.</remarks>
+        [Tooltip("Whether the threshold should only trigger once or not. NOTE: Makes 'onAboveThreshold' event not be called.")]
         public bool triggerOnce = false;
 
         /// <summary>
-        ///     TODO.
+        ///     Constructor for the struct type (needed to allow default parameter values).
         /// </summary>
         public SprayThreshold() { }
     }
 
     /// <summary>
-    ///     TODO.
+    ///     Detects an attached player's successful <c>SprayPaintItem</c> activation.
     /// </summary>
     public class SpraySensor : MovementSensor
     {
         /// <summary>
-        ///     TODO.
+        ///     List of thresholds for things to occur upon spraying a certain amount of times.
         /// </summary>
         [Header("Spray Sensor")]
-        [Tooltip("")]
+        [Tooltip("List of thresholds for things to occur upon spraying a certain amount of times.")]
         [SerializeField] private List<SprayThreshold> sprayThresholds = [];
 
         /// <summary>
-        ///     TODO.
+        ///     Whether spray paint spraying should be detected or not.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Whether spray paint spraying should be detected or not.")]
         [SerializeField] private bool allowSprayPaint = true;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether weed killer spraying should be detected or not.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Whether weed killer spraying should be detected or not.")]
         [SerializeField] private bool allowWeedKiller = true;
 
         /// <summary>
-        ///     TODO.
+        ///     Minimum angle required for the spray to be considered within line of sight, in degrees.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Minimum angle required for the spray to be considered within line of sight, in degrees.")]
         [Range(0.0f, 180.0f)]
         [SerializeField] private float sprayAngle = 45.0f;
 
         /// <summary>
-        ///     TODO.
+        ///     Maximum range for a spray to be detected.
         /// </summary>
-        [Tooltip("")]
-        [Min(0)]
-        [SerializeField] private int sprayRange = 2;
+        [Tooltip("Maximum range for a spray to be detected.")]
+        [Min(0.0f)]
+        [SerializeField] private float sprayRange = 2.0f;
 
         /// <summary>
-        ///     TODO.
+        ///     Maximum proximity range for a spray to be detected, regardless of where the player is looking at. Can be set to <c>-1</c> to disable.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Maximum proximity range for a spray to be detected, regardless of where the player is looking at. Can be set to '-1' to disable.")]
         [Min(0.0f)]
         [SerializeField] private float proximityRange = -1.0f;
 
         /// <summary>
-        ///     TODO.
+        ///     Callback invoked when a spray is successfully detected, with the player in question as parameter.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Callback invoked when a spray is successfully detected, with the player in question as parameter.")]
         [SerializeField] private UnityEvent<PlayerControllerB> onSprayPerformed = new();
 
         /// <summary>
-        ///     TODO.
+        ///     <c>LayerMask</c> for all layers that should block spray detection.
         /// </summary>
         [Space(10f)]
         [Header("Layer Mask")]
-        [Tooltip("")]
+        [Tooltip("LayerMask for all layers that should block spray detection.")]
         [SerializeField] private LayerMask layerMask;
 
         /// <summary>
-        ///     TODO.
+        ///     Total number of sprays that have been detected.
         /// </summary>
         private int timesSprayed;
 
         /// <summary>
-        ///     TODO.
+        ///     Set some default values for spraying purposes.
         /// </summary>
-        private void Reset()
+        protected override void Reset()
         {
+            // Attaching locally is recommended for multiple players to be able to spray.
             attachLocally = true;
             detachOnExit = true;
 
+            // Set player action to check for spraying.
             actionToTrigger = "ActivateItem";
+
+            // Hold action should be off for weed killer detection, but it could be useful for some spray paint shenanigans.
             holdAction = false;
 
+            // Set default weed killer spray layer mask.
             layerMask = LayerMask.GetMask("Default", "Room", "Foliage", "Colliders", "Terrain", "Vehicle");
+
+            base.Reset();
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle additional initialization.
         /// </summary>
         protected override void Start()
         {
+            // Sort thresholds by lowest to greatest number of sprays required.
             sprayThresholds.Sort((thresholdA, thresholdB) => thresholdB.spraysRequired - thresholdA.spraysRequired);
 
+            // Add spray performed function to the movement detected callback.
             onMovementDetected.AddListener(PerformSpray);
 
             base.Start();
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Trigger spray detection from an attached player.
         /// </summary>
-        /// <param name="player"></param>
+        /// <param name="player">Player whose spraying was detected.</param>
         private void PerformSpray(PlayerControllerB player)
         {
+            // Check if player is not the local client.
             if (player == null || !player.IsLocalClient())
             {
                 return;
             }
 
+            // Check if player is not holding an item.
             if (player.throwingObject || !player.isHoldingObject || player.currentlyHeldObjectServer == null)
             {
                 return;
             }
 
-            if (player.currentlyHeldObjectServer is not SprayPaintItem spray
-                || (!allowSprayPaint && !spray.isWeedKillerSprayBottle) || (!allowWeedKiller && spray.isWeedKillerSprayBottle))
+            // Check if the item being activated is neither spray paint nor weed killer, or the bottle is empty.
+            if (player.currentlyHeldObjectServer is not SprayPaintItem spray || (!allowSprayPaint && !spray.isWeedKillerSprayBottle)
+                || (!allowWeedKiller && spray.isWeedKillerSprayBottle) || spray.sprayCanTank <= 0.0f || spray.sprayCanShakeMeter <= 0.0f)
             {
                 return;
             }
 
-            if (spray.sprayCanTank > 0.0f && spray.sprayCanShakeMeter > 0.0f)
+            // Check if the player is within range and has unobstructed line of sight with the sensor.
+            if (player.HasLineOfSightToPosition(transform.position, sprayAngle, sprayRange, proximityRange, layerMask))
             {
-                if (player.HasLineOfSightToPosition(transform.position, sprayAngle, sprayRange, proximityRange, layerMask))
+                // Trigger spray detection on the local client.
+                PerformedSprayLocal(player);
+
+                if (IsSpawned) // TODO: Separate local field?
                 {
-                    PerformSprayLocal(player);
-                    PerformSprayServerRpc(player);
+                    // Send spray detection to the server.
+                    PerformedSprayServerRpc(player);
                 }
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Trigger spray detection on the server.
         /// </summary>
-        /// <param name="playerReference"></param>
+        /// <param name="playerReference">Network reference of the detected player.</param>
         [ServerRpc(RequireOwnership = false)]
-        private void PerformSprayServerRpc(NetworkBehaviourReference playerReference)
+        private void PerformedSprayServerRpc(NetworkBehaviourReference playerReference)
         {
-            PerformSprayClientRpc(playerReference);
+            // Trigger spray detection on all clients.
+            PerformedSprayClientRpc(playerReference);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Trigger spray detection on all clients.
         /// </summary>
-        /// <param name="playerReference"></param>
+        /// <param name="playerReference">Network reference of the detected player.</param>
         [ClientRpc]
-        private void PerformSprayClientRpc(NetworkBehaviourReference playerReference)
+        private void PerformedSprayClientRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
-                PerformSprayLocal(player);
+                // Trigger spray detection on the local client.
+                PerformedSprayLocal(player);
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Trigger spray detection on the local client.
         /// </summary>
-        private void PerformSprayLocal(PlayerControllerB player)
+        /// <param name="player">Player whose spraying was detected.</param>
+        private void PerformedSprayLocal(PlayerControllerB player)
         {
+            // Increment amount of times sprayed.
             timesSprayed++;
 
+            // Invoke spray performed callback, with the detected player as parameter.
             onSprayPerformed.Invoke(player);
 
+            // Check all spray thresholds.
             foreach (SprayThreshold sprayThreshold in sprayThresholds)
             {
                 if (timesSprayed < sprayThreshold.spraysRequired)
                 {
+                    // Invoke below threshold callback, with the number of spray as parameter.
                     sprayThreshold.onBelowThreshold.Invoke(timesSprayed);
                 }
 
                 if (timesSprayed == sprayThreshold.spraysRequired)
                 {
+                    // Invoke reached threshold callback, with the number of spray as parameter.
                     sprayThreshold.onReachedThreshold.Invoke(timesSprayed);
                 }
 
                 if (timesSprayed > sprayThreshold.spraysRequired)
                 {
+                    // Invoke above threshold callback, with the number of spray as parameter.
                     sprayThreshold.onAboveThreshold.Invoke(timesSprayed);
                 }
             }
 
+            // Remove any triggered thresholds set to trigger once.
             _ = sprayThresholds.RemoveAll(sprayThreshold => sprayThreshold.triggerOnce && timesSprayed >= sprayThreshold.spraysRequired);
         }
     }
