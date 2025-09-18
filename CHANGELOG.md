@@ -1,8 +1,25 @@
 # Changelog
 
+## [v0.4.1]
+
+Added a few comments and tooltips, fixed some incompatibilities and minor bugs, did a bit of refactoring and tweaking.
+
+- Added comments and tooltips for all types that inherit `PlayerAttachable`.
+  - Also corrected some erroneous and/or outdated tooltips.
+- Added some fields to configure camera clamping for `PlayerSeater`.
+  - Players are also now teleported to the intended seat position, instead of relying on other means (e.g. `PlatformGrabbable`) to reposition them.
+  - Tooltips for items are now properly hidden when hiding a player's held item, too.
+- Made range parameter for `SpraySensor` and `FearInducer` a floating point number instead of an integer.
+- Made it so if a player action is not found for whatever reason (e.g. for `MovementSensor`), it'll throw a warning and disable the script instead of spamming errors.
+  - Also _maybe_ fixed not being able to find the player action in the first place, though I haven't been able to reproduce this issue so I can't confirm.
+- Fixed error thrown in `ScrapSensor` when a scrap item entered (or was created inside) the region before being spawned.
+- Fixed `WeatherConditional` compatibility with the latest [CrowdControl](https://thunderstore.io/c/lethal-company/p/CrowdControl/CrowdControl_LethalCompany) versions.
+- Fixed `SpecificDoorway` incompatibility with [Loadstone](https://thunderstore.io/c/lethal-company/p/AdiBTW/Loadstone).
+  - Changed how `specificDoorwayActive` is toggled to not depend on `PauseBetweenRooms` being greater than zero.
+
 ## [v0.4.0]
 
-Added a couple new spawners, several useful fields and methods, some small fixes; also did some internal refactoring a few scripts.
+Added a couple new spawners, several useful fields and methods, some small fixes; also did some internal refactoring for a few scripts.
 
 - Added `EnemySpawner`, to spawn any number of specified enemies on demand.
 - Added `HiveSpawner`, for spawning Circuit Bees at specific locations.
