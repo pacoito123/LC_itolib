@@ -68,14 +68,6 @@ namespace itolib.Behaviours.Helpers
         /// <summary>
         ///     TODO.
         /// </summary>
-        private void Awake()
-        {
-            DoorwayPatch.specificDoorwayActive = true;
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         /// <param name="dungeon"></param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
