@@ -229,24 +229,30 @@ namespace itolib.Behaviours.Effects
         }
 
         /// <summary>
-        ///     Detach player for all clients, unless not spawned or detaching locally.
+        ///     Attach the given player on the server.
         /// </summary>
-        public virtual void DetachPlayer()
+        /// <param name="playerReference">Network reference of the player to attach.</param>
+        [ServerRpc(RequireOwnership = false)]
+        private void AttachPlayerServerRpc(NetworkBehaviourReference playerReference)
         {
-            // Check if attached player is the local client.
-            if (attachedPlayer == null || !attachedPlayer.IsLocalClient())
+            if (attachedPlayer == null)
             {
-                return;
+                // Attach the player on all clients.
+                AttachPlayerClientRpc(playerReference);
             }
+        }
 
-            // Detach attached player on the local client.
-            DetachPlayerLocal();
-
-            // Check if detaching should be sent to all other clients.
-            if (IsSpawned && !attachLocally)
+        /// <summary>
+        ///     Attach the given player on all clients.
+        /// </summary>
+        /// <param name="playerReference">Network reference of the player to attach.</param>
+        [ClientRpc]
+        private void AttachPlayerClientRpc(NetworkBehaviourReference playerReference)
+        {
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
-                // Detach attached player on all clients.
-                DetachPlayerServerRpc();
+                // Attach the player on the local client.
+                AttachPlayerLocal(player);
             }
         }
 
@@ -299,50 +305,24 @@ namespace itolib.Behaviours.Effects
         }
 
         /// <summary>
-        ///     Detach player on the local client.
+        ///     Detach player for all clients, unless not spawned or detaching locally.
         /// </summary>
-        public virtual void DetachPlayerLocal()
+        public virtual void DetachPlayer()
         {
-            if (attachedPlayer != null)
+            // Check if attached player is the local client.
+            if (attachedPlayer == null || !attachedPlayer.IsLocalClient())
             {
-                // Invoke detach event.
-                onDetach.Invoke(attachedPlayer);
+                return;
             }
 
-            // Remove attached player.
-            attachedPlayer = null;
-            attachedPlayerTransform = null!;
-            localPlayerAttached = false;
+            // Detach attached player on the local client.
+            DetachPlayerLocal();
 
-            // Disable update loop.
-            enabled = false;
-        }
-
-        /// <summary>
-        ///     Attach the given player on the server.
-        /// </summary>
-        /// <param name="playerReference">Network reference of the player to attach.</param>
-        [ServerRpc(RequireOwnership = false)]
-        private void AttachPlayerServerRpc(NetworkBehaviourReference playerReference)
-        {
-            if (attachedPlayer == null)
+            // Check if detaching should be sent to all other clients.
+            if (IsSpawned && !attachLocally)
             {
-                // Attach the player on all clients.
-                AttachPlayerClientRpc(playerReference);
-            }
-        }
-
-        /// <summary>
-        ///     Attach the given player on all clients.
-        /// </summary>
-        /// <param name="playerReference">Network reference of the player to attach.</param>
-        [ClientRpc]
-        private void AttachPlayerClientRpc(NetworkBehaviourReference playerReference)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player))
-            {
-                // Attach the player on the local client.
-                AttachPlayerLocal(player);
+                // Detach attached player on all clients.
+                DetachPlayerServerRpc();
             }
         }
 
@@ -370,6 +350,26 @@ namespace itolib.Behaviours.Effects
         {
             // Detach the player on the local client.
             DetachPlayerLocal();
+        }
+
+        /// <summary>
+        ///     Detach player on the local client.
+        /// </summary>
+        public virtual void DetachPlayerLocal()
+        {
+            if (attachedPlayer != null)
+            {
+                // Invoke detach event.
+                onDetach.Invoke(attachedPlayer);
+            }
+
+            // Remove attached player.
+            attachedPlayer = null;
+            attachedPlayerTransform = null!;
+            localPlayerAttached = false;
+
+            // Disable update loop.
+            enabled = false;
         }
 
         /// <summary>
