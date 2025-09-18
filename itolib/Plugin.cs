@@ -14,11 +14,11 @@ namespace itolib
     ///     Wondrous gizmos and gadgets for the restless mind.
     /// </summary>
     [BepInDependency(LethalLevelLoader.Plugin.ModGUID, LethalLevelLoader.Plugin.ModVersion)]
-    [BepInDependency(LethalCompanyTestMod.TestMod.modGUID, BepInDependency.DependencyFlags.SoftDependency)] // Crowd Control...
-    [BepInDependency(FacilityMeltdown.MeltdownPlugin.modGUID, BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency(PizzaTowerEscapeMusic.Plugin.GUID, BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency(TVLoader.TVLoaderPlugin.MyGUID, BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency(WeatherRegistry.PluginInfo.PLUGIN_GUID, BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("WarpWorld.CrowdControl", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("me.loaforc.facilitymeltdown", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("bgn.pizzatowerescapemusic", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("rattenbonkers.TVLoader", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("mrov.WeatherRegistry", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, VERSION)]
     public class Plugin : BaseUnityPlugin
     {

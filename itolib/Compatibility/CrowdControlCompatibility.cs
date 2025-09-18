@@ -1,18 +1,18 @@
+using BepinControl;
 using HarmonyLib;
-using LethalCompanyTestMod;
 using System;
 using System.Runtime.CompilerServices;
 
 namespace itolib.Compatibility
 {
     /// <summary>
-    ///     Compatibility between WeatherConditional and CrowdControl.
+    ///     Compatibility between <c>WeatherConditional</c> and <c>CrowdControl</c>.
     /// </summary>
     [HarmonyPatch]
     internal sealed class CrowdControlCompatibility
     {
         /// <summary>
-        ///     Whether CrowdControl is present in the BepInEx Chainloader or not.
+        ///     Whether <c>CrowdControl</c> is present in the BepInEx Chainloader or not.
         /// </summary>
         public static bool Enabled
         {
@@ -27,13 +27,10 @@ namespace itolib.Compatibility
 
         public static LevelWeatherType CurrentWeather { get; internal set; }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         internal static event Action<LevelWeatherType, LevelWeatherType>? OnCCWeatherChanged;
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        [HarmonyPatch(typeof(TestMod), nameof(TestMod.CrowdControlCommands))]
+        [HarmonyPatch(typeof(LethalCompanyControl), nameof(LethalCompanyControl.CrowdControlCommands))]
         [HarmonyPostfix]
         internal static void CCWeatherCheck()
         {
