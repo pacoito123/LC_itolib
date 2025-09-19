@@ -17,7 +17,7 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        public bool CurrentState { get; private set; }
+        public bool CurrentState { get; private set; } // TODO: Replace with a NetworkVariable.
 
         /// <summary>
         ///     TODO.
@@ -118,6 +118,9 @@ namespace itolib.Behaviours.Events
                 return;
             }
 
+            // TODO: Replace with a NetworkVariable.
+            CurrentState = !CurrentState;
+
             PerformToggleLocal(CurrentState);
 
             if (IsSpawned)
@@ -157,7 +160,7 @@ namespace itolib.Behaviours.Events
         /// <param name="state"></param>
         private void PerformToggleLocal(bool state)
         {
-            CurrentState = !state;
+            CurrentState = state;
 
             if (CurrentState)
             {

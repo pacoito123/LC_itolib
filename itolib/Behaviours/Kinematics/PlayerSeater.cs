@@ -276,7 +276,7 @@ namespace itolib.Behaviours.Kinematics
         {
             if (!unsit)
             {
-                attachedPlayerTransform.position = targetTransform.position;
+                player.transform.position = targetTransform.position;
                 // player.syncFullCameraRotation = player.gameplayCamera.transform.localEulerAngles;
 
                 // Uncrouch player, should they happen to be crouching.

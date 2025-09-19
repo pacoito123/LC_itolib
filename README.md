@@ -47,7 +47,7 @@ A proper write-up and documentation for all components and their intended usage 
   * **InteractLockable:** A `DoorLock` implementation that allows custom tooltips that don't get overwritten when using a key. Doesn't inherit from `InteractTrigger` but is used alongside them for locked doors.
   * **InteractPurchasable:** An `InteractTrigger` that can spawn a prefab or run an event, but _for a fee_.
   * **InteractSeatable:** An `InteractTrigger` that acts like a Cruiser seat, but requiring a specific button press to get back up.
-    * **NOTE:** Can be replaced with `PlayerSeater` + `PlatformGrabbable` for functionally the same effect, without the vanilla bug where two players get softlocked if they sit down at the same time.
+    * **NOTE:** Can be replaced with `PlayerSeater` for functionally the same effect, without the vanilla bug where two players get softlocked if they sit down at the same time.
   * **InteractTalkable:** An `InteractTrigger` that can transmit a player's voice over the Walkie while held; though only for one-way communication.
 * **Events:**
   * **DelayedEvent:** An event that gets invoked after a given interval, either continuously or only once (until re-enabled).

@@ -18,6 +18,7 @@ Added a few comments and tooltips, fixed some incompatibilities and minor bugs, 
 - Fixed `WeatherConditional` compatibility with the latest [CrowdControl](https://thunderstore.io/c/lethal-company/p/CrowdControl/CrowdControl_LethalCompany) versions.
 - Fixed `SpecificDoorway` incompatibility with [Loadstone](https://thunderstore.io/c/lethal-company/p/AdiBTW/Loadstone).
   - Changed how `specificDoorwayActive` is toggled to not depend on `PauseBetweenRooms` being greater than zero.
+- Fixed `ToggleEvent` not syncing properly between clients.
 
 ## [v0.4.0]
 
