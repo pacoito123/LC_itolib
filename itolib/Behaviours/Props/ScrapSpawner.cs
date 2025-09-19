@@ -1,5 +1,6 @@
 using itolib.Behaviours.Helpers;
 using itolib.Behaviours.Networking;
+using itolib.Compatibility;
 using itolib.Extensions;
 using itolib.Interfaces;
 using itolib.Structs;
@@ -185,6 +186,13 @@ namespace itolib.Behaviours.Props
                 if (extendedItem != null)
                 {
                     return extendedItem.Item.spawnPrefab.GetComponent<NetworkObject>();
+                }
+
+                if (DawnLibCompatibility.Enabled)
+                {
+                    Item? dawnItem = DawnLibCompatibility.GetDawnItem(itemToSpawn.name);
+
+                    return (dawnItem != null) ? dawnItem.spawnPrefab.GetComponent<NetworkObject>() : null;
                 }
             }
 

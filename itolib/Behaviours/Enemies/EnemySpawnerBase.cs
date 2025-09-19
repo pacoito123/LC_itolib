@@ -1,4 +1,5 @@
 using itolib.Behaviours.Networking;
+using itolib.Compatibility;
 using itolib.Extensions;
 using itolib.Structs;
 using LethalLevelLoader;
@@ -86,7 +87,19 @@ namespace itolib.Behaviours.Enemies
             ExtendedEnemyType? extendedEnemy = PatchedContent.ExtendedEnemyTypes.Find(extendedEnemy =>
                 extendedEnemy.EnemyType.name.CompareOrdinal(enemyToSpawn.name));
 
-            return extendedEnemy != null ? extendedEnemy.EnemyType.enemyPrefab.GetComponent<NetworkObject>() : null;
+            if (extendedEnemy != null)
+            {
+                return extendedEnemy.EnemyType.enemyPrefab.GetComponent<NetworkObject>();
+            }
+
+            if (DawnLibCompatibility.Enabled)
+            {
+                EnemyType? dawnEnemy = DawnLibCompatibility.GetDawnEnemyType(enemyToSpawn.name);
+
+                return (dawnEnemy != null) ? dawnEnemy.enemyPrefab.GetComponent<NetworkObject>() : null;
+            }
+
+            return null;
         }
     }
 }

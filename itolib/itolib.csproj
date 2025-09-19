@@ -55,6 +55,7 @@
         <PackageReference Include="LethalCompany.GameLibs.Steam" Version="70.0.0-ngd.0" />
         <PackageReference Include="IAmBatby.LethalLevelLoader" Version="1.4.*" Publicize="true" />
 
+        <PackageReference Include="TeamXiaolan.DawnLib" Version="0.1.0" />
         <PackageReference Include="mrov.WeatherRegistry" Version="0.7.*" />
 
         <PackageReference Include="CrowdControl-CrowdControl_LethalCompany" Version="1.1.*" Publicize="true"/>

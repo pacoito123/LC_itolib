@@ -15,6 +15,7 @@ namespace itolib
     /// </summary>
     [BepInDependency(LethalLevelLoader.Plugin.ModGUID, LethalLevelLoader.Plugin.ModVersion)]
     [BepInDependency("WarpWorld.CrowdControl", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("com.github.teamxiaolan.dawnlib", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("me.loaforc.facilitymeltdown", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("bgn.pizzatowerescapemusic", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("rattenbonkers.TVLoader", BepInDependency.DependencyFlags.SoftDependency)]

@@ -9,9 +9,11 @@ Added a few comments and tooltips, fixed some incompatibilities and minor bugs, 
 - Added some fields to configure camera clamping for `PlayerSeater`.
   - Players are also now teleported to the intended seat position, instead of relying on other means (e.g. `PlatformGrabbable`) to reposition them.
   - Tooltips for items are now properly hidden when hiding a player's held item, too.
-- Made range parameter for `SpraySensor` and `FearInducer` a floating point number instead of an integer.
+- Added (basic) support for `ScrapSpawner` and `EnemySpawner` spawning items and enemies added through [DawnLib](https://thunderstore.io/c/lethal-company/p/TeamXiaolan/DawnLib).
+  - Only does a name comparison, will likely add namespace searching and tag matching at some point in the near future.
 - Made it so if a player action is not found for whatever reason (e.g. for `MovementSensor`), it'll throw a warning and disable the script instead of spamming errors.
   - Also _maybe_ fixed not being able to find the player action in the first place, though I haven't been able to reproduce this issue so I can't confirm.
+- Made range parameter for `SpraySensor` and `FearInducer` a floating point number instead of an integer.
 - Fixed error thrown in `ScrapSensor` when a scrap item entered (or was created inside) the region before being spawned.
 - Fixed `WeatherConditional` compatibility with the latest [CrowdControl](https://thunderstore.io/c/lethal-company/p/CrowdControl/CrowdControl_LethalCompany) versions.
 - Fixed `SpecificDoorway` incompatibility with [Loadstone](https://thunderstore.io/c/lethal-company/p/AdiBTW/Loadstone).
