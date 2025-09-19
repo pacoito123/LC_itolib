@@ -54,23 +54,17 @@
         <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" />
         <PackageReference Include="LethalCompany.GameLibs.Steam" Version="70.0.0-ngd.0" />
         <PackageReference Include="IAmBatby.LethalLevelLoader" Version="1.4.*" Publicize="true" />
+
         <PackageReference Include="mrov.WeatherRegistry" Version="0.7.*" />
-        <PackageReference Include="mrov.MrovLib" Version="0.3.*" />
-        <Reference Include="CrowdControl" Publicize="true">
-            <HintPath>managed\CrowdControl.dll</HintPath>
-        </Reference>
-        <Reference Include="FacilityMeltdown" Publicize="true">
-            <HintPath>managed\FacilityMeltdown.dll</HintPath>
-        </Reference>
+
+        <PackageReference Include="CrowdControl-CrowdControl_LethalCompany" Version="1.1.*" Publicize="true"/>
+        <PackageReference Include="loaforc-FacilityMeltdown" Version="2.7.*" Publicize="true"/>
+        <PackageReference Include="BGN-PizzaTowerEscapeMusic" Version="2.4.*" Publicize="true"/>
+        <PackageReference Include="Rattenbonkers-TVLoader" Version="1.1.*" Publicize="true"/>
+
         <!-- <Reference Include="LethalLevelLoader" Publicize="true">
             <HintPath>managed\LethalLevelLoader.dll</HintPath>
         </Reference> -->
-        <Reference Include="PizzaTowerEscapeMusic" Publicize="true">
-            <HintPath>managed\PizzaTowerEscapeMusic.dll</HintPath>
-        </Reference>
-        <Reference Include="TVLoader" Publicize="true">
-            <HintPath>managed\TVLoader.dll</HintPath>
-        </Reference>
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
