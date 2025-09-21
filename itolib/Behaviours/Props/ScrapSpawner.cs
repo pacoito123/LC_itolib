@@ -108,7 +108,7 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [SerializeField] private bool applyScrapMultiplier = true;
+        [SerializeField] protected bool applyScrapMultiplier = true;
 
         /// <summary>
         ///     TODO.
