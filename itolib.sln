@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "itolib", "itolib\itolib.csproj", "{2DC60A9D-F44B-4B06-8A37-9B05D6D2CAC8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "itolib", "itolib\itolib.csproj", "{56F8D2E5-B018-4615-A551-E6F9606B7586}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "itolib.editor", "itolib-editor\itolib.editor.csproj", "{C2A15241-BECF-42C0-9436-0D3F65049C1F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +10,13 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2DC60A9D-F44B-4B06-8A37-9B05D6D2CAC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2DC60A9D-F44B-4B06-8A37-9B05D6D2CAC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2DC60A9D-F44B-4B06-8A37-9B05D6D2CAC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2DC60A9D-F44B-4B06-8A37-9B05D6D2CAC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56F8D2E5-B018-4615-A551-E6F9606B7586}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56F8D2E5-B018-4615-A551-E6F9606B7586}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56F8D2E5-B018-4615-A551-E6F9606B7586}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56F8D2E5-B018-4615-A551-E6F9606B7586}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2A15241-BECF-42C0-9436-0D3F65049C1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2A15241-BECF-42C0-9436-0D3F65049C1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2A15241-BECF-42C0-9436-0D3F65049C1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2A15241-BECF-42C0-9436-0D3F65049C1F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
