@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "itolib", "itolib\itolib.csproj", "{56F8D2E5-B018-4615-A551-E6F9606B7586}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "itolib.editor", "itolib-editor\itolib.editor.csproj", "{C2A15241-BECF-42C0-9436-0D3F65049C1F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "itolib.editor", "itolib.editor\itolib.editor.csproj", "{C2A15241-BECF-42C0-9436-0D3F65049C1F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

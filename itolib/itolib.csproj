@@ -55,7 +55,7 @@
         <PackageReference Include="LethalCompany.GameLibs.Steam" Version="70.0.0-ngd.0" />
         <PackageReference Include="IAmBatby.LethalLevelLoader" Version="1.4.*" Publicize="true" />
 
-        <PackageReference Include="TeamXiaolan.DawnLib" Version="0.1.0" />
+        <PackageReference Include="TeamXiaolan.DawnLib" Version="0.1.*" />
         <PackageReference Include="mrov.WeatherRegistry" Version="0.7.*" />
 
         <PackageReference Include="CrowdControl-CrowdControl_LethalCompany" Version="1.1.*" Publicize="true"/>
@@ -76,7 +76,11 @@
         <None Include="../LICENSE" Pack="true" PackagePath="$(PackageLicenseFile)" />
     </ItemGroup>
 
-    <Target Name="NetcodePatch" AfterTargets="PostBuildEvent">
+    <!-- <Target Name="NetcodePatch" AfterTargets="PostBuildEvent">
         <Exec Command="netcode-patch &quot;$(TargetPath)&quot; @(ReferencePathWithRefAssemblies->'&quot;%(Identity)&quot;', ' ')" />
-    </Target>
+    </Target> -->
+    <Sdk Name="Evaisa.NetcodePatcher.MSBuild" Version="4.3.0" />
+    <ItemGroup>
+        <NetcodePatch Include="$(TargetPath)" />
+    </ItemGroup>
 </Project>
