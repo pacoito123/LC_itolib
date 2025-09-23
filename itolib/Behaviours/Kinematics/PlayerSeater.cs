@@ -128,6 +128,11 @@ namespace itolib.Behaviours.Kinematics
         private readonly int stopAnimationID = Animator.StringToHash("SA_stopAnimation");
 
         /// <summary>
+        ///     Hash of the trigger parameter ..
+        /// </summary>
+        private readonly int notInSpecialAnimID = Animator.StringToHash("notInSpecialAnim");
+
+        /// <summary>
         ///     Hash of the bool parameter to toggle the player's crouching animation.
         /// </summary>
         private readonly int crouchingID = Animator.StringToHash("crouching");
@@ -276,7 +281,7 @@ namespace itolib.Behaviours.Kinematics
         {
             if (!unsit)
             {
-                player.transform.position = targetTransform.position;
+                attachedPlayerTransform.position = targetTransform.position;
                 // player.syncFullCameraRotation = player.gameplayCamera.transform.localEulerAngles;
 
                 // Uncrouch player, should they happen to be crouching.
@@ -357,8 +362,12 @@ namespace itolib.Behaviours.Kinematics
                     }
                 }
 
-                // Reset the unseating player's animations.
-                player.playerBodyAnimator.SetTrigger(stopAnimationID);
+                // Check if player is in a sitting animation.
+                if (player.playerBodyAnimator.GetCurrentAnimatorStateInfo(5).tagHash == notInSpecialAnimID)
+                {
+                    // Reset the unseating player's animations.
+                    player.playerBodyAnimator.SetTrigger(stopAnimationID);
+                }
 
                 // Invoke unseating event.
                 onPlayerUnsit.Invoke(player);
