@@ -1,6 +1,7 @@
 using DunGen;
 using HarmonyLib;
 using itolib.Behaviours.Helpers;
+using System.Reflection;
 
 namespace itolib.Patches
 {
@@ -8,6 +9,15 @@ namespace itolib.Patches
     internal sealed class DoorwayPatch
     {
         internal static bool? specificDoorwayActive;
+
+        [HarmonyPrepare]
+        private static void PrepareDoorwayPatch(MethodBase original)
+        {
+            if (original == null)
+            {
+                DungeonGenerator.OnAnyDungeonGenerationStatusChanged += ResetSpecificDoorwayStatus;
+            }
+        }
 
         [HarmonyPatch(typeof(DoorwayPairFinder), nameof(DoorwayPairFinder.IsValidDoorwayPairing))]
         [HarmonyPostfix]
@@ -71,6 +81,14 @@ namespace itolib.Patches
             }
 
             return true;
+        }
+
+        private static void ResetSpecificDoorwayStatus(DungeonGenerator _, GenerationStatus status)
+        {
+            if (status is GenerationStatus.NotStarted)
+            {
+                specificDoorwayActive = null;
+            }
         }
     }
 }
