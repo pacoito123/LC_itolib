@@ -1,5 +1,17 @@
 # Changelog
 
+## [v0.4.2]
+
+Added a new spawner, fixed a couple things.
+
+- Added `GiftSpawner`, for spawning (rigged) vanilla presents.
+  - Item inside the gift can be randomly selected from a weighted list.
+  - Minimum and maximum scrap values for the item inside the gift can be overridden.
+  - Gift opening audio and poof particle can be overridden, too!
+- Fixed `PlayerSeater` breaking player sitting under certain circumstances.
+  - Now actually checking if the player is in a special animation before setting the `SA_stopAnimation` trigger.
+- Fixed `SpecificDoorway` not actually working properly...
+
 ## [v0.4.1]
 
 Added a few comments and tooltips, fixed some incompatibilities and minor bugs, did a bit of refactoring and tweaking.
