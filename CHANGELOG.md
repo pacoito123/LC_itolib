@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.4.3]
+
+Readded a small fix I undid by accident.
+
+- Fixed `PlayerSeater` erroring out for clients other than the player sitting down.
+
 ## [v0.4.2]
 
 Added a new spawner, fixed a couple things.

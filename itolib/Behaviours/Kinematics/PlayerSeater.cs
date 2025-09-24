@@ -203,7 +203,7 @@ namespace itolib.Behaviours.Kinematics
             if (attachedPlayer != null)
             {
                 // Sit player down for all clients, unless not spawned or attaching locally.
-                PlayerSit(player, unsit: false);
+                PlayerSit(attachedPlayer, unsit: false);
             }
         }
 
@@ -281,7 +281,7 @@ namespace itolib.Behaviours.Kinematics
         {
             if (!unsit)
             {
-                attachedPlayerTransform.position = targetTransform.position;
+                player.transform.position = targetTransform.position;
                 // player.syncFullCameraRotation = player.gameplayCamera.transform.localEulerAngles;
 
                 // Uncrouch player, should they happen to be crouching.
