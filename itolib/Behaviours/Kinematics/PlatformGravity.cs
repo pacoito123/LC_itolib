@@ -1,6 +1,4 @@
 using GameNetcodeStuff;
-using itolib.Extensions;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace itolib.Behaviours.Kinematics
@@ -60,45 +58,12 @@ namespace itolib.Behaviours.Kinematics
         ///     TODO.
         /// </summary>
         /// <param name="player"></param>
-        public void CancelPlayerMomentum(PlayerControllerB player)
+        public static void CancelPlayerMomentum(PlayerControllerB player)
         {
             if (player.IsOwner)
             {
-                CancelPlayerMomentumLocal(player);
-                CancelPlayerMomentumServerRpc(player);
+                player.transform.SetParent(null);
             }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        [ServerRpc(RequireOwnership = false)]
-        public void CancelPlayerMomentumServerRpc(NetworkBehaviourReference playerReference)
-        {
-            CancelPlayerMomentumClientRpc(playerReference);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        [ClientRpc]
-        public void CancelPlayerMomentumClientRpc(NetworkBehaviourReference playerReference)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                CancelPlayerMomentumLocal(player);
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="player"></param>
-        public void CancelPlayerMomentumLocal(PlayerControllerB player)
-        {
-            player.transform.SetParent(null);
         }
     }
 }

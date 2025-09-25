@@ -1,6 +1,6 @@
 {
     "name": "itolib",
-    "version_number": "0.4.3",
+    "version_number": "0.4.4",
     "website_url": "https://github.com/pacoito123/LC_itolib",
     "description": "[v72] Wondrous gizmos and gadgets for the restless mind.",
     "dependencies": [

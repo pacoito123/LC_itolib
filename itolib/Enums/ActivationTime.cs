@@ -3,39 +3,39 @@ using UnityEngine;
 namespace itolib.Enums
 {
     /// <summary>
-    ///     TODO.
+    ///     Valid activation times for a class implementing `IActivationScript`.
     /// </summary>
     public enum ActivationTime
     {
         /// <summary>
-        ///     TODO.
+        ///     Activate immediately, as soon as possible.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Activate immediately, as soon as possible.")]
         Immediate = -1,
         /// <summary>
-        ///     TODO.
+        ///     Activate once the <c>Dungeon</c> finishes generating.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Activate once the Dungeon finishes generating.")]
         DungeonComplete,
         /// <summary>
-        ///     TODO.
+        ///     Activate right before scrap begins to spawn.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Activate right before scrap begins to spawn.")]
         ScrapSpawn,
         /// <summary>
-        ///     TODO.
+        ///     Activate right before map objects (hazards) begin to spawn.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Activate right before map objects (hazards) begin to spawn.")]
         HazardSpawn,
         /// <summary>
-        ///     TODO.
+        ///     Activate once the round begins proper.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Activate once the round begins proper.")]
         StartOfRound,
         /// <summary>
-        ///     TODO.
+        ///     Activate manually.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Activate manually.")]
         Manual
     }
 }

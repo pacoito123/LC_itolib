@@ -1,5 +1,17 @@
 # Changelog
 
+## [v0.4.4]
+
+Added a new sensor, did some other small things, fixed Doorway stuff (again).
+
+- Added `ShotgunSensor`, for detecting if the object is shot at by a player using a Shotgun.
+  - Works by using the same principles as `SpraySensor`, so it also doesn't hook into any actual `ShotgunItem` code.
+  - Will likely add compatibility with modded ranged weapons at some point, too.
+- Added event callback to `IEventfulItem` for reacting to being placed on a `DepositItemsDesk`.
+- Added a few comments and tooltips to `ItemGrabbable`, but it's not fully done yet.
+- Fixed `SpecificDoorway` not working properly, but _actually_ this time...
+- Removed some networking stuff from `PlatformGravity` that wasn't doing anything, since `PlayerPhysicsRegions` are not `NetworkBehaviours`.
+
 ## [v0.4.3]
 
 Readded a small fix I undid by accident.
@@ -93,7 +105,7 @@ Couple small improvements and fixes.
 
 Did a couple changes, I think...
 
-- Added `SpraySensor`, for detecting if an object is being sprayed with Spray Paint, Weed Killer, or any other item that uses or inherits `SprayPaintItem`.
+- Added `SpraySensor`, for detecting if the object is being sprayed with Spray Paint, Weed Killer, or any other item that uses or inherits `SprayPaintItem`.
   - Multiple spray 'treshholds' can be defined, each with event callbacks, to have stuff happen depending on the number of times sprayed (e.g. to have something happen after 3 sprays specifically).
   - Does not actually hook into any `SprayPaintItem` code, so it should be compatible with anything that modifies it (e.g. [BetterSprayPaint](https://thunderstore.io/c/lethal-company/p/taffyko/BetterSprayPaint)).
 - Added `FearInducer`, which increases a player's fear level and plays the fear effect when looked at.

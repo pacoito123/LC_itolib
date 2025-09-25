@@ -1,6 +1,7 @@
 using DunGen;
 using HarmonyLib;
 using itolib.Behaviours.Helpers;
+using LethalLevelLoader;
 using System.Reflection;
 
 namespace itolib.Patches
@@ -15,7 +16,7 @@ namespace itolib.Patches
         {
             if (original == null)
             {
-                DungeonGenerator.OnAnyDungeonGenerationStatusChanged += ResetSpecificDoorwayStatus;
+                DungeonManager.GlobalDungeonEvents.onBeforeDungeonGenerate.AddListener(() => specificDoorwayActive = null);
             }
         }
 
@@ -36,7 +37,7 @@ namespace itolib.Patches
                 {
                     foreach (DoorwayProxy previousProxy in previousTile.UsedDoorways)
                     {
-                        if (previousProxy != a && previousProxy.DoorwayComponent is not null and SpecificDoorway previousDoorway
+                        if (previousProxy != a && previousProxy.DoorwayComponent != null && previousProxy.DoorwayComponent is SpecificDoorway previousDoorway
                             && previousDoorway.AllowSwap && previousDoorway.DoorwayType == doorwayA.DoorwayType)
                         {
                             __result = false;
@@ -81,14 +82,6 @@ namespace itolib.Patches
             }
 
             return true;
-        }
-
-        private static void ResetSpecificDoorwayStatus(DungeonGenerator _, GenerationStatus status)
-        {
-            if (status is GenerationStatus.NotStarted)
-            {
-                specificDoorwayActive = null;
-            }
         }
     }
 }

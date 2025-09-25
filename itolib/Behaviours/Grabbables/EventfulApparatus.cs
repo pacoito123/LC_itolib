@@ -1,6 +1,7 @@
 using GameNetcodeStuff;
 using itolib.Behaviours.Helpers;
 using itolib.Compatibility;
+using itolib.Extensions;
 using itolib.Interfaces;
 using LethalLevelLoader;
 using System;
@@ -319,6 +320,12 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        [field: Tooltip("")]
+        [field: SerializeField] public UnityEvent OnReactToSellCounter { get; set; } = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public Action? FallWithCurveOverride { get; set; }
 
         /// <summary>
@@ -337,32 +344,6 @@ namespace itolib.Behaviours.Grabbables
             }
 
             base.Start();
-
-            OnDiscardEarly.AddListener(() =>
-            {
-                if (playerHeldBy != null)
-                {
-                    playerHeldBy.equippedUsableItemQE = false;
-                    isBeingUsed = false;
-                }
-            });
-
-            OnEquip.AddListener(() =>
-            {
-                if (playerHeldBy != null)
-                {
-                    playerHeldBy.equippedUsableItemQE = true;
-                }
-            });
-
-            OnPocketEarly.AddListener(() =>
-            {
-                if (IsOwner && playerHeldBy != null)
-                {
-                    playerHeldBy.equippedUsableItemQE = false;
-                    isBeingUsed = false;
-                }
-            });
 
             HandleCompatibility();
         }
@@ -607,6 +588,12 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public override void DiscardItem()
         {
+            if (playerHeldBy != null)
+            {
+                playerHeldBy.equippedUsableItemQE = false;
+                isBeingUsed = false;
+            }
+
             OnDiscardEarly.Invoke();
             base.DiscardItem();
             OnDiscard.Invoke();
@@ -671,7 +658,14 @@ namespace itolib.Behaviours.Grabbables
             }
 
             OnEquipEarly.Invoke();
+
             base.EquipItem();
+
+            if (playerHeldBy != null)
+            {
+                playerHeldBy.equippedUsableItemQE = true;
+            }
+
             OnEquip.Invoke();
         }
 
@@ -751,6 +745,12 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         public override void PocketItem()
         {
+            if (playerHeldBy != null && playerHeldBy.IsLocalClient())
+            {
+                playerHeldBy.equippedUsableItemQE = false;
+                isBeingUsed = false;
+            }
+
             OnPocketEarly.Invoke();
 
             if (HideOnPocket)
@@ -759,6 +759,14 @@ namespace itolib.Behaviours.Grabbables
             }
 
             OnPocket.Invoke();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void ReactToSellingItemOnCounter()
+        {
+            OnReactToSellCounter.Invoke();
         }
 
         /// <summary>
