@@ -21,12 +21,11 @@ namespace itolib.Behaviours.Enemies
             {
                 if (field == null)
                 {
-                    CircuitBeesEnemyType = OriginalContent.Enemies.Find(enemy => enemy.enemyName.CompareOrdinal("Red Locust Bees"));
+                    field = OriginalContent.Enemies.Find(enemy => enemy.enemyName.CompareOrdinal("Red Locust Bees"));
                 }
 
                 return field;
             }
-            private set;
         }
 
         /// <summary>

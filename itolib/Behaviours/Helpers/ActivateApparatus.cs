@@ -19,12 +19,11 @@ namespace itolib.Behaviours.Helpers
             {
                 if (field == null)
                 {
-                    OldBirdEnemyType = OriginalContent.Enemies.Find(enemy => enemy.enemyName.CompareOrdinal("RadMech"));
+                    field = OriginalContent.Enemies.Find(enemy => enemy.enemyName.CompareOrdinal("RadMech"));
                 }
 
                 return field;
             }
-            private set;
         }
 
         private void Start()

@@ -26,7 +26,6 @@ namespace itolib.Behaviours.Props
 
                 return field;
             }
-            private set;
         }
 
         /// <summary>

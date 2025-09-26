@@ -20,12 +20,11 @@ namespace itolib.Behaviours.Props
             {
                 if (field == null)
                 {
-                    VanillaGiftbox = OriginalContent.Items.Find(item => item.itemId == 152767);
+                    field = OriginalContent.Items.Find(item => item.itemId == 152767);
                 }
 
                 return field;
             }
-            private set;
         }
 
         /// <summary>
