@@ -16,9 +16,16 @@ namespace itolib.Behaviours.Effects
         ///     <c>Collider</c> for the hinderance region.
         /// </summary>
         /// <remarks><b>NOTE:</b> Only needed for player drowning purposes.</remarks>
+        [Space(10.0f)]
         [Header("Player Hinderer")]
         [Tooltip("Collider for the hinderance region. NOTE: Only needed for player drowning purposes.")]
         [SerializeField] private Collider? hindererCollider;
+
+        /// <summary>
+        ///     Whether the player should have slowness applied to them or not.
+        /// </summary>
+        [Tooltip("Whether the player should have slowness applied to them or not.")]
+        [SerializeField] private bool hinderPlayer = true;
 
         /// <summary>
         ///     Multiplier for the slowness to be applied to the player.
@@ -58,6 +65,7 @@ namespace itolib.Behaviours.Effects
         ///     Multiplier for the speed at which the player sinks.
         /// </summary>
         [Tooltip("Multiplier for the speed at which the player sinks.")]
+        [Min(0.0f)]
         [SerializeField] private float sinkingSpeedMultiplier = 0.21f;
 
         /// <summary>
@@ -80,6 +88,20 @@ namespace itolib.Behaviours.Effects
         /// <remarks><b>NOTE:</b> Not currently implemented.</remarks>
         [Tooltip("Whether to display the underwater overlay or not. NOTE: Not currently implemented.")]
         [SerializeField] private bool waterOverlay;
+
+        /// <summary>
+        ///     Whether the player should become drunk while hindered or not.
+        /// </summary>
+        [Header("Drunkness")]
+        [Tooltip("Whether the player should become drunk while hindered or not.")]
+        [SerializeField] private bool inebriatePlayer;
+
+        /// <summary>
+        ///     Speed at which the player should get drunk over time.
+        /// </summary>
+        [Tooltip("Speed at which the player should get drunk over time.")]
+        [Min(0.0f)]
+        [SerializeField] private float drunknessSpeed = 0.4f;
 
         /// <summary>
         ///     Callback invoked when a player begins to be hindered, with the player in question as parameter.
@@ -149,6 +171,14 @@ namespace itolib.Behaviours.Effects
                 {
                     // Set player as not exhausted, to allow them to jump.
                     attachedPlayer.isExhausted = false;
+                }
+
+                // Check if player should become drunk.
+                if (inebriatePlayer)
+                {
+                    // Increase player drunkness inertia.
+                    attachedPlayer.drunknessInertia = Mathf.Clamp(attachedPlayer.drunknessInertia + (Time.deltaTime / 1.75f * drunknessSpeed), 0.1f, 3.0f);
+                    attachedPlayer.increasingDrunknessThisFrame = true;
                 }
 
                 /* if (drownPlayer)
@@ -252,9 +282,13 @@ namespace itolib.Behaviours.Effects
         {
             if (!stop)
             {
-                // Add hindrance source and multiplier.
-                player.isMovementHindered++;
-                player.hinderedMultiplier *= hinderedMultiplier;
+                // Check if player should be hindered.
+                if (hinderPlayer)
+                {
+                    // Add hindrance source and multiplier.
+                    player.isMovementHindered++;
+                    player.hinderedMultiplier *= hinderedMultiplier;
+                }
 
                 // Enable or disable player status effect audio.
                 player.statusEffectAudio.enabled = !muteAudio;
@@ -272,7 +306,7 @@ namespace itolib.Behaviours.Effects
                     player.sourcesCausingSinking++;
                     player.sinkingSpeedMultiplier = sinkingSpeedMultiplier;
                 }
-                else if (drownPlayer || allowJumping)
+                else if (drownPlayer || (hinderPlayer && allowJumping))
                 {
                     // Set player as being underwater.
                     player.isUnderwater = true; // Also needed to allow the player to jump while hindered.
@@ -296,9 +330,13 @@ namespace itolib.Behaviours.Effects
             }
             else
             {
-                // Remove hindrance source and multiplier.
-                player.isMovementHindered--;
-                player.hinderedMultiplier /= hinderedMultiplier;
+                // Check if player was hindered.
+                if (hinderPlayer)
+                {
+                    // Remove hindrance source and multiplier.
+                    player.isMovementHindered--;
+                    player.hinderedMultiplier /= hinderedMultiplier;
+                }
 
                 // Reenable player status effect audio.
                 player.statusEffectAudio.enabled = true;
@@ -315,7 +353,7 @@ namespace itolib.Behaviours.Effects
                     player.sourcesCausingSinking--;
                     player.sinkingSpeedMultiplier = 0.0f;
                 }
-                else if (drownPlayer || allowJumping)
+                else if (drownPlayer || (hinderPlayer && allowJumping))
                 {
                     // Set player as no longer underwater.
                     player.isUnderwater = false;

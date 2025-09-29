@@ -99,5 +99,22 @@ namespace itolib.Behaviours.Detectors
                 hazardNetworkObject.Despawn(true);
             }
         }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="hazardToDeactivate"></param>
+        public void DeactivateHazard(GameObject hazardToDeactivate)
+        {
+            if (IsHost && hazardToDeactivate != null && hazardToDeactivate.transform.root.TryGetComponent(out NetworkObject hazardNetworkObject))
+            {
+                TerminalAccessibleObject? terminalCode = hazardNetworkObject.GetComponentInChildren<TerminalAccessibleObject>();
+
+                if (terminalCode != null)
+                {
+                    terminalCode.CallFunctionFromTerminal();
+                }
+            }
+        }
     }
 }
