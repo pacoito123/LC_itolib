@@ -24,7 +24,7 @@ namespace itolib.Behaviours.Conditionals
         /// </summary>
         protected override void Start()
         {
-            if (CrowdControlCompatibility.Enabled)
+            if (CrowdControlCompatibility.Enabled && TimeOfDay.Instance != null && TimeOfDay.Instance.currentLevel != null)
             {
                 CrowdControlCompatibility.CurrentWeather = TimeOfDay.Instance.currentLevel.currentWeather;
                 CrowdControlCompatibility.OnCCWeatherChanged += ApplyConditional;

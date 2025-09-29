@@ -13,7 +13,10 @@ namespace itolib.Behaviours.Conditionals
         /// <param name="undo"></param>
         public override void ApplyConditional(bool undo)
         {
-            ApplyConditional(StartOfRound.Instance.currentLevel, undo);
+            if (StartOfRound.Instance != null)
+            {
+                ApplyConditional(StartOfRound.Instance.currentLevel, undo);
+            }
         }
 
         /// <summary>

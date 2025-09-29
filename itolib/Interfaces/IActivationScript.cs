@@ -80,17 +80,24 @@ namespace itolib.Interfaces
             // Set activation as performed.
             PerformedActivation = true;
 
-            // Unsubscribe to the event that may have been subscribed to.
+            // Unsubscribe from events.
+            UnsubscribeFromEvents();
+
+            // Perform script activation at the set activation time.
+            PerformActivation(ActivationTime);
+        }
+
+        /// <summary>
+        ///     Unsubscribe from any events that may have been subscribed to.
+        /// </summary>
+        void UnsubscribeFromEvents()
+        {
             DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(PerformActivation);
             DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(PerformActivation);
             if (StartOfRound.Instance != null)
             {
                 StartOfRound.Instance.StartNewRoundEvent.RemoveListener(PerformActivation);
             }
-            // ...
-
-            // Perform script activation at the set activation time.
-            PerformActivation(ActivationTime);
         }
 
         /// <summary>

@@ -20,10 +20,10 @@ namespace itolib.editor.Util
 
             for (int i = 0; i < files.Length; i++)
             {
-                GameObject _prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(files[i]);
-                if (!PrefabUtility.IsPartOfImmutablePrefab(_prefabAsset))
+                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(files[i]);
+                if (!PrefabUtility.IsPartOfImmutablePrefab(prefab))
                 {
-                    _ = PrefabUtility.SavePrefabAsset(_prefabAsset);
+                    _ = PrefabUtility.SavePrefabAsset(prefab);
                 }
             }
         }

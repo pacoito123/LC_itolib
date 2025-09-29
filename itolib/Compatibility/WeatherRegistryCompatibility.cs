@@ -41,7 +41,7 @@ namespace itolib.Compatibility
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         internal static bool ApplyWeatherOverrides(Action<LevelWeatherType[]> weatherAction)
         {
-            if (WeatherRegistry.WeatherManager.GetCurrentLevelWeather().Type == WeatherRegistry.WeatherType.Clear)
+            if (WeatherRegistry.WeatherManager.GetCurrentLevelWeather().Type is WeatherRegistry.WeatherType.Clear)
             {
                 return false;
             }

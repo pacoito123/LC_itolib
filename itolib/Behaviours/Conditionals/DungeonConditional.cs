@@ -14,13 +14,11 @@ namespace itolib.Behaviours.Conditionals
         /// <param name="undo"></param>
         public override void ApplyConditional(bool undo)
         {
-            if (RoundManager.Instance == null || RoundManager.Instance.dungeonGenerator == null || RoundManager.Instance.dungeonGenerator.Generator == null
-                || RoundManager.Instance.dungeonGenerator.Generator.DungeonFlow == null)
+            if (RoundManager.Instance != null && RoundManager.Instance.dungeonGenerator != null && RoundManager.Instance.dungeonGenerator.Generator != null
+                && RoundManager.Instance.dungeonGenerator.Generator.DungeonFlow != null)
             {
-                return;
+                ApplyConditional(RoundManager.Instance.dungeonGenerator.Generator.DungeonFlow, undo);
             }
-
-            ApplyConditional(RoundManager.Instance.dungeonGenerator.Generator.DungeonFlow, undo);
         }
 
         /// <summary>
