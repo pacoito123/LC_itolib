@@ -26,6 +26,11 @@ namespace itolib.Behaviours.Props
         public NetworkList<ItemInfo> SyncedItems { get; private set; } = null!;
 
         /// <summary>
+        ///     Cached instance of the current <c>ScrapTeleporter</c> as an <c>ISeededScript</c>, to avoid having to cast. 
+        /// </summary>
+        public ISeededScript<ScrapTeleporter> SeededSelf { get; }
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Scrap Teleporter")]
@@ -100,17 +105,18 @@ namespace itolib.Behaviours.Props
         protected bool performedActivation;
 
         /// <summary>
-        ///     Cached instance of the current <c>ScrapTeleporter</c> as an <c>ISeededScript</c>, to avoid having to cast. 
+        ///     Cache already-cast <c>ISeededScript</c> instance.
         /// </summary>
-        private ISeededScript<ScrapTeleporter> seededSelf;
+        private ScrapTeleporter()
+        {
+            SeededSelf = this;
+        }
 
         /// <summary>
-        ///     Cache already-cast <c>IWeightedScript</c> instance.
+        ///     TODO.
         /// </summary>
         private void Awake()
         {
-            seededSelf = this;
-
             SyncedItems = new();
         }
 
@@ -204,7 +210,7 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            int itemsToTeleport = seededRandom ? seededSelf.GetSeededRandom().Next(minAmount, maxAmount + 1)
+            int itemsToTeleport = seededRandom ? SeededSelf.GetSeededRandom().Next(minAmount, maxAmount + 1)
                 : Random.Range(minAmount, maxAmount + 1);
 
             for (int i = 0; i < itemsToTeleport; i++)
@@ -213,7 +219,7 @@ namespace itolib.Behaviours.Props
 
                 if (teleportPoints?.Count > 0)
                 {
-                    int positionIndex = seededRandom ? seededSelf.GetSeededRandom().Next(0, teleportPoints.Count)
+                    int positionIndex = seededRandom ? SeededSelf.GetSeededRandom().Next(0, teleportPoints.Count)
                         : Random.Range(0, teleportPoints.Count);
 
                     if (teleportPoints[positionIndex] != null)
@@ -228,12 +234,12 @@ namespace itolib.Behaviours.Props
                 }
                 else if (teleportAreas?.Count > 0)
                 {
-                    int areaIndex = seededRandom ? seededSelf.GetSeededRandom().Next(0, teleportAreas.Count)
+                    int areaIndex = seededRandom ? SeededSelf.GetSeededRandom().Next(0, teleportAreas.Count)
                         : Random.Range(0, teleportAreas.Count);
                     BoxCollider teleportArea = teleportAreas[areaIndex];
 
                     // TODO: Maybe find point in NavMesh instead?
-                    Vector3 point = teleportArea.GetPointWithin(seededRandom ? seededSelf.GetSeededRandom() : null);
+                    Vector3 point = teleportArea.GetPointWithin(seededRandom ? SeededSelf.GetSeededRandom() : null);
                     teleportPosition = teleportArea.transform.TransformPoint(point + teleportArea.center);
 
                     if (exhaustiveAreas)
@@ -291,7 +297,7 @@ namespace itolib.Behaviours.Props
                 }
                 else
                 {
-                    int index = seededRandom ? seededSelf.GetSeededRandom().Next(0, availableScrap.Count)
+                    int index = seededRandom ? SeededSelf.GetSeededRandom().Next(0, availableScrap.Count)
                         : Random.Range(0, availableScrap.Count);
                     GrabbableObject? item = availableScrap[index];
 

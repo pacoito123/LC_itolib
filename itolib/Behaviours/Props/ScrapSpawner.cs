@@ -66,6 +66,11 @@ namespace itolib.Behaviours.Props
         public NetworkList<ItemInfo> SyncedItems { get; private set; } = null!;
 
         /// <summary>
+        ///     Cached instance of <c>ScrapSpawner</c> as an <c>IWeightedScript</c>, to avoid having to cast.
+        /// </summary>
+        public IWeightedScript<ScrapWeightEntry> WeightedSelf { get; }
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         public int[]? CumulativeWeights { get; set; }
@@ -149,11 +154,6 @@ namespace itolib.Behaviours.Props
         [SerializeField] private bool respectSingleItemDay;
 
         /// <summary>
-        ///     Cached instance of the current <c>ScrapSpawner</c> as an <c>IWeightedScript</c>, to avoid having to cast. 
-        /// </summary>
-        private IWeightedScript<ScrapWeightEntry> weightedSelf;
-
-        /// <summary>
         ///     TODO.
         /// </summary>
         /// <returns></returns>
@@ -164,8 +164,8 @@ namespace itolib.Behaviours.Props
                 return SimulateAnomaly.SingleItem.spawnPrefab.GetComponent<NetworkObject>();
             }
 
-            if (WeightedEntries?.Length > 0 && weightedSelf.TryObtainRandomEntry(out ScrapWeightEntry entry, isSeededRandom
-                ? seededSelf.GetSeededRandom() : null))
+            if (WeightedEntries?.Length > 0 && WeightedSelf.TryObtainRandomEntry(out ScrapWeightEntry entry, isSeededRandom
+                ? SeededSelf.GetSeededRandom() : null))
             {
                 Item? itemToSpawn = entry.itemToSpawn;
 
@@ -228,7 +228,7 @@ namespace itolib.Behaviours.Props
                 // TODO: Apply single item day values.
             } */
 
-            int scrapValue = isSeededRandom ? seededSelf.GetSeededRandom().Next(minValue, maxValue)
+            int scrapValue = isSeededRandom ? SeededSelf.GetSeededRandom().Next(minValue, maxValue)
                 : UnityEngine.Random.RandomRangeInt(minValue, maxValue);
 
             if (RoundManager.Instance != null)
@@ -250,10 +250,10 @@ namespace itolib.Behaviours.Props
                 itemReference = item,
                 scrapValue = scrapValue,
                 meshVariant = (allowMeshVariants && item.itemProperties.meshVariants.Length > 0)
-                    ? (isSeededRandom ? seededSelf.GetSeededRandom().Next(0, item.itemProperties.meshVariants.Length)
+                    ? (isSeededRandom ? SeededSelf.GetSeededRandom().Next(0, item.itemProperties.meshVariants.Length)
                         : UnityEngine.Random.RandomRangeInt(0, item.itemProperties.meshVariants.Length)) : -1,
                 materialVariant = (allowMaterialVariants && item.itemProperties.materialVariants.Length > 0)
-                    ? (isSeededRandom ? seededSelf.GetSeededRandom().Next(0, item.itemProperties.materialVariants.Length)
+                    ? (isSeededRandom ? SeededSelf.GetSeededRandom().Next(0, item.itemProperties.materialVariants.Length)
                         : UnityEngine.Random.RandomRangeInt(0, item.itemProperties.materialVariants.Length)) : -1
             };
 
@@ -263,12 +263,18 @@ namespace itolib.Behaviours.Props
         }
 
         /// <summary>
+        ///     Cache already-cast <c>ISeededScript</c> and <c>IWeightedScript</c> instances.
+        /// </summary>
+        protected ScrapSpawner() : base()
+        {
+            WeightedSelf = this;
+        }
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         protected override void Awake()
         {
-            weightedSelf = this;
-
             SyncedItems = new();
 
             if (NetworkManager.Singleton.IsHost)
@@ -284,7 +290,7 @@ namespace itolib.Behaviours.Props
                     }
                 }
 
-                weightedSelf.InitializeWeights();
+                WeightedSelf.InitializeWeights();
             }
 
             base.Awake();

@@ -22,7 +22,7 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     TODO.
         /// </summary>
-        protected override void Start()
+        protected override void Awake()
         {
             if (CrowdControlCompatibility.Enabled && TimeOfDay.Instance != null && TimeOfDay.Instance.currentLevel != null)
             {
@@ -35,7 +35,7 @@ namespace itolib.Behaviours.Conditionals
                 return;
             }
 
-            base.Start();
+            base.Awake();
         }
 
         /// <summary>

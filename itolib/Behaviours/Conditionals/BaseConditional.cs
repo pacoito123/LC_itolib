@@ -115,7 +115,7 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>IActivationScript</c>, to avoid having to cast. 
         /// </summary>
-        public IActivationScript ActivationSelf { get; set; }
+        public IActivationScript ActivationSelf { get; }
 
         /// <summary>
         ///     Whether activation has already been performed or not.
@@ -148,21 +148,21 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     Cache already-cast <c>IActivationScript</c> instance.
         /// </summary>
-        protected virtual void Awake()
+        protected BaseConditional()
         {
             ActivationSelf = this;
-
-            if (activationTime is not ActivationTime.StartOfRound)
-            {
-                ActivationTime = activationTime;
-            }
         }
 
         /// <summary>
         ///     Subscribe to events for automatic activation.
         /// </summary>
-        protected virtual void Start()
+        protected virtual void Awake()
         {
+            if (activationTime is not ActivationTime.StartOfRound)
+            {
+                ActivationTime = activationTime;
+            }
+
             ActivationSelf.Initialize();
         }
 

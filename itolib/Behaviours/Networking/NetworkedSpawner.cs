@@ -15,12 +15,17 @@ namespace itolib.Behaviours.Networking
     /// <summary>
     ///     TODO.
     /// </summary>
-    public abstract class NetworkedSpawner<T> : NetworkBehaviour, ISeededScript<NetworkedSpawner<T>>, IActivationScript where T : Behaviour
+    public abstract class NetworkedSpawner<T> : NetworkBehaviour, IActivationScript, ISeededScript<NetworkedSpawner<T>> where T : Behaviour
     {
         /// <summary>
         ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>IActivationScript</c>, to avoid having to cast. 
         /// </summary>
-        public IActivationScript ActivationSelf { get; set; }
+        public IActivationScript ActivationSelf { get; }
+
+        /// <summary>
+        ///     Cached instance of the current <c>NetworkedSpawner</c> as an <c>ISeededScript</c>, to avoid having to cast. 
+        /// </summary>
+        public ISeededScript<NetworkedSpawner<T>> SeededSelf { get; }
 
         /// <summary>
         ///     Whether activation has already been performed or not.
@@ -144,11 +149,6 @@ namespace itolib.Behaviours.Networking
         [field: SerializeField] public UnityEvent<int> OnSpawningFinish { get; private set; } = new();
 
         /// <summary>
-        ///     Cached instance of the current <c>NetworkedSpawner</c> as an <c>ISeededScript</c>, to avoid having to cast. 
-        /// </summary>
-        protected ISeededScript<NetworkedSpawner<T>> seededSelf;
-
-        /// <summary>
         ///     TODO.
         /// </summary>
         /// <returns></returns>
@@ -186,7 +186,7 @@ namespace itolib.Behaviours.Networking
                 return;
             }
 
-            int spawnAmount = isSeededRandom ? seededSelf.GetSeededRandom().Next(minSpawns, maxSpawns + 1)
+            int spawnAmount = isSeededRandom ? SeededSelf.GetSeededRandom().Next(minSpawns, maxSpawns + 1)
                 : Random.RandomRangeInt(minSpawns, maxSpawns + 1);
 
             if (spawnAmount == 0)
@@ -206,7 +206,7 @@ namespace itolib.Behaviours.Networking
 
                 for (int i = 0; i < spawnAmount && spawnLocations.Count > 0; i++)
                 {
-                    int locationIndex = isSeededRandom ? seededSelf.GetSeededRandom().Next(0, spawnLocations.Count)
+                    int locationIndex = isSeededRandom ? SeededSelf.GetSeededRandom().Next(0, spawnLocations.Count)
                         : Random.RandomRangeInt(0, spawnLocations.Count);
 
                     PerformSpawn(spawnLocations[locationIndex]!);
@@ -226,7 +226,7 @@ namespace itolib.Behaviours.Networking
 
                 for (int i = 0; i < spawnAmount && spawnAreas.Count > 0; i++)
                 {
-                    int areaIndex = isSeededRandom ? seededSelf.GetSeededRandom().Next(0, spawnAreas.Count)
+                    int areaIndex = isSeededRandom ? SeededSelf.GetSeededRandom().Next(0, spawnAreas.Count)
                         : Random.RandomRangeInt(0, spawnAreas.Count);
 
                     PerformSpawn(spawnAreas[areaIndex]!);
@@ -283,7 +283,7 @@ namespace itolib.Behaviours.Networking
             if (prefabToSpawn != null)
             {
                 // TODO: Maybe find point in NavMesh instead?
-                Vector3 point = spawnArea.GetPointWithin(isSeededRandom ? seededSelf.GetSeededRandom() : null);
+                Vector3 point = spawnArea.GetPointWithin(isSeededRandom ? SeededSelf.GetSeededRandom() : null);
 
                 Transform spawnTransform = spawnArea.transform;
                 Vector3 spawnPosition = spawnTransform.TransformPoint(point + spawnArea.center);
@@ -318,13 +318,19 @@ namespace itolib.Behaviours.Networking
         }
 
         /// <summary>
+        ///     Cache already-cast <c>IActivationScript</c> and <c>ISeededScript</c> instances.
+        /// </summary>
+        protected NetworkedSpawner()
+        {
+            ActivationSelf = this;
+            SeededSelf = this;
+        }
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         protected virtual void Awake()
         {
-            ActivationSelf = this;
-            seededSelf = this;
-
             if (activationTime is not ActivationTime.StartOfRound)
             {
                 ActivationTime = activationTime;
@@ -422,9 +428,9 @@ namespace itolib.Behaviours.Networking
         }
 
         /// <summary>
-        ///     TODO.
+        ///     <c>DunGen</c> listener called when the Dungeon finishes generating.
         /// </summary>
-        /// <param name="dungeon"></param>
+        /// <param name="dungeon">Dungeon that just finished generating.</param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
             ActivationSelf.OnDungeonComplete();

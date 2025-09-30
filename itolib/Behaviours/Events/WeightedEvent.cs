@@ -3,11 +3,12 @@ using GameNetcodeStuff;
 using itolib.Enums;
 using itolib.Extensions;
 using itolib.Interfaces;
-using LethalLevelLoader;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Events
 {
@@ -41,8 +42,23 @@ namespace itolib.Behaviours.Events
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class WeightedEvent : NetworkBehaviour, ISeededScript<WeightedEvent>, IWeightedScript<WeightedEventEntry>, IDungeonCompleteReceiver
+    public class WeightedEvent : NetworkBehaviour, IActivationScript, ISeededScript<WeightedEvent>, IWeightedScript<WeightedEventEntry>
     {
+        /// <summary>
+        ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>IActivationScript</c>, to avoid having to cast. 
+        /// </summary>
+        public IActivationScript ActivationSelf { get; }
+
+        /// <summary>
+        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>ISeededScript</c>, to avoid having to cast. 
+        /// </summary>
+        public ISeededScript<WeightedEvent> SeededSelf { get; }
+
+        /// <summary>
+        ///     Cached instance of <c>WeightedEvent</c> as an <c>IWeightedScript</c>, to avoid having to cast.
+        /// </summary>
+        public IWeightedScript<WeightedEventEntry> WeightedSelf { get; }
+
         /// <summary>
         ///    TODO.
         /// </summary>
@@ -54,6 +70,11 @@ namespace itolib.Behaviours.Events
         public int TotalWeight { get; set; }
 
         /// <summary>
+        ///     Whether activation has already been performed or not.
+        /// </summary>
+        public bool PerformedActivation { get; set; }
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         [field: Header("Weighted Event")]
@@ -61,9 +82,19 @@ namespace itolib.Behaviours.Events
         [field: SerializeField] public WeightedEventEntry[]? WeightedEntries { get; set; }
 
         /// <summary>
-        ///     TODO.
+        ///     Desired <c>ActivationTime</c> for the overrides to be applied.
         /// </summary>
-        [Tooltip("")]
+        [field: Tooltip("Desired activation time for the overrides to be applied.")]
+        [field: FormerlySerializedAs("activationTime")]
+        [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.Manual;
+
+        /// <summary>
+        ///     Desired <c>ActivationTime</c> for the spawn to be performed.
+        /// </summary>
+        /// <remarks>Deprecated. Should be ignored.</remarks>
+        [Space(5.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Desired activation time for the spawn to be performed. Should be ignored.")]
         [SerializeField] private ActivationTime activationTime = ActivationTime.Manual;
 
         /// <summary>
@@ -87,65 +118,48 @@ namespace itolib.Behaviours.Events
         [SerializeField] private bool seededRandom;
 
         /// <summary>
-        ///     TODO.
-        /// </summary>
-        private bool performedActivation;
-
-        /// <summary>
-        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>ISeededScript</c>, to avoid having to cast. 
-        /// </summary>
-        private ISeededScript<WeightedEvent> seededSelf;
-
-        /// <summary>
         ///     Cached instance of the current <c>WeightedEvent</c> as an <c>IWeightedScript</c>, to avoid having to cast. 
         /// </summary>
-        public IWeightedScript<WeightedEventEntry> weightedSelf;
+        /// <remarks>Deprecated. Should be ignored.</remarks>
+        [SuppressMessage("Style", "IDE0052:Remove unread private members", Justification = "Deprecated.")]
+        private readonly IWeightedScript<WeightedEventEntry> weightedSelf;
 
         /// <summary>
-        ///     Cache already-cast <c>IWeightedScript</c> and <c>ISeededScript</c> instances.
+        ///     Cache already-cast <c>ISeededScript</c> and <c>IWeightedScript</c> instances.
+        /// </summary>
+        private WeightedEvent()
+        {
+            ActivationSelf = this;
+            SeededSelf = this;
+            WeightedSelf = this;
+
+            // Deprecated. Needed to stop an error being spammed, will be removed at some point.
+            weightedSelf = this;
+        }
+
+        /// <summary>
+        ///     Initialize weights for every <c>WeightedEventEntry</c>.
         /// </summary>
         private void Awake()
         {
-            seededSelf = this;
-            weightedSelf = this;
+            WeightedSelf.InitializeWeights();
 
-            weightedSelf.InitializeWeights();
+            if (activationTime is not ActivationTime.Manual)
+            {
+                ActivationTime = activationTime;
+            }
+
+            ActivationSelf.Initialize();
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnNetworkSpawn()
+        public override void OnDestroy()
         {
-            base.OnNetworkSpawn();
+            ActivationSelf.UnsubscribeFromEvents();
 
-            if (!IsHost || performedActivation)
-            {
-                return;
-            }
-
-            switch (activationTime)
-            {
-                case ActivationTime.Immediate:
-                    RollFromServer();
-                    break;
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(RollFromServer);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(RollFromServer);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.AddListener(RollFromServer);
-                    }
-                    break;
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
+            base.OnDestroy();
         }
 
         /// <summary>
@@ -153,13 +167,6 @@ namespace itolib.Behaviours.Events
         /// </summary> 
         public void RollFromServer()
         {
-            if (!performedActivation)
-            {
-                UnsubscribeFromEvents();
-
-                performedActivation = true;
-            }
-
             if (!NetworkManager.Singleton.IsHost)
             {
                 return;
@@ -178,7 +185,7 @@ namespace itolib.Behaviours.Events
                 return;
             }
 
-            int rollsToPerform = seededRandom ? seededSelf.GetSeededRandom().Next(minRolls, maxRolls + 1)
+            int rollsToPerform = seededRandom ? SeededSelf.GetSeededRandom().Next(minRolls, maxRolls + 1)
                 : UnityEngine.Random.RandomRangeInt(minRolls, maxRolls + 1);
 
             for (int i = 0; i < rollsToPerform; i++)
@@ -188,7 +195,7 @@ namespace itolib.Behaviours.Events
                     break;
                 }
 
-                if (weightedSelf.TryObtainRandomEntryIndex(out int weightIndex, seededRandom ? seededSelf.GetSeededRandom() : null))
+                if (WeightedSelf.TryObtainRandomEntryIndex(out int weightIndex, seededRandom ? SeededSelf.GetSeededRandom() : null))
                 {
                     InvokeEventLocal(weightIndex);
 
@@ -198,6 +205,15 @@ namespace itolib.Behaviours.Events
                     }
                 }
             }
+        }
+
+        /// <summary>
+        ///     Perform script activation at the specified <c>ActivationTime</c>.
+        /// </summary>
+        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
+        public virtual void PerformActivation(ActivationTime activationTime)
+        {
+            RollFromServer();
         }
 
         /// <summary>
@@ -231,51 +247,19 @@ namespace itolib.Behaviours.Events
         /// <param name="weightIndex"></param>
         private void InvokeEventLocal(int weightIndex)
         {
-            if (weightedSelf.TryObtainEntry(out WeightedEventEntry entry, weightIndex))
+            if (WeightedSelf.TryObtainEntry(out WeightedEventEntry entry, weightIndex))
             {
                 entry.onEvent.Invoke();
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     <c>DunGen</c> listener called when the Dungeon finishes generating.
         /// </summary>
-        private void UnsubscribeFromEvents()
-        {
-            switch (activationTime)
-            {
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(RollFromServer);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(RollFromServer);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(RollFromServer);
-                    }
-                    break;
-                case ActivationTime.Immediate:
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="dungeon"></param>
+        /// <param name="dungeon">Dungeon that just finished generating.</param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
-            if (!performedActivation && activationTime is ActivationTime.DungeonComplete)
-            {
-                RollFromServer();
-
-                performedActivation = true;
-            }
+            ActivationSelf.OnDungeonComplete();
         }
     }
 }

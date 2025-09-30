@@ -81,7 +81,7 @@ namespace itolib.Behaviours.Props
             int minValue = giftContentsMinValue < 0 ? gift.objectInPresentItem.minValue : giftContentsMinValue,
                 maxValue = giftContentsMaxValue < 0 ? gift.objectInPresentItem.maxValue : giftContentsMaxValue;
 
-            int scrapValue = isSeededRandom ? seededSelf.GetSeededRandom().Next(minValue, maxValue)
+            int scrapValue = isSeededRandom ? SeededSelf.GetSeededRandom().Next(minValue, maxValue)
                 : Random.RandomRangeInt(minValue, maxValue);
 
             if (RoundManager.Instance != null)

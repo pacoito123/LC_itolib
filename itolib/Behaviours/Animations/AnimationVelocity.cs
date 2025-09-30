@@ -14,6 +14,11 @@ namespace itolib.Behaviours.Animations
     public class AnimationVelocity : NetworkBehaviour, ISeededScript<AnimationVelocity>
     {
         /// <summary>
+        ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>ISeededScript</c>, to avoid having to cast. 
+        /// </summary>
+        public ISeededScript<AnimationVelocity> SeededSelf { get; }
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         public float InitialSpeed { get; private set; }
@@ -87,16 +92,11 @@ namespace itolib.Behaviours.Animations
         private bool performedActivation;
 
         /// <summary>
-        ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>ISeededScript</c>, to avoid having to cast. 
-        /// </summary>
-        private ISeededScript<AnimationVelocity> seededSelf;
-
-        /// <summary>
         ///     Cache already-cast <c>ISeededScript</c> instance.
         /// </summary>
-        private void Awake()
+        private AnimationVelocity()
         {
-            seededSelf = this;
+            SeededSelf = this;
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace itolib.Behaviours.Animations
                 return;
             }
 
-            InitialSpeed = seededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed);
+            InitialSpeed = SeededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed);
 
             switch (activationTime)
             {
@@ -199,7 +199,7 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         public void RerollSpeed()
         {
-            SyncSpeed(seededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed));
+            SyncSpeed(SeededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed));
         }
 
         /// <summary>

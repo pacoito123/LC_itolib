@@ -26,6 +26,11 @@ namespace itolib.Interfaces
     public interface IWeightedScript<T> where T : IWeightedEntry
     {
         /// <summary>
+        ///     Cached instance of the implementing script as an <c>IWeightedScript</c>, to avoid having to cast.
+        /// </summary>
+        IWeightedScript<T> WeightedSelf { get; }
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         T[]? WeightedEntries { get; set; }

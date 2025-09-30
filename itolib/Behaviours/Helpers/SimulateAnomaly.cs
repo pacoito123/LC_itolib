@@ -39,6 +39,7 @@ namespace itolib.Behaviours.Helpers
             }
             private set;
         }
+
         private static bool? _isSingleItemDay;
 
         /// <summary>
@@ -135,5 +136,7 @@ namespace itolib.Behaviours.Helpers
             SingleItem = null;
             _isSingleItemDay = null;
         }
+
+        public ISeededScript<SimulateAnomaly> SeededSelf => throw new InvalidOperationException("SimulateAnomaly should have no instance.");
     }
 }

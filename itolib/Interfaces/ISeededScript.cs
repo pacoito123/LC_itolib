@@ -13,6 +13,11 @@ namespace itolib.Interfaces
     public interface ISeededScript<T> where T : ISeededScript<T>
     {
         /// <summary>
+        ///     Cached instance of the implementing script as an <c>ISeededScript</c>, to avoid having to cast. 
+        /// </summary>
+        ISeededScript<T> SeededSelf { get; }
+
+        /// <summary>
         ///     Obtain a seeded <c>Random</c> instance initialized using a seed derived from the current map seed.
         /// </summary>
         static Random SeededRandom

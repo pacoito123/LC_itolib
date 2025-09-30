@@ -12,7 +12,7 @@ namespace itolib.Interfaces
         /// <summary>
         ///     Cached instance of the implementing script as an <c>IActivationScript</c>, to avoid having to cast. 
         /// </summary>
-        IActivationScript ActivationSelf { get; set; }
+        IActivationScript ActivationSelf { get; }
 
         /// <summary>
         ///     Desired <c>ActivationTime</c> for the script.

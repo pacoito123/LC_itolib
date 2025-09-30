@@ -53,6 +53,11 @@ namespace itolib.Behaviours.Enemies
     public class EnemySpawner : EnemySpawnerBase<EnemyAI>, IWeightedScript<EnemyWeightEntry>
     {
         /// <summary>
+        ///     Cached instance of <c>EnemySpawner</c> as an <c>IWeightedScript</c>, to avoid having to cast.
+        /// </summary>
+        public IWeightedScript<EnemyWeightEntry> WeightedSelf { get; }
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         public int[]? CumulativeWeights { get; set; }
@@ -70,30 +75,31 @@ namespace itolib.Behaviours.Enemies
         [field: SerializeField] public EnemyWeightEntry[]? WeightedEntries { get; set; }
 
         /// <summary>
-        ///     Cached instance of the current <c>EnemySpawner</c> as an <c>IWeightedScript</c>, to avoid having to cast. 
-        /// </summary>
-        private IWeightedScript<EnemyWeightEntry> weightedSelf;
-
-        /// <summary>
         ///     TODO.
         /// </summary>
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
-            return (WeightedEntries?.Length > 0 && weightedSelf.TryObtainRandomEntry(out EnemyWeightEntry entry, isSeededRandom ?
-                seededSelf.GetSeededRandom() : null)) ? GetEnemyToSpawn(entry.enemyToSpawn) : null;
+            return (WeightedEntries?.Length > 0 && WeightedSelf.TryObtainRandomEntry(out EnemyWeightEntry entry, isSeededRandom ?
+                SeededSelf.GetSeededRandom() : null)) ? GetEnemyToSpawn(entry.enemyToSpawn) : null;
         }
 
         /// <summary>
         ///     Cache already-cast <c>IWeightedScript</c> instance.
         /// </summary>
+        protected EnemySpawner() : base()
+        {
+            WeightedSelf = this;
+        }
+
+        /// <summary>
+        ///     Initialize weights for every <c>EnemyWeightEntry</c>.
+        /// </summary>
         protected override void Awake()
         {
-            weightedSelf = this;
-
             if (NetworkManager.Singleton.IsHost)
             {
-                weightedSelf.InitializeWeights();
+                WeightedSelf.InitializeWeights();
             }
 
             base.Awake();
