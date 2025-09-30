@@ -39,7 +39,6 @@ namespace itolib.Behaviours.Helpers
             }
             private set;
         }
-
         private static bool? _isSingleItemDay;
 
         /// <summary>

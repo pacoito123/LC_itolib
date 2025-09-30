@@ -37,7 +37,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        private void Awake()
+        protected override void Awake()
         {
             scanNodeLayer = LayerMask.NameToLayer("ScanNode");
 
@@ -45,6 +45,8 @@ namespace itolib.Behaviours.Detectors
             {
                 regionCollider.enabled = false;
             }
+
+            base.Awake();
         }
 
         /// <summary>

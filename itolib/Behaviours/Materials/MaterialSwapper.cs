@@ -110,7 +110,7 @@ namespace itolib.Behaviours.Materials
         /// </summary>
         private void Awake()
         {
-            if (activationTime is not ActivationTime.Manual)
+            if (activationTime is not ActivationTime.DungeonComplete)
             {
                 ActivationTime = activationTime;
             }

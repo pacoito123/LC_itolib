@@ -1,9 +1,10 @@
 using DunGen;
 using itolib.Enums;
-using LethalLevelLoader;
+using itolib.Interfaces;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Detectors
 {
@@ -13,8 +14,18 @@ namespace itolib.Behaviours.Detectors
     /// </summary>
     /// <remarks><b>NOTE:</b> Region needs to be either a <c>BoxCollider</c>, <c>SphereCollider</c>, or <c>CapsuleCollider</c> to perform searches.</remarks>
     [RequireComponent(typeof(Collider))]
-    public abstract class DetectRegion<T> : NetworkBehaviour, IDungeonCompleteReceiver
+    public abstract class DetectRegion<T> : NetworkBehaviour, IActivationScript
     {
+        /// <summary>
+        ///     Cached instance of the current <c>DetectRegion</c> as an <c>IActivationScript</c>, to avoid having to cast.
+        /// </summary>
+        public IActivationScript ActivationSelf { get; }
+
+        /// <summary>
+        ///     Whether activation has already been performed or not.
+        /// </summary>
+        public bool PerformedActivation { get; set; }
+
         /// <summary>
         ///     <c>Collider</c> whose bounds are to be used when searching for overlapping objects.
         /// </summary>
@@ -25,12 +36,13 @@ namespace itolib.Behaviours.Detectors
         [SerializeField] protected Collider? regionCollider;
 
         /// <summary>
-        ///     Activation time for the region's automatic object search.
+        ///     Desired <c>ActivationTime</c> for the region's automatic object search.
         /// </summary>
         /// <remarks><b>NOTE:</b> Can be set to <c>Manual</c> to disable the automatic search, but is not required for triggering manual searches afterwards.</remarks>
-        [Tooltip("Activation time for the region's automatic object search. NOTE: Can be set to Manual to disable the automatic search, but is not required "
-            + "for triggering manual searches afterwards.")]
-        [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
+        [field: Tooltip("Desired activation time for the region's automatic object search. NOTE: Can be set to 'Manual' to disable the automatic search, "
+            + "but is not required for triggering manual searches afterwards.")]
+        [field: FormerlySerializedAs("activationTime")]
+        [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
 
         /// <summary>
         ///     Maximum number of <c>Collider</c> instances expected to be found per search by this <c>DetectRegion</c>, for memory allocation purposes. Can be set
@@ -79,10 +91,19 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     Layers within which to search for overlapping objects of type <typeparamref name="T"/>.
         /// </summary>
-        [Space(10f)]
+        [Space(10.0f)]
         [Header("Layer Mask")]
         [Tooltip("Layers within which to search for overlapping objects of the defined type.")]
         [SerializeField] protected LayerMask layerMask;
+
+        /// <summary>
+        ///     Desired <c>ActivationTime</c> for the region's automatic object search.
+        /// </summary>
+        /// <remarks>Deprecated. Should be ignored.</remarks>
+        [Space(5.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Desired activation time for the region's automatic object search. Should be ignored.")]
+        [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
 
         /// <summary>
         ///     Pre-allocated <c>Collider</c> array of a specified size (<see cref="maxObjects"/>), containing objects of type <typeparamref name="T"/>
@@ -97,15 +118,29 @@ namespace itolib.Behaviours.Detectors
         protected int objectsFound;
 
         /// <summary>
-        ///     TODO.
-        /// </summary>
-        protected bool performedActivation;
-
-        /// <summary>
         ///     Define default values for this <c>DetectRegion</c>.
         /// </summary>
         /// <remarks>Meant for defining a default <c>LayerMask</c> value (<see cref="layerMask"/>), tailored to the specific type of object to find.</remarks>
         protected abstract void Reset();
+
+        /// <summary>
+        ///     Cache already-cast <c>IActivationScript</c> instance.
+        /// </summary>
+        protected DetectRegion()
+        {
+            ActivationSelf = this;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        protected virtual void Awake()
+        {
+            if (activationTime is not ActivationTime.StartOfRound)
+            {
+                ActivationTime = activationTime;
+            }
+        }
 
         /// <summary>
         ///      Perform search or subscribe to a specific event, depending on the set <c>ActivationTime</c>.
@@ -114,33 +149,22 @@ namespace itolib.Behaviours.Detectors
         {
             base.OnNetworkSpawn();
 
-            if (!IsHost || performedActivation)
+            if (!IsHost)
             {
                 return;
             }
 
-            switch (activationTime)
-            {
-                case ActivationTime.Immediate:
-                    CheckObjectsInRegion();
-                    break;
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(CheckObjectsInRegion);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(CheckObjectsInRegion);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.AddListener(CheckObjectsInRegion);
-                    }
-                    break;
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
+            ActivationSelf.Initialize();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void OnDestroy()
+        {
+            ActivationSelf.UnsubscribeFromEvents();
+
+            base.OnDestroy();
         }
 
         /// <summary>
@@ -161,13 +185,6 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public virtual void CheckObjectsInRegion()
         {
-            if (!performedActivation)
-            {
-                UnsubscribeFromEvents();
-
-                performedActivation = true;
-            }
-
             if (regionCollider == null || maxObjects == 0)
             {
                 return;
@@ -214,42 +231,21 @@ namespace itolib.Behaviours.Detectors
         }
 
         /// <summary>
-        ///     Unsubscribe to the event that may have been subscribed to, depending on the set <c>ActivationTime</c>.
+        ///     Perform script activation at the specified <c>ActivationTime</c>.
         /// </summary>
-        private void UnsubscribeFromEvents()
+        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
+        public virtual void PerformActivation(ActivationTime activationTime)
         {
-            switch (activationTime)
-            {
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(CheckObjectsInRegion);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(CheckObjectsInRegion);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(CheckObjectsInRegion);
-                    }
-                    break;
-                case ActivationTime.Immediate:
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
+            CheckObjectsInRegion();
         }
 
         /// <summary>
-        ///     <c>DunGen</c> listener called when generation finishes, but before blockers and connectors are placed.
+        ///     <c>DunGen</c> listener called when the Dungeon finishes generating.
         /// </summary>
         /// <param name="dungeon">Dungeon that just finished generating.</param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
-            if (!performedActivation && activationTime is ActivationTime.DungeonComplete)
-            {
-                CheckObjectsInRegion();
-            }
+            ActivationSelf.OnDungeonComplete();
         }
     }
 }

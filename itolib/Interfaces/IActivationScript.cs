@@ -10,7 +10,7 @@ namespace itolib.Interfaces
     public interface IActivationScript : IDungeonCompleteReceiver
     {
         /// <summary>
-        ///     Cached instance of the implementing script as an <c>IActivationScript</c>, to avoid having to cast. 
+        ///     Cached instance of the implementing script as an <c>IActivationScript</c>, to avoid having to cast.
         /// </summary>
         IActivationScript ActivationSelf { get; }
 

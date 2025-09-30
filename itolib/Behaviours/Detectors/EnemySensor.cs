@@ -111,12 +111,19 @@ namespace itolib.Behaviours.Detectors
         protected override void Reset()
         {
             layerMask = LayerMask.NameToLayer("Enemies");
+
+            /* if (TryGetComponent(out Collider collider))
+            {
+                collider.isTrigger = true;
+                collider.layerOverridePriority = 100;
+                collider.excludeLayers = (collider.excludeLayers == 0) ? ~layerMask : (collider.excludeLayers & ~layerMask);
+            } */
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        private void Awake()
+        protected override void Awake()
         {
             if (!NetworkManager.Singleton.IsHost && regionCollider != null)
             {
@@ -127,6 +134,8 @@ namespace itolib.Behaviours.Detectors
             {
                 enemyAmounts = new int[enemyFilters.Length];
             }
+
+            base.Awake();
         }
 
         /// <summary>

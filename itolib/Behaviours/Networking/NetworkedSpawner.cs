@@ -107,20 +107,11 @@ namespace itolib.Behaviours.Networking
         [SerializeField] protected int maxSpawns = 1;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the overrides to be applied.
-        /// </summary>
-        [field: Tooltip("Desired activation time for the overrides to be applied.")]
-        [field: FormerlySerializedAs("activationTime")]
-        [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
-
-        /// <summary>
         ///     Desired <c>ActivationTime</c> for the spawn to be performed.
         /// </summary>
-        /// <remarks>Deprecated. Should be ignored.</remarks>
-        [Space(5.0f)]
-        [Header("== DEPRECATED ==")]
-        [Tooltip("(Deprecated) Desired activation time for the spawn to be performed. Should be ignored.")]
-        [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
+        [field: Tooltip("Desired activation time for the spawn to be performed.")]
+        [field: FormerlySerializedAs("activationTime")]
+        [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
 
         /// <summary>
         ///     TODO.
@@ -147,6 +138,15 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         [field: Tooltip("")]
         [field: SerializeField] public UnityEvent<int> OnSpawningFinish { get; private set; } = new();
+
+        /// <summary>
+        ///     Desired <c>ActivationTime</c> for the spawn to be performed.
+        /// </summary>
+        /// <remarks>Deprecated. Should be ignored.</remarks>
+        [Space(5.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Desired activation time for the spawn to be performed. Should be ignored.")]
+        [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
 
         /// <summary>
         ///     TODO.

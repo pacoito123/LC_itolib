@@ -106,19 +106,19 @@ namespace itolib.Behaviours.Props
         [SerializeField] private bool seededRandom = true;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the overrides to be applied.
+        ///     Desired <c>ActivationTime</c> for the teleport to be performed.
         /// </summary>
-        [field: Tooltip("Desired activation time for the overrides to be applied.")]
+        [field: Tooltip("Desired activation time for the teleport to be performed.")]
         [field: FormerlySerializedAs("activationTime")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the spawn to be performed.
+        ///     Desired <c>ActivationTime</c> for the teleport to be performed.
         /// </summary>
         /// <remarks>Deprecated. Should be ignored.</remarks>
         [Space(5.0f)]
         [Header("== DEPRECATED ==")]
-        [Tooltip("(Deprecated) Desired activation time for the spawn to be performed. Should be ignored.")]
+        [Tooltip("(Deprecated) Desired activation time for the teleport to be performed. Should be ignored.")]
         [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
 
         /// <summary>

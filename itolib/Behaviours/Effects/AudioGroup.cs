@@ -40,19 +40,19 @@ namespace itolib.Behaviours.Effects
         [SerializeField] private bool autoInitialize;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the overrides to be applied.
+        ///     Desired <c>ActivationTime</c> for the <c>AudioSource</c> search.
         /// </summary>
-        [field: Tooltip("Desired activation time for the overrides to be applied.")]
+        [field: Tooltip("Desired activation time for the AudioSource search.")]
         [field: FormerlySerializedAs("activationTime")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.DungeonComplete;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the spawn to be performed.
+        ///     Desired <c>ActivationTime</c> for the <c>AudioSource</c> search.
         /// </summary>
         /// <remarks>Deprecated. Should be ignored.</remarks>
         [Space(5.0f)]
         [Header("== DEPRECATED ==")]
-        [Tooltip("(Deprecated) Desired activation time for the spawn to be performed. Should be ignored.")]
+        [Tooltip("(Deprecated) Desired activation time for the AudioSource search. Should be ignored.")]
         [SerializeField] private ActivationTime activationTime = ActivationTime.DungeonComplete;
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         private void Awake()
         {
-            if (activationTime is not ActivationTime.Manual)
+            if (activationTime is not ActivationTime.DungeonComplete)
             {
                 ActivationTime = activationTime;
             }

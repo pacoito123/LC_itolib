@@ -82,20 +82,11 @@ namespace itolib.Behaviours.Events
         [field: SerializeField] public WeightedEventEntry[]? WeightedEntries { get; set; }
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the overrides to be applied.
+        ///     Desired <c>ActivationTime</c> for the initial weighted roll.
         /// </summary>
-        [field: Tooltip("Desired activation time for the overrides to be applied.")]
+        [field: Tooltip("Desired activation time for the initial weighted roll.")]
         [field: FormerlySerializedAs("activationTime")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.Manual;
-
-        /// <summary>
-        ///     Desired <c>ActivationTime</c> for the spawn to be performed.
-        /// </summary>
-        /// <remarks>Deprecated. Should be ignored.</remarks>
-        [Space(5.0f)]
-        [Header("== DEPRECATED ==")]
-        [Tooltip("(Deprecated) Desired activation time for the spawn to be performed. Should be ignored.")]
-        [SerializeField] private ActivationTime activationTime = ActivationTime.Manual;
 
         /// <summary>
         ///     TODO.
@@ -118,7 +109,16 @@ namespace itolib.Behaviours.Events
         [SerializeField] private bool seededRandom;
 
         /// <summary>
-        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>IWeightedScript</c>, to avoid having to cast. 
+        ///     Desired <c>ActivationTime</c> for the initial weighted roll.
+        /// </summary>
+        /// <remarks>Deprecated. Should be ignored.</remarks>
+        [Space(5.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Desired activation time for the initial weighted roll. Should be ignored.")]
+        [SerializeField] private ActivationTime activationTime = ActivationTime.Manual;
+
+        /// <summary>
+        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>IWeightedScript</c>, to avoid having to cast.
         /// </summary>
         /// <remarks>Deprecated. Should be ignored.</remarks>
         [SuppressMessage("Style", "IDE0052:Remove unread private members", Justification = "Deprecated.")]

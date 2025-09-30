@@ -115,7 +115,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        private void Awake()
+        protected override void Awake()
         {
             if (!NetworkManager.Singleton.IsHost && regionCollider != null)
             {
@@ -127,6 +127,8 @@ namespace itolib.Behaviours.Effects
                 explosionPrefab = StartOfRound.Instance != null ? StartOfRound.Instance.explosionPrefab : null;
                 useVanillaExplosion = true;
             }
+
+            base.Awake();
         }
 
         /// <summary>

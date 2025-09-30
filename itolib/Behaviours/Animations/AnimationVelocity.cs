@@ -72,19 +72,19 @@ namespace itolib.Behaviours.Animations
         [SerializeField] private float stoppingSpeed = 1.0f;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the overrides to be applied.
+        ///     Desired <c>ActivationTime</c> for the initial velocity sync.
         /// </summary>
-        [field: Tooltip("Desired activation time for the overrides to be applied.")]
+        [field: Tooltip("Desired activation time for the initial velocity sync.")]
         [field: FormerlySerializedAs("activationTime")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the spawn to be performed.
+        ///     Desired <c>ActivationTime</c> for the initial velocity sync.
         /// </summary>
         /// <remarks>Deprecated. Should be ignored.</remarks>
         [Space(5.0f)]
         [Header("== DEPRECATED ==")]
-        [Tooltip("(Deprecated) Desired activation time for the spawn to be performed. Should be ignored.")]
+        [Tooltip("(Deprecated) Desired activation time for the initial velocity sync. Should be ignored.")]
         [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
 
         /// <summary>
