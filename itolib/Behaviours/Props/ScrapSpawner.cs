@@ -284,7 +284,7 @@ namespace itolib.Behaviours.Props
                     }
                 }
 
-                weightedSelf.Initialize();
+                weightedSelf.InitializeWeights();
             }
 
             base.Awake();
@@ -299,7 +299,7 @@ namespace itolib.Behaviours.Props
 
             SyncedItems.OnListChanged += changeEvent =>
             {
-                if (changeEvent.Type == NetworkListEvent<ItemInfo>.EventType.Add)
+                if (changeEvent.Type is NetworkListEvent<ItemInfo>.EventType.Add)
                 {
                     SyncItemValues(changeEvent.Value);
                 }

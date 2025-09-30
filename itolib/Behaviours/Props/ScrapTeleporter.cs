@@ -123,7 +123,7 @@ namespace itolib.Behaviours.Props
 
             SyncedItems.OnListChanged += changeEvent =>
             {
-                if (changeEvent.Type == NetworkListEvent<ItemInfo>.EventType.Add)
+                if (changeEvent.Type is NetworkListEvent<ItemInfo>.EventType.Add)
                 {
                     SyncTeleportedItem(changeEvent.Value);
                 }

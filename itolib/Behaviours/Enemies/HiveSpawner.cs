@@ -279,7 +279,7 @@ namespace itolib.Behaviours.Enemies
 
             SyncedHives.OnListChanged += changeEvent =>
             {
-                if (changeEvent.Type == NetworkListEvent<HiveInfo>.EventType.Add)
+                if (changeEvent.Type is NetworkListEvent<HiveInfo>.EventType.Add)
                 {
                     SyncHiveValues(changeEvent.Value);
                 }

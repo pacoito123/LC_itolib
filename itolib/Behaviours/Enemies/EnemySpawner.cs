@@ -93,7 +93,7 @@ namespace itolib.Behaviours.Enemies
 
             if (NetworkManager.Singleton.IsHost)
             {
-                weightedSelf.Initialize();
+                weightedSelf.InitializeWeights();
             }
 
             base.Awake();

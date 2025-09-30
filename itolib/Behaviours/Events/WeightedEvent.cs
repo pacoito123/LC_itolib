@@ -109,7 +109,7 @@ namespace itolib.Behaviours.Events
             seededSelf = this;
             weightedSelf = this;
 
-            weightedSelf.Initialize();
+            weightedSelf.InitializeWeights();
         }
 
         /// <summary>

@@ -89,7 +89,7 @@ namespace itolib.Behaviours.Props
 
             SyncedPrefabs.OnListChanged += changeEvent =>
             {
-                if (changeEvent.Type == NetworkListEvent<NetworkObjectReference>.EventType.Add)
+                if (changeEvent.Type is NetworkListEvent<NetworkObjectReference>.EventType.Add)
                 {
                     if (changeEvent.Value.TryGet(out NetworkObject spawnedPrefab))
                     {

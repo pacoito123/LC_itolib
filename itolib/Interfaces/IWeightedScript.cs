@@ -43,7 +43,7 @@ namespace itolib.Interfaces
         /// <summary>
         ///     TODO.
         /// </summary>
-        void Initialize()
+        void InitializeWeights()
         {
             if (WeightedEntries == null || WeightedEntries.Length == 0)
             {

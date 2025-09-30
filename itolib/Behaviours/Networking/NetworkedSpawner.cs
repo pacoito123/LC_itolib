@@ -15,8 +15,18 @@ namespace itolib.Behaviours.Networking
     /// <summary>
     ///     TODO.
     /// </summary>
-    public abstract class NetworkedSpawner<T> : NetworkBehaviour, ISeededScript<NetworkedSpawner<T>>, IDungeonCompleteReceiver where T : Behaviour
+    public abstract class NetworkedSpawner<T> : NetworkBehaviour, ISeededScript<NetworkedSpawner<T>>, IActivationScript where T : Behaviour
     {
+        /// <summary>
+        ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>IActivationScript</c>, to avoid having to cast. 
+        /// </summary>
+        public IActivationScript ActivationSelf { get; set; }
+
+        /// <summary>
+        ///     Whether activation has already been performed or not.
+        /// </summary>
+        public bool PerformedActivation { get; set; }
+
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -92,11 +102,20 @@ namespace itolib.Behaviours.Networking
         [SerializeField] protected int maxSpawns = 1;
 
         /// <summary>
-        ///     TODO.
+        ///     Desired <c>ActivationTime</c> for the overrides to be applied.
         /// </summary>
+        [field: Tooltip("Desired activation time for the overrides to be applied.")]
+        [field: FormerlySerializedAs("activationTime")]
+        [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
+
+        /// <summary>
+        ///     Desired <c>ActivationTime</c> for the spawn to be performed.
+        /// </summary>
+        /// <remarks>Deprecated. Should be ignored.</remarks>
         [Space(5.0f)]
-        [Tooltip("")]
-        [SerializeField] protected ActivationTime activationTime = ActivationTime.DungeonComplete;
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Desired activation time for the spawn to be performed. Should be ignored.")]
+        [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
 
         /// <summary>
         ///     TODO.
@@ -123,11 +142,6 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         [field: Tooltip("")]
         [field: SerializeField] public UnityEvent<int> OnSpawningFinish { get; private set; } = new();
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        protected bool performedActivation;
 
         /// <summary>
         ///     Cached instance of the current <c>NetworkedSpawner</c> as an <c>ISeededScript</c>, to avoid having to cast. 
@@ -167,13 +181,6 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         public virtual void PerformSpawn()
         {
-            if (!performedActivation)
-            {
-                UnsubscribeFromEvents();
-
-                performedActivation = true;
-            }
-
             if (!NetworkManager.Singleton.IsHost)
             {
                 return;
@@ -302,11 +309,26 @@ namespace itolib.Behaviours.Networking
         }
 
         /// <summary>
+        ///     Perform script activation at the specified <c>ActivationTime</c>.
+        /// </summary>
+        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
+        public virtual void PerformActivation(ActivationTime activationTime)
+        {
+            PerformSpawn();
+        }
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         protected virtual void Awake()
         {
+            ActivationSelf = this;
             seededSelf = this;
+
+            if (activationTime is not ActivationTime.StartOfRound)
+            {
+                ActivationTime = activationTime;
+            }
 
             if (!NetworkManager.Singleton.IsHost)
             {
@@ -345,55 +367,19 @@ namespace itolib.Behaviours.Networking
                 DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(AddAINodes);
             }
 
-            switch (activationTime)
-            {
-                case ActivationTime.Immediate:
-                    PerformSpawn();
-                    break;
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(PerformSpawn);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(PerformSpawn);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.AddListener(PerformSpawn);
-                    }
-                    break;
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
+            ActivationSelf.Initialize();
         }
 
         /// <summary>
-        ///     Unsubscribe to the event that may have been subscribed to, depending on the set <c>ActivationTime</c>.
+        ///     TODO.
         /// </summary>
-        private void UnsubscribeFromEvents()
+        public override void OnDestroy()
         {
-            switch (activationTime)
-            {
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(PerformSpawn);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(PerformSpawn);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(PerformSpawn);
-                    }
-                    break;
-                case ActivationTime.Immediate:
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
+            ActivationSelf.UnsubscribeFromEvents();
+
+            DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(AddAINodes);
+
+            base.OnDestroy();
         }
 
         /// <summary>
@@ -441,10 +427,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="dungeon"></param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
-            if (!performedActivation && activationTime is ActivationTime.DungeonComplete)
-            {
-                PerformSpawn();
-            }
+            ActivationSelf.OnDungeonComplete();
         }
     }
 }
