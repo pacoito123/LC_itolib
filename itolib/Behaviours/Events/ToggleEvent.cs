@@ -2,29 +2,50 @@ using DunGen;
 using GameNetcodeStuff;
 using itolib.Enums;
 using itolib.Extensions;
-using LethalLevelLoader;
+using itolib.Interfaces;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Events
 {
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class ToggleEvent : NetworkBehaviour, IDungeonCompleteReceiver
+    public class ToggleEvent : NetworkBehaviour, IActivationScript
     {
+        /// <summary>
+        ///     Cached instance of the current <c>ToggleEvent</c> as an <c>IActivationScript</c>, to avoid having to cast.
+        /// </summary>
+        public IActivationScript ActivationSelf { get; }
+
+        /// <summary>
+        ///     Whether activation has already been performed or not.
+        /// </summary>
+        public bool PerformedActivation { get; set; }
+
         /// <summary>
         ///     TODO.
         /// </summary>
         public bool CurrentState { get; private set; } // TODO: Replace with a NetworkVariable.
 
         /// <summary>
-        ///     TODO.
+        ///     Desired <c>ActivationTime</c> for the initial toggle to occur.
         /// </summary>
-        [Header("Toggle Event")]
-        [Tooltip("")]
-        public ActivationTime activationTime = ActivationTime.Manual;
+        [field: Header("Toggle Event")]
+        [field: Tooltip("Desired activation time for the initial toggle to occur.")]
+        [field: FormerlySerializedAs("activationTime")]
+        [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.Manual;
+
+        /// <summary>
+        ///     Desired <c>ActivationTime</c> for the initial toggle to occur.
+        /// </summary>
+        /// <remarks>Deprecated. Should be ignored.</remarks>
+        [Space(5.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Desired activation time for the initial toggle to occur. Should be ignored.")]
+        [SerializeField] private ActivationTime activationTime = ActivationTime.Manual;
 
         /// <summary>
         ///     TODO.
@@ -38,10 +59,25 @@ namespace itolib.Behaviours.Events
         [Tooltip("")]
         [SerializeField] private UnityEvent<bool> toggleOff = new();
 
+
+        /// <summary>
+        ///     Cache already-cast <c>IActivationScript</c> instance.
+        /// </summary>
+        private ToggleEvent()
+        {
+            ActivationSelf = this;
+        }
+
         /// <summary>
         ///     TODO.
         /// </summary>
-        private bool performedActivation;
+        private void Awake()
+        {
+            if (activationTime is not ActivationTime.Manual)
+            {
+                ActivationTime = activationTime;
+            }
+        }
 
         /// <summary>
         ///     TODO.
@@ -50,33 +86,12 @@ namespace itolib.Behaviours.Events
         {
             base.OnNetworkSpawn();
 
-            if (!IsHost || performedActivation)
+            if (!IsHost)
             {
                 return;
             }
 
-            switch (activationTime)
-            {
-                case ActivationTime.Immediate:
-                    ToggleFromServer();
-                    break;
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(ToggleFromServer);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(ToggleFromServer);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.AddListener(ToggleFromServer);
-                    }
-                    break;
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
+            ActivationSelf.Initialize();
         }
 
         /// <summary>
@@ -84,13 +99,6 @@ namespace itolib.Behaviours.Events
         /// </summary>
         public void ToggleFromServer()
         {
-            if (!performedActivation)
-            {
-                UnsubscribeFromEvents();
-
-                performedActivation = true;
-            }
-
             if (!NetworkManager.Singleton.IsHost)
             {
                 return;
@@ -127,6 +135,15 @@ namespace itolib.Behaviours.Events
             {
                 PerformToggleServerRpc(player, CurrentState);
             }
+        }
+
+        /// <summary>
+        ///     Perform script activation at the specified <c>ActivationTime</c>.
+        /// </summary>
+        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
+        public virtual void PerformActivation(ActivationTime activationTime)
+        {
+            ToggleFromServer();
         }
 
         /// <summary>
@@ -173,44 +190,12 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     TODO.
+        ///     <c>DunGen</c> listener called when the Dungeon finishes generating.
         /// </summary>
-        private void UnsubscribeFromEvents()
-        {
-            switch (activationTime)
-            {
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(ToggleFromServer);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(ToggleFromServer);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(ToggleFromServer);
-                    }
-                    break;
-                case ActivationTime.Immediate:
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="dungeon"></param>
+        /// <param name="dungeon">Dungeon that just finished generating.</param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
-            if (!performedActivation && activationTime is ActivationTime.DungeonComplete)
-            {
-                ToggleFromServer();
-
-                performedActivation = true;
-            }
+            ActivationSelf.OnDungeonComplete();
         }
     }
 }

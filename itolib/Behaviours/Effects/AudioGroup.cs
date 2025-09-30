@@ -1,15 +1,26 @@
 using DunGen;
 using itolib.Enums;
-using LethalLevelLoader;
+using itolib.Interfaces;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Effects
 {
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class AudioGroup : MonoBehaviour, IDungeonCompleteReceiver
+    public class AudioGroup : MonoBehaviour, IActivationScript
     {
+        /// <summary>
+        ///     Cached instance of the current <c>AudioGroup</c> as an <c>IActivationScript</c>, to avoid having to cast.
+        /// </summary>
+        public IActivationScript ActivationSelf { get; }
+
+        /// <summary>
+        ///     Whether activation has already been performed or not.
+        /// </summary>
+        public bool PerformedActivation { get; set; }
+
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -29,38 +40,40 @@ namespace itolib.Behaviours.Effects
         [SerializeField] private bool autoInitialize;
 
         /// <summary>
-        ///     TODO.
+        ///     Desired <c>ActivationTime</c> for the overrides to be applied.
         /// </summary>
-        [Tooltip("")]
+        [field: Tooltip("Desired activation time for the overrides to be applied.")]
+        [field: FormerlySerializedAs("activationTime")]
+        [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.DungeonComplete;
+
+        /// <summary>
+        ///     Desired <c>ActivationTime</c> for the spawn to be performed.
+        /// </summary>
+        /// <remarks>Deprecated. Should be ignored.</remarks>
+        [Space(5.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Desired activation time for the spawn to be performed. Should be ignored.")]
         [SerializeField] private ActivationTime activationTime = ActivationTime.DungeonComplete;
+
+        /// <summary>
+        ///     Cache already-cast <c>IActivationScript</c> instance.
+        /// </summary>
+        private AudioGroup()
+        {
+            ActivationSelf = this;
+        }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        private void Start()
+        private void Awake()
         {
-            switch (activationTime)
+            if (activationTime is not ActivationTime.Manual)
             {
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(FindSourcesInObjects);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(FindSourcesInObjects);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.AddListener(FindSourcesInObjects);
-                    }
-                    break;
-                case ActivationTime.Immediate:
-                    FindSourcesInObjects();
-                    break;
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
+                ActivationTime = activationTime;
             }
+
+            ActivationSelf.Initialize();
         }
 
         /// <summary>
@@ -68,26 +81,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         private void OnDestroy()
         {
-            switch (activationTime)
-            {
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(FindSourcesInObjects);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(FindSourcesInObjects);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(FindSourcesInObjects);
-                    }
-                    break;
-                case ActivationTime.Immediate:
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
+            ActivationSelf.UnsubscribeFromEvents();
         }
 
         /// <summary>
@@ -109,6 +103,15 @@ namespace itolib.Behaviours.Effects
             {
                 SwitchAll(AudioAction.Initialize);
             }
+        }
+
+        /// <summary>
+        ///     Perform script activation at the specified <c>ActivationTime</c>.
+        /// </summary>
+        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
+        public virtual void PerformActivation(ActivationTime activationTime)
+        {
+            FindSourcesInObjects();
         }
 
         /// <summary>
@@ -225,15 +228,12 @@ namespace itolib.Behaviours.Effects
         }
 
         /// <summary>
-        ///     TODO.
+        ///     <c>DunGen</c> listener called when the Dungeon finishes generating.
         /// </summary>
-        /// <param name="dungeon"></param>
+        /// <param name="dungeon">Dungeon that just finished generating.</param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
-            if (activationTime is ActivationTime.DungeonComplete)
-            {
-                FindSourcesInObjects();
-            }
+            ActivationSelf.OnDungeonComplete();
         }
     }
 }

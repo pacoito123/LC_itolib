@@ -45,12 +45,12 @@ namespace itolib.Behaviours.Events
     public class WeightedEvent : NetworkBehaviour, IActivationScript, ISeededScript<WeightedEvent>, IWeightedScript<WeightedEventEntry>
     {
         /// <summary>
-        ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>IActivationScript</c>, to avoid having to cast. 
+        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>IActivationScript</c>, to avoid having to cast.
         /// </summary>
         public IActivationScript ActivationSelf { get; }
 
         /// <summary>
-        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>ISeededScript</c>, to avoid having to cast. 
+        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>ISeededScript</c>, to avoid having to cast.
         /// </summary>
         public ISeededScript<WeightedEvent> SeededSelf { get; }
 
@@ -125,7 +125,7 @@ namespace itolib.Behaviours.Events
         private readonly IWeightedScript<WeightedEventEntry> weightedSelf;
 
         /// <summary>
-        ///     Cache already-cast <c>ISeededScript</c> and <c>IWeightedScript</c> instances.
+        ///     Cache already-cast <c>IActivationScript</c>, <c>ISeededScript</c>, and <c>IWeightedScript</c> instances.
         /// </summary>
         private WeightedEvent()
         {
@@ -133,7 +133,7 @@ namespace itolib.Behaviours.Events
             SeededSelf = this;
             WeightedSelf = this;
 
-            // Deprecated. Needed to stop an error being spammed, will be removed at some point.
+            // Deprecated. Needed to stop a (harmless) error from being spammed, will be removed at some point.
             weightedSelf = this;
         }
 
@@ -147,6 +147,19 @@ namespace itolib.Behaviours.Events
             if (activationTime is not ActivationTime.Manual)
             {
                 ActivationTime = activationTime;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            if (!IsHost)
+            {
+                return;
             }
 
             ActivationSelf.Initialize();

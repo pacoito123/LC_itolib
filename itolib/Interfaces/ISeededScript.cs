@@ -13,7 +13,7 @@ namespace itolib.Interfaces
     public interface ISeededScript<T> where T : ISeededScript<T>
     {
         /// <summary>
-        ///     Cached instance of the implementing script as an <c>ISeededScript</c>, to avoid having to cast. 
+        ///     Cached instance of the implementing script as an <c>ISeededScript</c>, to avoid having to cast.
         /// </summary>
         ISeededScript<T> SeededSelf { get; }
 

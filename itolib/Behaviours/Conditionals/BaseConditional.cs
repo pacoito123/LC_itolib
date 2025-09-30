@@ -113,7 +113,7 @@ namespace itolib.Behaviours.Conditionals
     public abstract class BaseConditional<T> : MonoBehaviour, IActivationScript
     {
         /// <summary>
-        ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>IActivationScript</c>, to avoid having to cast. 
+        ///     Cached instance of the current <c>BaseConditional</c> as an <c>IActivationScript</c>, to avoid having to cast.
         /// </summary>
         public IActivationScript ActivationSelf { get; }
 

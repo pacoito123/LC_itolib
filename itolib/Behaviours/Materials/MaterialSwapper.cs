@@ -1,7 +1,9 @@
 using DunGen;
 using itolib.Enums;
+using itolib.Interfaces;
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Materials
 {
@@ -44,8 +46,18 @@ namespace itolib.Behaviours.Materials
     /// <summary>
     ///     Swaps materials based on a given word search. Can perform multiple at a time, on various different objects.
     /// </summary>
-    public class MaterialSwapper : MonoBehaviour, IDungeonCompleteReceiver
+    public class MaterialSwapper : MonoBehaviour, IActivationScript
     {
+        /// <summary>
+        ///     Cached instance of the current <c>MaterialSwapper</c> as an <c>IActivationScript</c>, to avoid having to cast.
+        /// </summary>
+        public IActivationScript ActivationSelf { get; }
+
+        /// <summary>
+        ///     Whether activation has already been performed or not.
+        /// </summary>
+        public bool PerformedActivation { get; set; }
+
         /// <summary>
         ///     List of material swaps to perform.
         /// </summary>
@@ -63,49 +75,55 @@ namespace itolib.Behaviours.Materials
         [SerializeField] private int swapsPerActivation;
 
         /// <summary>
-        ///     Activation time for the automatic material swap.
+        ///     Desired <c>ActivationTime</c> for the automatic material swap.
         /// </summary>
-        /// <remarks><b>NOTE:</b> Can be set to <c>Manual</c> to disable the automatic swap, but is not required for triggering manual swaps afterwards.</remarks>
-        [Tooltip("Activation time for the automatic material swap. NOTE: Can be set to Manual to disable the automatic swap, but is not required for "
-            + "triggering manual swaps afterwards.")]
+        /// <remarks><b>NOTE:</b> Can be set to <c>Manual</c> to disable the automatic swap, but it's not required for triggering manual swaps afterwards.</remarks>
+        [field: Tooltip("Desired activation time for the automatic material swap. NOTE: Can be set to 'Manual' to disable the automatic swap, but it's not "
+            + "required for triggering manual swaps afterwards.")]
+        [field: FormerlySerializedAs("activationTime")]
+        [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.DungeonComplete;
+
+        /// <summary>
+        ///     Desired <c>ActivationTime</c> for the automatic material swap.
+        /// </summary>
+        /// <remarks>Deprecated. Should be ignored.</remarks>
+        [Space(5.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Desired activation time for the automatic material swap. Should be ignored.")]
         [SerializeField] private ActivationTime activationTime = ActivationTime.DungeonComplete;
 
         /// <summary>
-        ///     Current 
+        ///     Current swap index. TODO: Use a NetworkVariable.
         /// </summary>
         private int swapIndex;
 
         /// <summary>
-        ///     TODO.
+        ///     Cache already-cast <c>IActivationScript</c> instance.
         /// </summary>
-        public void Start()
+        private MaterialSwapper()
         {
-            if (activationTime is ActivationTime.Immediate)
-            {
-                SwapMaterials();
-            }
+            ActivationSelf = this;
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnEnable()
+        private void Awake()
         {
-            if (activationTime is ActivationTime.StartOfRound && StartOfRound.Instance != null)
+            if (activationTime is not ActivationTime.Manual)
             {
-                StartOfRound.Instance.StartNewRoundEvent.AddListener(SwapMaterials);
+                ActivationTime = activationTime;
             }
+
+            ActivationSelf.Initialize();
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void OnDisable()
+        private void OnDestroy()
         {
-            if (activationTime is ActivationTime.StartOfRound && StartOfRound.Instance != null)
-            {
-                StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SwapMaterials);
-            }
+            ActivationSelf.UnsubscribeFromEvents();
         }
 
         /// <summary>
@@ -121,7 +139,6 @@ namespace itolib.Behaviours.Materials
                 return;
             }
 
-            // 
             if (swapsPerActivation <= 0 || swapsPerActivation > materialSwaps.Length)
             {
                 swapsPerActivation = materialSwaps.Length;
@@ -166,6 +183,15 @@ namespace itolib.Behaviours.Materials
         }
 
         /// <summary>
+        ///     Perform script activation at the specified <c>ActivationTime</c>.
+        /// </summary>
+        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
+        public virtual void PerformActivation(ActivationTime activationTime)
+        {
+            SwapMaterials();
+        }
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         /// <param name="renderer"></param>
@@ -187,15 +213,12 @@ namespace itolib.Behaviours.Materials
         }
 
         /// <summary>
-        ///     TODO.
+        ///     <c>DunGen</c> listener called when the Dungeon finishes generating.
         /// </summary>
-        /// <param name="dungeon"></param>
+        /// <param name="dungeon">Dungeon that just finished generating.</param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
-            if (activationTime is ActivationTime.DungeonComplete)
-            {
-                SwapMaterials();
-            }
+            ActivationSelf.OnDungeonComplete();
         }
     }
 }

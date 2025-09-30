@@ -40,7 +40,7 @@ namespace itolib.Behaviours.Helpers
         [SerializeField] protected int createInstances = 4;
 
         /// <summary>
-        ///     Cached instance of the current <c>PooledObject</c> as an <c>IPooledObject</c>, to avoid having to cast. 
+        ///     Cached instance of the current <c>PooledObject</c> as an <c>IPooledObject</c>, to avoid having to cast.
         /// </summary>
         protected IPooledObject<T> pooledSelf = default!;
 

@@ -1,22 +1,33 @@
+using DunGen;
 using GameNetcodeStuff;
 using itolib.Enums;
 using itolib.Extensions;
 using itolib.Interfaces;
-using LethalLevelLoader;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Animations
 {
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class AnimationVelocity : NetworkBehaviour, ISeededScript<AnimationVelocity>
+    public class AnimationVelocity : NetworkBehaviour, IActivationScript, ISeededScript<AnimationVelocity>
     {
         /// <summary>
-        ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>ISeededScript</c>, to avoid having to cast. 
+        ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>IActivationScript</c>, to avoid having to cast.
+        /// </summary>
+        public IActivationScript ActivationSelf { get; }
+
+        /// <summary>
+        ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>ISeededScript</c>, to avoid having to cast.
         /// </summary>
         public ISeededScript<AnimationVelocity> SeededSelf { get; }
+
+        /// <summary>
+        ///     Whether activation has already been performed or not.
+        /// </summary>
+        public bool PerformedActivation { get; set; }
 
         /// <summary>
         ///     TODO.
@@ -61,9 +72,19 @@ namespace itolib.Behaviours.Animations
         [SerializeField] private float stoppingSpeed = 1.0f;
 
         /// <summary>
-        ///     TODO.
+        ///     Desired <c>ActivationTime</c> for the overrides to be applied.
         /// </summary>
-        [Tooltip("")]
+        [field: Tooltip("Desired activation time for the overrides to be applied.")]
+        [field: FormerlySerializedAs("activationTime")]
+        [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
+
+        /// <summary>
+        ///     Desired <c>ActivationTime</c> for the spawn to be performed.
+        /// </summary>
+        /// <remarks>Deprecated. Should be ignored.</remarks>
+        [Space(5.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Desired activation time for the spawn to be performed. Should be ignored.")]
         [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
 
         /// <summary>
@@ -87,16 +108,23 @@ namespace itolib.Behaviours.Animations
         private float currentTarget;
 
         /// <summary>
-        ///     TODO.
-        /// </summary>
-        private bool performedActivation;
-
-        /// <summary>
         ///     Cache already-cast <c>ISeededScript</c> instance.
         /// </summary>
         private AnimationVelocity()
         {
+            ActivationSelf = this;
             SeededSelf = this;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void Awake()
+        {
+            if (activationTime is not ActivationTime.StartOfRound)
+            {
+                ActivationTime = activationTime;
+            }
         }
 
         /// <summary>
@@ -106,35 +134,14 @@ namespace itolib.Behaviours.Animations
         {
             base.OnNetworkSpawn();
 
-            if (!IsHost || performedActivation)
+            if (!IsHost)
             {
                 return;
             }
 
             InitialSpeed = SeededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed);
 
-            switch (activationTime)
-            {
-                case ActivationTime.Immediate:
-                    SyncSpeed();
-                    break;
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(SyncSpeed);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(SyncSpeed);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.AddListener(SyncSpeed);
-                    }
-                    break;
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
+            ActivationSelf.Initialize();
         }
 
         /// <summary>
@@ -176,6 +183,16 @@ namespace itolib.Behaviours.Animations
                 transitionTimer = 0.0f;
                 targetReached = true;
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void OnDestroy()
+        {
+            ActivationSelf.UnsubscribeFromEvents();
+
+            base.OnDestroy();
         }
 
         /// <summary>
@@ -257,28 +274,28 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         public void SyncSpeed()
         {
-            if (!performedActivation)
-            {
-                UnsubscribeFromEvents();
-
-                performedActivation = true;
-            }
-
             SyncSpeed(InitialSpeed);
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="initialSpeed"></param>
         public void SyncSpeed(float initialSpeed)
         {
             SyncSpeedLocal(initialSpeed);
-            SyncSpeedServerRpc(GameNetworkManager.Instance.localPlayerController, initialSpeed);
+
+            if (IsSpawned)
+            {
+                SyncSpeedServerRpc(GameNetworkManager.Instance.localPlayerController, initialSpeed);
+            }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="playerReference"></param>
+        /// <param name="initialSpeed"></param>
         [ServerRpc(RequireOwnership = false)]
         private void SyncSpeedServerRpc(NetworkBehaviourReference playerReference, float initialSpeed)
         {
@@ -317,30 +334,21 @@ namespace itolib.Behaviours.Animations
         }
 
         /// <summary>
-        ///     Unsubscribe to the event that may have been subscribed to, depending on the set <c>ActivationTime</c>.
+        ///     Perform script activation at the specified <c>ActivationTime</c>.
         /// </summary>
-        private void UnsubscribeFromEvents()
+        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
+        public virtual void PerformActivation(ActivationTime activationTime)
         {
-            switch (activationTime)
-            {
-                case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(SyncSpeed);
-                    break;
-                case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(SyncSpeed);
-                    break;
-                case ActivationTime.StartOfRound:
-                    if (StartOfRound.Instance != null)
-                    {
-                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(SyncSpeed);
-                    }
-                    break;
-                case ActivationTime.Immediate:
-                case ActivationTime.DungeonComplete:
-                case ActivationTime.Manual:
-                default:
-                    break;
-            }
+            SyncSpeed();
+        }
+
+        /// <summary>
+        ///     <c>DunGen</c> listener called when the Dungeon finishes generating.
+        /// </summary>
+        /// <param name="dungeon">Dungeon that just finished generating.</param>
+        public void OnDungeonComplete(Dungeon dungeon)
+        {
+            ActivationSelf.OnDungeonComplete();
         }
     }
 }
