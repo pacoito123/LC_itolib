@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.4.6]
+
+Actually updated `CHANGELOG` this time...
+
+- I forgor to update the `CHANGELOG` for `v0.4.5`.
+
 ## [v0.4.5]
 
 Added a new script, a couple new features, refactored some activation-related stuff.
