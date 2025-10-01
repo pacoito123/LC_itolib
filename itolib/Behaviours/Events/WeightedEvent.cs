@@ -55,7 +55,7 @@ namespace itolib.Behaviours.Events
         public ISeededScript<WeightedEvent> SeededSelf { get; }
 
         /// <summary>
-        ///     Cached instance of <c>WeightedEvent</c> as an <c>IWeightedScript</c>, to avoid having to cast.
+        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>IWeightedScript</c>, to avoid having to cast.
         /// </summary>
         public IWeightedScript<WeightedEventEntry> WeightedSelf { get; }
 

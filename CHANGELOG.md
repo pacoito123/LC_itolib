@@ -1,5 +1,20 @@
 # Changelog
 
+## [v0.4.5]
+
+Added a new script, a couple new features, refactored some activation-related stuff.
+
+- Added `PlayerElectrode`, for handling the draining of a player's chargeable items.
+  - Held and/or pocketed items can be periodically drained (like active Flashlights), or manually drained by a percentage amount.
+- Added drunkness (TZP) effect to `PlayerHinderer`.
+  - Speed of the effect being applied to the player is configurable, and can be set to a high amount to immediately max out the effect.
+  - Also added a separate field to disable slowing the player down, in case only the other `PlayerHinderer` features are needed.`
+- Added a function to `HazardSensor` to deactivate (via Terminal code) any found hazards.
+- Reworked all scripts that activate at a specified time to use the `IActivationScript` interface.
+  - This includes `AnimationVelocity`, `AudioGroup`, `BaseConditional` (and its inheriting scripts), `DetectRegion` (and its inheriting scripts), `MaterialSwapper`, `NetworkedSpawner` (and its inheriting scripts), `ScrapTeleporter`, `ToggleEvent`, and `WeightedEvent`.
+  - Should be backwards-compatible, but re-serializing any prefabs that use them (by saving the prefab) is recommended.
+- Corrected some comments and tooltips here and there.
+
 ## [v0.4.4]
 
 Added a new sensor, did some other small things, fixed Doorway stuff (again).

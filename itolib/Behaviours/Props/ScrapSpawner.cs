@@ -263,7 +263,7 @@ namespace itolib.Behaviours.Props
         }
 
         /// <summary>
-        ///     Cache already-cast <c>ISeededScript</c> and <c>IWeightedScript</c> instances.
+        ///     Cache already-cast <c>IWeightedScript</c> instance.
         /// </summary>
         protected ScrapSpawner() : base()
         {

@@ -108,7 +108,7 @@ namespace itolib.Behaviours.Animations
         private float currentTarget;
 
         /// <summary>
-        ///     Cache already-cast <c>ISeededScript</c> instance.
+        ///     Cache already-cast <c>IActivationScript</c> and <c>ISeededScript</c> instances.
         /// </summary>
         private AnimationVelocity()
         {
