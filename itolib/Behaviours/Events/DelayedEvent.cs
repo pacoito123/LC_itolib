@@ -25,6 +25,12 @@ namespace itolib.Behaviours.Events
         ///     TODO.
         /// </summary>
         [Tooltip("")]
+        [SerializeField] private bool resetOnToggle = true;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
         [SerializeField] private UnityEvent onDelayedEvent = new();
 
         /// <summary>
@@ -65,7 +71,10 @@ namespace itolib.Behaviours.Events
         /// </summary>
         private void OnEnable()
         {
-            ResetTimer();
+            if (resetOnToggle)
+            {
+                ResetTimer();
+            }
         }
 
         /// <summary>
@@ -73,7 +82,10 @@ namespace itolib.Behaviours.Events
         /// </summary>
         private void OnDisable()
         {
-            ResetTimer();
+            if (resetOnToggle)
+            {
+                ResetTimer();
+            }
         }
 
         /// <summary>

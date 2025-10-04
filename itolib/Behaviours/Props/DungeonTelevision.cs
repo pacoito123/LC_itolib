@@ -74,8 +74,8 @@ namespace itolib.Behaviours.Props
                 }
             }
 
-            if (startDeactivated || (TVLoaderCompatibility.Enabled && (TelevisionUnlockableItem?.alreadyUnlocked == true
-                || TelevisionUnlockableItem?.hasBeenUnlockedByPlayer == true)))
+            if (startDeactivated || (TVLoaderCompatibility.Enabled && (TelevisionUnlockableItem.alreadyUnlocked
+                || TelevisionUnlockableItem.hasBeenUnlockedByPlayer)))
             {
                 if (tvTrigger != null)
                 {

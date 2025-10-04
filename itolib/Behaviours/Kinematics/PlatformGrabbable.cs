@@ -96,7 +96,7 @@ namespace itolib.Behaviours.Kinematics
             // Try obtain player action required to be held.
             if (actionToHold.Length > 0 && !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToHold))
             {
-                Plugin.StaticLogger.LogWarning($"Could not find movement action '{actionToHold}' defined for PlatformGrabbable component in '{transform.name}'!");
+                Plugin.StaticLogger.LogWarning($"Could not find movement action '{actionToHold}' defined for PlatformGrabbable component in '{name}'!");
             }
 
             base.Start();

@@ -109,7 +109,7 @@ namespace itolib.Behaviours.Interactables
             // Try obtain player action required for the player to get back up.
             if (!GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToExit))
             {
-                Plugin.StaticLogger.LogWarning($"Could not find movement action '{actionToExit}' defined for PlayerSeater component in '{transform.name}'!");
+                Plugin.StaticLogger.LogWarning($"Could not find movement action '{actionToExit}' defined for PlayerSeater component in '{name}'!");
             }
         }
 

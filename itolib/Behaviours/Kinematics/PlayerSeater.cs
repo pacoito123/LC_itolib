@@ -157,7 +157,7 @@ namespace itolib.Behaviours.Kinematics
             // Try obtain player action required for the player to unseat.
             if (actionToUnseat.Length > 0 && !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToUnseat))
             {
-                Plugin.StaticLogger.LogWarning($"Could not find movement action '{actionToUnseat}' defined for PlayerSeater component in '{transform.name}'!");
+                Plugin.StaticLogger.LogWarning($"Could not find movement action '{actionToUnseat}' defined for PlayerSeater component in '{name}'!");
             }
 
             if (sittingAnimation.Length > 0)

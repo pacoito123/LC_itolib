@@ -402,12 +402,12 @@ namespace itolib.Behaviours.Grabbables
             OnDisconnectEarly.Invoke();
 
             yield return new WaitForSeconds(0.1f);
-            if (playSparkPFX)
+            if (playSparkPFX && sparkParticle != null)
             {
                 sparkParticle.SetActive(true);
             }
 
-            if (apparatusAudio != null && playRemoveFromMachineSFX)
+            if (playRemoveFromMachineSFX && apparatusAudio != null)
             {
                 apparatusAudio.PlayOneShot(removeFromMachineSFX);
             }
