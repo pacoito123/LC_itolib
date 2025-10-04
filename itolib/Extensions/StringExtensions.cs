@@ -1,3 +1,7 @@
+using System;
+using System.Security.Cryptography;
+using System.Text;
+
 namespace itolib.Extensions
 {
     /// <summary>
@@ -34,6 +38,27 @@ namespace itolib.Extensions
         public static bool IsNullOrWhiteSpace(this string str)
         {
             return string.IsNullOrWhiteSpace(str);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public static bool TryComputeGUID(this string value, out Guid result)
+        {
+            result = Guid.Empty;
+
+            if (value.IsNullOrEmpty())
+            {
+                return false;
+            }
+
+            byte[] hash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(value));
+            result = new Guid(hash[..16]);
+
+            return true;
         }
     }
 }
