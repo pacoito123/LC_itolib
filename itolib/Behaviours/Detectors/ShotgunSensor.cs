@@ -112,31 +112,20 @@ namespace itolib.Behaviours.Detectors
 
                 if (IsSpawned) // TODO: Separate local field?
                 {
-                    // Send shot detection to the server.
-                    PerformedShotServerRpc(player);
+                    // Send shot detection to all other clients.
+                    PerformedShotRpc(player);
                 }
             }
         }
 
         /// <summary>
-        ///     Trigger shot detection on the server.
+        ///     Trigger shot detection on all other clients.
         /// </summary>
         /// <param name="playerReference">Network reference of the detected player.</param>
-        [ServerRpc(RequireOwnership = false)]
-        private void PerformedShotServerRpc(NetworkBehaviourReference playerReference)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void PerformedShotRpc(NetworkBehaviourReference playerReference)
         {
-            // Trigger shot detection on all clients.
-            PerformedShotClientRpc(playerReference);
-        }
-
-        /// <summary>
-        ///     Trigger shot detection on all clients.
-        /// </summary>
-        /// <param name="playerReference">Network reference of the detected player.</param>
-        [ClientRpc]
-        private void PerformedShotClientRpc(NetworkBehaviourReference playerReference)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
                 // Trigger shot detection on the local client.
                 PerformedShotLocal(player);

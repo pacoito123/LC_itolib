@@ -135,8 +135,8 @@ namespace itolib.Behaviours.Detectors
 
                 if (IsSpawned) // TODO: Separate local effect field?
                 {
-                    // Send movement detection to the server.
-                    PlayerMovedServerRpc(attachedPlayer);
+                    // Send movement detection to all other clients.
+                    PlayerMovedRpc(attachedPlayer);
                 }
 
                 // Reset cooldown timer after triggering.
@@ -145,24 +145,13 @@ namespace itolib.Behaviours.Detectors
         }
 
         /// <summary>
-        ///     Trigger movement detection on the server.
+        ///     Trigger movement detection on all other clients.
         /// </summary>
         /// <param name="playerReference">Network reference of the detected player.</param>
-        [ServerRpc(RequireOwnership = false)]
-        private void PlayerMovedServerRpc(NetworkBehaviourReference playerReference)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void PlayerMovedRpc(NetworkBehaviourReference playerReference)
         {
-            // Trigger movement detection on all clients.
-            PlayerMovedClientRpc(playerReference);
-        }
-
-        /// <summary>
-        ///     Trigger movement detection on all clients.
-        /// </summary>
-        /// <param name="playerReference">Network reference of the detected player.</param>
-        [ClientRpc]
-        private void PlayerMovedClientRpc(NetworkBehaviourReference playerReference)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
                 // Invoke movement detected event on all clients.
                 onMovementDetected.Invoke(player);

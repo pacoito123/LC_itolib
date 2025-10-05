@@ -185,31 +185,20 @@ namespace itolib.Behaviours.Detectors
 
                 if (IsSpawned) // TODO: Separate local field?
                 {
-                    // Send spray detection to the server.
-                    PerformedSprayServerRpc(player);
+                    // Send spray detection to all other clients.
+                    PerformedSprayRpc(player);
                 }
             }
         }
 
         /// <summary>
-        ///     Trigger spray detection on the server.
+        ///     Trigger spray detection on all other clients.
         /// </summary>
         /// <param name="playerReference">Network reference of the detected player.</param>
-        [ServerRpc(RequireOwnership = false)]
-        private void PerformedSprayServerRpc(NetworkBehaviourReference playerReference)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void PerformedSprayRpc(NetworkBehaviourReference playerReference)
         {
-            // Trigger spray detection on all clients.
-            PerformedSprayClientRpc(playerReference);
-        }
-
-        /// <summary>
-        ///     Trigger spray detection on all clients.
-        /// </summary>
-        /// <param name="playerReference">Network reference of the detected player.</param>
-        [ClientRpc]
-        private void PerformedSprayClientRpc(NetworkBehaviourReference playerReference)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
                 // Trigger spray detection on the local client.
                 PerformedSprayLocal(player);

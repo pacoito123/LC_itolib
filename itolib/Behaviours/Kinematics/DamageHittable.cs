@@ -145,33 +145,18 @@ namespace itolib.Behaviours.Kinematics
 
             if (IsSpawned)
             {
-                SetHealthServerRpc(GameNetworkManager.Instance.localPlayerController, health);
+                SetHealthRpc(health);
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="health"></param>
-        [ServerRpc(RequireOwnership = false)]
-        public void SetHealthServerRpc(NetworkBehaviourReference playerReference, int health)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        public void SetHealthRpc(int health)
         {
-            SetHealthClientRpc(playerReference, health);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="health"></param>
-        [ClientRpc]
-        public void SetHealthClientRpc(NetworkBehaviourReference playerReference, int health)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                SetHealthLocal(health);
-            }
+            SetHealthLocal(health);
         }
 
         /// <summary>

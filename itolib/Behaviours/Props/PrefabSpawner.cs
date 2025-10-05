@@ -13,7 +13,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public NetworkList<NetworkObjectReference> SyncedPrefabs { get; private set; } = null!;
+        public NetworkList<NetworkObjectReference> SyncedPrefabs { get; private set; }
 
         /// <summary>
         ///     TODO.

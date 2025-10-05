@@ -166,7 +166,7 @@ namespace itolib.Behaviours.Detectors
                 {
                     if (enemyFilters == null || enemyFilters.Length == 0)
                     {
-                        FoundEnemiesEachClientRpc(enemyCollision.mainScript);
+                        FoundEnemiesEachRpc(enemyCollision.mainScript);
                         enemiesFound++;
 
                         continue;
@@ -179,7 +179,7 @@ namespace itolib.Behaviours.Detectors
 
                         if (CheckFilter(filter, search, ref enemyAmounts[j], out bool matchedBlacklist))
                         {
-                            FoundEnemiesEachClientRpc(enemyCollision.mainScript);
+                            FoundEnemiesEachRpc(enemyCollision.mainScript);
                             enemiesFound++;
                         }
 
@@ -193,7 +193,7 @@ namespace itolib.Behaviours.Detectors
 
             if (enemiesFound > 0)
             {
-                FoundEnemiesAnyClientRpc(enemiesFound);
+                FoundEnemiesAnyRpc(enemiesFound);
             }
         }
 
@@ -212,7 +212,7 @@ namespace itolib.Behaviours.Detectors
             {
                 if (enemyFilters == null || enemyFilters.Length == 0)
                 {
-                    RegionEnteredClientRpc(enemyCollision.mainScript);
+                    RegionEnteredRpc(enemyCollision.mainScript);
 
                     return;
                 }
@@ -224,7 +224,7 @@ namespace itolib.Behaviours.Detectors
 
                     if (CheckFilter(filter, search, ref enemyAmounts[i], out bool matchedBlacklist))
                     {
-                        RegionEnteredClientRpc(enemyCollision.mainScript);
+                        RegionEnteredRpc(enemyCollision.mainScript);
 
                         break;
                     }
@@ -252,7 +252,7 @@ namespace itolib.Behaviours.Detectors
             {
                 if (enemyFilters == null || enemyFilters.Length == 0)
                 {
-                    RegionEnteredClientRpc(enemyCollision.mainScript, exit: true);
+                    RegionEnteredRpc(enemyCollision.mainScript, exit: true);
 
                     return;
                 }
@@ -264,7 +264,7 @@ namespace itolib.Behaviours.Detectors
 
                     if (CheckFilter(filter, search, ref enemyAmounts[i], out bool matchedBlacklist, subtract: filter.subtractOnExit))
                     {
-                        RegionEnteredClientRpc(enemyCollision.mainScript, exit: true);
+                        RegionEnteredRpc(enemyCollision.mainScript, exit: true);
 
                         break;
                     }
@@ -281,8 +281,8 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="enemyReference"></param>
-        [ClientRpc]
-        private void FoundEnemiesEachClientRpc(NetworkBehaviourReference enemyReference)
+        [Rpc(SendTo.ClientsAndHost)]
+        private void FoundEnemiesEachRpc(NetworkBehaviourReference enemyReference)
         {
             if (enemyReference.TryGet(out EnemyAI enemy))
             {
@@ -294,8 +294,8 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="enemiesFound"></param>
-        [ClientRpc]
-        private void FoundEnemiesAnyClientRpc(int enemiesFound)
+        [Rpc(SendTo.ClientsAndHost)]
+        private void FoundEnemiesAnyRpc(int enemiesFound)
         {
             onObjectsAny.Invoke(enemiesFound);
         }
@@ -305,8 +305,8 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="enemyReference"></param>
         /// <param name="exit"></param>
-        [ClientRpc]
-        private void RegionEnteredClientRpc(NetworkBehaviourReference enemyReference, bool exit = false)
+        [Rpc(SendTo.ClientsAndHost)]
+        private void RegionEnteredRpc(NetworkBehaviourReference enemyReference, bool exit = false)
         {
             if (enemyReference.TryGet(out EnemyAI enemy))
             {

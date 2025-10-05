@@ -98,7 +98,7 @@ namespace itolib.Behaviours.Grabbables
 
                 if (IsSpawned)
                 {
-                    BeginTrajectoryServerRpc(playerThrowInfo);
+                    BeginTrajectoryRpc(playerThrowInfo);
                 }
             }
         }

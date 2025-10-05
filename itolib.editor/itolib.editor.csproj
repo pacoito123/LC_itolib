@@ -61,11 +61,11 @@
 
         <Reference Include="UnityEditor">
             <PrivateAssets>all</PrivateAssets>
-            <HintPath>D:\Programs\Unity\2022.3.9f1\Editor\Data\Managed\UnityEditor.dll</HintPath>
+            <HintPath>D:\Programs\Unity\2022.3.62f2\Editor\Data\Managed\UnityEditor.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine">
             <PrivateAssets>all</PrivateAssets>
-            <HintPath>D:\Programs\Unity\2022.3.9f1\Editor\Data\Managed\UnityEngine.dll</HintPath>
+            <HintPath>D:\Programs\Unity\2022.3.62f2\Editor\Data\Managed\UnityEngine.dll</HintPath>
         </Reference>
     </ItemGroup>
 

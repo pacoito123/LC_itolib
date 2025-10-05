@@ -56,14 +56,14 @@ namespace itolib.Behaviours.Detectors
                 if (hazardCollider.transform.root.TryGetComponent(out NetworkObject hazardNetworkObject)
                     && hazardNetworkObject.IsSpawned)
                 {
-                    FoundHazardsEachClientRpc(hazardNetworkObject);
+                    FoundHazardsEachRpc(hazardNetworkObject);
                     hazardsFound++;
                 }
             }
 
             if (hazardsFound > 0)
             {
-                FoundHazardsAnyClientRpc(hazardsFound);
+                FoundHazardsAnyRpc(hazardsFound);
             }
         }
 
@@ -71,8 +71,8 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="hazardReference"></param>
-        [ClientRpc]
-        private void FoundHazardsEachClientRpc(NetworkObjectReference hazardReference)
+        [Rpc(SendTo.ClientsAndHost)]
+        private void FoundHazardsEachRpc(NetworkObjectReference hazardReference)
         {
             if (hazardReference.TryGet(out NetworkObject hazardNetworkObject))
             {
@@ -84,8 +84,8 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="hazardsFound"></param>
-        [ClientRpc]
-        private void FoundHazardsAnyClientRpc(int hazardsFound)
+        [Rpc(SendTo.ClientsAndHost)]
+        private void FoundHazardsAnyRpc(int hazardsFound)
         {
             onObjectsAny.Invoke(hazardsFound);
         }

@@ -240,32 +240,20 @@ namespace itolib.Behaviours.Kinematics
 
             if (IsSpawned) // TODO: Separate local field?
             {
-                // Sit player down on all clients.
-                PlayerSitServerRpc(player, unsit);
+                // Sit player down on all other clients.
+                PlayerSitRpc(player, unsit);
             }
         }
 
         /// <summary>
-        ///     Sit given player down on the server.
+        ///     Sit given player down on all other clients.
         /// </summary>
         /// <param name="playerReference">Network reference of the player sitting down.</param>
         /// <param name="unsit">Whether the player is unseating or not.</param>
-        [ServerRpc(RequireOwnership = false)]
-        private void PlayerSitServerRpc(NetworkBehaviourReference playerReference, bool unsit)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void PlayerSitRpc(NetworkBehaviourReference playerReference, bool unsit)
         {
-            // Sit player down on all clients.
-            PlayerSitClientRpc(playerReference, unsit);
-        }
-
-        /// <summary>
-        ///     Sit given player down on all clients.
-        /// </summary>
-        /// <param name="playerReference">Network reference of the player sitting down.</param>
-        /// <param name="unsit">Whether the player is unseating or not.</param>
-        [ClientRpc]
-        private void PlayerSitClientRpc(NetworkBehaviourReference playerReference, bool unsit)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
                 // Sit player down on the local client.
                 PlayerSitLocal(player, unsit);

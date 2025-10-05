@@ -1,5 +1,4 @@
 using DunGen;
-using GameNetcodeStuff;
 using itolib.Enums;
 using itolib.Extensions;
 using itolib.Interfaces;
@@ -229,33 +228,18 @@ namespace itolib.Behaviours.Animations
 
             if (IsSpawned)
             {
-                ChangeSpeedServerRpc(GameNetworkManager.Instance.localPlayerController, targetSpeed);
+                ChangeSpeedRpc(targetSpeed);
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="targetSpeed"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void ChangeSpeedServerRpc(NetworkBehaviourReference playerReference, float targetSpeed)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void ChangeSpeedRpc(float targetSpeed)
         {
-            ChangeSpeedClientRpc(playerReference, targetSpeed);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="targetSpeed"></param>
-        [ClientRpc]
-        private void ChangeSpeedClientRpc(NetworkBehaviourReference playerReference, float targetSpeed)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                ChangeSpeedLocal(targetSpeed);
-            }
+            ChangeSpeedLocal(targetSpeed);
         }
 
         /// <summary>
@@ -291,33 +275,18 @@ namespace itolib.Behaviours.Animations
 
             if (IsSpawned)
             {
-                SyncSpeedServerRpc(GameNetworkManager.Instance.localPlayerController, initialSpeed);
+                SyncSpeedRpc(initialSpeed);
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="initialSpeed"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void SyncSpeedServerRpc(NetworkBehaviourReference playerReference, float initialSpeed)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void SyncSpeedRpc(float initialSpeed)
         {
-            SyncSpeedClientRpc(playerReference, initialSpeed);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="initialSpeed"></param>
-        [ClientRpc]
-        private void SyncSpeedClientRpc(NetworkBehaviourReference playerReference, float initialSpeed)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                SyncSpeedLocal(initialSpeed);
-            }
+            SyncSpeedLocal(initialSpeed);
         }
 
         /// <summary>

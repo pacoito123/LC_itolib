@@ -167,7 +167,7 @@ namespace itolib.Behaviours.Grabbables
 
             if (IsSpawned)
             {
-                ForceDropItemServerRpc(player, slot);
+                ForceDropItemRpc(player, slot);
             }
         }
 
@@ -176,21 +176,10 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         /// <param name="playerReference"></param>
         /// <param name="slot"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void ForceDropItemServerRpc(NetworkBehaviourReference playerReference, int slot)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void ForceDropItemRpc(NetworkBehaviourReference playerReference, int slot)
         {
-            ForceDropItemClientRpc(playerReference, slot);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="slot"></param>
-        [ClientRpc]
-        private void ForceDropItemClientRpc(NetworkBehaviourReference playerReference, int slot)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
                 ForceDropItemLocal(player, slot);
             }

@@ -1,5 +1,4 @@
 using GameNetcodeStuff;
-using itolib.Extensions;
 using itolib.Structs;
 using Unity.Netcode;
 using UnityEngine;
@@ -86,33 +85,18 @@ namespace itolib.Behaviours.Networking
 
             if (IsSpawned)
             {
-                PerformHitServerRpc(GameNetworkManager.Instance.localPlayerController, hitInfo);
+                PerformHitRpc(hitInfo);
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="hitInfo"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void PerformHitServerRpc(NetworkBehaviourReference playerReference, HitInfo hitInfo)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void PerformHitRpc(HitInfo hitInfo)
         {
-            PerformHitClientRpc(playerReference, hitInfo);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="hitInfo"></param>
-        [ClientRpc]
-        private void PerformHitClientRpc(NetworkBehaviourReference playerReference, HitInfo hitInfo)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                PerformHitLocal(hitInfo);
-            }
+            PerformHitLocal(hitInfo);
         }
 
         /// <summary>

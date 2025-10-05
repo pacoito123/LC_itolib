@@ -70,7 +70,7 @@ namespace itolib.Behaviours.Interactables
 
             if (IsSpawned)
             {
-                EnableWalkieServerRpc(GameNetworkManager.Instance.localPlayerController);
+                EnableWalkieRpc(GameNetworkManager.Instance.localPlayerController);
             }
         }
 
@@ -78,18 +78,8 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         /// <param name="playerReference"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void EnableWalkieServerRpc(NetworkBehaviourReference playerReference)
-        {
-            EnableWalkieClientRpc(playerReference);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        [ClientRpc]
-        private void EnableWalkieClientRpc(NetworkBehaviourReference playerReference)
+        [Rpc(SendTo.ClientsAndHost, RequireOwnership = false)]
+        private void EnableWalkieRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
@@ -115,7 +105,7 @@ namespace itolib.Behaviours.Interactables
 
             if (IsSpawned)
             {
-                DisableWalkieServerRpc(GameNetworkManager.Instance.localPlayerController);
+                DisableWalkieRpc(GameNetworkManager.Instance.localPlayerController);
             }
         }
 
@@ -123,18 +113,8 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         /// <param name="playerReference"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void DisableWalkieServerRpc(NetworkBehaviourReference playerReference)
-        {
-            DisableWalkieClientRpc(playerReference);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        [ClientRpc]
-        private void DisableWalkieClientRpc(NetworkBehaviourReference playerReference)
+        [Rpc(SendTo.ClientsAndHost, RequireOwnership = false)]
+        private void DisableWalkieRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {

@@ -132,7 +132,7 @@ namespace itolib.Behaviours.Grabbables
 
                 if (IsSpawned)
                 {
-                    BeginTrajectoryServerRpc(playerKickInfo);
+                    BeginTrajectoryRpc(playerKickInfo);
                 }
             }
             else if (IsHost && other.TryGetComponent(out EnemyAICollisionDetect enemyCollision) && enemyCollision.mainScript != null
@@ -142,7 +142,7 @@ namespace itolib.Behaviours.Grabbables
 
                 if (IsSpawned)
                 {
-                    BeginTrajectoryServerRpc(enemyKickInfo);
+                    BeginTrajectoryRpc(enemyKickInfo);
                 }
             }
             else

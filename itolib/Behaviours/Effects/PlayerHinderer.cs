@@ -279,31 +279,20 @@ namespace itolib.Behaviours.Effects
 
             if (IsSpawned) // TODO: Separate local field?
             {
-                // Hinder player for all clients.
-                HinderPlayerServerRpc(player, stop);
+                // Hinder player for all other clients.
+                HinderPlayerRpc(player, stop);
             }
         }
 
         /// <summary>
-        ///     Hinder given player on the server.
+        ///     Hinder given player on all other clients.
         /// </summary>
         /// <param name="playerReference">Network reference of the hindered player.</param>
         /// <param name="stop">Whether to stop hindering the player or not.</param>
-        [ServerRpc(RequireOwnership = false)]
-        private void HinderPlayerServerRpc(NetworkBehaviourReference playerReference, bool stop)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void HinderPlayerRpc(NetworkBehaviourReference playerReference, bool stop)
         {
-            HinderPlayerClientRpc(playerReference, stop);
-        }
-
-        /// <summary>
-        ///     Hinder given player on all clients.
-        /// </summary>
-        /// <param name="playerReference">Network reference of the hindered player.</param>
-        /// <param name="stop">Whether to stop hindering the player or not.</param>
-        [ClientRpc]
-        private void HinderPlayerClientRpc(NetworkBehaviourReference playerReference, bool stop)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
                 HinderPlayerLocal(player, stop);
             }

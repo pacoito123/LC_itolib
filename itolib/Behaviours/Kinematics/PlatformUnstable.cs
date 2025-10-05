@@ -207,7 +207,7 @@ namespace itolib.Behaviours.Kinematics
 
                 if (IsSpawned)
                 {
-                    ShakePlatformServerRpc(GameNetworkManager.Instance.localPlayerController, collapse: true);
+                    ShakePlatformRpc(collapse: true);
                 }
             }
             else
@@ -216,7 +216,7 @@ namespace itolib.Behaviours.Kinematics
 
                 if (IsSpawned)
                 {
-                    ShakePlatformServerRpc(GameNetworkManager.Instance.localPlayerController);
+                    ShakePlatformRpc();
                 }
 
                 TimeSinceLastCheck = 0.0f;
@@ -321,28 +321,16 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void ShakePlatformServerRpc(NetworkBehaviourReference playerWhoTriggered, bool collapse = false)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        public void ShakePlatformRpc(bool collapse = false)
         {
-            ShakePlatformClientRpc(playerWhoTriggered, collapse);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [ClientRpc]
-        public void ShakePlatformClientRpc(NetworkBehaviourReference playerWhoTriggered, bool collapse = false)
-        {
-            if (playerWhoTriggered.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            if (!collapse)
             {
-                if (!collapse)
-                {
-                    ShakePlatformLocal();
-                }
-                else if (!PlatformCollapsed)
-                {
-                    CollapsePlatformLocal();
-                }
+                ShakePlatformLocal();
+            }
+            else if (!PlatformCollapsed)
+            {
+                CollapsePlatformLocal();
             }
         }
     }

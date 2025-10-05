@@ -214,7 +214,7 @@ namespace itolib.Behaviours.Events
 
                     if (IsSpawned)
                     {
-                        InvokeEventServerRpc(player, weightIndex);
+                        InvokeEventRpc(weightIndex);
                     }
                 }
             }
@@ -232,26 +232,11 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="weightIndex"></param>
-        [ServerRpc(RequireOwnership = false)]
-        public void InvokeEventServerRpc(NetworkBehaviourReference playerReference, int weightIndex)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        public void InvokeEventRpc(int weightIndex)
         {
-            InvokeEventClientRpc(playerReference, weightIndex);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="weightIndex"></param>
-        [ClientRpc]
-        public void InvokeEventClientRpc(NetworkBehaviourReference playerReference, int weightIndex)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                InvokeEventLocal(weightIndex);
-            }
+            InvokeEventLocal(weightIndex);
         }
 
         /// <summary>

@@ -1,5 +1,3 @@
-using GameNetcodeStuff;
-using itolib.Extensions;
 using System;
 using Unity.Netcode;
 using UnityEngine;
@@ -188,7 +186,7 @@ namespace itolib.Behaviours.Networking
 
                 if (IsSpawned)
                 {
-                    PlayAudioServerRpc(GameNetworkManager.Instance.localPlayerController, audioProperties);
+                    PlayAudioRpc(audioProperties);
                 }
             }
         }
@@ -196,26 +194,11 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="audioProperties"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void PlayAudioServerRpc(NetworkBehaviourReference playerReference, SyncedAudioProperties audioProperties)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void PlayAudioRpc(SyncedAudioProperties audioProperties)
         {
-            PlayAudioClientRpc(playerReference, audioProperties);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="audioProperties"></param>
-        [ClientRpc]
-        private void PlayAudioClientRpc(NetworkBehaviourReference playerReference, SyncedAudioProperties audioProperties)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                PlayAudioLocal(audioProperties);
-            }
+            PlayAudioLocal(audioProperties);
         }
 
         /// <summary>
@@ -278,7 +261,7 @@ namespace itolib.Behaviours.Networking
 
                 if (IsSpawned)
                 {
-                    PlayOneShotServerRpc(clip, GameNetworkManager.Instance.localPlayerController, audioProperties);
+                    PlayOneShotRpc(clip, audioProperties);
                 }
             }
         }
@@ -287,27 +270,11 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         /// <param name="clip"></param>
-        /// <param name="playerReference"></param>
         /// <param name="audioProperties"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void PlayOneShotServerRpc(int clip, NetworkBehaviourReference playerReference, SyncedAudioProperties audioProperties)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void PlayOneShotRpc(int clip, SyncedAudioProperties audioProperties)
         {
-            PlayOneShotClientRpc(clip, playerReference, audioProperties);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="clip"></param>
-        /// <param name="playerReference"></param>
-        /// <param name="audioProperties"></param>
-        [ClientRpc]
-        private void PlayOneShotClientRpc(int clip, NetworkBehaviourReference playerReference, SyncedAudioProperties audioProperties)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                PlayOneShotLocal(clip, audioProperties);
-            }
+            PlayOneShotLocal(clip, audioProperties);
         }
 
         /// <summary>

@@ -1,4 +1,3 @@
-using GameNetcodeStuff;
 using itolib.Extensions;
 using System;
 using Unity.Netcode;
@@ -106,7 +105,7 @@ namespace itolib.Behaviours.Interactables
                 if (player.IsLocalClient())
                 {
                     // Attempt to purchase and spawn object.
-                    RequestPurchaseServerRpc(player);
+                    RequestPurchaseRpc();
                 }
             });
         }
@@ -114,9 +113,9 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     Attempt to purchase and spawn instance of the purchasable object.
         /// </summary>
-        /// <param name="playerReference">NetworkBehaviour reference of the player attempting the purchase.</param>
-        [ServerRpc(RequireOwnership = false)]
-        private void RequestPurchaseServerRpc(NetworkBehaviourReference playerReference)
+        /// <param name="rpcParams"></param>
+        [Rpc(SendTo.Server, RequireOwnership = false)]
+        private void RequestPurchaseRpc(RpcParams rpcParams = default)
         {
             if (Terminal == null)
             {
@@ -127,7 +126,7 @@ namespace itolib.Behaviours.Interactables
             if (price < 0 || Terminal.groupCredits < price)
             {
                 // Send notification to the player who attempted the purchase.
-                SendNotificationClientRpc(playerReference, price);
+                SendNotificationRpc(price, success: false, RpcTarget.Single(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
 
                 return;
             }
@@ -139,43 +138,45 @@ namespace itolib.Behaviours.Interactables
             onPurchase.Invoke();
 
             // Send notification to the player who completed the purchase.
-            SendNotificationClientRpc(playerReference, success: true);
+            SendNotificationRpc(price: -1, success: true, RpcTarget.Single(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
         }
 
         /// <summary>
         ///     Send a notification message to a specific player.
         /// </summary>
-        /// <param name="playerReference">NetworkBehaviour reference of the player to receive the notification.</param>
         /// <param name="price">Price of the purchasable object.</param>
         /// <param name="success">Whether or not the purchase was succesful.</param>
-        [ClientRpc]
-        private void SendNotificationClientRpc(NetworkBehaviourReference playerReference, int price = -1, bool success = false)
+        /// <param name="rpcParams"></param>
+        [Rpc(SendTo.SpecifiedInParams)]
+        private void SendNotificationRpc(int price, bool success, RpcParams rpcParams)
         {
-            if (playerReference.TryGet(out PlayerControllerB player) && player.IsLocalClient())
+            if (HUDManager.Instance == null)
             {
-                if (success)
+                return;
+            }
+
+            if (success)
+            {
+                if (!purchaseNotification.alreadySeen)
                 {
-                    if (!purchaseNotification.alreadySeen)
+                    HUDManager.Instance.DisplayTip(purchaseNotification.headerText, purchaseNotification.bodyText);
+
+                    if (purchaseNotification.showOnce)
                     {
-                        HUDManager.Instance.DisplayTip(purchaseNotification.headerText, purchaseNotification.bodyText);
-
-                        if (purchaseNotification.showOnce)
-                        {
-                            onPurchaseNotify.Invoke();
-                        }
+                        onPurchaseNotify.Invoke();
                     }
-
-                    return;
                 }
 
-                if (price >= 0)
-                {
-                    HUDManager.Instance.DisplayTip("Cannot afford purchase!", $"A minimum of {price} credits is required.");
-                }
-                else
-                {
-                    HUDManager.Instance.DisplayTip("Cannot purchase!", "This purchasable has been disabled by the host.");
-                }
+                return;
+            }
+
+            if (price >= 0)
+            {
+                HUDManager.Instance.DisplayTip("Cannot afford purchase!", $"A minimum of {price} credits is required.");
+            }
+            else
+            {
+                HUDManager.Instance.DisplayTip("Cannot purchase!", "This purchasable has been disabled by the host.");
             }
         }
     }

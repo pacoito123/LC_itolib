@@ -69,7 +69,7 @@ namespace itolib.Behaviours.Props
 
             if (IsSpawned)
             {
-                CollectLogServerRpc(player);
+                CollectLogRpc(player);
             }
         }
 
@@ -77,20 +77,10 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         /// <param name="playerReference"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void CollectLogServerRpc(NetworkBehaviourReference playerReference)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void CollectLogRpc(NetworkBehaviourReference playerReference)
         {
-            CollectLogClientRpc(playerReference);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        [ClientRpc]
-        private void CollectLogClientRpc(NetworkBehaviourReference playerReference)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
                 CollectLogLocal(player);
             }
