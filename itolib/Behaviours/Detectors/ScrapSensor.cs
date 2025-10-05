@@ -75,14 +75,14 @@ namespace itolib.Behaviours.Detectors
                 if (itemCollider.TryGetComponent(out GrabbableObject item)
                     && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
                 {
-                    FoundItemsEachClientRpc(item);
+                    FoundItemsEachRpc(item);
                     itemsFound++;
                 }
             }
 
             if (itemsFound > 0)
             {
-                FoundItemsAnyClientRpc(itemsFound);
+                FoundItemsAnyRpc(itemsFound);
             }
         }
 
@@ -96,9 +96,9 @@ namespace itolib.Behaviours.Detectors
             {
                 onRegionEntered.Invoke(item);
 
-                if (item.IsSpawned)
+                if (IsSpawned && item.IsSpawned)
                 {
-                    RegionEnteredServerRpc(item);
+                    RegionEnteredRpc(item);
                 }
             }
         }
@@ -114,9 +114,9 @@ namespace itolib.Behaviours.Detectors
             {
                 onRegionExited.Invoke(item);
 
-                if (item.IsSpawned)
+                if (IsSpawned && item.IsSpawned)
                 {
-                    RegionEnteredServerRpc(item, exit: true);
+                    RegionEnteredRpc(item, exit: true);
                 }
             }
         }
@@ -218,8 +218,8 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="itemReference"></param>
-        [ClientRpc]
-        private void FoundItemsEachClientRpc(NetworkBehaviourReference itemReference)
+        [Rpc(SendTo.ClientsAndHost)]
+        private void FoundItemsEachRpc(NetworkBehaviourReference itemReference)
         {
             if (itemReference.TryGet(out GrabbableObject item))
             {
@@ -231,8 +231,8 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="itemsFound"></param>
-        [ClientRpc]
-        private void FoundItemsAnyClientRpc(int itemsFound)
+        [Rpc(SendTo.ClientsAndHost)]
+        private void FoundItemsAnyRpc(int itemsFound)
         {
             onObjectsAny.Invoke(itemsFound);
         }
@@ -242,29 +242,18 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="itemReference"></param>
         /// <param name="exit"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void RegionEnteredServerRpc(NetworkBehaviourReference itemReference, bool exit = false)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void RegionEnteredRpc(NetworkBehaviourReference itemReference, bool exit = false)
         {
-            RegionEnteredClientRpc(itemReference, exit);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="itemReference"></param>
-        /// <param name="exit"></param>
-        [ClientRpc]
-        private void RegionEnteredClientRpc(NetworkBehaviourReference itemReference, bool exit = false)
-        {
-            if (itemReference.TryGet(out GrabbableObject item) && !item.IsOwner)
+            if (itemReference.TryGet(out GrabbableObject player))
             {
                 if (!exit)
                 {
-                    onRegionEntered.Invoke(item);
+                    onRegionEntered.Invoke(player);
                 }
                 else
                 {
-                    onRegionExited.Invoke(item);
+                    onRegionExited.Invoke(player);
                 }
             }
         }

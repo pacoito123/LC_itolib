@@ -4,6 +4,9 @@ using HarmonyLib;
 using itolib.Compatibility;
 using itolib.Patches;
 using System;
+using System.Linq;
+using System.Reflection;
+using UnityEngine;
 
 namespace itolib
 {
@@ -42,7 +45,7 @@ namespace itolib
                 Harmony = new(PLUGIN_GUID);
                 // ...
 
-                // NetcodePatcher();
+                NetcodePatcher();
 
                 // Apply all patches.
                 Harmony.PatchAll(typeof(DoorwayPatch));
@@ -71,7 +74,7 @@ namespace itolib
             }
         }
 
-        /* private static void NetcodePatcher()
+        private static void NetcodePatcher()
         {
             Type[] types;
             try
@@ -93,6 +96,6 @@ namespace itolib
                     }
                 }
             }
-        } */
+        }
     }
 }

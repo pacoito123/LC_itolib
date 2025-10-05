@@ -133,7 +133,7 @@ namespace itolib.Behaviours.Events
 
             if (IsSpawned)
             {
-                PerformToggleServerRpc(player, CurrentState);
+                PerformToggleRpc(CurrentState);
             }
         }
 
@@ -149,26 +149,11 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="state"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void PerformToggleServerRpc(NetworkBehaviourReference playerReference, bool state)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void PerformToggleRpc(bool state)
         {
-            PerformToggleClientRpc(playerReference, state);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="state"></param>
-        [ClientRpc]
-        private void PerformToggleClientRpc(NetworkBehaviourReference playerReference, bool state)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                PerformToggleLocal(state);
-            }
+            PerformToggleLocal(state);
         }
 
         /// <summary>

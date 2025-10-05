@@ -1,5 +1,4 @@
 using GameNetcodeStuff;
-using itolib.Extensions;
 using itolib.Interfaces;
 using System;
 using Unity.Netcode;
@@ -300,23 +299,10 @@ namespace itolib.Behaviours.Grabbables
         ///     TODO.
         /// </summary>
         /// <param name="destinationInfo"></param>
-        [ServerRpc(RequireOwnership = false)]
-        protected void BeginTrajectoryServerRpc(DestinationInfo destinationInfo)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        protected void BeginTrajectoryRpc(DestinationInfo destinationInfo)
         {
-            BeginTrajectoryClientRpc(destinationInfo);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="destinationInfo"></param>
-        [ClientRpc]
-        protected void BeginTrajectoryClientRpc(DestinationInfo destinationInfo)
-        {
-            if (destinationInfo.playerInvolved && destinationInfo.playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                BeginTrajectoryLocal(destinationInfo);
-            }
+            BeginTrajectoryLocal(destinationInfo);
         }
 
         /// <summary>

@@ -1,6 +1,4 @@
-using GameNetcodeStuff;
 using itolib.Enums;
-using itolib.Extensions;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -157,33 +155,22 @@ namespace itolib.PlayZone
             if (CurrentState != newState && CurrentState is not ElevatorState.Deactivated)
             {
                 SwitchStateLocal(newState);
-                SwitchStateServerRpc(GameNetworkManager.Instance.localPlayerController, newState);
+
+                if (IsSpawned)
+                {
+                    SwitchStateRpc(newState);
+                }
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="newState"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void SwitchStateServerRpc(NetworkBehaviourReference playerReference, ElevatorState newState)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void SwitchStateRpc(ElevatorState newState)
         {
-            SwitchStateClientRpc(playerReference, newState);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="newState"></param>
-        [ClientRpc]
-        private void SwitchStateClientRpc(NetworkBehaviourReference playerReference, ElevatorState newState)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                SwitchStateLocal(newState);
-            }
+            SwitchStateLocal(newState);
         }
 
         /// <summary>
@@ -344,33 +331,22 @@ namespace itolib.PlayZone
             if (CurrentState is not ElevatorState.Deactivated)
             {
                 ToggleDoorsLocal(open);
-                ToggleDoorsServerRpc(GameNetworkManager.Instance.localPlayerController, open);
+
+                if (IsSpawned)
+                {
+                    ToggleDoorsRpc(open);
+                }
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="open"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void ToggleDoorsServerRpc(NetworkBehaviourReference playerReference, bool open)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void ToggleDoorsRpc(bool open)
         {
-            ToggleDoorsClientRpc(playerReference, open);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="open"></param>
-        [ClientRpc]
-        private void ToggleDoorsClientRpc(NetworkBehaviourReference playerReference, bool open)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                ToggleDoorsLocal(open);
-            }
+            ToggleDoorsLocal(open);
         }
 
         /// <summary>

@@ -406,35 +406,23 @@ namespace itolib.Behaviours.Grabbables
             if (weaponHit)
             {
                 WeaponHitLocal(enemyHit, surfaceIndex);
-                WeaponHitServerRpc(lastHeldBy, enemyHit, surfaceIndex);
+
+                if (IsSpawned)
+                {
+                    WeaponHitRpc(enemyHit, surfaceIndex);
+                }
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="enemyHit"></param>
         /// <param name="surfaceIndex"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void WeaponHitServerRpc(NetworkBehaviourReference playerReference, bool enemyHit, int surfaceIndex)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void WeaponHitRpc(bool enemyHit, int surfaceIndex)
         {
-            WeaponHitClientRpc(playerReference, enemyHit, surfaceIndex);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="enemyHit"></param>
-        /// <param name="surfaceIndex"></param>
-        [ClientRpc]
-        private void WeaponHitClientRpc(NetworkBehaviourReference playerReference, bool enemyHit, int surfaceIndex)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                WeaponHitLocal(enemyHit, surfaceIndex);
-            }
+            WeaponHitLocal(enemyHit, surfaceIndex);
         }
 
         /// <summary>

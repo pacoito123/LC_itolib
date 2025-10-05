@@ -129,13 +129,21 @@ namespace itolib.Behaviours.Grabbables
                 kickTimer = Time.realtimeSinceStartup;
 
                 BeginTrajectoryLocal(playerKickInfo);
-                BeginTrajectoryServerRpc(playerKickInfo);
+
+                if (IsSpawned)
+                {
+                    BeginTrajectoryRpc(playerKickInfo);
+                }
             }
             else if (IsHost && other.TryGetComponent(out EnemyAICollisionDetect enemyCollision) && enemyCollision.mainScript != null
                 && TryGetDestination(out DestinationInfo enemyKickInfo, enemyCollision.mainScript.transform, enemy: enemyCollision.mainScript))
             {
                 BeginTrajectoryLocal(enemyKickInfo);
-                BeginTrajectoryServerRpc(enemyKickInfo);
+
+                if (IsSpawned)
+                {
+                    BeginTrajectoryRpc(enemyKickInfo);
+                }
             }
             else
             {

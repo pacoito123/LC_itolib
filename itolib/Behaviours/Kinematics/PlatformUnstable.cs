@@ -204,12 +204,20 @@ namespace itolib.Behaviours.Kinematics
             if (Random?.Next(0, 100) < CollapseChance)
             {
                 CollapsePlatformLocal();
-                CollapsePlatformServerRpc();
+
+                if (IsSpawned)
+                {
+                    ShakePlatformRpc(collapse: true);
+                }
             }
             else
             {
                 ShakePlatformLocal();
-                ShakePlatformServerRpc(GameNetworkManager.Instance.localPlayerController);
+
+                if (IsSpawned)
+                {
+                    ShakePlatformRpc();
+                }
 
                 TimeSinceLastCheck = 0.0f;
             }
@@ -313,40 +321,14 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void ShakePlatformServerRpc(NetworkBehaviourReference playerWhoTriggered)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        public void ShakePlatformRpc(bool collapse = false)
         {
-            ShakePlatformClientRpc(playerWhoTriggered);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [ClientRpc]
-        public void ShakePlatformClientRpc(NetworkBehaviourReference playerWhoTriggered)
-        {
-            if (playerWhoTriggered.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            if (!collapse)
             {
                 ShakePlatformLocal();
             }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void CollapsePlatformServerRpc()
-        {
-            CollapsePlatformClientRpc();
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [ClientRpc]
-        public void CollapsePlatformClientRpc()
-        {
-            if (!PlatformCollapsed)
+            else if (!PlatformCollapsed)
             {
                 CollapsePlatformLocal();
             }

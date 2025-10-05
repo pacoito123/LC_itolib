@@ -1,5 +1,3 @@
-using GameNetcodeStuff;
-using itolib.Extensions;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -66,7 +64,7 @@ namespace itolib.Behaviours.Animations
 
                     if (IsSpawned)
                     {
-                        SwitchParamServerRpc(GameNetworkManager.Instance.localPlayerController, paramID);
+                        SwitchParamRpc(paramID);
                     }
 
                     break;
@@ -77,26 +75,11 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="paramID"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void SwitchParamServerRpc(NetworkBehaviourReference playerReference, int paramID)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void SwitchParamRpc(int paramID)
         {
-            SwitchParamClientRpc(playerReference, paramID);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="paramID"></param>
-        [ClientRpc]
-        private void SwitchParamClientRpc(NetworkBehaviourReference playerReference, int paramID)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                SwitchParamLocal(paramID);
-            }
+            SwitchParamLocal(paramID);
         }
 
         /// <summary>
@@ -120,7 +103,7 @@ namespace itolib.Behaviours.Animations
 
                 if (IsSpawned)
                 {
-                    SetBoolServerRpc(GameNetworkManager.Instance.localPlayerController, value);
+                    SetBoolRpc(value);
                 }
             }
         }
@@ -128,26 +111,11 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="value"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void SetBoolServerRpc(NetworkBehaviourReference playerReference, bool value)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void SetBoolRpc(bool value)
         {
-            SetBoolClientRpc(playerReference, value);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="value"></param>
-        [ClientRpc]
-        private void SetBoolClientRpc(NetworkBehaviourReference playerReference, bool value)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                SetBoolLocal(value);
-            }
+            SetBoolLocal(value);
         }
 
         /// <summary>
@@ -171,7 +139,7 @@ namespace itolib.Behaviours.Animations
 
                 if (IsSpawned)
                 {
-                    SetFloatServerRpc(GameNetworkManager.Instance.localPlayerController, value);
+                    SetFloatRpc(value);
                 }
             }
         }
@@ -179,26 +147,11 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="value"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void SetFloatServerRpc(NetworkBehaviourReference playerReference, float value)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void SetFloatRpc(float value)
         {
-            SetFloatClientRpc(playerReference, value);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="value"></param>
-        [ClientRpc]
-        private void SetFloatClientRpc(NetworkBehaviourReference playerReference, float value)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                SetFloatLocal(value);
-            }
+            SetFloatLocal(value);
         }
 
         /// <summary>
@@ -222,7 +175,7 @@ namespace itolib.Behaviours.Animations
 
                 if (IsSpawned)
                 {
-                    SetIntServerRpc(GameNetworkManager.Instance.localPlayerController, value);
+                    SetIntRpc(value);
                 }
             }
         }
@@ -230,26 +183,11 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="value"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void SetIntServerRpc(NetworkBehaviourReference playerReference, int value)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void SetIntRpc(int value)
         {
-            SetIntClientRpc(playerReference, value);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="value"></param>
-        [ClientRpc]
-        private void SetIntClientRpc(NetworkBehaviourReference playerReference, int value)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                SetIntLocal(value);
-            }
+            SetIntLocal(value);
         }
 
         /// <summary>
@@ -273,7 +211,7 @@ namespace itolib.Behaviours.Animations
 
                 if (IsSpawned)
                 {
-                    SetTriggerServerRpc(GameNetworkManager.Instance.localPlayerController, reset);
+                    SetTriggerRpc(reset);
                 }
             }
         }
@@ -281,26 +219,11 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="playerReference"></param>
         /// <param name="reset"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void SetTriggerServerRpc(NetworkBehaviourReference playerReference, bool reset)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void SetTriggerRpc(bool reset)
         {
-            SetTriggerClientRpc(playerReference, reset);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="reset"></param>
-        [ClientRpc]
-        private void SetTriggerClientRpc(NetworkBehaviourReference playerReference, bool reset)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
-            {
-                SetTriggerLocal(reset);
-            }
+            SetTriggerLocal(reset);
         }
 
         /// <summary>

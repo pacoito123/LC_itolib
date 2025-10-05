@@ -1,6 +1,6 @@
-using System;
 using GameNetcodeStuff;
 using itolib.Extensions;
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -92,9 +92,9 @@ namespace itolib.Behaviours.Interactables
         {
             onInteractEarlyOtherClients.AddListener(player =>
             {
-                if (player.IsLocalClient())
+                if (IsSpawned && sittingPlayer == null && player.IsLocalClient())
                 {
-                    SetPlayerOnSeatServerRpc(player);
+                    SetPlayerOnSeatRpc(player);
                 }
             });
         }
@@ -128,7 +128,11 @@ namespace itolib.Behaviours.Interactables
             if (playerAction == null || playerAction.WasPressedThisFrame())
             {
                 ExitChairLocal(true);
-                ExitChairServerRpc();
+
+                if (IsSpawned)
+                {
+                    ExitChairRpc(teleport: true);
+                }
             }
         }
 
@@ -178,23 +182,8 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         /// <param name="playerReference"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void SetPlayerOnSeatServerRpc(NetworkBehaviourReference playerReference)
-        {
-            if (localPlayerSeated || sittingPlayer != null)
-            {
-                return;
-            }
-
-            SetPlayerOnSeatClientRpc(playerReference);
-        }
-
-        /// <summary>
-        ///     
-        /// </summary>
-        /// <param name="playerReference"></param>
-        [ClientRpc]
-        private void SetPlayerOnSeatClientRpc(NetworkBehaviourReference playerReference)
+        [Rpc(SendTo.ClientsAndHost, RequireOwnership = false)]
+        private void SetPlayerOnSeatRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
@@ -205,19 +194,11 @@ namespace itolib.Behaviours.Interactables
         /// <summary>
         ///     TODO.
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        private void ExitChairServerRpc()
+        /// <param name="teleport"></param>
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void ExitChairRpc(bool teleport = false)
         {
-            ExitChairClientRpc();
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [ClientRpc]
-        private void ExitChairClientRpc()
-        {
-            ExitChairLocal();
+            ExitChairLocal(teleport);
         }
     }
 }

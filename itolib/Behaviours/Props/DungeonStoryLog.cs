@@ -66,27 +66,21 @@ namespace itolib.Behaviours.Props
         public void CollectLogSynced(PlayerControllerB player)
         {
             CollectLogLocal(player);
-            CollectLogServerRpc(player);
+
+            if (IsSpawned)
+            {
+                CollectLogServerRpc(player);
+            }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
         /// <param name="playerReference"></param>
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
         private void CollectLogServerRpc(NetworkBehaviourReference playerReference)
         {
-            CollectLogClientRpc(playerReference);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        [ClientRpc]
-        private void CollectLogClientRpc(NetworkBehaviourReference playerReference)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
                 CollectLogLocal(player);
             }

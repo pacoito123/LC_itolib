@@ -232,7 +232,7 @@ namespace itolib.Behaviours.Effects
         ///     Attach the given player on the server.
         /// </summary>
         /// <param name="playerReference">Network reference of the player to attach.</param>
-        [ServerRpc(RequireOwnership = false)]
+        [Rpc(SendTo.Server, RequireOwnership = false)]
         private void AttachPlayerServerRpc(NetworkBehaviourReference playerReference)
         {
             if (attachedPlayer == null)
@@ -246,7 +246,7 @@ namespace itolib.Behaviours.Effects
         ///     Attach the given player on all clients.
         /// </summary>
         /// <param name="playerReference">Network reference of the player to attach.</param>
-        [ClientRpc]
+        [Rpc(SendTo.ClientsAndHost)]
         private void AttachPlayerClientRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
@@ -305,48 +305,43 @@ namespace itolib.Behaviours.Effects
         }
 
         /// <summary>
-        ///     Detach player for all clients, unless not spawned or detaching locally.
+        ///     Detach player for all clients, unless not spawned or attached locally.
         /// </summary>
         public virtual void DetachPlayer()
         {
             // Check if attached player is the local client.
-            if (attachedPlayer == null || !attachedPlayer.IsLocalClient())
+            if (attachedPlayer == null || !localPlayerAttached)
             {
                 return;
             }
 
-            // Detach attached player on the local client.
+            // Detach player on the local client.
             DetachPlayerLocal();
 
-            // Check if detaching should be sent to all other clients.
-            if (IsSpawned && !attachLocally)
+            // Check if object is spawned.
+            if (IsSpawned)
             {
-                // Detach attached player on all clients.
-                DetachPlayerServerRpc();
+                // Check if detaching should be sent to all other clients.
+                if (!attachLocally)
+                {
+                    // Detach player on all other clients.
+                    DetachPlayerRpc();
+                }
+
+                // Check if detaching should despawn the object.
+                if (despawnOnDetach)
+                {
+                    // Despawn after the configured amount of time.
+                    _ = StartCoroutine(DespawnNetworkObjectDelayed());
+                }
             }
         }
 
         /// <summary>
-        ///     Detach player on the server.
+        ///     Detach player on all other clients.
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        private void DetachPlayerServerRpc()
-        {
-            // Detach the player on all clients.
-            DetachPlayerClientRpc();
-
-            if (despawnOnDetach && IsSpawned)
-            {
-                // Despawn after the configured amount of time.
-                _ = StartCoroutine(DespawnDelayed());
-            }
-        }
-
-        /// <summary>
-        ///     Detach player on all clients.
-        /// </summary>
-        [ClientRpc]
-        private void DetachPlayerClientRpc()
+        [Rpc(SendTo.NotMe)]
+        private void DetachPlayerRpc()
         {
             // Detach the player on the local client.
             DetachPlayerLocal();
@@ -373,28 +368,11 @@ namespace itolib.Behaviours.Effects
         }
 
         /// <summary>
-        ///     <c>Coroutine</c> to detach the player after a specified amount of time passes without the detach condition being met.
+        ///     Despawn parent <c>NetworkObject</c> on the server.
         /// </summary>
-        private IEnumerator DetachPlayerDelayed()
+        [Rpc(SendTo.Server)]
+        private void DespawnNetworkObjectRpc()
         {
-            // Wait for detach timer.
-            yield return new WaitForSeconds(detachTimer);
-
-            // Check if the local player is attached.
-            if (localPlayerAttached)
-            {
-                DetachPlayer();
-            }
-        }
-
-        /// <summary>
-        ///     <c>Coroutine</c> to despawn after a specified amount of time passes after detaching.
-        /// </summary>
-        private IEnumerator DespawnDelayed()
-        {
-            // Wait for despawn timer.
-            yield return new WaitForSeconds(despawnTimer);
-
             // Invoke despawn event.
             onDespawn.Invoke();
 
@@ -403,6 +381,30 @@ namespace itolib.Behaviours.Effects
                 // Despawn and destroy parent NetworkObject.
                 parentNetworkObject.Despawn(true);
             }
+        }
+
+        /// <summary>
+        ///     <c>Coroutine</c> to detach the player after a specified amount of time passes without the detach condition being met.
+        /// </summary>
+        private IEnumerator DetachPlayerDelayed()
+        {
+            // Wait for detach timer.
+            yield return new WaitForSeconds(detachTimer);
+
+            // Detach player for all clients, unless not spawned or attached locally.
+            DetachPlayer();
+        }
+
+        /// <summary>
+        ///     <c>Coroutine</c> to despawn the parent <c>NetworkObject</c> after a specified amount of time.
+        /// </summary>
+        private IEnumerator DespawnNetworkObjectDelayed()
+        {
+            // Wait for despawn timer.
+            yield return new WaitForSeconds(despawnTimer);
+
+            // Despawn parent NetworkObject on the server.
+            DespawnNetworkObjectRpc();
         }
     }
 }

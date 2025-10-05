@@ -22,7 +22,7 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     Index corresponding to the item's mesh and/or material variant.
         /// </summary>
-        public int VariantIndex { get; set; } = -1;
+        public int VariantIndex { get; set; } = -1; // TODO: Use a NetworkVariable for this.
 
         /// <summary>
         ///     Whether items should keep their material variant when reloading the save file or not.
@@ -543,24 +543,15 @@ namespace itolib.Behaviours.Grabbables
         {
             if (VariantIndex < 0 && (SaveMeshVariant || SaveMaterialVariant))
             {
-                SyncItemVariantServerRpc(GetItemDataToSave());
+                SyncItemVariantRpc(GetItemDataToSave());
             }
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        private void SyncItemVariantServerRpc(int variantIndex)
-        {
-            SyncItemVariantClientRpc(variantIndex);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [ClientRpc]
-        private void SyncItemVariantClientRpc(int variantIndex)
+        [Rpc(SendTo.ClientsAndHost, RequireOwnership = false)]
+        private void SyncItemVariantRpc(int variantIndex)
         {
             VariantIndex = variantIndex;
         }

@@ -100,11 +100,11 @@ namespace itolib.Behaviours.Detectors
                         continue;
                     }
 
-                    FoundPlayersEachClientRpc(player);
+                    FoundPlayersEachRpc(player);
 
                     if (player.isActiveAndEnabled && !player.isPlayerDead)
                     {
-                        FoundPlayersAliveEachClientRpc(player);
+                        FoundPlayersAliveEachRpc(player);
                         playersFoundAlive++;
                     }
 
@@ -114,11 +114,11 @@ namespace itolib.Behaviours.Detectors
 
             if (playersFound.Count > 0)
             {
-                FoundPlayersAnyClientRpc(playersFound.Count);
+                FoundPlayersAnyRpc(playersFound.Count);
 
                 if (playersFoundAlive > 0)
                 {
-                    FoundPlayersAliveAnyClientRpc(playersFoundAlive);
+                    FoundPlayersAliveAnyRpc(playersFoundAlive);
                 }
             }
         }
@@ -134,7 +134,7 @@ namespace itolib.Behaviours.Detectors
 
                 if (!onlyAffectLocalPlayer && IsSpawned)
                 {
-                    RegionEnteredServerRpc(player);
+                    RegionEnteredRpc(player);
                 }
             }
         }
@@ -151,7 +151,7 @@ namespace itolib.Behaviours.Detectors
 
                 if (!onlyAffectLocalPlayer && IsSpawned)
                 {
-                    RegionEnteredServerRpc(player, exit: true);
+                    RegionEnteredRpc(player, exit: true);
                 }
             }
         }
@@ -160,8 +160,8 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="playerReference"></param>
-        [ClientRpc]
-        private void FoundPlayersEachClientRpc(NetworkBehaviourReference playerReference)
+        [Rpc(SendTo.ClientsAndHost)]
+        private void FoundPlayersEachRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
@@ -173,8 +173,8 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="playerReference"></param>
-        [ClientRpc]
-        private void FoundPlayersAliveEachClientRpc(NetworkBehaviourReference playerReference)
+        [Rpc(SendTo.ClientsAndHost)]
+        private void FoundPlayersAliveEachRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
@@ -186,8 +186,8 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="playersFound"></param>
-        [ClientRpc]
-        private void FoundPlayersAnyClientRpc(int playersFound)
+        [Rpc(SendTo.ClientsAndHost)]
+        private void FoundPlayersAnyRpc(int playersFound)
         {
             onObjectsAny.Invoke(playersFound);
         }
@@ -196,8 +196,8 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="playersFound"></param>
-        [ClientRpc]
-        private void FoundPlayersAliveAnyClientRpc(int playersFound)
+        [Rpc(SendTo.ClientsAndHost)]
+        private void FoundPlayersAliveAnyRpc(int playersFound)
         {
             onPlayersAliveAny.Invoke(playersFound);
         }
@@ -207,21 +207,10 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         /// <param name="playerReference"></param>
         /// <param name="exit"></param>
-        [ServerRpc(RequireOwnership = false)]
-        private void RegionEnteredServerRpc(NetworkBehaviourReference playerReference, bool exit = false)
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void RegionEnteredRpc(NetworkBehaviourReference playerReference, bool exit = false)
         {
-            RegionEnteredClientRpc(playerReference, exit);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="exit"></param>
-        [ClientRpc]
-        private void RegionEnteredClientRpc(NetworkBehaviourReference playerReference, bool exit = false)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
+            if (playerReference.TryGet(out PlayerControllerB player))
             {
                 if (!exit)
                 {
