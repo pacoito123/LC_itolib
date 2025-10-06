@@ -105,7 +105,7 @@ namespace itolib.Behaviours.Interactables
                 if (player.IsLocalClient())
                 {
                     // Attempt to purchase and spawn object.
-                    RequestPurchaseRpc(RpcTarget.Me);
+                    RequestPurchaseRpc();
                 }
             });
         }
@@ -115,7 +115,7 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         /// <param name="rpcParams"></param>
         [Rpc(SendTo.Server, RequireOwnership = false)]
-        private void RequestPurchaseRpc(RpcParams rpcParams)
+        private void RequestPurchaseRpc(RpcParams rpcParams = default)
         {
             if (Terminal == null)
             {

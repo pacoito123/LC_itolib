@@ -104,6 +104,26 @@ namespace itolib.Behaviours.Effects
         [SerializeField] private float drunknessSpeed = 0.4f;
 
         /// <summary>
+        ///     Whether the player should have their stamina drained while hindered or not.
+        /// </summary>
+        [Header("Stamina Drain")]
+        [Tooltip("Whether the player should have their stamina drained while hindered or not.")]
+        [SerializeField] private bool drainPlayer;
+
+        /// <summary>
+        ///     Speed at which the player should have their stamina drained over time.
+        /// </summary>
+        [Tooltip("Speed at which the player should have their stamina drained over time.")]
+        [Min(0.0f)]
+        [SerializeField] private float drainSpeed = 1.0f;
+
+        /// <summary>
+        ///     Whether the player stamina draining speed should be affected by carry weight or not.
+        /// </summary>
+        [Tooltip("Whether the player stamina draining speed should be affected by carry weight or not.")]
+        [SerializeField] private bool carryWeightAffectsDrain;
+
+        /// <summary>
         ///     Callback invoked when a player begins to be hindered, with the player in question as parameter.
         /// </summary>
         [Header("Events")]
@@ -179,6 +199,22 @@ namespace itolib.Behaviours.Effects
                     // Increase player drunkness inertia.
                     attachedPlayer.drunknessInertia = Mathf.Clamp(attachedPlayer.drunknessInertia + (Time.deltaTime / 1.75f * drunknessSpeed), 0.1f, 3.0f);
                     attachedPlayer.increasingDrunknessThisFrame = true;
+                }
+
+                // Check if player should have their stamina drained.
+                if (drainPlayer)
+                {
+                    // Obtain amount to drain from the player's stamina.
+                    float drainAmount = Time.deltaTime / attachedPlayer.sprintTime * drainSpeed;
+
+                    // Check if carry weight should affect drain amount.
+                    if (carryWeightAffectsDrain)
+                    {
+                        drainAmount *= attachedPlayer.carryWeight;
+                    }
+
+                    // Subtract drain amount from the player's stamina.
+                    attachedPlayer.sprintMeter = Mathf.Clamp(attachedPlayer.sprintMeter - drainAmount, 0.0f, 1.0f);
                 }
 
                 /* if (drownPlayer)
