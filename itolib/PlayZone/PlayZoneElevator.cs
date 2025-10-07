@@ -157,7 +157,11 @@ namespace itolib.PlayZone
             if (CurrentState != newState && CurrentState is not ElevatorState.Deactivated)
             {
                 SwitchStateLocal(newState);
-                SwitchStateServerRpc(GameNetworkManager.Instance.localPlayerController, newState);
+
+                if (IsSpawned)
+                {
+                    SwitchStateServerRpc(GameNetworkManager.Instance.localPlayerController, newState);
+                }
             }
         }
 
@@ -344,7 +348,11 @@ namespace itolib.PlayZone
             if (CurrentState is not ElevatorState.Deactivated)
             {
                 ToggleDoorsLocal(open);
-                ToggleDoorsServerRpc(GameNetworkManager.Instance.localPlayerController, open);
+
+                if (IsSpawned)
+                {
+                    ToggleDoorsServerRpc(GameNetworkManager.Instance.localPlayerController, open);
+                }
             }
         }
 

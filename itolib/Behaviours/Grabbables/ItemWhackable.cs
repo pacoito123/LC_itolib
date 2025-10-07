@@ -406,7 +406,11 @@ namespace itolib.Behaviours.Grabbables
             if (weaponHit)
             {
                 WeaponHitLocal(enemyHit, surfaceIndex);
-                WeaponHitServerRpc(lastHeldBy, enemyHit, surfaceIndex);
+
+                if (IsSpawned)
+                {
+                    WeaponHitServerRpc(lastHeldBy, enemyHit, surfaceIndex);
+                }
             }
         }
 

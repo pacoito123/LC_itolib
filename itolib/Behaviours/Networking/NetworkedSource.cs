@@ -185,7 +185,11 @@ namespace itolib.Behaviours.Networking
                 SyncedAudioProperties audioProperties = RollRandomizedProperties();
 
                 PlayAudioLocal(audioProperties);
-                PlayAudioServerRpc(GameNetworkManager.Instance.localPlayerController, audioProperties);
+
+                if (IsSpawned)
+                {
+                    PlayAudioServerRpc(GameNetworkManager.Instance.localPlayerController, audioProperties);
+                }
             }
         }
 
@@ -271,7 +275,11 @@ namespace itolib.Behaviours.Networking
                 SyncedAudioProperties audioProperties = RollRandomizedProperties();
 
                 PlayOneShotLocal(clip, audioProperties);
-                PlayOneShotServerRpc(clip, GameNetworkManager.Instance.localPlayerController, audioProperties);
+
+                if (IsSpawned)
+                {
+                    PlayOneShotServerRpc(clip, GameNetworkManager.Instance.localPlayerController, audioProperties);
+                }
             }
         }
 

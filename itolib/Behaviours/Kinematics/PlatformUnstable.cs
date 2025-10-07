@@ -204,12 +204,20 @@ namespace itolib.Behaviours.Kinematics
             if (Random?.Next(0, 100) < CollapseChance)
             {
                 CollapsePlatformLocal();
-                CollapsePlatformServerRpc();
+
+                if (IsSpawned)
+                {
+                    ShakePlatformServerRpc(GameNetworkManager.Instance.localPlayerController, collapse: true);
+                }
             }
             else
             {
                 ShakePlatformLocal();
-                ShakePlatformServerRpc(GameNetworkManager.Instance.localPlayerController);
+
+                if (IsSpawned)
+                {
+                    ShakePlatformServerRpc(GameNetworkManager.Instance.localPlayerController);
+                }
 
                 TimeSinceLastCheck = 0.0f;
             }
@@ -314,41 +322,27 @@ namespace itolib.Behaviours.Kinematics
         ///     TODO.
         /// </summary>
         [ServerRpc(RequireOwnership = false)]
-        public void ShakePlatformServerRpc(NetworkBehaviourReference playerWhoTriggered)
+        public void ShakePlatformServerRpc(NetworkBehaviourReference playerWhoTriggered, bool collapse = false)
         {
-            ShakePlatformClientRpc(playerWhoTriggered);
+            ShakePlatformClientRpc(playerWhoTriggered, collapse);
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [ClientRpc]
-        public void ShakePlatformClientRpc(NetworkBehaviourReference playerWhoTriggered)
+        public void ShakePlatformClientRpc(NetworkBehaviourReference playerWhoTriggered, bool collapse = false)
         {
             if (playerWhoTriggered.TryGet(out PlayerControllerB player) && !player.IsLocalClient())
             {
-                ShakePlatformLocal();
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [ServerRpc(RequireOwnership = false)]
-        public void CollapsePlatformServerRpc()
-        {
-            CollapsePlatformClientRpc();
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [ClientRpc]
-        public void CollapsePlatformClientRpc()
-        {
-            if (!PlatformCollapsed)
-            {
-                CollapsePlatformLocal();
+                if (!collapse)
+                {
+                    ShakePlatformLocal();
+                }
+                else if (!PlatformCollapsed)
+                {
+                    CollapsePlatformLocal();
+                }
             }
         }
     }

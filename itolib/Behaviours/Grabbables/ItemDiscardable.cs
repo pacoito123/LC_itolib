@@ -164,7 +164,11 @@ namespace itolib.Behaviours.Grabbables
             }
 
             ForceDropItemLocal(player, slot);
-            ForceDropItemServerRpc(player, slot);
+
+            if (IsSpawned)
+            {
+                ForceDropItemServerRpc(player, slot);
+            }
         }
 
         /// <summary>

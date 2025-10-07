@@ -90,12 +90,16 @@ namespace itolib.Behaviours.Grabbables
                 return;
             }
 
-            if (TryGetDestination(out DestinationInfo playerKickInfo, item.transform, player: item.playerHeldBy))
+            if (TryGetDestination(out DestinationInfo playerThrowInfo, item.transform, player: item.playerHeldBy))
             {
-                item.playerHeldBy.DiscardHeldObject(true, null, playerKickInfo.targetPosition, true);
+                item.playerHeldBy.DiscardHeldObject(true, null, playerThrowInfo.targetPosition, true);
 
-                BeginTrajectoryLocal(playerKickInfo);
-                BeginTrajectoryServerRpc(playerKickInfo);
+                BeginTrajectoryLocal(playerThrowInfo);
+
+                if (IsSpawned)
+                {
+                    BeginTrajectoryServerRpc(playerThrowInfo);
+                }
             }
         }
 

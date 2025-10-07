@@ -22,7 +22,7 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     Index corresponding to the item's mesh and/or material variant.
         /// </summary>
-        public int VariantIndex { get; set; } = -1;
+        public int VariantIndex { get; set; } = -1; // TODO: Use a NetworkVariable for this.
 
         /// <summary>
         ///     Whether items should keep their material variant when reloading the save file or not.

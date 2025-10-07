@@ -83,7 +83,11 @@ namespace itolib.Behaviours.Networking
         public virtual void PerformHit(HitInfo hitInfo)
         {
             PerformHitLocal(hitInfo);
-            PerformHitServerRpc(GameNetworkManager.Instance.localPlayerController, hitInfo);
+
+            if (IsSpawned)
+            {
+                PerformHitServerRpc(GameNetworkManager.Instance.localPlayerController, hitInfo);
+            }
         }
 
         /// <summary>

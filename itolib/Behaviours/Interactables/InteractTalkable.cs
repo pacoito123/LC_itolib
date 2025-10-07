@@ -68,7 +68,10 @@ namespace itolib.Behaviours.Interactables
             }
             isActive = true;
 
-            EnableWalkieServerRpc(GameNetworkManager.Instance.localPlayerController);
+            if (IsSpawned)
+            {
+                EnableWalkieServerRpc(GameNetworkManager.Instance.localPlayerController);
+            }
         }
 
         /// <summary>
@@ -109,7 +112,11 @@ namespace itolib.Behaviours.Interactables
         private void DisableWalkieLocal(PlayerControllerB _)
         {
             isActive = false;
-            DisableWalkieServerRpc(GameNetworkManager.Instance.localPlayerController);
+
+            if (IsSpawned)
+            {
+                DisableWalkieServerRpc(GameNetworkManager.Instance.localPlayerController);
+            }
         }
 
         /// <summary>

@@ -331,7 +331,7 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public int VariantIndex { get; set; } = -1;
+        public int VariantIndex { get; set; } = -1; // TODO: Use a NetworkVariable for this.
 
         /// <summary>
         ///     TODO.

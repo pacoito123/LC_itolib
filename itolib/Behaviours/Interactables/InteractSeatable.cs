@@ -92,7 +92,7 @@ namespace itolib.Behaviours.Interactables
         {
             onInteractEarlyOtherClients.AddListener(player =>
             {
-                if (player.IsLocalClient())
+                if (IsSpawned && sittingPlayer == null && player.IsLocalClient())
                 {
                     SetPlayerOnSeatServerRpc(player);
                 }
@@ -128,7 +128,11 @@ namespace itolib.Behaviours.Interactables
             if (playerAction == null || playerAction.WasPressedThisFrame())
             {
                 ExitChairLocal(true);
-                ExitChairServerRpc();
+
+                if (IsSpawned)
+                {
+                    ExitChairServerRpc();
+                }
             }
         }
 

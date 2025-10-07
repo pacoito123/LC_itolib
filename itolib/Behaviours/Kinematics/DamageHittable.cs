@@ -142,7 +142,11 @@ namespace itolib.Behaviours.Kinematics
         public void SetHealth(int health)
         {
             SetHealthLocal(health);
-            SetHealthServerRpc(GameNetworkManager.Instance.localPlayerController, health);
+
+            if (IsSpawned)
+            {
+                SetHealthServerRpc(GameNetworkManager.Instance.localPlayerController, health);
+            }
         }
 
         /// <summary>

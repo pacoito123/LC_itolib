@@ -165,7 +165,11 @@ namespace itolib.Behaviours.Grabbables
             }
 
             StopAudioLocal();
-            StopAudioServerRpc(item.playerHeldBy);
+
+            if (IsSpawned)
+            {
+                StopAudioServerRpc(item.playerHeldBy);
+            }
         }
 
         /// <summary>
@@ -216,8 +220,12 @@ namespace itolib.Behaviours.Grabbables
         public void PlayNetworkedAudio(int clip, int clipFar = -1, float volume = 1.0f, float pitch = 1.0f, float loudness = 0.0f)
         {
             PlayAudioLocal(clip, clipFar, volume, pitch, loudness);
-            PlayNetworkedAudioServerRpc(GameNetworkManager.Instance.localPlayerController,
-                clip, clipFar, volume, pitch, loudness);
+
+            if (IsSpawned)
+            {
+                PlayNetworkedAudioServerRpc(GameNetworkManager.Instance.localPlayerController,
+                    clip, clipFar, volume, pitch, loudness);
+            }
         }
 
         /// <summary>

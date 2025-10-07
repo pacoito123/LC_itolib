@@ -113,7 +113,11 @@ namespace itolib.Behaviours.Grabbables
             if (item.playerHeldBy != null && item.playerHeldBy.IsOwner)
             {
                 SetWearablePositionLocal(item.playerHeldBy);
-                SetWearablePositionServerRpc(item.playerHeldBy);
+
+                if (IsSpawned)
+                {
+                    SetWearablePositionServerRpc(item.playerHeldBy);
+                }
             }
         }
 
@@ -197,7 +201,11 @@ namespace itolib.Behaviours.Grabbables
             if (item.playerHeldBy != null && item.playerHeldBy.IsOwner)
             {
                 EquipWearableLocal(item.playerHeldBy, reset);
-                EquipWearableServerRpc(item.playerHeldBy, reset);
+
+                if (IsSpawned)
+                {
+                    EquipWearableServerRpc(item.playerHeldBy, reset);
+                }
             }
         }
 

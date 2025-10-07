@@ -66,7 +66,11 @@ namespace itolib.Behaviours.Props
         public void CollectLogSynced(PlayerControllerB player)
         {
             CollectLogLocal(player);
-            CollectLogServerRpc(player);
+
+            if (IsSpawned)
+            {
+                CollectLogServerRpc(player);
+            }
         }
 
         /// <summary>

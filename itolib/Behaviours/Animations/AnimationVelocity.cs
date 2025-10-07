@@ -226,7 +226,11 @@ namespace itolib.Behaviours.Animations
         public void ChangeSpeed(float targetSpeed)
         {
             ChangeSpeedLocal(targetSpeed);
-            ChangeSpeedServerRpc(GameNetworkManager.Instance.localPlayerController, targetSpeed);
+
+            if (IsSpawned)
+            {
+                ChangeSpeedServerRpc(GameNetworkManager.Instance.localPlayerController, targetSpeed);
+            }
         }
 
         /// <summary>
