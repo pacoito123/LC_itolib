@@ -31,7 +31,7 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
-        public NetworkList<HiveInfo> SyncedHives { get; private set; } = null!;
+        public NetworkList<HiveInfo> SyncedHives { get; private set; }
 
         /// <summary>
         ///     TODO.

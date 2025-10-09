@@ -69,7 +69,7 @@ namespace itolib.Behaviours.Props
 
             if (IsSpawned)
             {
-                CollectLogServerRpc(player);
+                CollectLogRpc(player);
             }
         }
 
@@ -78,7 +78,7 @@ namespace itolib.Behaviours.Props
         /// </summary>
         /// <param name="playerReference"></param>
         [Rpc(SendTo.NotMe, RequireOwnership = false)]
-        private void CollectLogServerRpc(NetworkBehaviourReference playerReference)
+        private void CollectLogRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {

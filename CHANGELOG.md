@@ -1,5 +1,26 @@
 # Changelog
 
+## [v0.5.0]
+
+Updated for `v73` and above; reworked `ScriptableEvent`, added a couple new scripts and some small features.
+
+- Updated library dependencies for `v73`, including `Unity` and `NetcodePatcher` versions.
+  - **NOTE:** This release is _not_ backwards-compatible with `v72` and below, and downgrading to an older release is required to play on prior versions of the game.
+- Made a few internal networking tweaks and improvements using the new `Rpc` attribute.
+- Added `ConnectedRope`, for attaching a `LineRenderer` to several different points.
+  - Similar to the game's `SetLineRendererPoints`, but for more than two points.
+- Reworked `ScriptableEvent` and `ScriptableEventListener`.
+  - Now uses a key system instead of a direct reference, and can thus handle being included in multiple bundles.
+  - Added comments and tooltips to both of them.
+- Added periodic stamina draining to `PlayerHinderer`.
+  - Drain speed can be adjusted, as well as whether to take carry weight into account or not.
+- Added `resetOnToggle` field for `DelayedEvent`, to determine whether the timer should reset when the script is disabled, or if it should be paused until re-enabled.
+- Added a missing null check to `EventfulApparatus`.
+- Added a small hotfix for `Abaddon` (from [Nightmare Moons](https://thunderstore.io/c/lethal-company/p/DemonMae/Nightmare_Moons)).
+  - Fixed error spam due to a missing `NavMeshObstacle`.
+  - Temporary fix since the moon cannot be updated at the moment.
+- Added [Fish](https://www.youtube.com/watch?v=lPGipwoJiOM).
+
 ## [v0.4.6]
 
 Actually updated `CHANGELOG` this time...
