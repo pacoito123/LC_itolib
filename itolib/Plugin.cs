@@ -4,10 +4,9 @@ using HarmonyLib;
 using itolib.Compatibility;
 using itolib.Compatibility.Moons;
 using itolib.Patches;
+using itolib.Structs;
 using System;
-using System.Linq;
-using System.Reflection;
-using UnityEngine;
+using Unity.Netcode;
 
 namespace itolib
 {
@@ -27,7 +26,7 @@ namespace itolib
         /// <summary>
         ///     TODO.
         /// </summary>
-        public const string PLUGIN_GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.5.0";
+        public const string PLUGIN_GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.5.1";
         internal static ManualLogSource StaticLogger { get; private set; } = null!;
 
         /// <summary>
@@ -46,7 +45,7 @@ namespace itolib
                 Harmony = new(PLUGIN_GUID);
                 // ...
 
-                NetcodePatcher();
+                SerializeNetworkVariables();
 
                 // Apply all patches.
                 Harmony.PatchAll(typeof(DoorwayPatch));
@@ -79,28 +78,16 @@ namespace itolib
             }
         }
 
-        private static void NetcodePatcher()
+        private static void SerializeNetworkVariables()
         {
-            Type[] types;
-            try
-            {
-                types = Assembly.GetExecutingAssembly().GetTypes();
-            }
-            catch (ReflectionTypeLoadException e)
-            {
-                types = [.. e.Types.Where(type => type != null)];
-            }
+            NetworkVariableSerializationTypes.InitializeSerializer_UnmanagedByMemcpy<ItemInfo>();
+            NetworkVariableSerializationTypes.InitializeEqualityChecker_UnmanagedIEquatable<ItemInfo>();
 
-            foreach (Type type in types)
-            {
-                foreach (MethodInfo method in type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
-                {
-                    if (method.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false).Length > 0)
-                    {
-                        _ = method.Invoke(null, null);
-                    }
-                }
-            }
+            NetworkVariableSerializationTypes.InitializeSerializer_UnmanagedByMemcpy<HiveInfo>();
+            NetworkVariableSerializationTypes.InitializeEqualityChecker_UnmanagedIEquatable<HiveInfo>();
+
+            NetworkVariableSerializationTypes.InitializeSerializer_UnmanagedByMemcpy<NetworkObjectReference>();
+            NetworkVariableSerializationTypes.InitializeEqualityChecker_UnmanagedIEquatable<NetworkObjectReference>();
         }
     }
 }

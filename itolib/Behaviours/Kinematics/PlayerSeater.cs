@@ -14,6 +14,21 @@ namespace itolib.Behaviours.Kinematics
     public class PlayerSeater : PlayerAttachable
     {
         /// <summary>
+        ///     Hash of the trigger parameter to activate to reset the player's animations.
+        /// </summary>
+        private static readonly int stopAnimationID = Animator.StringToHash("SA_stopAnimation");
+
+        /// <summary>
+        ///     Hash of the trigger parameter ..
+        /// </summary>
+        private static readonly int notInSpecialAnimID = Animator.StringToHash("notInSpecialAnim");
+
+        /// <summary>
+        ///     Hash of the bool parameter to toggle the player's crouching animation.
+        /// </summary>
+        private static readonly int crouchingID = Animator.StringToHash("crouching");
+
+        /// <summary>
         ///    Position and rotation to be used for sitting players.
         /// </summary>
         /// <remarks>If left empty, the <c>Transform</c> of the object this component is attached to will be used.</remarks>
@@ -121,21 +136,6 @@ namespace itolib.Behaviours.Kinematics
         ///     Hash of the trigger parameter to activate upon sitting down.
         /// </summary>
         private int sittingAnimationID = -1;
-
-        /// <summary>
-        ///     Hash of the trigger parameter to activate to reset the player's animations.
-        /// </summary>
-        private readonly int stopAnimationID = Animator.StringToHash("SA_stopAnimation");
-
-        /// <summary>
-        ///     Hash of the trigger parameter ..
-        /// </summary>
-        private readonly int notInSpecialAnimID = Animator.StringToHash("notInSpecialAnim");
-
-        /// <summary>
-        ///     Hash of the bool parameter to toggle the player's crouching animation.
-        /// </summary>
-        private readonly int crouchingID = Animator.StringToHash("crouching");
 
         /// <summary>
         ///     Attach if the player is alive.

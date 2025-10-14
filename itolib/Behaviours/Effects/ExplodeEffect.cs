@@ -145,8 +145,8 @@ namespace itolib.Behaviours.Effects
             if (spawnExplosionEffect && explosionPrefab != null)
             {
                 Instantiate(explosionPrefab, explosionOrigin, useVanillaExplosion ? Quaternion.Euler(-90f, 0f, 0f)
-                    : Quaternion.identity, (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null) ?
-                        RoundManager.Instance.mapPropsContainer.transform : null).SetActive(true);
+                    : Quaternion.identity, (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null)
+                        ? RoundManager.Instance.mapPropsContainer.transform : null).SetActive(true);
             }
 
             float shakeDistance = Vector3.Distance(GameNetworkManager.Instance.localPlayerController.transform.position, explosionOrigin);

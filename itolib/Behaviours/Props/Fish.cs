@@ -171,7 +171,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     Fish.
         /// </summary>
-        private readonly int fishAnimationID = Animator.StringToHash("Fishbowl");
+        private static readonly int fishAnimationID = Animator.StringToHash("Fishbowl");
 
         /// <summary>
         ///     Fish.

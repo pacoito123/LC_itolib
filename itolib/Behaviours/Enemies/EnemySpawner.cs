@@ -80,8 +80,8 @@ namespace itolib.Behaviours.Enemies
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
-            return (WeightedEntries?.Length > 0 && WeightedSelf.TryObtainRandomEntry(out EnemyWeightEntry entry, isSeededRandom ?
-                SeededSelf.GetSeededRandom() : null)) ? GetEnemyToSpawn(entry.enemyToSpawn) : null;
+            return (WeightedEntries?.Length > 0 && WeightedSelf.TryObtainRandomEntry(out EnemyWeightEntry entry, isSeededRandom
+                ? SeededSelf.GetSeededRandom() : null)) ? GetEnemyToSpawn(entry.enemyToSpawn) : null;
         }
 
         /// <summary>
