@@ -340,18 +340,11 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     Detach player on all other clients.
         /// </summary>
-        [Rpc(SendTo.NotMe)]
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
         private void DetachPlayerRpc()
         {
-            // Invoke despawn event.
-            onDespawn.Invoke();
-
-            // Check if parent NetworkObject is spawned.
-            if (parentNetworkObject != null && parentNetworkObject.IsSpawned)
-            {
-                // Despawn and destroy parent NetworkObject.
-                parentNetworkObject.Despawn(true);
-            }
+            // Detach player on the local client.
+            DetachPlayerLocal();
         }
 
         /// <summary>

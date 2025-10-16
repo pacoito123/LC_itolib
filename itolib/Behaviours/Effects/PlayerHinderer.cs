@@ -294,6 +294,7 @@ namespace itolib.Behaviours.Effects
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
+                // Hinder player for the local client.
                 HinderPlayerLocal(player, stop);
             }
         }

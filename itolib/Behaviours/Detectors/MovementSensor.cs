@@ -153,7 +153,7 @@ namespace itolib.Behaviours.Detectors
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
-                // Invoke movement detected event on all clients.
+                // Invoke movement detected event on the local client.
                 onMovementDetected.Invoke(player);
             }
         }
