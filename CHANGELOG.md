@@ -1,5 +1,17 @@
 # Changelog
 
+## [v0.5.1]
+
+Added a new script, did a couple networking-related hotfixes.
+
+- Added `AlertDialogue`, for sending dialogue messages to the player.
+  - Uses the 'ship leaving early' UI to display messages.
+  - Has a few customization options like sound effect override and (optional) delay between letters.
+  - Several dialogue entries can be specified to display several messages, in sequence.
+- Fixed `PlayerAttachable` not detaching clients properly over the network.
+  - Also fixed some possible weirdness with despawning.
+- Removed `Netcode` patching step from plugin initialization.
+
 ## [v0.5.0]
 
 Updated for `v73` and above; reworked `ScriptableEvent`, added a couple new scripts and some small features.
