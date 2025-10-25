@@ -315,6 +315,33 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="entry"></param>
+        public void AddWeightEntry(ScrapWeightEntry entry)
+        {
+            WeightedSelf.AddWeight(entry);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="entries"></param>
+        public void AddWeightEntries(ScrapWeightEntry[] entries)
+        {
+            WeightedSelf.AddWeights(entries);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="index"></param>
+        public void RemoveWeightEntry(int index)
+        {
+            WeightedSelf.RemoveWeight(index);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="syncedItem"></param>
         private void SyncItemValues(ItemInfo syncedItem)
         {

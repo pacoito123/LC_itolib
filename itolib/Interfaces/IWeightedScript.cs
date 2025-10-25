@@ -50,19 +50,43 @@ namespace itolib.Interfaces
         /// </summary>
         void InitializeWeights()
         {
-            if (WeightedEntries == null || WeightedEntries.Length == 0)
+            AddWeights(WeightedEntries);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="entry"></param>
+        void AddWeight(T entry)
+        {
+            WeightedEntries = (WeightedEntries?.Length > 0) ? [.. WeightedEntries, entry] : [entry];
+            CumulativeWeights = (CumulativeWeights?.Length > 0) ? [.. CumulativeWeights, entry.Weight] : [entry.Weight];
+            TotalWeight += entry.Weight;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="entries"></param>
+        void AddWeights(T[]? entries)
+        {
+            if (entries == null || entries.Length == 0)
             {
                 // TODO: Log warning.
                 return;
             }
 
-            CumulativeWeights = new int[WeightedEntries.Length];
+            WeightedEntries = (WeightedEntries?.Length > 0) ? [.. WeightedEntries, .. entries] : entries;
 
-            for (int i = 0; i < WeightedEntries.Length; i++)
+            int[] cumulativeWeights = new int[entries.Length];
+
+            for (int i = 0; i < entries.Length; i++)
             {
-                TotalWeight += WeightedEntries[i].Weight;
-                CumulativeWeights[i] = TotalWeight;
+                TotalWeight += entries[i].Weight;
+                cumulativeWeights[i] = TotalWeight;
             }
+
+            CumulativeWeights = (CumulativeWeights?.Length > 0) ? [.. CumulativeWeights, .. cumulativeWeights] : cumulativeWeights;
         }
 
         /// <summary>

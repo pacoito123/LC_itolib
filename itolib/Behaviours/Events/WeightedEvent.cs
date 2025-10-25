@@ -177,6 +177,33 @@ namespace itolib.Behaviours.Events
 
         /// <summary>
         ///     TODO.
+        /// </summary>
+        /// <param name="entry"></param>
+        public void AddWeightEntry(WeightedEventEntry entry)
+        {
+            WeightedSelf.AddWeight(entry);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="entries"></param>
+        public void AddWeightEntries(WeightedEventEntry[] entries)
+        {
+            WeightedSelf.AddWeights(entries);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="index"></param>
+        public void RemoveWeightEntry(int index)
+        {
+            WeightedSelf.RemoveWeight(index);
+        }
+
+        /// <summary>
+        ///     TODO.
         /// </summary> 
         public void RollFromServer()
         {

@@ -97,12 +97,39 @@ namespace itolib.Behaviours.Enemies
         /// </summary>
         protected override void Awake()
         {
-            if (NetworkManager.Singleton.IsHost)
+            if (NetworkManager.Singleton.IsHost && WeightedEntries?.Length > 0)
             {
                 WeightedSelf.InitializeWeights();
             }
 
             base.Awake();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="entry"></param>
+        public void AddWeightEntry(EnemyWeightEntry entry)
+        {
+            WeightedSelf.AddWeight(entry);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="entries"></param>
+        public void AddWeightEntries(EnemyWeightEntry[] entries)
+        {
+            WeightedSelf.AddWeights(entries);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="index"></param>
+        public void RemoveWeightEntry(int index)
+        {
+            WeightedSelf.RemoveWeight(index);
         }
     }
 }
