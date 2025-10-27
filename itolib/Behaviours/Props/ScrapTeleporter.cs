@@ -25,7 +25,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public NetworkList<ItemInfo> SyncedItems { get; private set; }
+        public NetworkList<ItemInfo>? SyncedItems { get; private set; }
 
         /// <summary>
         ///     Cached instance of the current <c>ScrapTeleporter</c> as an <c>IActivationScript</c>, to avoid having to cast.
@@ -150,7 +150,7 @@ namespace itolib.Behaviours.Props
         {
             base.OnNetworkSpawn();
 
-            SyncedItems.OnListChanged += changeEvent =>
+            SyncedItems?.OnListChanged += changeEvent =>
             {
                 if (changeEvent.Type is NetworkListEvent<ItemInfo>.EventType.Add)
                 {
@@ -281,7 +281,7 @@ namespace itolib.Behaviours.Props
                                     itemReference = item
                                 };
 
-                                SyncedItems.Add(syncedItem);
+                                SyncedItems?.Add(syncedItem);
                                 availableScrap.RemoveAt(j);
 
                                 foundItem = true;
@@ -317,7 +317,7 @@ namespace itolib.Behaviours.Props
                         itemReference = item
                     };
 
-                    SyncedItems.Add(syncedItem);
+                    SyncedItems?.Add(syncedItem);
                     availableScrap.RemoveAt(index);
                 }
             }

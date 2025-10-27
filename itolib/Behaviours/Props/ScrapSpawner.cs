@@ -24,7 +24,7 @@ namespace itolib.Behaviours.Props
         /// </summary>
         [Header("Scrap Weight Entry")]
         [Tooltip("")]
-        public Item? itemToSpawn;
+        public string itemName = string.Empty;
 
         /// <summary>
         ///     TODO.
@@ -38,6 +38,13 @@ namespace itolib.Behaviours.Props
         /// </summary>
         [field: Tooltip("")]
         [field: SerializeField] public bool SingleUse { get; set; }
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(5.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Replace with the desired item's 'itemName' field.")]
+        public Item? itemToSpawn;
 
         /// <summary>
         ///     TODO.
@@ -50,7 +57,7 @@ namespace itolib.Behaviours.Props
         /// <param name="itemWithRarity"></param>
         public ScrapWeightEntry(SpawnableItemWithRarity itemWithRarity)
         {
-            itemToSpawn = itemWithRarity.spawnableItem;
+            itemName = (itemWithRarity.spawnableItem != null) ? itemWithRarity.spawnableItem.itemName : string.Empty;
             Weight = itemWithRarity.rarity;
         }
     }
@@ -63,7 +70,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public NetworkList<ItemInfo> SyncedItems { get; private set; }
+        public NetworkList<ItemInfo>? SyncedItems { get; private set; }
 
         /// <summary>
         ///     Cached instance of <c>ScrapSpawner</c> as an <c>IWeightedScript</c>, to avoid having to cast.
@@ -83,7 +90,8 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        [field: Header("Item Spawner")]
+        [field: Space(5.0f)]
+        [field: Header("Scrap Spawner")]
         [field: Tooltip("")]
         [field: SerializeField] public ScrapWeightEntry[]? WeightedEntries { get; set; }
 
@@ -150,6 +158,14 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Space(5.0f)]
+        [Header("Other")]
+        [Tooltip("")]
+        [SerializeField] private bool muteSpawnedScrap;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Tooltip("")]
         [SerializeField] private bool respectSingleItemDay;
 
@@ -159,44 +175,20 @@ namespace itolib.Behaviours.Props
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
+            NetworkObject? possibleItem = null;
+
             if (respectSingleItemDay && SimulateAnomaly.SingleItem != null)
             {
-                return SimulateAnomaly.SingleItem.spawnPrefab.GetComponent<NetworkObject>();
+                possibleItem = SimulateAnomaly.SingleItem.spawnPrefab.GetComponent<NetworkObject>();
             }
 
-            if (WeightedEntries?.Length > 0 && WeightedSelf.TryObtainRandomEntry(out ScrapWeightEntry entry, isSeededRandom
-                ? SeededSelf.GetSeededRandom() : null))
+            if (possibleItem == null && WeightedEntries?.Length > 0
+                && WeightedSelf.TryObtainRandomEntry(out ScrapWeightEntry entry, isSeededRandom ? SeededSelf.GetSeededRandom() : null))
             {
-                Item? itemToSpawn = entry.itemToSpawn;
-
-                if (itemToSpawn == null)
-                {
-                    // TODO: Log warning.
-                    return null;
-                }
-
-                if (itemToSpawn.spawnPrefab != null)
-                {
-                    return itemToSpawn.spawnPrefab.GetComponent<NetworkObject>();
-                }
-
-                ExtendedItem? extendedItem = PatchedContent.ExtendedItems.Find(extendedItem =>
-                    extendedItem.Item.name.CompareOrdinal(itemToSpawn.name));
-
-                if (extendedItem != null)
-                {
-                    return extendedItem.Item.spawnPrefab.GetComponent<NetworkObject>();
-                }
-
-                if (DawnLibCompatibility.Enabled)
-                {
-                    Item? dawnItem = DawnLibCompatibility.GetDawnItem(itemToSpawn.name);
-
-                    return (dawnItem != null) ? dawnItem.spawnPrefab.GetComponent<NetworkObject>() : null;
-                }
+                possibleItem = (entry.itemToSpawn != null) ? GetItemToSpawn(entry.itemToSpawn) : GetItemToSpawn(entry.itemName);
             }
 
-            return null;
+            return possibleItem;
         }
 
         /// <summary>
@@ -257,7 +249,7 @@ namespace itolib.Behaviours.Props
                         : UnityEngine.Random.RandomRangeInt(0, item.itemProperties.materialVariants.Length)) : -1
             };
 
-            SyncedItems.Add(serializedItem);
+            SyncedItems?.Add(serializedItem);
 
             base.SpawnPerformed(item, spawnLocation);
         }
@@ -297,13 +289,13 @@ namespace itolib.Behaviours.Props
         }
 
         /// <summary>
-        ///     TOOD.
+        ///     TODO.
         /// </summary>
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
 
-            SyncedItems.OnListChanged += changeEvent =>
+            SyncedItems?.OnListChanged += changeEvent =>
             {
                 if (changeEvent.Type is NetworkListEvent<ItemInfo>.EventType.Add)
                 {
@@ -376,6 +368,50 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="itemToSpawn"></param>
+        /// <returns></returns>
+        private static NetworkObject? GetItemToSpawn(Item? itemToSpawn)
+        {
+            if (itemToSpawn == null)
+            {
+                // TODO: Log warning.
+                return null;
+            }
+
+            return (itemToSpawn.spawnPrefab != null)
+                ? itemToSpawn.spawnPrefab.GetComponent<NetworkObject>() : GetItemToSpawn(itemToSpawn.name, checkObjectName: true);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="itemName"></param>
+        /// <param name="checkObjectName"></param>
+        /// <returns></returns>
+        private static NetworkObject? GetItemToSpawn(string itemName, bool checkObjectName = false)
+        {
+            ExtendedItem? extendedItem = PatchedContent.ExtendedItems.Find(extendedItem => !checkObjectName
+                ? extendedItem.Item.itemName.CompareOrdinal(itemName) : extendedItem.Item.name.CompareOrdinal(itemName));
+
+            if (extendedItem != null)
+            {
+                return extendedItem.Item.spawnPrefab.GetComponent<NetworkObject>();
+            }
+
+            if (DawnLibCompatibility.Enabled)
+            {
+                Item? dawnItem = DawnLibCompatibility.GetDawnItem(itemName);
+
+                return (dawnItem != null) ? dawnItem.spawnPrefab.GetComponent<NetworkObject>() : null;
+            }
+
+            // TODO: Log warning.
+            return null;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="item"></param>
         /// <param name="spawnLocation"></param>
         /// <returns></returns>
@@ -396,6 +432,18 @@ namespace itolib.Behaviours.Props
             if (fallToGround)
             {
                 item.FallToGround(randomizePosition, true);
+            }
+
+            if (muteSpawnedScrap)
+            {
+                yield return new WaitForEndOfFrame();
+
+                AudioSource[] sources = item.GetComponentsInChildren<AudioSource>();
+
+                for (int i = 0; i < sources.Length; i++)
+                {
+                    sources[i].Stop();
+                }
             }
         }
     }

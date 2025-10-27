@@ -16,7 +16,7 @@ namespace itolib.Behaviours.Enemies
         /// </summary>
         [Header("Enemy Weight Entry")]
         [Tooltip("")]
-        public EnemyType? enemyToSpawn = null;
+        public string enemyName = string.Empty;
 
         /// <summary>
         ///     TODO.
@@ -34,6 +34,14 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Space(5.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Replace with the desired enemy's 'enemyName' field.")]
+        public EnemyType? enemyToSpawn = null;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public EnemyWeightEntry() { }
 
         /// <summary>
@@ -42,7 +50,7 @@ namespace itolib.Behaviours.Enemies
         /// <param name="enemyWithRarity"></param>
         public EnemyWeightEntry(SpawnableEnemyWithRarity enemyWithRarity)
         {
-            enemyToSpawn = enemyWithRarity.enemyType;
+            enemyName = (enemyWithRarity.enemyType != null) ? enemyWithRarity.enemyType.enemyName : string.Empty;
             Weight = enemyWithRarity.rarity;
         }
     }
@@ -70,7 +78,14 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
-        [field: Header("Enemy Spawner")]
+        [Space(5.0f)]
+        [Header("Enemy Spawner")]
+        [Tooltip("")]
+        [SerializeField] private string enemyToSpawn = string.Empty;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [field: Tooltip("")]
         [field: SerializeField] public EnemyWeightEntry[]? WeightedEntries { get; set; }
 
@@ -80,8 +95,20 @@ namespace itolib.Behaviours.Enemies
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
-            return (WeightedEntries?.Length > 0 && WeightedSelf.TryObtainRandomEntry(out EnemyWeightEntry entry, isSeededRandom
-                ? SeededSelf.GetSeededRandom() : null)) ? GetEnemyToSpawn(entry.enemyToSpawn) : null;
+            NetworkObject? possibleEnemy = null;
+
+            if (enemyToSpawn.Length > 0)
+            {
+                possibleEnemy = GetEnemyToSpawn(enemyToSpawn);
+            }
+
+            if (possibleEnemy == null && WeightedEntries?.Length > 0
+                && WeightedSelf.TryObtainRandomEntry(out EnemyWeightEntry entry, isSeededRandom ? SeededSelf.GetSeededRandom() : null))
+            {
+                possibleEnemy = (entry.enemyToSpawn != null) ? GetEnemyToSpawn(entry.enemyToSpawn) : GetEnemyToSpawn(entry.enemyName);
+            }
+
+            return possibleEnemy;
         }
 
         /// <summary>
@@ -130,6 +157,15 @@ namespace itolib.Behaviours.Enemies
         public void RemoveWeightEntry(int index)
         {
             WeightedSelf.RemoveWeight(index);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="enemyName"></param>
+        public void SwitchEnemyToSpawn(string enemyName)
+        {
+            enemyToSpawn = enemyName;
         }
     }
 }

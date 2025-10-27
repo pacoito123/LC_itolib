@@ -1,4 +1,6 @@
 using itolib.Behaviours.Networking;
+using itolib.Extensions;
+using itolib.ScriptableObjects;
 using itolib.Structs;
 using Unity.Netcode;
 using UnityEngine;
@@ -13,14 +15,14 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public NetworkList<NetworkObjectReference> SyncedPrefabs { get; private set; }
+        public NetworkList<NetworkObjectReference>? SyncedPrefabs { get; private set; }
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Prefab Spawner")]
         [Tooltip("")]
-        [SerializeField] private NetworkObject? prefabToSpawn;
+        [SerializeField] private string networkPrefabName;
 
         /// <summary>
         ///     TODO.
@@ -31,10 +33,36 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Space(5.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Replace with the desired (registered) network prefab's file name.")]
+        [SerializeField] private NetworkObject? prefabToSpawn;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
-            return prefabToSpawn;
+            if (prefabToSpawn != null)
+            {
+                return prefabToSpawn;
+            }
+
+            if (ScriptableNetworkPrefab.TryGetPrefab(out NetworkObject registeredPrefab, networkPrefabName))
+            {
+                return registeredPrefab;
+            }
+
+            foreach (NetworkPrefab networkPrefab in NetworkManager.Singleton.NetworkConfig.Prefabs.Prefabs)
+            {
+                if (networkPrefab.Prefab.name.CompareOrdinal(networkPrefabName))
+                {
+                    return networkPrefab.Prefab.GetComponent<NetworkObject>();
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -62,7 +90,7 @@ namespace itolib.Behaviours.Props
 
             if (IsSpawned)
             {
-                SyncedPrefabs.Add(spawnedPrefab);
+                SyncedPrefabs?.Add(spawnedPrefab);
             }
             else
             {
@@ -81,13 +109,13 @@ namespace itolib.Behaviours.Props
         }
 
         /// <summary>
-        ///     TOOD.
+        ///     TODO.
         /// </summary>
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
 
-            SyncedPrefabs.OnListChanged += changeEvent =>
+            SyncedPrefabs?.OnListChanged += changeEvent =>
             {
                 if (changeEvent.Type is NetworkListEvent<NetworkObjectReference>.EventType.Add)
                 {
@@ -102,13 +130,10 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="prefab"></param>
-        public void SwitchPrefabToSpawn(NetworkObject? prefab)
+        /// <param name="prefabName"></param>
+        public void SwitchPrefabToSpawn(string prefabName)
         {
-            if (prefab != null)
-            {
-                prefabToSpawn = prefab;
-            }
+            networkPrefabName = prefabName;
         }
     }
 }

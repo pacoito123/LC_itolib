@@ -17,6 +17,7 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Space(5.0f)]
         [Header("Enemy Spawner Base")]
         [Tooltip("")]
         [SerializeField] private bool influencePowerLevels = true;
@@ -71,7 +72,7 @@ namespace itolib.Behaviours.Enemies
         /// </summary>
         /// <param name="enemyToSpawn"></param>
         /// <returns></returns>
-        protected NetworkObject? GetEnemyToSpawn(EnemyType? enemyToSpawn)
+        protected static NetworkObject? GetEnemyToSpawn(EnemyType? enemyToSpawn)
         {
             if (enemyToSpawn == null)
             {
@@ -79,13 +80,20 @@ namespace itolib.Behaviours.Enemies
                 return null;
             }
 
-            if (enemyToSpawn.enemyPrefab != null)
-            {
-                return enemyToSpawn.enemyPrefab.GetComponent<NetworkObject>();
-            }
+            return (enemyToSpawn.enemyPrefab != null)
+                ? enemyToSpawn.enemyPrefab.GetComponent<NetworkObject>() : GetEnemyToSpawn(enemyToSpawn.name, checkObjectName: true);
+        }
 
-            ExtendedEnemyType? extendedEnemy = PatchedContent.ExtendedEnemyTypes.Find(extendedEnemy =>
-                extendedEnemy.EnemyType.name.CompareOrdinal(enemyToSpawn.name));
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="enemyName"></param>
+        /// <param name="checkObjectName"></param>
+        /// <returns></returns>
+        protected static NetworkObject? GetEnemyToSpawn(string enemyName, bool checkObjectName = false)
+        {
+            ExtendedEnemyType? extendedEnemy = PatchedContent.ExtendedEnemyTypes.Find(extendedEnemy => !checkObjectName
+                ? extendedEnemy.EnemyType.enemyName.CompareOrdinal(enemyName) : extendedEnemy.EnemyType.name.CompareOrdinal(enemyName));
 
             if (extendedEnemy != null)
             {
@@ -94,11 +102,12 @@ namespace itolib.Behaviours.Enemies
 
             if (DawnLibCompatibility.Enabled)
             {
-                EnemyType? dawnEnemy = DawnLibCompatibility.GetDawnEnemyType(enemyToSpawn.name);
+                EnemyType? dawnEnemy = DawnLibCompatibility.GetDawnEnemyType(enemyName);
 
                 return (dawnEnemy != null) ? dawnEnemy.enemyPrefab.GetComponent<NetworkObject>() : null;
             }
 
+            // TODO: Log warning.
             return null;
         }
     }
