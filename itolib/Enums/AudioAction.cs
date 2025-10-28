@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace itolib.Enums
@@ -5,6 +6,7 @@ namespace itolib.Enums
     /// <summary>
     ///     TODO.
     /// </summary>
+    [Obsolete("AudioGroup component that uses this is deprecated.")]
     public enum AudioAction
     {
         /// <summary>

@@ -1,6 +1,7 @@
 using DunGen;
 using itolib.Enums;
 using itolib.Interfaces;
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -9,6 +10,7 @@ namespace itolib.Behaviours.Effects
     /// <summary>
     ///     TODO.
     /// </summary>
+    [Obsolete("Use 'itolib.Behaviours.Groupings.AudioGroup' instead.")]
     public class AudioGroup : MonoBehaviour, IActivationScript
     {
         /// <summary>
