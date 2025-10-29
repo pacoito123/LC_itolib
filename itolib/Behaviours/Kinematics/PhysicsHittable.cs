@@ -1,6 +1,4 @@
-using GameNetcodeStuff;
 using itolib.Behaviours.Networking;
-using itolib.Extensions;
 using itolib.Structs;
 using UnityEngine;
 
@@ -36,6 +34,8 @@ namespace itolib.Behaviours.Kinematics
         /// <param name="hitInfo"></param>
         public override void PerformHitLocal(HitInfo hitInfo)
         {
+            base.PerformHitLocal(hitInfo);
+
             if (hittableBody != null)
             {
                 Vector3 forceToApply = hitInfo.hitByPlayer
@@ -43,18 +43,6 @@ namespace itolib.Behaviours.Kinematics
                     : hitForce * hitInfo.damage * (transform.rotation * hitInfo.direction);
 
                 hittableBody.AddForce(forceToApply, forceMode);
-            }
-
-            onHit.Invoke();
-
-            if (hitInfo.hitByPlayer && hitInfo.playerReference.TryGet(out PlayerControllerB player))
-            {
-                if (player.IsLocalClient())
-                {
-                    onPlayerHitLocal.Invoke(player);
-                }
-
-                onPlayerHit.Invoke(player);
             }
         }
     }

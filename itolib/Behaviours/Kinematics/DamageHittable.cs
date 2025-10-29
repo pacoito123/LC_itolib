@@ -1,5 +1,3 @@
-using GameNetcodeStuff;
-using itolib.Extensions;
 using itolib.Behaviours.Networking;
 using itolib.Structs;
 using System;
@@ -91,17 +89,7 @@ namespace itolib.Behaviours.Kinematics
                 return;
             }
 
-            onHit.Invoke();
-
-            if (hitInfo.hitByPlayer && hitInfo.playerReference.TryGet(out PlayerControllerB player))
-            {
-                if (player.IsLocalClient())
-                {
-                    onPlayerHitLocal.Invoke(player);
-                }
-
-                onPlayerHit.Invoke(player);
-            }
+            base.PerformHitLocal(hitInfo);
 
             health = Mathf.Clamp(health - hitInfo.damage, 0, health);
 

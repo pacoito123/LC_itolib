@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Extensions;
 using itolib.Structs;
 using Unity.Netcode;
 using UnityEngine;
@@ -21,7 +22,7 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Space(5)]
+        [Space(5.0f)]
         [Header("Events")]
         [Tooltip("")]
         [SerializeField] protected UnityEvent onHit = new();
@@ -37,6 +38,30 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         [Tooltip("")]
         [SerializeField] protected UnityEvent<PlayerControllerB> onPlayerHitLocal = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected UnityEvent<PlayerControllerB> onShovelHit = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected UnityEvent<PlayerControllerB> onShovelHitLocal = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected UnityEvent<PlayerControllerB> onKnifeHit = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] protected UnityEvent<PlayerControllerB> onKnifeHitLocal = new();
 
         /// <summary>
         ///     TODO.
@@ -111,6 +136,37 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         /// <param name="hitInfo"></param>
-        public abstract void PerformHitLocal(HitInfo hitInfo);
+        public virtual void PerformHitLocal(HitInfo hitInfo)
+        {
+            onHit.Invoke();
+
+            if (hitInfo.hitByPlayer && hitInfo.playerReference.TryGet(out PlayerControllerB player))
+            {
+                if (player.IsLocalClient())
+                {
+                    if (hitInfo.hitID == 1)
+                    {
+                        onShovelHitLocal.Invoke(player);
+                    }
+                    else if (hitInfo.hitID == 5)
+                    {
+                        onKnifeHitLocal.Invoke(player);
+                    }
+
+                    onPlayerHitLocal.Invoke(player);
+                }
+
+                if (hitInfo.hitID == 1)
+                {
+                    onShovelHit.Invoke(player);
+                }
+                else if (hitInfo.hitID == 5)
+                {
+                    onKnifeHit.Invoke(player);
+                }
+
+                onPlayerHit.Invoke(player);
+            }
+        }
     }
 }

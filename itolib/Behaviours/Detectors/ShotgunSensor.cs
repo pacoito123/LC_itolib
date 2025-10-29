@@ -63,7 +63,7 @@ namespace itolib.Behaviours.Detectors
             // Hold action should be off for shotgun purposes.
             holdAction = false;
 
-            // Set default shotgun layer mask. TODO: Update
+            // Set default shotgun layer mask.
             layerMask = LayerMask.GetMask("Default", "Room", "Foliage", "Colliders", "Terrain", "Vehicle");
 
             base.Reset();
