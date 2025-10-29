@@ -1,6 +1,5 @@
 using itolib.Compatibility;
 using itolib.Extensions;
-using System;
 
 namespace itolib.Behaviours.Conditionals
 {
@@ -12,12 +11,7 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     TODO.
         /// </summary>
-        public bool IsProgressive { get; private set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public LevelWeatherType CurrentWeather { get; private set; }
+        public LevelWeatherType LastWeather { get; private set; }
 
         /// <summary>
         ///     TODO.
@@ -62,7 +56,10 @@ namespace itolib.Behaviours.Conditionals
         /// <param name="undo"></param>
         public override void ApplyConditional(bool undo)
         {
-            ApplyConditional(TimeOfDay.Instance.currentLevelWeather);
+            if (TimeOfDay.Instance != null)
+            {
+                ApplyConditional(TimeOfDay.Instance.currentLevelWeather);
+            }
         }
 
         /// <summary>
@@ -74,7 +71,7 @@ namespace itolib.Behaviours.Conditionals
         {
             if (!undo)
             {
-                CurrentWeather = objectToCheck;
+                LastWeather = objectToCheck;
             }
 
             string weatherName = $"{objectToCheck}";
@@ -102,6 +99,17 @@ namespace itolib.Behaviours.Conditionals
                     }
                 }
             }
+
+            if (WeatherTweaksCompatibility.Enabled
+                && WeatherTweaksCompatibility.IsCombinedWeather(out LevelWeatherType[]? allWeathers, objectToCheck))
+            {
+                for (int i = 0; i < allWeathers?.Length; i++)
+                {
+                    ApplyConditional(allWeathers[i]);
+                }
+
+                LastWeather = objectToCheck;
+            }
         }
 
         /// <summary>
@@ -121,40 +129,16 @@ namespace itolib.Behaviours.Conditionals
         /// <param name="weatherTypes"></param>
         public void ApplyConditional(LevelWeatherType[] weatherTypes)
         {
-            if (weatherTypes.Length == 0)
+            if (LastWeather != LevelWeatherType.None
+                && WeatherTweaksCompatibility.Enabled && !WeatherTweaksCompatibility.IsProgressingWeather(LastWeather))
             {
-                return;
+                ApplyConditional(LastWeather, undo: true);
             }
 
-            if (IsProgressive && CurrentWeather != LevelWeatherType.None)
+            for (int i = 0; i < weatherTypes?.Length; i++)
             {
-                ApplyConditional(CurrentWeather, weatherTypes[0]);
-
-                return;
+                ApplyConditional(weatherTypes[i]);
             }
-
-            string incomingWeather = $"{weatherTypes[0]}";
-
-            if (incomingWeather.Contains('>'))
-            {
-                IsProgressive = true;
-
-                return;
-            }
-            else if (incomingWeather.Contains('+'))
-            {
-                foreach (string weatherName in incomingWeather.Split(" + "))
-                {
-                    if (Enum.TryParse(weatherName, out LevelWeatherType weather))
-                    {
-                        ApplyConditional(weather);
-                    }
-                }
-
-                return;
-            }
-
-            ApplyConditional(weatherTypes[0]);
         }
     }
 }

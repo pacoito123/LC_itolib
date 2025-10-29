@@ -1,6 +1,7 @@
 using HarmonyLib;
 using System;
 using System.Runtime.CompilerServices;
+using WeatherRegistry;
 using WeatherRegistry.Networking;
 
 namespace itolib.Compatibility
@@ -41,7 +42,7 @@ namespace itolib.Compatibility
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         internal static bool ApplyWeatherOverrides(Action<LevelWeatherType[]> weatherAction)
         {
-            if (WeatherRegistry.WeatherManager.GetCurrentLevelWeather().Type is WeatherRegistry.WeatherType.Clear)
+            if (WeatherManager.GetCurrentLevelWeather().Type is WeatherType.Clear)
             {
                 return false;
             }
