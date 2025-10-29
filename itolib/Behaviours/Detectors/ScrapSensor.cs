@@ -72,7 +72,7 @@ namespace itolib.Behaviours.Detectors
                     continue;
                 }
 
-                if (itemCollider.TryGetComponent(out GrabbableObject item)
+                if (itemCollider.TryGetComponent(out GrabbableObject item) && item.IsSpawned
                     && !item.TryGetComponent(out NavMeshAgent _)) // Maneater check...
                 {
                     FoundItemsEachRpc(item);
