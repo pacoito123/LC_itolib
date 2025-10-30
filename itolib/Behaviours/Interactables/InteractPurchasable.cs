@@ -111,6 +111,15 @@ namespace itolib.Behaviours.Interactables
         }
 
         /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="interactable"></param>
+        public void SetInteractable(bool interactable)
+        {
+            this.interactable = interactable;
+        }
+
+        /// <summary>
         ///     Attempt to purchase and spawn instance of the purchasable object.
         /// </summary>
         /// <param name="rpcParams"></param>

@@ -1,3 +1,4 @@
+using GameNetcodeStuff;
 using UnityEngine;
 
 namespace itolib.Behaviours.Animations
@@ -51,9 +52,9 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         private void LateUpdate()
         {
-            Vector3[] positions = new Vector3[connectedPoints!.Length];
+            Vector3[] positions = new Vector3[connectedPoints?.Length ?? 0];
 
-            for (int i = 0; i < connectedPoints.Length; i++)
+            for (int i = 0; i < connectedPoints?.Length; i++)
             {
                 Transform? point = connectedPoints[i];
 
@@ -61,6 +62,48 @@ namespace itolib.Behaviours.Animations
             }
 
             lineRenderer.SetPositions(positions);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="attachTo"></param>
+        public void AttachStart(Transform attachTo)
+        {
+            if (connectedPoints?.Length > 0)
+            {
+                connectedPoints[0] = attachTo;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="attachTo"></param>
+        public void AttachEnd(Transform attachTo)
+        {
+            if (connectedPoints?.Length > 0)
+            {
+                connectedPoints[^1] = attachTo;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="player"></param>
+        public void AttachPlayerStart(PlayerControllerB player)
+        {
+            AttachStart(player.transform);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="player"></param>
+        public void AttachPlayerEnd(PlayerControllerB player)
+        {
+            AttachEnd(player.transform);
         }
     }
 }
