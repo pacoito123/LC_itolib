@@ -66,10 +66,6 @@ namespace itolib
                     Harmony.PatchAll(typeof(WeatherRegistryCompatibility));
                 }
 
-                // Special moon compatibilities:
-                AbaddonCompatibility.RegisterCompat();
-                // ...
-
                 StaticLogger.LogInfo($"{PLUGIN_NAME} v{VERSION} loaded!");
             }
             catch (Exception e)
