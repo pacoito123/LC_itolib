@@ -1,5 +1,35 @@
 # Changelog
 
+## [v0.6.0]
+
+Bunch of script reworks, some rather niche additions, a couple fixes.
+
+- Added `ScriptableNetworkPrefab`, for registering one or several network prefabs from the editor.
+  - Allows usage of `PrefabSpawner` for moons without manually registering prefabs.
+  - A bit impractical to use at the moment, though...
+- Added abstract `ComponentGroup`, for scripts that perform bulk actions with several components.
+  - Made a separate `AudioGroup` that inherits from `ComponentGroup`, and deprecated the current one.
+  - Added `RigidbodyGroup`, for applying force to several `Rigidbodies` at the same time.
+- Added `RandomVector`, which just produces a random `Vector` within a set range and passes it onto an event to do stuff with on demand.
+- Deprecated usage of blank references in `NetworkedSpawner` scripts to define what to spawn in favor of just item/enemy/prefab names.
+  - Avoids potential issues with blank references being deleted by [LethalLevelLoader](https://thunderstore.io/c/lethal-company/p/pacoito/LethalLevelLoaderUpdated) after being replaced (as it's intended to), and I was already doing name comparisons to begin with.
+  - Blank references in spawners will still work but will be removed at some point in the future.
+- Added separate field for `EnemySpawner` to spawn a single specific enemy.
+  - Will override any set weighted enemy spawns, _but_ allows switching the enemy to spawn through a method.
+- Added option to immediately stop any spawned scrap's `AudioSource` components from playing audio after being spawned, to help a bit with potential missing sound issues.
+  - _Looking at you, Dine scraps..._
+- Added separate event callbacks to `NetworkedSpawner` for when the player has performed a hit using a `Shovel` or `Knife` specifically.
+- Added methods for attaching a player or any transform to the start or end of a `ConnectedRope`.
+- Added method to set `InteractPurchasable`'s interactable state.
+- Internal tweaks to weighted scripts.
+  - Added (default) function to `IWeightedScript` to add one or several weight entries to an already-initialized list of weights.
+  - Added functions to the `IWeightedScript`-inheriting scripts to add and remove weights.
+- Improved `WeatherConditional` handling of [WeatherTweaks](https://thunderstore.io/c/lethal-company/p/mrov/WeatherTweaks)' combined and progressing weathers a lot.
+  - Notably now allows matching combined/progressing weathers with custom names, such as ones added through [Custom Weathers Toolkit](https://thunderstore.io/c/lethal-company/p/Zigzag/Combined_Weathers_Toolkit).
+- Added an extra check to `ScrapSensor` to double check the item's spawned.
+  - Should fix [PlayZone](https://thunderstore.io/c/lethal-company/p/LethalMatt/PlayZone) compatibility with some [BrutalCompanyMinusExtraReborn](https://thunderstore.io/c/lethal-company/p/SoftDiamond/BrutalCompanyMinusExtraReborn) modifiers.
+- Removed temporary hotfix for `Abaddon` (from [Nightmare Moons](https://thunderstore.io/c/lethal-company/p/DemonMae/Nightmare_Moons)), for it has been fixed.
+
 ## [v0.5.1]
 
 Added a new script, did a couple networking-related hotfixes.

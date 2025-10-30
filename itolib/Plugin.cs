@@ -2,7 +2,6 @@
 using BepInEx.Logging;
 using HarmonyLib;
 using itolib.Compatibility;
-using itolib.Compatibility.Moons;
 using itolib.Patches;
 using itolib.Structs;
 using System;
@@ -26,7 +25,7 @@ namespace itolib
         /// <summary>
         ///     TODO.
         /// </summary>
-        public const string PLUGIN_GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.5.1";
+        public const string PLUGIN_GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.6.0";
         internal static ManualLogSource StaticLogger { get; private set; } = null!;
 
         /// <summary>
