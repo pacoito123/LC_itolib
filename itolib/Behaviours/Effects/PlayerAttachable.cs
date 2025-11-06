@@ -160,7 +160,7 @@ namespace itolib.Behaviours.Effects
             }
 
             // Attach player that entered the attach region.
-            if (collider.CompareTag("Player") && collider.TryGetComponent(out PlayerControllerB player))
+            if (collider.TryGetComponent(out PlayerControllerB player))
             {
                 AttachPlayer(player);
             }
@@ -179,7 +179,7 @@ namespace itolib.Behaviours.Effects
             }
 
             // Detach player that exited the attach region.
-            if (collider.CompareTag("Player") && collider.TryGetComponent(out PlayerControllerB _))
+            if (collider.TryGetComponent(out PlayerControllerB _))
             {
                 DetachPlayer();
             }

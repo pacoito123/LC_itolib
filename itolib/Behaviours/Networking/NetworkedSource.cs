@@ -163,6 +163,14 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
+        private void Reset()
+        {
+            syncedSource = GetComponent<AudioSource>();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();

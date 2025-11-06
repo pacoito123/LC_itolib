@@ -180,7 +180,7 @@ namespace itolib.Behaviours.Kinematics
                 return;
             }
 
-            if (collider.CompareTag("Player") && collider.TryGetComponent(out PlayerControllerB player) && player.IsLocalClient())
+            if (collider.TryGetComponent(out PlayerControllerB player) && player.IsLocalClient())
             {
                 LocalPlayerOnPlatform = true;
 
@@ -226,7 +226,7 @@ namespace itolib.Behaviours.Kinematics
 
         private void OnTriggerExit(Collider collider)
         {
-            if (!PlatformCollapsed && LocalPlayerOnPlatform && collider.CompareTag("Player") && collider.TryGetComponent(out PlayerControllerB player)
+            if (!PlatformCollapsed && LocalPlayerOnPlatform && collider.TryGetComponent(out PlayerControllerB player)
                 && player.IsLocalClient())
             {
                 LocalPlayerOnPlatform = false;

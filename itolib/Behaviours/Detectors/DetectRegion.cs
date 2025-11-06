@@ -121,7 +121,10 @@ namespace itolib.Behaviours.Detectors
         ///     Define default values for this <c>DetectRegion</c>.
         /// </summary>
         /// <remarks>Meant for defining a default <c>LayerMask</c> value (<see cref="layerMask"/>), tailored to the specific type of object to find.</remarks>
-        protected abstract void Reset();
+        protected virtual void Reset()
+        {
+            regionCollider = GetComponent<Collider>();
+        }
 
         /// <summary>
         ///     Cache already-cast <c>IActivationScript</c> instance.

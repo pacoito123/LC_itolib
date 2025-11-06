@@ -25,6 +25,14 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
+        private void Reset()
+        {
+            lineRenderer = GetComponent<LineRenderer>();
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         private void Awake()
         {
             if (lineRenderer == null)

@@ -104,18 +104,13 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="other"></param>
         private void ActivatePhysicsTrigger(Collider other)
         {
-            if (!other.CompareTag("Player") && !other.CompareTag("Enemy"))
-            {
-                return;
-            }
-
             if (Physics.Linecast(other.gameObject.transform.position + Vector3.up, itemTransform.position + (Vector3.up * 0.5f),
                 StartOfRound.Instance.collidersAndRoomMaskAndDefault, QueryTriggerInteraction.Ignore))
             {
                 return;
             }
 
-            if (item.isHeld || item.parentObject != null || (itemTransform.GetParent() != RoundManager.Instance.spawnedScrapContainer
+            if (item.parentObject != null || (itemTransform.GetParent() != RoundManager.Instance.spawnedScrapContainer
                 && itemTransform.GetParent() != StartOfRound.Instance.propsContainer
                 && itemTransform.GetParent() != StartOfRound.Instance.elevatorTransform))
             {
@@ -144,10 +139,6 @@ namespace itolib.Behaviours.Grabbables
                 {
                     BeginTrajectoryRpc(enemyKickInfo);
                 }
-            }
-            else
-            {
-                return;
             }
         }
 

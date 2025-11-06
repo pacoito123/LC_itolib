@@ -26,12 +26,6 @@ namespace itolib.Behaviours.Interactables
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [SerializeField] private AudioSource? seatableSource;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
         [SerializeField] private UnityEvent onPlayerSit = new();
 
         /// <summary>
