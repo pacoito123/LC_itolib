@@ -3,6 +3,7 @@ using itolib.Behaviours.Helpers;
 using itolib.Compatibility;
 using itolib.Extensions;
 using itolib.Interfaces;
+using itolib.Util;
 using LethalLevelLoader;
 using System;
 using System.Collections;
@@ -401,7 +402,7 @@ namespace itolib.Behaviours.Grabbables
             }
             OnDisconnectEarly.Invoke();
 
-            yield return new WaitForSeconds(0.1f);
+            yield return Yielders.WaitForSeconds(0.1f);
             if (playSparkPFX && sparkParticle != null)
             {
                 sparkParticle.SetActive(true);
@@ -418,14 +419,14 @@ namespace itolib.Behaviours.Grabbables
             }
             OnDisconnect.Invoke();
 
-            yield return new WaitForSeconds(1.0f);
+            yield return Yielders.WaitForSeconds(1.0f);
             if (flickerLights)
             {
                 roundManager.FlickerLights(false, false);
             }
             OnLightsFlicker.Invoke();
 
-            yield return new WaitForSeconds(2.5f);
+            yield return Yielders.WaitForSeconds(2.5f);
             if (shutOffPower)
             {
                 roundManager.SwitchPower(false);
@@ -433,7 +434,7 @@ namespace itolib.Behaviours.Grabbables
             }
             OnLightsOff.Invoke();
 
-            yield return new WaitForSeconds(0.75f);
+            yield return Yielders.WaitForSeconds(0.75f);
             if (displayRadiationWarning)
             {
                 HUDManager.Instance.RadiationWarningHUD();

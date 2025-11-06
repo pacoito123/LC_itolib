@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
+using itolib.Util;
 using System;
 using System.Collections;
 using Unity.Netcode;
@@ -389,7 +390,7 @@ namespace itolib.Behaviours.Effects
         private IEnumerator DetachPlayerDelayed()
         {
             // Wait for detach timer.
-            yield return new WaitForSeconds(detachTimer);
+            yield return Yielders.WaitForSeconds(detachTimer);
 
             // Detach player for all clients, unless not spawned or attached locally.
             DetachPlayer();
@@ -401,7 +402,7 @@ namespace itolib.Behaviours.Effects
         private IEnumerator DespawnNetworkObjectDelayed()
         {
             // Wait for despawn timer.
-            yield return new WaitForSeconds(despawnTimer);
+            yield return Yielders.WaitForSeconds(despawnTimer);
 
             // Despawn parent NetworkObject on the server.
             DespawnNetworkObjectRpc();

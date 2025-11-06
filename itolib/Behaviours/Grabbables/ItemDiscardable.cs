@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
+using itolib.Util;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -295,10 +296,10 @@ namespace itolib.Behaviours.Grabbables
         private IEnumerator DespawnItemDelayed()
         {
             onDespawnTimerStart.Invoke();
-            yield return new WaitForSeconds(despawnTimer);
+            yield return Yielders.WaitForSeconds(despawnTimer);
 
             onDespawnTimerEnd.Invoke();
-            yield return new WaitForEndOfFrame();
+            yield return Yielders.WaitForEndOfFrame;
 
             DespawnItem();
         }

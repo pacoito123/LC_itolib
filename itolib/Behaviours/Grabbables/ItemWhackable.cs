@@ -1,6 +1,7 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
 using itolib.Interfaces;
+using itolib.Util;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -190,6 +191,11 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        private WaitUntil? waitUntilReelingStop;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         private IEventfulItem? eventfulSelf;
 
         /// <summary>
@@ -228,6 +234,8 @@ namespace itolib.Behaviours.Grabbables
         {
             hitBuffer = new RaycastHit[maxObjectHits];
             hitEnemies = new(maxObjectHits);
+
+            waitUntilReelingStop = new WaitUntil(() => !isHoldingButton || !item.isHeld);
         }
 
         /// <summary>
@@ -275,10 +283,10 @@ namespace itolib.Behaviours.Grabbables
             lastHeldBy.playerBodyAnimator.SetBool("reelingUp", true);
 
             onReelingStart.Invoke();
-            yield return new WaitForSeconds(chargeTimer);
+            yield return Yielders.WaitForSeconds(chargeTimer);
 
             onReelingFinish.Invoke();
-            yield return new WaitUntil(() => !isHoldingButton || !item.isHeld);
+            yield return waitUntilReelingStop;
 
             // Handle swing.
             lastHeldBy.playerBodyAnimator.SetBool("reelingUp", false);
@@ -289,12 +297,12 @@ namespace itolib.Behaviours.Grabbables
             }
             // ...
 
-            yield return new WaitForSeconds(hitSpeed);
-            yield return new WaitForEndOfFrame();
+            yield return Yielders.WaitForSeconds(hitSpeed);
+            yield return Yielders.WaitForEndOfFrame;
 
             Whack(); // Bonk.mp3
 
-            yield return new WaitForSeconds(hitCooldown);
+            yield return Yielders.WaitForSeconds(hitCooldown);
 
             reelingUp = false;
             whackingCoroutine = null;

@@ -1,4 +1,5 @@
 using itolib.Enums;
+using itolib.Util;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -452,7 +453,7 @@ namespace itolib.PlayZone
 
         private IEnumerator DeactivateElevatorDelayed()
         {
-            yield return new WaitForSeconds(1.5f);
+            yield return Yielders.WaitForSeconds(1.5f);
             SwitchState(ElevatorState.Deactivated);
             yield break;
         }

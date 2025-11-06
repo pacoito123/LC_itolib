@@ -1,4 +1,5 @@
 using System.Collections;
+using itolib.Util;
 using UnityEngine;
 
 namespace itolib.Behaviours.Effects
@@ -44,9 +45,9 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     Coroutine to turn off the 'SpookyFog' GameObject after 5 seconds.
         /// </summary>
-        private static IEnumerator DeactivateSpookyFogDelayed()
+        private static IEnumerator DeactivateSpookyFogDelayed() // TODO: Handle through SimulateAnomaly.
         {
-            yield return new WaitForSeconds(5.0f);
+            yield return Yielders.WaitForSeconds(5.0f);
             RoundManager.Instance.indoorFog.gameObject.SetActive(false);
         }
     }

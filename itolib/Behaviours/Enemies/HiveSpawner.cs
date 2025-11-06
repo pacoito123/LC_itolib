@@ -1,5 +1,6 @@
 using itolib.Extensions;
 using itolib.Structs;
+using itolib.Util;
 using LethalLevelLoader;
 using System.Collections;
 using Unity.Netcode;
@@ -146,10 +147,10 @@ namespace itolib.Behaviours.Enemies
 
             while (!bees.hasSpawnedHive && Time.realtimeSinceStartup - startTime < 8.0f)
             {
-                yield return new WaitForSeconds(0.5f);
+                yield return Yielders.WaitForSeconds(0.5f);
             }
 
-            yield return new WaitForEndOfFrame();
+            yield return Yielders.WaitForEndOfFrame;
 
             if (bees.hive == null)
             {

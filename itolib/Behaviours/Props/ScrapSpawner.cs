@@ -4,6 +4,7 @@ using itolib.Compatibility;
 using itolib.Extensions;
 using itolib.Interfaces;
 using itolib.Structs;
+using itolib.Util;
 using LethalLevelLoader;
 using System;
 using System.Collections;
@@ -417,8 +418,8 @@ namespace itolib.Behaviours.Props
         /// <returns></returns>
         private IEnumerator WaitForItemFall(GrabbableObject item, TransformInfo spawnLocation)
         {
-            yield return new WaitForEndOfFrame();
-            yield return new WaitForEndOfFrame();
+            yield return Yielders.WaitForEndOfFrame;
+            yield return Yielders.WaitForEndOfFrame;
 
             item.fallTime = 1.0f;
             item.hasHitGround = true;
@@ -436,7 +437,7 @@ namespace itolib.Behaviours.Props
 
             if (muteSpawnedScrap)
             {
-                yield return new WaitForEndOfFrame();
+                yield return Yielders.WaitForEndOfFrame;
 
                 AudioSource[] sources = item.GetComponentsInChildren<AudioSource>();
 

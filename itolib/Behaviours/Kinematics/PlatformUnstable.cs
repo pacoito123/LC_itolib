@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
+using itolib.Util;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -282,7 +283,7 @@ namespace itolib.Behaviours.Kinematics
 
         private IEnumerator CollapsePlatform()
         {
-            yield return new WaitForSeconds(collapseTimer);
+            yield return Yielders.WaitForSeconds(collapseTimer);
             if (platformContainer != null)
             {
                 platformContainer.SetActive(false);
@@ -295,7 +296,7 @@ namespace itolib.Behaviours.Kinematics
                 yield break;
             }
 
-            yield return new WaitForSeconds(respawnTimer);
+            yield return Yielders.WaitForSeconds(respawnTimer);
             if (platformContainer != null)
             {
                 platformContainer.SetActive(true);

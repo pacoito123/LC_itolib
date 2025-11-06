@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using itolib.Util;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -314,7 +315,7 @@ namespace itolib.Behaviours.Notifications
                         }
 
                         // Wait for the specified amount of time before adding the next letter.
-                        yield return new WaitForSeconds(dialogue.typingDelay);
+                        yield return Yielders.WaitForSeconds(dialogue.typingDelay);
                     }
                 }
                 else
@@ -324,7 +325,7 @@ namespace itolib.Behaviours.Notifications
                 }
 
                 // Wait for the specified amount of time before closing the dialogue box and moving onto the next (if there is one).
-                yield return new WaitForSeconds(dialogueArray[i].waitTime);
+                yield return Yielders.WaitForSeconds(dialogueArray[i].waitTime);
             }
 
             // Disable the dialogue box bool parameter, to close it.

@@ -1,5 +1,6 @@
 using itolib.Behaviours.Grabbables;
 using itolib.Compatibility;
+using itolib.Util;
 using LethalLevelLoader;
 using System.Collections;
 using UnityEngine;
@@ -65,7 +66,7 @@ namespace itolib.PlayZone
             }
             OnDisconnectEarly.Invoke();
 
-            yield return new WaitForSeconds(0.1f);
+            yield return Yielders.WaitForSeconds(0.1f);
             if (playSparkPFX)
             {
                 sparkParticle.SetActive(true);
@@ -82,14 +83,14 @@ namespace itolib.PlayZone
             }
             OnDisconnect.Invoke();
 
-            yield return new WaitForSeconds(1.0f);
+            yield return Yielders.WaitForSeconds(1.0f);
             if (flickerLights)
             {
                 roundManager.FlickerLights(false, false);
             }
             OnLightsFlicker.Invoke();
 
-            yield return new WaitForSeconds(2.5f);
+            yield return Yielders.WaitForSeconds(2.5f);
             if (shutOffPower)
             {
                 roundManager.SwitchPower(false);
@@ -97,7 +98,7 @@ namespace itolib.PlayZone
             }
             OnLightsOff.Invoke();
 
-            yield return new WaitForSeconds(0.75f);
+            yield return Yielders.WaitForSeconds(0.75f);
 
             if (!bothPulled) // TODO: Check if lights are on to begin with.
             {

@@ -1,4 +1,5 @@
 using itolib.Extensions;
+using itolib.Util;
 using System;
 using System.Collections;
 using Unity.Netcode;
@@ -481,7 +482,7 @@ namespace itolib.Behaviours.Detectors
         private static IEnumerator FreezeAgentDelayed(NavMeshAgent agent, float originalSpeed)
         {
             agent.speed = 0.0f;
-            yield return new WaitForSeconds(1.0f);
+            yield return Yielders.WaitForSeconds(1.0f);
             agent.speed = originalSpeed;
         }
     }

@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Behaviours.Detectors;
+using itolib.Util;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -250,7 +251,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         private IEnumerator DespawnDelayed()
         {
-            yield return new WaitForSeconds(despawnTimer);
+            yield return Yielders.WaitForSeconds(despawnTimer);
 
             // Despawn and destroy.
             if (parentNetworkObject != null)
