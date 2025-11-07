@@ -370,6 +370,8 @@ namespace itolib.Behaviours.Enemies
                 {
                     collider.enabled = false;
                 }
+
+                originalHive.isInFactory = true; // Stops deactivated hive from getting struck by lightning.
                 // ...
 
                 bees.hive = newHive;
