@@ -25,6 +25,11 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
+        private Vector3[]? positions;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         private void Reset()
         {
             lineRenderer = GetComponent<LineRenderer>();
@@ -39,6 +44,8 @@ namespace itolib.Behaviours.Animations
             {
                 lineRenderer = GetComponent<LineRenderer>();
             }
+
+            positions = new Vector3[connectedPoints?.Length ?? 1];
         }
 
         /// <summary>
@@ -60,11 +67,9 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         private void LateUpdate()
         {
-            Vector3[] positions = new Vector3[connectedPoints?.Length ?? 0];
-
-            for (int i = 0; i < connectedPoints?.Length; i++)
+            for (int i = 0; i < positions?.Length; i++)
             {
-                Transform? point = connectedPoints[i];
+                Transform? point = connectedPoints?[i];
 
                 positions[i] = (point != null) ? (lineRenderer.useWorldSpace ? point.position : point.localPosition) : lineRenderer.GetPosition(i);
             }
