@@ -12,7 +12,7 @@ namespace itolib
     /// <summary>
     ///     Wondrous gizmos and gadgets for the restless mind.
     /// </summary>
-    [BepInDependency(LethalLevelLoader.Plugin.ModGUID, LethalLevelLoader.Plugin.ModVersion)]
+    [BepInDependency(LethalLevelLoader.Plugin.ModGUID, "1.5.1")]
     [BepInDependency("WarpWorld.CrowdControl", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("com.github.teamxiaolan.dawnlib", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("me.loaforc.facilitymeltdown", BepInDependency.DependencyFlags.SoftDependency)]
@@ -25,7 +25,7 @@ namespace itolib
         /// <summary>
         ///     TODO.
         /// </summary>
-        public const string PLUGIN_GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.6.0";
+        public const string PLUGIN_GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.6.1";
         internal static ManualLogSource StaticLogger { get; private set; } = null!;
 
         /// <summary>

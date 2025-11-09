@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.6.1]
+
+Some small optimizations and tweaks.
+
+- Made `ConnectedRope` no longer allocate GC every frame...
+- Removed some tag comparisons that weren't really needed.
+- Added caching for the various `WaitFor` yield statements in `Coroutines`.
+- Fixed original hives replaced by `HiveSpawner` still being able to be struck by lightning despite being deactivated.
+- Made required components auto-assign the component in question to its relevant field (though there's not that many).
+- Updated a few internal project dependencies.
+
 ## [v0.6.0]
 
 Bunch of script reworks, some rather niche additions, a couple fixes.
