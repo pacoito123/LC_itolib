@@ -18,10 +18,17 @@ namespace itolib.Enums
         [Tooltip("Activate once the Dungeon finishes generating.")]
         DungeonComplete,
         /// <summary>
+        ///     Activate right before <c>SpawnSyncedObjects</c> begin spawning.
+        /// </summary>
+        /// <remarks><b>NOTE:</b> If used in a prefab spawned through a <c>SpawnSyncedObject</c>, <c>ActivationTime.Immediate</c> should be used instead.</remarks>
+        [Tooltip("Activate right before SpawnSyncedObjects begin spawning. NOTE: If used in a prefab spawned through a SpawnSyncedObject, "
+            + "'Immediate' should be used instead.")]
+        SyncedSpawn = 5,
+        /// <summary>
         ///     Activate right before scrap begins to spawn.
         /// </summary>
         [Tooltip("Activate right before scrap begins to spawn.")]
-        ScrapSpawn,
+        ScrapSpawn = 1,
         /// <summary>
         ///     Activate right before map objects (hazards) begin to spawn.
         /// </summary>

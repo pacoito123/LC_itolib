@@ -32,7 +32,7 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
-        public NetworkList<HiveInfo>? SyncedHives { get; private set; }
+        public NetworkList<HiveInfo> SyncedHives { get; private set; } = null!;
 
         /// <summary>
         ///     TODO.
@@ -216,7 +216,10 @@ namespace itolib.Behaviours.Enemies
                 }
             }
 
-            SyncedHives?.Add(serializedHive);
+            if (IsSpawned)
+            {
+                SyncedHives.Add(serializedHive);
+            }
         }
 
         /// <summary>
@@ -278,7 +281,7 @@ namespace itolib.Behaviours.Enemies
         {
             base.OnNetworkSpawn();
 
-            SyncedHives?.OnListChanged += changeEvent =>
+            SyncedHives.OnListChanged += changeEvent =>
             {
                 if (changeEvent.Type is NetworkListEvent<HiveInfo>.EventType.Add)
                 {

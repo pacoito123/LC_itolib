@@ -1,7 +1,9 @@
 using itolib.Behaviours.Networking;
+using itolib.Enums;
 using itolib.Extensions;
 using itolib.ScriptableObjects;
 using itolib.Structs;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -15,14 +17,19 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public NetworkList<NetworkObjectReference>? SyncedPrefabs { get; private set; }
+        private static Dictionary<string, NetworkObject> CachedPrefabs { get; } = [];
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public NetworkList<NetworkObjectReference> SyncedPrefabs { get; private set; } = null!;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Prefab Spawner")]
         [Tooltip("")]
-        [SerializeField] private string networkPrefabName;
+        [SerializeField] private string networkPrefabName = string.Empty;
 
         /// <summary>
         ///     TODO.
@@ -49,16 +56,27 @@ namespace itolib.Behaviours.Props
                 return prefabToSpawn;
             }
 
-            if (ScriptableNetworkPrefab.TryGetPrefab(out NetworkObject registeredPrefab, networkPrefabName))
+            if (ScriptableNetworkPrefab.TryGetPrefab(out NetworkObject? registeredPrefab, networkPrefabName))
             {
                 return registeredPrefab;
             }
 
-            foreach (NetworkPrefab networkPrefab in NetworkManager.Singleton.NetworkConfig.Prefabs.Prefabs)
+            if (CachedPrefabs.TryGetValue(networkPrefabName, out NetworkObject cachedPrefab))
             {
-                if (networkPrefab.Prefab.name.CompareOrdinal(networkPrefabName))
+                return cachedPrefab;
+            }
+
+            IReadOnlyList<NetworkPrefab>? networkPrefabs = NetworkManager.Singleton.NetworkConfig.Prefabs.Prefabs;
+            int networkPrefabsAmount = networkPrefabs.Count;
+
+            for (int i = 0; i < networkPrefabsAmount; i++)
+            {
+                if (networkPrefabs[i].Prefab.name.CompareOrdinal(networkPrefabName))
                 {
-                    return networkPrefab.Prefab.GetComponent<NetworkObject>();
+                    NetworkObject foundPrefab = networkPrefabs[i].Prefab.GetComponent<NetworkObject>();
+                    _ = CachedPrefabs.TryAdd(networkPrefabName, foundPrefab);
+
+                    return foundPrefab;
                 }
             }
 
@@ -90,11 +108,24 @@ namespace itolib.Behaviours.Props
 
             if (IsSpawned)
             {
-                SyncedPrefabs?.Add(spawnedPrefab);
+                SyncedPrefabs.Add(spawnedPrefab);
             }
             else
             {
                 base.SpawnPerformed(spawnedPrefab, spawnLocation);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void Reset()
+        {
+            if (TryGetComponent(out SpawnSyncedObject syncedObject) && syncedObject.spawnPrefab != null)
+            {
+                networkPrefabName = syncedObject.spawnPrefab.name;
+
+                ActivationTime = ActivationTime.SyncedSpawn;
             }
         }
 
@@ -115,7 +146,7 @@ namespace itolib.Behaviours.Props
         {
             base.OnNetworkSpawn();
 
-            SyncedPrefabs?.OnListChanged += changeEvent =>
+            SyncedPrefabs.OnListChanged += changeEvent =>
             {
                 if (changeEvent.Type is NetworkListEvent<NetworkObjectReference>.EventType.Add)
                 {

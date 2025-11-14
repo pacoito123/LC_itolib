@@ -41,6 +41,9 @@ namespace itolib.Interfaces
                 case ActivationTime.Immediate:
                     PerformActivation();
                     break;
+                case ActivationTime.SyncedSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedSyncedObjects.AddListener(PerformActivation);
+                    break;
                 case ActivationTime.ScrapSpawn:
                     DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(PerformActivation);
                     break;
@@ -92,6 +95,7 @@ namespace itolib.Interfaces
         /// </summary>
         void UnsubscribeFromEvents()
         {
+            DungeonManager.GlobalDungeonEvents.onSpawnedSyncedObjects.RemoveListener(PerformActivation);
             DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(PerformActivation);
             DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(PerformActivation);
             if (StartOfRound.Instance != null)

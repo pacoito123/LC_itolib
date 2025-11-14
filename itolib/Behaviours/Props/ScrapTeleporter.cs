@@ -25,7 +25,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public NetworkList<ItemInfo>? SyncedItems { get; private set; }
+        public NetworkList<ItemInfo> SyncedItems { get; private set; } = null!;
 
         /// <summary>
         ///     Cached instance of the current <c>ScrapTeleporter</c> as an <c>IActivationScript</c>, to avoid having to cast.
@@ -135,12 +135,12 @@ namespace itolib.Behaviours.Props
         /// </summary>
         private void Awake()
         {
+            SyncedItems = new();
+
             if (activationTime is not ActivationTime.StartOfRound)
             {
                 ActivationTime = activationTime;
             }
-
-            SyncedItems = new();
         }
 
         /// <summary>
@@ -150,11 +150,12 @@ namespace itolib.Behaviours.Props
         {
             base.OnNetworkSpawn();
 
-            SyncedItems?.OnListChanged += changeEvent =>
+            SyncedItems.OnListChanged += changeEvent =>
             {
-                if (changeEvent.Type is NetworkListEvent<ItemInfo>.EventType.Add)
+                if (changeEvent.Type is NetworkListEvent<ItemInfo>.EventType.Add
+                    && changeEvent.Value.itemReference.TryGet(out GrabbableObject item))
                 {
-                    SyncTeleportedItem(changeEvent.Value);
+                    SyncTeleportedItem(item, changeEvent.Value);
                 }
             };
 
@@ -281,7 +282,11 @@ namespace itolib.Behaviours.Props
                                     itemReference = item
                                 };
 
-                                SyncedItems?.Add(syncedItem);
+                                if (IsSpawned)
+                                {
+                                    SyncedItems.Add(syncedItem);
+                                }
+
                                 availableScrap.RemoveAt(j);
 
                                 foundItem = true;
@@ -317,7 +322,11 @@ namespace itolib.Behaviours.Props
                         itemReference = item
                     };
 
-                    SyncedItems?.Add(syncedItem);
+                    if (IsSpawned)
+                    {
+                        SyncedItems.Add(syncedItem);
+                    }
+
                     availableScrap.RemoveAt(index);
                 }
             }
@@ -338,23 +347,18 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="syncedItem"></param>
-        /// <returns></returns>
-        private void SyncTeleportedItem(ItemInfo syncedItem)
+        /// <param name="item"></param>
+        /// <param name="itemInfo"></param>
+        private void SyncTeleportedItem(GrabbableObject item, ItemInfo itemInfo)
         {
-            if (!syncedItem.itemReference.TryGet(out GrabbableObject item))
-            {
-                return;
-            }
-
             item.fallTime = 1.0f;
             item.hasHitGround = true;
             item.reachedFloorTarget = true;
 
-            item.transform.SetPositionAndRotation(syncedItem.transformInfo.position, syncedItem.transformInfo.rotation);
+            item.transform.SetPositionAndRotation(itemInfo.transformInfo.position, itemInfo.transformInfo.rotation);
 
-            item.startFallingPosition = syncedItem.transformInfo.position;
-            item.targetFloorPosition = syncedItem.transformInfo.position;
+            item.startFallingPosition = itemInfo.transformInfo.position;
+            item.targetFloorPosition = itemInfo.transformInfo.position;
 
             if (fallToGround)
             {

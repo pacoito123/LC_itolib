@@ -71,7 +71,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public NetworkList<ItemInfo>? SyncedItems { get; private set; }
+        public NetworkList<ItemInfo> SyncedItems { get; private set; } = null!;
 
         /// <summary>
         ///     Cached instance of <c>ScrapSpawner</c> as an <c>IWeightedScript</c>, to avoid having to cast.
@@ -250,9 +250,14 @@ namespace itolib.Behaviours.Props
                         : UnityEngine.Random.RandomRangeInt(0, item.itemProperties.materialVariants.Length)) : -1
             };
 
-            SyncedItems?.Add(serializedItem);
-
-            base.SpawnPerformed(item, spawnLocation);
+            if (IsSpawned)
+            {
+                SyncedItems.Add(serializedItem);
+            }
+            else
+            {
+                base.SpawnPerformed(item, spawnLocation);
+            }
         }
 
         /// <summary>
@@ -296,11 +301,14 @@ namespace itolib.Behaviours.Props
         {
             base.OnNetworkSpawn();
 
-            SyncedItems?.OnListChanged += changeEvent =>
+            SyncedItems.OnListChanged += changeEvent =>
             {
-                if (changeEvent.Type is NetworkListEvent<ItemInfo>.EventType.Add)
+                if (changeEvent.Type is NetworkListEvent<ItemInfo>.EventType.Add
+                    && changeEvent.Value.itemReference.TryGet(out GrabbableObject item))
                 {
-                    SyncItemValues(changeEvent.Value);
+                    SyncItemValues(item, changeEvent.Value);
+
+                    OnSpawnPerformed.Invoke(item);
                 }
             };
         }
@@ -336,33 +344,29 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         /// <param name="syncedItem"></param>
-        private void SyncItemValues(ItemInfo syncedItem)
+        /// <param name="itemInfo"></param>
+        private void SyncItemValues(GrabbableObject syncedItem, ItemInfo itemInfo)
         {
-            if (!syncedItem.itemReference.TryGet(out GrabbableObject item))
-            {
-                return;
-            }
+            _ = StartCoroutine(WaitForItemFall(syncedItem, itemInfo.transformInfo));
 
-            _ = StartCoroutine(WaitForItemFall(item, syncedItem.transformInfo));
-
-            if (item.itemProperties != null)
+            if (syncedItem.itemProperties != null)
             {
-                if (syncedItem.meshVariant != -1 && item.TryGetComponent(out MeshFilter itemFilter))
+                if (itemInfo.meshVariant != -1 && syncedItem.TryGetComponent(out MeshFilter itemFilter))
                 {
-                    itemFilter.sharedMesh = item.itemProperties.meshVariants[syncedItem.meshVariant];
+                    itemFilter.sharedMesh = syncedItem.itemProperties.meshVariants[itemInfo.meshVariant];
                 }
 
-                if (syncedItem.materialVariant != -1 && item.TryGetComponent(out MeshRenderer itemRenderer))
+                if (itemInfo.materialVariant != -1 && syncedItem.TryGetComponent(out MeshRenderer itemRenderer))
                 {
-                    itemRenderer.sharedMaterial = item.itemProperties.materialVariants[syncedItem.materialVariant];
+                    itemRenderer.sharedMaterial = syncedItem.itemProperties.materialVariants[itemInfo.materialVariant];
                 }
             }
 
-            item.SetScrapValue(syncedItem.scrapValue);
+            syncedItem.SetScrapValue(itemInfo.scrapValue);
 
             if (RoundManager.Instance != null)
             {
-                RoundManager.Instance.totalScrapValueInLevel += syncedItem.scrapValue;
+                RoundManager.Instance.totalScrapValueInLevel += itemInfo.scrapValue;
             }
         }
 
