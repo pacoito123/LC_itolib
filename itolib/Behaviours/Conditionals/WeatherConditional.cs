@@ -58,7 +58,7 @@ namespace itolib.Behaviours.Conditionals
         {
             if (TimeOfDay.Instance != null)
             {
-                ApplyConditional(TimeOfDay.Instance.currentLevelWeather);
+                ApplyConditional(TimeOfDay.Instance.currentLevelWeather, undo);
             }
         }
 
@@ -75,6 +75,7 @@ namespace itolib.Behaviours.Conditionals
             }
 
             string weatherName = $"{objectToCheck}";
+            bool foundMatch = false;
 
             for (int i = 0; i < conditionalOverrides?.Length; i++)
             {
@@ -83,8 +84,9 @@ namespace itolib.Behaviours.Conditionals
                 if (weatherName.CompareOrdinal(overrideEntry.nameToSearch))
                 {
                     overrideEntry.Apply(undo);
+                    foundMatch = true;
 
-                    return;
+                    continue;
                 }
                 else if (overrideEntry.alsoAppliesTo?.Length > 0)
                 {
@@ -93,14 +95,20 @@ namespace itolib.Behaviours.Conditionals
                         if (weatherName.CompareOrdinal(overrideEntry.alsoAppliesTo[j]))
                         {
                             overrideEntry.Apply(undo);
+                            foundMatch = true;
 
-                            return;
+                            continue;
                         }
                     }
                 }
+
+                if (!undo)
+                {
+                    overrideEntry.onConditionalFail.Invoke();
+                }
             }
 
-            if (WeatherTweaksCompatibility.Enabled
+            if (!foundMatch && WeatherTweaksCompatibility.Enabled
                 && WeatherTweaksCompatibility.IsCombinedWeather(out LevelWeatherType[]? allWeathers, objectToCheck))
             {
                 for (int i = 0; i < allWeathers?.Length; i++)

@@ -54,6 +54,12 @@ namespace itolib.Behaviours.Conditionals
         public UnityEvent onConditionalUndo = new();
 
         /// <summary>
+        ///     Callback invoked when no match was found for this override.
+        /// </summary>
+        [Tooltip("Callback invoked when no match was found for this override.")]
+        public UnityEvent onConditionalFail = new();
+
+        /// <summary>
         ///     Constructor for the struct type (needed to allow default parameter values).
         /// </summary>
         public ConditionalOverride() { }

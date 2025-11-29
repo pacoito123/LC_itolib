@@ -38,7 +38,7 @@ namespace itolib.Behaviours.Conditionals
                 {
                     overrideEntry.Apply(undo);
 
-                    return;
+                    continue;
                 }
                 else if (overrideEntry.alsoAppliesTo?.Length > 0)
                 {
@@ -48,10 +48,12 @@ namespace itolib.Behaviours.Conditionals
                         {
                             overrideEntry.Apply(undo);
 
-                            return;
+                            continue;
                         }
                     }
                 }
+
+                overrideEntry.onConditionalFail.Invoke();
             }
         }
     }
