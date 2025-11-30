@@ -1,8 +1,5 @@
 using itolib.Behaviours.Networking;
-using itolib.Compatibility;
-using itolib.Extensions;
 using itolib.Structs;
-using LethalLevelLoader;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -70,45 +67,14 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="enemyToSpawn"></param>
+        /// <param name="enemyNetworkObject"></param>
+        /// <param name="enemy"></param>
         /// <returns></returns>
-        protected static NetworkObject? GetEnemyToSpawn(EnemyType? enemyToSpawn)
+        protected static bool TryGetNetworkObject(out NetworkObject enemyNetworkObject, EnemyType? enemy)
         {
-            if (enemyToSpawn == null)
-            {
-                // TODO: Log warning.
-                return null;
-            }
+            enemyNetworkObject = null!;
 
-            return (enemyToSpawn.enemyPrefab != null)
-                ? enemyToSpawn.enemyPrefab.GetComponent<NetworkObject>() : GetEnemyToSpawn(enemyToSpawn.name, checkObjectName: true);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="enemyName"></param>
-        /// <param name="checkObjectName"></param>
-        /// <returns></returns>
-        protected static NetworkObject? GetEnemyToSpawn(string enemyName, bool checkObjectName = false)
-        {
-            ExtendedEnemyType? extendedEnemy = PatchedContent.ExtendedEnemyTypes.Find(extendedEnemy => !checkObjectName
-                ? extendedEnemy.EnemyType.enemyName.CompareOrdinal(enemyName) : extendedEnemy.EnemyType.name.CompareOrdinal(enemyName));
-
-            if (extendedEnemy != null)
-            {
-                return extendedEnemy.EnemyType.enemyPrefab.GetComponent<NetworkObject>();
-            }
-
-            if (DawnLibCompatibility.Enabled)
-            {
-                EnemyType? dawnEnemy = DawnLibCompatibility.GetDawnEnemyType(enemyName);
-
-                return (dawnEnemy != null) ? dawnEnemy.enemyPrefab.GetComponent<NetworkObject>() : null;
-            }
-
-            // TODO: Log warning.
-            return null;
+            return enemy != null && enemy.enemyPrefab != null && enemy.enemyPrefab.TryGetComponent(out enemyNetworkObject);
         }
     }
 }

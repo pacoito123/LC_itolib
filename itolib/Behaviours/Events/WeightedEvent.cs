@@ -23,7 +23,7 @@ namespace itolib.Behaviours.Events
         /// </summary>
         [Header("Weighted Event Entry")]
         [Tooltip("")]
-        public UnityEvent onEvent;
+        public UnityEvent onEvent = new();
 
         /// <summary>
         ///     TODO.
@@ -37,6 +37,11 @@ namespace itolib.Behaviours.Events
         /// </summary>
         [field: Tooltip("")]
         [field: SerializeField] public bool SingleUse { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public WeightedEventEntry() { }
     }
 
     /// <summary>
@@ -68,6 +73,11 @@ namespace itolib.Behaviours.Events
         ///    TODO.
         /// </summary>
         public int TotalWeight { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public bool InitializedWeights { get; set; }
 
         /// <summary>
         ///     Whether activation has already been performed or not.
@@ -181,6 +191,11 @@ namespace itolib.Behaviours.Events
         /// <param name="entry"></param>
         public void AddWeightEntry(WeightedEventEntry entry)
         {
+            if (!WeightedSelf.InitializedWeights)
+            {
+                WeightedSelf.InitializeWeights();
+            }
+
             WeightedSelf.AddWeight(entry);
         }
 
@@ -190,6 +205,11 @@ namespace itolib.Behaviours.Events
         /// <param name="entries"></param>
         public void AddWeightEntries(WeightedEventEntry[] entries)
         {
+            if (!WeightedSelf.InitializedWeights)
+            {
+                WeightedSelf.InitializeWeights();
+            }
+
             WeightedSelf.AddWeights(entries);
         }
 
@@ -199,6 +219,11 @@ namespace itolib.Behaviours.Events
         /// <param name="index"></param>
         public void RemoveWeightEntry(int index)
         {
+            if (!WeightedSelf.InitializedWeights)
+            {
+                WeightedSelf.InitializeWeights();
+            }
+
             WeightedSelf.RemoveWeight(index);
         }
 
@@ -225,17 +250,18 @@ namespace itolib.Behaviours.Events
                 return;
             }
 
+            if (WeightedEntries == null || WeightedEntries.Length == 0)
+            {
+                return;
+            }
+
             int rollsToPerform = seededRandom ? SeededSelf.GetSeededRandom().Next(minRolls, maxRolls + 1)
                 : UnityEngine.Random.RandomRangeInt(minRolls, maxRolls + 1);
 
             for (int i = 0; i < rollsToPerform; i++)
             {
-                if (CumulativeWeights == null || CumulativeWeights.Length == 0)
-                {
-                    break;
-                }
-
-                if (WeightedSelf.TryObtainRandomEntryIndex(out int weightIndex, seededRandom ? SeededSelf.GetSeededRandom() : null))
+                if (WeightedSelf.TryObtainRandomEntryIndex(out int weightIndex, seededRandom
+                    ? SeededSelf.GetSeededRandom() : null))
                 {
                     InvokeEventLocal(weightIndex);
 

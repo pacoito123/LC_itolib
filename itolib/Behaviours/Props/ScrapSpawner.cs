@@ -1,7 +1,5 @@
 using itolib.Behaviours.Helpers;
 using itolib.Behaviours.Networking;
-using itolib.Compatibility;
-using itolib.Extensions;
 using itolib.Interfaces;
 using itolib.Structs;
 using itolib.Util;
@@ -91,6 +89,11 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        public bool InitializedWeights { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [field: Space(5.0f)]
         [field: Header("Scrap Spawner")]
         [field: Tooltip("")]
@@ -176,20 +179,39 @@ namespace itolib.Behaviours.Props
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
-            NetworkObject? possibleItem = null;
-
-            if (respectSingleItemDay && SimulateAnomaly.SingleItem != null)
+            if (respectSingleItemDay && TryGetNetworkObject(out NetworkObject itemNetworkObject, SimulateAnomaly.SingleItem))
             {
-                possibleItem = SimulateAnomaly.SingleItem.spawnPrefab.GetComponent<NetworkObject>();
+                return itemNetworkObject;
             }
 
-            if (possibleItem == null && WeightedEntries?.Length > 0
-                && WeightedSelf.TryObtainRandomEntry(out ScrapWeightEntry entry, isSeededRandom ? SeededSelf.GetSeededRandom() : null))
+            if (WeightedEntries?.Length > 0 && WeightedSelf.TryObtainRandomEntry(out ScrapWeightEntry entry, isSeededRandom
+                ? SeededSelf.GetSeededRandom() : null))
             {
-                possibleItem = (entry.itemToSpawn != null) ? GetItemToSpawn(entry.itemToSpawn) : GetItemToSpawn(entry.itemName);
+                if (SearchContent.TryFindItem(out Item item, entry.itemName) && TryGetNetworkObject(out itemNetworkObject, item))
+                {
+                    return itemNetworkObject;
+                }
+                else if (entry.itemToSpawn != null && SearchContent.TryFindItem(out item, entry.itemToSpawn.name, checkObjectName: true)
+                    && TryGetNetworkObject(out itemNetworkObject, item))
+                {
+                    return itemNetworkObject;
+                }
             }
 
-            return possibleItem;
+            return null;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="itemNetworkObject"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        private static bool TryGetNetworkObject(out NetworkObject itemNetworkObject, Item? item)
+        {
+            itemNetworkObject = null!;
+
+            return item != null && item.spawnPrefab != null && item.spawnPrefab.TryGetComponent(out itemNetworkObject);
         }
 
         /// <summary>
@@ -287,7 +309,10 @@ namespace itolib.Behaviours.Props
                         WeightedEntries[i] = new(spawnableScrap[i]);
                     }
                 }
+            }
 
+            if (!WeightedSelf.InitializedWeights)
+            {
                 WeightedSelf.InitializeWeights();
             }
 
@@ -319,6 +344,11 @@ namespace itolib.Behaviours.Props
         /// <param name="entry"></param>
         public void AddWeightEntry(ScrapWeightEntry entry)
         {
+            if (!WeightedSelf.InitializedWeights)
+            {
+                WeightedSelf.InitializeWeights();
+            }
+
             WeightedSelf.AddWeight(entry);
         }
 
@@ -328,6 +358,11 @@ namespace itolib.Behaviours.Props
         /// <param name="entries"></param>
         public void AddWeightEntries(ScrapWeightEntry[] entries)
         {
+            if (!WeightedSelf.InitializedWeights)
+            {
+                WeightedSelf.InitializeWeights();
+            }
+
             WeightedSelf.AddWeights(entries);
         }
 
@@ -337,6 +372,11 @@ namespace itolib.Behaviours.Props
         /// <param name="index"></param>
         public void RemoveWeightEntry(int index)
         {
+            if (!WeightedSelf.InitializedWeights)
+            {
+                WeightedSelf.InitializeWeights();
+            }
+
             WeightedSelf.RemoveWeight(index);
         }
 
@@ -368,50 +408,6 @@ namespace itolib.Behaviours.Props
             {
                 RoundManager.Instance.totalScrapValueInLevel += itemInfo.scrapValue;
             }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="itemToSpawn"></param>
-        /// <returns></returns>
-        private static NetworkObject? GetItemToSpawn(Item? itemToSpawn)
-        {
-            if (itemToSpawn == null)
-            {
-                // TODO: Log warning.
-                return null;
-            }
-
-            return (itemToSpawn.spawnPrefab != null)
-                ? itemToSpawn.spawnPrefab.GetComponent<NetworkObject>() : GetItemToSpawn(itemToSpawn.name, checkObjectName: true);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="itemName"></param>
-        /// <param name="checkObjectName"></param>
-        /// <returns></returns>
-        private static NetworkObject? GetItemToSpawn(string itemName, bool checkObjectName = false)
-        {
-            ExtendedItem? extendedItem = PatchedContent.ExtendedItems.Find(extendedItem => !checkObjectName
-                ? extendedItem.Item.itemName.CompareOrdinal(itemName) : extendedItem.Item.name.CompareOrdinal(itemName));
-
-            if (extendedItem != null)
-            {
-                return extendedItem.Item.spawnPrefab.GetComponent<NetworkObject>();
-            }
-
-            if (DawnLibCompatibility.Enabled)
-            {
-                Item? dawnItem = DawnLibCompatibility.GetDawnItem(itemName);
-
-                return (dawnItem != null) ? dawnItem.spawnPrefab.GetComponent<NetworkObject>() : null;
-            }
-
-            // TODO: Log warning.
-            return null;
         }
 
         /// <summary>

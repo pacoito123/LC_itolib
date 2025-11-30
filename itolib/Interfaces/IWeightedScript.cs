@@ -48,9 +48,32 @@ namespace itolib.Interfaces
         /// <summary>
         ///     TODO.
         /// </summary>
+        bool InitializedWeights { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         void InitializeWeights()
         {
-            AddWeights(WeightedEntries);
+            if (InitializedWeights)
+            {
+                return;
+            }
+
+            if (WeightedEntries?.Length > 0)
+            {
+                int[] cumulativeWeights = new int[WeightedEntries.Length];
+
+                for (int i = 0; i < WeightedEntries.Length; i++)
+                {
+                    TotalWeight += WeightedEntries[i].Weight;
+                    cumulativeWeights[i] = TotalWeight;
+                }
+
+                CumulativeWeights = cumulativeWeights;
+            }
+
+            InitializedWeights = true;
         }
 
         /// <summary>
@@ -59,9 +82,10 @@ namespace itolib.Interfaces
         /// <param name="entry"></param>
         void AddWeight(T entry)
         {
-            WeightedEntries = (WeightedEntries?.Length > 0) ? [.. WeightedEntries, entry] : [entry];
-            CumulativeWeights = (CumulativeWeights?.Length > 0) ? [.. CumulativeWeights, entry.Weight] : [entry.Weight];
             TotalWeight += entry.Weight;
+
+            WeightedEntries = (WeightedEntries?.Length > 0) ? [.. WeightedEntries, entry] : [entry];
+            CumulativeWeights = (CumulativeWeights?.Length > 0) ? [.. CumulativeWeights, TotalWeight] : [TotalWeight];
         }
 
         /// <summary>
@@ -76,8 +100,6 @@ namespace itolib.Interfaces
                 return;
             }
 
-            WeightedEntries = (WeightedEntries?.Length > 0) ? [.. WeightedEntries, .. entries] : entries;
-
             int[] cumulativeWeights = new int[entries.Length];
 
             for (int i = 0; i < entries.Length; i++)
@@ -86,6 +108,7 @@ namespace itolib.Interfaces
                 cumulativeWeights[i] = TotalWeight;
             }
 
+            WeightedEntries = (WeightedEntries?.Length > 0) ? [.. WeightedEntries, .. entries] : entries;
             CumulativeWeights = (CumulativeWeights?.Length > 0) ? [.. CumulativeWeights, .. cumulativeWeights] : cumulativeWeights;
         }
 
@@ -95,7 +118,24 @@ namespace itolib.Interfaces
         /// <param name="index"></param>
         void RemoveWeight(int index)
         {
-            ModifyWeight(index, -WeightedEntries?[index].Weight ?? 0);
+            if (CumulativeWeights == null || index < 0 || index > CumulativeWeights.Length)
+            {
+                return;
+            }
+
+            if (index > 0)
+            {
+                int difference = CumulativeWeights[index] - CumulativeWeights[index - 1];
+
+                if (difference > 0)
+                {
+                    ModifyWeight(index, -difference);
+                }
+            }
+            else if (CumulativeWeights[index] > 0)
+            {
+                ModifyWeight(index, -CumulativeWeights[index]);
+            }
         }
 
         /// <summary>
@@ -105,31 +145,21 @@ namespace itolib.Interfaces
         /// <param name="weight"></param>
         void ModifyWeight(int index, int weight)
         {
-            if (CumulativeWeights == null)
+            if (weight == 0 || index < 0 || CumulativeWeights == null || index >= CumulativeWeights.Length)
             {
-                // TODO: Log warning.
                 return;
             }
 
-            if (index < 0 || index >= CumulativeWeights.Length)
+            if (CumulativeWeights[index] + weight < 0)
             {
-                // TODO: Log warning.
-                return;
-            }
-
-            if (CumulativeWeights[index] == weight)
-            {
-                return;
+                weight = -CumulativeWeights[index];
             }
 
             TotalWeight += weight;
 
             for (int i = index; i < CumulativeWeights.Length; i++)
             {
-                if (i == index || CumulativeWeights[i] > 0)
-                {
-                    CumulativeWeights[i] += weight;
-                }
+                CumulativeWeights[index] += weight;
             }
         }
 
@@ -193,18 +223,17 @@ namespace itolib.Interfaces
         {
             weightIndex = -1;
 
-            if (WeightedEntries == null || WeightedEntries.Length == 0
-                || CumulativeWeights == null || CumulativeWeights.Length == 0)
+            if (CumulativeWeights == null || CumulativeWeights.Length == 0)
             {
                 return false;
             }
 
-            int randomWeight = random != null ? random.Next(0, TotalWeight + 1)
-                    : UnityEngine.Random.RandomRangeInt(0, TotalWeight + 1);
+            int randomWeight = (random != null) ? random.Next(0, TotalWeight + 1)
+                : UnityEngine.Random.RandomRangeInt(0, TotalWeight + 1);
 
             weightIndex = Array.FindIndex(CumulativeWeights, weight => randomWeight <= weight);
 
-            return weightIndex >= 0 && weightIndex < WeightedEntries.Length;
+            return weightIndex >= 0 && weightIndex < CumulativeWeights.Length;
         }
     }
 }

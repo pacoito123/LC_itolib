@@ -1,4 +1,5 @@
 using itolib.Interfaces;
+using itolib.Util;
 using System;
 using Unity.Netcode;
 using UnityEngine;
@@ -78,6 +79,11 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
+        public bool InitializedWeights { get; set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Space(5.0f)]
         [Header("Enemy Spawner")]
         [Tooltip("")]
@@ -95,20 +101,26 @@ namespace itolib.Behaviours.Enemies
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
-            NetworkObject? possibleEnemy = null;
-
-            if (enemyToSpawn.Length > 0)
+            if (SearchContent.TryFindEnemy(out EnemyType enemy, enemyToSpawn) && TryGetNetworkObject(out NetworkObject enemyNetworkObject, enemy))
             {
-                possibleEnemy = GetEnemyToSpawn(enemyToSpawn);
+                return enemyNetworkObject;
             }
 
-            if (possibleEnemy == null && WeightedEntries?.Length > 0
-                && WeightedSelf.TryObtainRandomEntry(out EnemyWeightEntry entry, isSeededRandom ? SeededSelf.GetSeededRandom() : null))
+            if (WeightedEntries?.Length > 0 && WeightedSelf.TryObtainRandomEntry(out EnemyWeightEntry entry, isSeededRandom
+                ? SeededSelf.GetSeededRandom() : null))
             {
-                possibleEnemy = (entry.enemyToSpawn != null) ? GetEnemyToSpawn(entry.enemyToSpawn) : GetEnemyToSpawn(entry.enemyName);
+                if (SearchContent.TryFindEnemy(out enemy, entry.enemyName) && TryGetNetworkObject(out enemyNetworkObject, enemy))
+                {
+                    return enemyNetworkObject;
+                }
+                else if (entry.enemyToSpawn != null && SearchContent.TryFindEnemy(out enemy, entry.enemyToSpawn.name)
+                    && TryGetNetworkObject(out enemyNetworkObject, enemy))
+                {
+                    return enemyNetworkObject;
+                }
             }
 
-            return possibleEnemy;
+            return null;
         }
 
         /// <summary>
@@ -124,7 +136,7 @@ namespace itolib.Behaviours.Enemies
         /// </summary>
         protected override void Awake()
         {
-            if (NetworkManager.Singleton.IsHost && WeightedEntries?.Length > 0)
+            if (!WeightedSelf.InitializedWeights)
             {
                 WeightedSelf.InitializeWeights();
             }
@@ -138,6 +150,11 @@ namespace itolib.Behaviours.Enemies
         /// <param name="entry"></param>
         public void AddWeightEntry(EnemyWeightEntry entry)
         {
+            if (!WeightedSelf.InitializedWeights)
+            {
+                WeightedSelf.InitializeWeights();
+            }
+
             WeightedSelf.AddWeight(entry);
         }
 
@@ -147,6 +164,11 @@ namespace itolib.Behaviours.Enemies
         /// <param name="entries"></param>
         public void AddWeightEntries(EnemyWeightEntry[] entries)
         {
+            if (!WeightedSelf.InitializedWeights)
+            {
+                WeightedSelf.InitializeWeights();
+            }
+
             WeightedSelf.AddWeights(entries);
         }
 
@@ -156,6 +178,11 @@ namespace itolib.Behaviours.Enemies
         /// <param name="index"></param>
         public void RemoveWeightEntry(int index)
         {
+            if (!WeightedSelf.InitializedWeights)
+            {
+                WeightedSelf.InitializeWeights();
+            }
+
             WeightedSelf.RemoveWeight(index);
         }
 

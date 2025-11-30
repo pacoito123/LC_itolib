@@ -74,20 +74,20 @@ namespace itolib.Interfaces
         /// </summary>
         private void PerformActivation()
         {
+            // Unsubscribe from events.
+            UnsubscribeFromEvents();
+
             // Check if activation has already been performed, or the script is set to be manually activated.
             if (PerformedActivation || ActivationTime is ActivationTime.Manual)
             {
                 return;
             }
 
-            // Set activation as performed.
-            PerformedActivation = true;
-
-            // Unsubscribe from events.
-            UnsubscribeFromEvents();
-
             // Perform script activation at the set activation time.
             PerformActivation(ActivationTime);
+
+            // Set activation as performed.
+            PerformedActivation = true;
         }
 
         /// <summary>
@@ -95,12 +95,29 @@ namespace itolib.Interfaces
         /// </summary>
         void UnsubscribeFromEvents()
         {
-            DungeonManager.GlobalDungeonEvents.onSpawnedSyncedObjects.RemoveListener(PerformActivation);
-            DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(PerformActivation);
-            DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(PerformActivation);
-            if (StartOfRound.Instance != null)
+            // Unsubscribe to the event corresponding to the set activation time.
+            switch (ActivationTime)
             {
-                StartOfRound.Instance.StartNewRoundEvent.RemoveListener(PerformActivation);
+                case ActivationTime.SyncedSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedSyncedObjects.RemoveListener(PerformActivation);
+                    break;
+                case ActivationTime.ScrapSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(PerformActivation);
+                    break;
+                case ActivationTime.HazardSpawn:
+                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(PerformActivation);
+                    break;
+                case ActivationTime.StartOfRound:
+                    if (StartOfRound.Instance != null)
+                    {
+                        StartOfRound.Instance.StartNewRoundEvent.RemoveListener(PerformActivation);
+                    }
+                    break;
+                case ActivationTime.Immediate:
+                case ActivationTime.DungeonComplete:
+                case ActivationTime.Manual:
+                default:
+                    break;
             }
         }
 
