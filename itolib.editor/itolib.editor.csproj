@@ -54,6 +54,7 @@
         <Reference Include="UnityEditor">
             <PrivateAssets>all</PrivateAssets>
             <HintPath>D:\Programs\Unity\2022.3.62f2\Editor\Data\Managed\UnityEditor.dll</HintPath>
+            <Publicize>true</Publicize>
         </Reference>
         <Reference Include="UnityEngine">
             <PrivateAssets>all</PrivateAssets>
