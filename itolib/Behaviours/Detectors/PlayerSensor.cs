@@ -45,7 +45,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        private void Start()
+        protected override void Awake()
         {
             if (onlyAffectLocalPlayer)
             {

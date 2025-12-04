@@ -128,8 +128,6 @@ namespace itolib.Behaviours.Effects
                 explosionPrefab = StartOfRound.Instance != null ? StartOfRound.Instance.explosionPrefab : null;
                 useVanillaExplosion = true;
             }
-
-            base.Awake();
         }
 
         /// <summary>

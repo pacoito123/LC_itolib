@@ -14,6 +14,7 @@ namespace itolib.Behaviours.Props
         /// </summary>
         [Header("Connector Merger")]
         [Tooltip("")]
+        [Min(0.0f)]
         [SerializeField] private float tolerance = 1.0f;
 
         /// <summary>
@@ -46,6 +47,14 @@ namespace itolib.Behaviours.Props
         {
             maxObjects = 8;
             layerMask = LayerMask.NameToLayer("Room");
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        protected override void Awake()
+        {
+            // TODO: Initialize something...
         }
 
         /// <summary>

@@ -78,15 +78,6 @@ namespace itolib.Behaviours.Animations
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the initial velocity sync.
-        /// </summary>
-        /// <remarks>Deprecated. Should be ignored.</remarks>
-        [Space(5.0f)]
-        [Header("== DEPRECATED ==")]
-        [Tooltip("(Deprecated) Desired activation time for the initial velocity sync. Should be ignored.")]
-        [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
-
-        /// <summary>
         ///     TODO.
         /// </summary>
         private float transitionTimer;
@@ -113,17 +104,6 @@ namespace itolib.Behaviours.Animations
         {
             ActivationSelf = this;
             SeededSelf = this;
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        private void Awake()
-        {
-            if (activationTime is not ActivationTime.StartOfRound)
-            {
-                ActivationTime = activationTime;
-            }
         }
 
         /// <summary>

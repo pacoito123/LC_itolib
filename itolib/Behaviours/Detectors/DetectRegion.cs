@@ -97,15 +97,6 @@ namespace itolib.Behaviours.Detectors
         [SerializeField] protected LayerMask layerMask;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the region's automatic object search.
-        /// </summary>
-        /// <remarks>Deprecated. Should be ignored.</remarks>
-        [Space(5.0f)]
-        [Header("== DEPRECATED ==")]
-        [Tooltip("(Deprecated) Desired activation time for the region's automatic object search. Should be ignored.")]
-        [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
-
-        /// <summary>
         ///     Pre-allocated <c>Collider</c> array of a specified size (<see cref="maxObjects"/>), containing objects of type <typeparamref name="T"/>
         ///     overlapping this <c>DetectRegion</c>.
         /// </summary>
@@ -137,13 +128,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        protected virtual void Awake()
-        {
-            if (activationTime is not ActivationTime.StartOfRound)
-            {
-                ActivationTime = activationTime;
-            }
-        }
+        protected abstract void Awake();
 
         /// <summary>
         ///      Perform search or subscribe to a specific event, depending on the set <c>ActivationTime</c>.

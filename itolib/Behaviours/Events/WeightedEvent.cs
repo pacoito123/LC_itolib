@@ -119,15 +119,6 @@ namespace itolib.Behaviours.Events
         [SerializeField] private bool seededRandom;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the initial weighted roll.
-        /// </summary>
-        /// <remarks>Deprecated. Should be ignored.</remarks>
-        [Space(5.0f)]
-        [Header("== DEPRECATED ==")]
-        [Tooltip("(Deprecated) Desired activation time for the initial weighted roll. Should be ignored.")]
-        [SerializeField] private ActivationTime activationTime = ActivationTime.Manual;
-
-        /// <summary>
         ///     Cached instance of the current <c>WeightedEvent</c> as an <c>IWeightedScript</c>, to avoid having to cast.
         /// </summary>
         /// <remarks>Deprecated. Should be ignored.</remarks>
@@ -153,11 +144,6 @@ namespace itolib.Behaviours.Events
         private void Awake()
         {
             WeightedSelf.InitializeWeights();
-
-            if (activationTime is not ActivationTime.Manual)
-            {
-                ActivationTime = activationTime;
-            }
         }
 
         /// <summary>

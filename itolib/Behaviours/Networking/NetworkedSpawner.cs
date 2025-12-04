@@ -140,15 +140,6 @@ namespace itolib.Behaviours.Networking
         [field: SerializeField] public UnityEvent<int> OnSpawningFinish { get; private set; } = new();
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the spawn to be performed.
-        /// </summary>
-        /// <remarks>Deprecated. Should be ignored.</remarks>
-        [Space(5.0f)]
-        [Header("== DEPRECATED ==")]
-        [Tooltip("(Deprecated) Desired activation time for the spawn to be performed. Should be ignored.")]
-        [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
-
-        /// <summary>
         ///     TODO.
         /// </summary>
         /// <returns></returns>
@@ -331,11 +322,6 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         protected virtual void Awake()
         {
-            if (activationTime is not ActivationTime.StartOfRound)
-            {
-                ActivationTime = activationTime;
-            }
-
             if (!NetworkManager.Singleton.IsHost)
             {
                 return;

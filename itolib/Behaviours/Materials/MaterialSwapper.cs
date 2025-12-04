@@ -84,15 +84,6 @@ namespace itolib.Behaviours.Materials
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.DungeonComplete;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the automatic material swap.
-        /// </summary>
-        /// <remarks>Deprecated. Should be ignored.</remarks>
-        [Space(5.0f)]
-        [Header("== DEPRECATED ==")]
-        [Tooltip("(Deprecated) Desired activation time for the automatic material swap. Should be ignored.")]
-        [SerializeField] private ActivationTime activationTime = ActivationTime.DungeonComplete;
-
-        /// <summary>
         ///     Current swap index. TODO: Use a NetworkVariable.
         /// </summary>
         private int swapIndex;
@@ -110,11 +101,6 @@ namespace itolib.Behaviours.Materials
         /// </summary>
         private void Awake()
         {
-            if (activationTime is not ActivationTime.DungeonComplete)
-            {
-                ActivationTime = activationTime;
-            }
-
             ActivationSelf.Initialize();
         }
 

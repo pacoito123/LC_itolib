@@ -143,15 +143,6 @@ namespace itolib.Behaviours.Conditionals
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the overrides to be applied.
-        /// </summary>
-        /// <remarks>Deprecated. Should be ignored.</remarks>
-        [Space(5.0f)]
-        [Header("== DEPRECATED ==")]
-        [Tooltip("(Deprecated) Desired activation time for the overrides to be applied. Should be ignored.")]
-        [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
-
-        /// <summary>
         ///     Cache already-cast <c>IActivationScript</c> instance.
         /// </summary>
         protected BaseConditional()
@@ -164,11 +155,6 @@ namespace itolib.Behaviours.Conditionals
         /// </summary>
         protected virtual void Awake()
         {
-            if (activationTime is not ActivationTime.StartOfRound)
-            {
-                ActivationTime = activationTime;
-            }
-
             ActivationSelf.Initialize();
         }
 

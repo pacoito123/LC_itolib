@@ -135,8 +135,6 @@ namespace itolib.Behaviours.Detectors
             {
                 enemyAmounts = new int[enemyFilters.Length];
             }
-
-            base.Awake();
         }
 
         /// <summary>

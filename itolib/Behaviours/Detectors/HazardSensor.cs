@@ -26,8 +26,6 @@ namespace itolib.Behaviours.Detectors
             {
                 regionCollider.enabled = false;
             }
-
-            base.Awake();
         }
 
         /// <summary>

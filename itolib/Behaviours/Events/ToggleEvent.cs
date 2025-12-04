@@ -50,15 +50,6 @@ namespace itolib.Behaviours.Events
         [Tooltip("")]
         [SerializeField] private UnityEvent<bool> toggleOff = new();
 
-        /// <summary>
-        ///     Desired <c>ActivationTime</c> for the initial toggle to occur.
-        /// </summary>
-        /// <remarks>Deprecated. Should be ignored.</remarks>
-        [Space(5.0f)]
-        [Header("== DEPRECATED ==")]
-        [Tooltip("(Deprecated) Desired activation time for the initial toggle to occur. Should be ignored.")]
-        [SerializeField] private ActivationTime activationTime = ActivationTime.Manual;
-
 
         /// <summary>
         ///     Cache already-cast <c>IActivationScript</c> instance.
@@ -66,17 +57,6 @@ namespace itolib.Behaviours.Events
         private ToggleEvent()
         {
             ActivationSelf = this;
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        private void Awake()
-        {
-            if (activationTime is not ActivationTime.Manual)
-            {
-                ActivationTime = activationTime;
-            }
         }
 
         /// <summary>

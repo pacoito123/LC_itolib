@@ -113,15 +113,6 @@ namespace itolib.Behaviours.Props
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the teleport to be performed.
-        /// </summary>
-        /// <remarks>Deprecated. Should be ignored.</remarks>
-        [Space(5.0f)]
-        [Header("== DEPRECATED ==")]
-        [Tooltip("(Deprecated) Desired activation time for the teleport to be performed. Should be ignored.")]
-        [SerializeField] private ActivationTime activationTime = ActivationTime.StartOfRound;
-
-        /// <summary>
         ///     Cache already-cast <c>IActivationScript</c> and <c>ISeededScript</c> instances.
         /// </summary>
         private ScrapTeleporter()
@@ -136,11 +127,6 @@ namespace itolib.Behaviours.Props
         private void Awake()
         {
             SyncedItems = new();
-
-            if (activationTime is not ActivationTime.StartOfRound)
-            {
-                ActivationTime = activationTime;
-            }
         }
 
         /// <summary>
