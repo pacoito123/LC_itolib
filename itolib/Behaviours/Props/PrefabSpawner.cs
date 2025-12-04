@@ -66,7 +66,7 @@ namespace itolib.Behaviours.Props
                 return cachedPrefab;
             }
 
-            IReadOnlyList<NetworkPrefab>? networkPrefabs = NetworkManager.Singleton.NetworkConfig.Prefabs.Prefabs;
+            IReadOnlyList<NetworkPrefab> networkPrefabs = NetworkManager.Singleton.NetworkConfig.Prefabs.Prefabs;
             int networkPrefabsAmount = networkPrefabs.Count;
 
             for (int i = 0; i < networkPrefabsAmount; i++)

@@ -1,3 +1,4 @@
+using DunGen.Graph;
 using itolib.Enums;
 using itolib.Util;
 using UnityEngine;
@@ -43,6 +44,12 @@ namespace itolib.Behaviours.Conditionals
                     break;
                 case ContentCategoryType.Enemy:
                     SearchEnemies();
+                    break;
+                case ContentCategoryType.Level:
+                    SearchLevels();
+                    break;
+                case ContentCategoryType.Dungeon:
+                    SearchDungeons();
                     break;
                 case ContentCategoryType.None:
                 default:
@@ -112,6 +119,46 @@ namespace itolib.Behaviours.Conditionals
                 ConditionalOverride overrideEntry = conditionalOverrides[i];
 
                 if (true || SearchContent.TryFindEnemy(out EnemyType _, overrideEntry.nameToSearch))
+                {
+                    overrideEntry.Apply();
+
+                    continue;
+                }
+
+                overrideEntry.onConditionalFail.Invoke();
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void SearchLevels()
+        {
+            for (int i = 0; i < conditionalOverrides?.Length; i++)
+            {
+                ConditionalOverride overrideEntry = conditionalOverrides[i];
+
+                if (true || SearchContent.TryFindLevel(out SelectableLevel _, overrideEntry.nameToSearch))
+                {
+                    overrideEntry.Apply();
+
+                    continue;
+                }
+
+                overrideEntry.onConditionalFail.Invoke();
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void SearchDungeons()
+        {
+            for (int i = 0; i < conditionalOverrides?.Length; i++)
+            {
+                ConditionalOverride overrideEntry = conditionalOverrides[i];
+
+                if (true || SearchContent.TryFindDungeon(out DungeonFlow _, overrideEntry.nameToSearch))
                 {
                     overrideEntry.Apply();
 

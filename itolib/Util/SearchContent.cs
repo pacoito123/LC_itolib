@@ -1,3 +1,4 @@
+using DunGen.Graph;
 using itolib.Compatibility;
 using itolib.Extensions;
 using LethalLevelLoader;
@@ -74,6 +75,62 @@ namespace itolib.Util
             if (DawnLibCompatibility.Enabled)
             {
                 EnemyType? dawnEnemy = DawnLibCompatibility.GetDawnEnemyType(enemyName);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="level"></param>
+        /// <param name="levelName"></param>
+        /// <returns></returns>
+        public static bool TryFindLevel(out SelectableLevel level, string levelName)
+        {
+            level = null!;
+
+            if (levelName.IsNullOrEmpty())
+            {
+                return false;
+            }
+
+            ExtendedLevel? extendedLevel = PatchedContent.ExtendedLevels.Find(extendedLevel =>
+                extendedLevel.SelectableLevel.GetNumberlessPlanetName().CompareOrdinal(levelName));
+
+            if (extendedLevel != null)
+            {
+                level = extendedLevel.SelectableLevel;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="dungeon"></param>
+        /// <param name="dungeonName"></param>
+        /// <returns></returns>
+        public static bool TryFindDungeon(out DungeonFlow dungeon, string dungeonName)
+        {
+            dungeon = null!;
+
+            if (dungeonName.IsNullOrEmpty())
+            {
+                return false;
+            }
+
+            ExtendedDungeonFlow? extendedDungeon = PatchedContent.ExtendedDungeonFlows.Find(extendedDungeon =>
+                extendedDungeon.DungeonFlow.name.CompareOrdinal(dungeonName));
+
+            if (extendedDungeon != null)
+            {
+                dungeon = extendedDungeon.DungeonFlow;
 
                 return true;
             }

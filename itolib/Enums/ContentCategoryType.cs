@@ -27,7 +27,7 @@ namespace itolib.Enums
         /// </summary>
         [Tooltip("")]
         Enemy,
-        /* /// <summary>
+        /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
@@ -37,7 +37,7 @@ namespace itolib.Enums
         /// </summary>
         [Tooltip("")]
         Dungeon,
-        /// <summary>
+        /* /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]

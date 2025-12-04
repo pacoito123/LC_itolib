@@ -58,8 +58,10 @@ namespace itolib.ScriptableObjects
             // Check if the GUID is already present in the dictionary.
             if (!key.TryComputeGUID(out Guid guid) || !AllEvents.TryAdd(guid, this))
             {
+#if !UNITY_EDITOR
                 // This needs not exist if it's a duplicate GUID.
                 Destroy(this);
+#endif
             }
         }
 
