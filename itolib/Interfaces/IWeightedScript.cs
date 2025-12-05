@@ -159,7 +159,7 @@ namespace itolib.Interfaces
 
             for (int i = index; i < CumulativeWeights.Length; i++)
             {
-                CumulativeWeights[index] += weight;
+                CumulativeWeights[i] += weight;
             }
         }
 
