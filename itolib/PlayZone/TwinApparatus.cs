@@ -15,6 +15,11 @@ namespace itolib.PlayZone
         /// <summary>
         ///     TODO.
         /// </summary>
+        private static readonly int DimID = Animator.StringToHash("Dim");
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public TwinApparatus? LongLostTwin { get; private set; }
 
         /// <summary>
@@ -94,7 +99,7 @@ namespace itolib.PlayZone
             if (shutOffPower)
             {
                 roundManager.SwitchPower(false);
-                roundManager.powerOffPermanently = shutOffPowerPermanently;
+                roundManager.powerOffPermanently = shutOffPowerPermanently && bothPulled;
             }
             OnLightsOff.Invoke();
 
@@ -104,7 +109,7 @@ namespace itolib.PlayZone
             {
                 if (shutOffPower)
                 {
-                    roundManager.SwitchPower(!bothPulled);
+                    roundManager.SwitchPower(true);
                     DimLights();
                 }
 
@@ -188,7 +193,7 @@ namespace itolib.PlayZone
             for (int i = 0; i < roundManager.allPoweredLightsAnimators.Count; i++)
             {
                 Animator light = roundManager.allPoweredLightsAnimators[i];
-                light.SetBool("Dim", true);
+                light.SetBool(DimID, true);
             }
         }
     }

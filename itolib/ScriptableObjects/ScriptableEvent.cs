@@ -49,6 +49,11 @@ namespace itolib.ScriptableObjects
         private event Action? OnEventRaise;
 
         /// <summary>
+        ///     <c>GUID</c> of this specific <c>ScriptableEvent</c>.
+        /// </summary>
+        private Guid guid = Guid.Empty;
+
+        /// <summary>
         ///     Add event to the <c>AllEvents</c> dictionary, if not already present.
         /// </summary>
         private void Awake()
@@ -56,12 +61,9 @@ namespace itolib.ScriptableObjects
             string key = EventSource + ':' + EventName;
 
             // Check if the GUID is already present in the dictionary.
-            if (!key.TryComputeGUID(out Guid guid) || !AllEvents.TryAdd(guid, this))
+            if (!key.TryComputeGUID(out guid) || !AllEvents.TryAdd(guid, this))
             {
-#if !UNITY_EDITOR
-                // This needs not exist if it's a duplicate GUID.
-                Destroy(this);
-#endif
+                // TODO: Log message?
             }
         }
 
@@ -70,7 +72,11 @@ namespace itolib.ScriptableObjects
         /// </summary>
         public void RaiseEvent()
         {
-            OnEventRaise?.Invoke();
+            if (guid != Guid.Empty && AllEvents.TryGetValue(guid, out ScriptableEvent scriptableEvent)
+                && scriptableEvent != null)
+            {
+                scriptableEvent.OnEventRaise?.Invoke();
+            }
         }
 
         /// <summary>
@@ -79,7 +85,11 @@ namespace itolib.ScriptableObjects
         /// <param name="listener">Listener to remove.</param>
         public void AddListener(Action listener)
         {
-            OnEventRaise += listener;
+            if (guid != Guid.Empty && AllEvents.TryGetValue(guid, out ScriptableEvent scriptableEvent)
+                && scriptableEvent != null)
+            {
+                scriptableEvent.OnEventRaise += listener;
+            }
         }
 
         /// <summary>
@@ -88,7 +98,11 @@ namespace itolib.ScriptableObjects
         /// <param name="listener">Listener to remove.</param>
         public void RemoveListener(Action listener)
         {
-            OnEventRaise -= listener;
+            if (guid != Guid.Empty && AllEvents.TryGetValue(guid, out ScriptableEvent scriptableEvent)
+                && scriptableEvent != null)
+            {
+                scriptableEvent.OnEventRaise -= listener;
+            }
         }
 
         /// <summary>
@@ -96,7 +110,11 @@ namespace itolib.ScriptableObjects
         /// </summary>
         public void ClearListeners()
         {
-            OnEventRaise = null;
+            if (guid != Guid.Empty && AllEvents.TryGetValue(guid, out ScriptableEvent scriptableEvent)
+                && scriptableEvent != null)
+            {
+                scriptableEvent.OnEventRaise = null;
+            }
         }
     }
 }
