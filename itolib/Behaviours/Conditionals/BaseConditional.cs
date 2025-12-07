@@ -4,7 +4,6 @@ using itolib.Interfaces;
 using System;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Conditionals
 {
@@ -139,7 +138,6 @@ namespace itolib.Behaviours.Conditionals
         ///     Desired <c>ActivationTime</c> for the overrides to be applied.
         /// </summary>
         [field: Tooltip("Desired activation time for the overrides to be applied.")]
-        [field: FormerlySerializedAs("activationTime")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
 
         /// <summary>

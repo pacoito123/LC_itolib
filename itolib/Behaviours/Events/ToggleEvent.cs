@@ -6,7 +6,6 @@ using itolib.Interfaces;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Events
 {
@@ -35,7 +34,6 @@ namespace itolib.Behaviours.Events
         /// </summary>
         [field: Header("Toggle Event")]
         [field: Tooltip("Desired activation time for the initial toggle to occur.")]
-        [field: FormerlySerializedAs("activationTime")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.Manual;
 
         /// <summary>

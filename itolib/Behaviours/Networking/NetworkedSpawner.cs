@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Networking
 {
@@ -110,7 +109,6 @@ namespace itolib.Behaviours.Networking
         ///     Desired <c>ActivationTime</c> for the spawn to be performed.
         /// </summary>
         [field: Tooltip("Desired activation time for the spawn to be performed.")]
-        [field: FormerlySerializedAs("activationTime")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
 
         /// <summary>
@@ -123,14 +121,12 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [FormerlySerializedAs("seededRandom")]
         [SerializeField] protected bool isSeededRandom = true;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [field: Tooltip("")]
-        [field: FormerlySerializedAs("onSpawnPerformed")]
         [field: SerializeField] public UnityEvent<T> OnSpawnPerformed { get; private set; } = new();
 
         /// <summary>

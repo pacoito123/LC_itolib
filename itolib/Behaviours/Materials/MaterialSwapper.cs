@@ -3,7 +3,6 @@ using itolib.Enums;
 using itolib.Interfaces;
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Materials
 {
@@ -80,7 +79,6 @@ namespace itolib.Behaviours.Materials
         /// <remarks><b>NOTE:</b> Can be set to <c>Manual</c> to disable the automatic swap, but it's not required for triggering manual swaps afterwards.</remarks>
         [field: Tooltip("Desired activation time for the automatic material swap. NOTE: Can be set to 'Manual' to disable the automatic swap, but it's not "
             + "required for triggering manual swaps afterwards.")]
-        [field: FormerlySerializedAs("activationTime")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.DungeonComplete;
 
         /// <summary>

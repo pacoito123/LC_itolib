@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Events
 {
@@ -95,7 +94,6 @@ namespace itolib.Behaviours.Events
         ///     Desired <c>ActivationTime</c> for the initial weighted roll.
         /// </summary>
         [field: Tooltip("Desired activation time for the initial weighted roll.")]
-        [field: FormerlySerializedAs("activationTime")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.Manual;
 
         /// <summary>

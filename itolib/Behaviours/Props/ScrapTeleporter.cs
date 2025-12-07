@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Props
 {
@@ -109,7 +108,6 @@ namespace itolib.Behaviours.Props
         ///     Desired <c>ActivationTime</c> for the teleport to be performed.
         /// </summary>
         [field: Tooltip("Desired activation time for the teleport to be performed.")]
-        [field: FormerlySerializedAs("activationTime")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
 
         /// <summary>

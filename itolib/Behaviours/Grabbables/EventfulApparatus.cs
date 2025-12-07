@@ -10,7 +10,6 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Grabbables
 {
@@ -101,42 +100,36 @@ namespace itolib.Behaviours.Grabbables
         [field: Space(5.0f)]
         [field: Header("Apparatus Events")]
         [field: Tooltip("")]
-        [field: FormerlySerializedAs("onActivate")]
         [field: SerializeField] public UnityEvent OnApparatusActivate { get; private set; } = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [field: Tooltip("")]
-        [field: FormerlySerializedAs("onDisconnectEarly")]
         [field: SerializeField] public UnityEvent OnDisconnectEarly { get; private set; } = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [field: Tooltip("")]
-        [field: FormerlySerializedAs("onDisconnect")]
         [field: SerializeField] public UnityEvent OnDisconnect { get; private set; } = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [field: Tooltip("")]
-        [field: FormerlySerializedAs("onLightsFlicker")]
         [field: SerializeField] public UnityEvent OnLightsFlicker { get; private set; } = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [field: Tooltip("")]
-        [field: FormerlySerializedAs("onLightsOff")]
         [field: SerializeField] public UnityEvent OnLightsOff { get; private set; } = new();
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [field: Tooltip("")]
-        [field: FormerlySerializedAs("onDisplayWarning")]
         [field: SerializeField] public UnityEvent OnDisplayWarning { get; private set; } = new();
 
         /// <summary>

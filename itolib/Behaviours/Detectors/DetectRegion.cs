@@ -4,7 +4,6 @@ using itolib.Interfaces;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Detectors
 {
@@ -41,7 +40,6 @@ namespace itolib.Behaviours.Detectors
         /// <remarks><b>NOTE:</b> Can be set to <c>Manual</c> to disable the automatic search, but is not required for triggering manual searches afterwards.</remarks>
         [field: Tooltip("Desired activation time for the region's automatic object search. NOTE: Can be set to 'Manual' to disable the automatic search, "
             + "but is not required for triggering manual searches afterwards.")]
-        [field: FormerlySerializedAs("activationTime")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
 
         /// <summary>

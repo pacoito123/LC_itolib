@@ -4,7 +4,6 @@ using itolib.Extensions;
 using itolib.Interfaces;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Animations
 {
@@ -74,7 +73,6 @@ namespace itolib.Behaviours.Animations
         ///     Desired <c>ActivationTime</c> for the initial velocity sync.
         /// </summary>
         [field: Tooltip("Desired activation time for the initial velocity sync.")]
-        [field: FormerlySerializedAs("activationTime")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
 
         /// <summary>

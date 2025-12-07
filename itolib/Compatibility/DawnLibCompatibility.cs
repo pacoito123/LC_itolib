@@ -28,8 +28,8 @@ namespace itolib.Compatibility
         {
             foreach (DawnEnemyInfo dawnEnemyInfo in LethalContent.Enemies.Values)
             {
-                // Skip any vanilla enemies.
-                if (dawnEnemyInfo.Key.IsVanilla())
+                // Skip any vanilla or non-DawnLib enemies.
+                if (dawnEnemyInfo.Key.IsVanilla() || dawnEnemyInfo.HasTag(DawnLibTags.IsExternal))
                 {
                     continue;
                 }
@@ -49,8 +49,8 @@ namespace itolib.Compatibility
         {
             foreach (DawnItemInfo dawnItemInfo in LethalContent.Items.Values)
             {
-                // Skip any vanilla items.
-                if (dawnItemInfo.Key.IsVanilla())
+                // Skip any vanilla or non-DawnLib items.
+                if (dawnItemInfo.Key.IsVanilla() || dawnItemInfo.HasTag(DawnLibTags.IsExternal))
                 {
                     continue;
                 }
