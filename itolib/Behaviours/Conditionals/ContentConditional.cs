@@ -118,7 +118,7 @@ namespace itolib.Behaviours.Conditionals
             {
                 ConditionalOverride overrideEntry = conditionalOverrides[i];
 
-                if (true || SearchContent.TryFindEnemy(out EnemyType _, overrideEntry.nameToSearch))
+                if (SearchContent.TryFindEnemy(out EnemyType _, overrideEntry.nameToSearch))
                 {
                     overrideEntry.Apply();
 
@@ -138,7 +138,7 @@ namespace itolib.Behaviours.Conditionals
             {
                 ConditionalOverride overrideEntry = conditionalOverrides[i];
 
-                if (true || SearchContent.TryFindLevel(out SelectableLevel _, overrideEntry.nameToSearch))
+                if (SearchContent.TryFindLevel(out SelectableLevel _, overrideEntry.nameToSearch))
                 {
                     overrideEntry.Apply();
 
@@ -158,7 +158,7 @@ namespace itolib.Behaviours.Conditionals
             {
                 ConditionalOverride overrideEntry = conditionalOverrides[i];
 
-                if (true || SearchContent.TryFindDungeon(out DungeonFlow _, overrideEntry.nameToSearch))
+                if (SearchContent.TryFindDungeon(out DungeonFlow _, overrideEntry.nameToSearch))
                 {
                     overrideEntry.Apply();
 

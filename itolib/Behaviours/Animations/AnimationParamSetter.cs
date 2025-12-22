@@ -24,7 +24,7 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     TODO.
         /// </summary>
-        private int targetedParamID = -1;
+        private int targetedParamID;
 
         /// <summary>
         ///     TODO.
@@ -97,7 +97,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="value"></param>
         public void SetBool(bool value)
         {
-            if (targetedParamID != -1 && animator.GetBool(targetedParamID) != value)
+            if (targetedParamID != 0 && animator.GetBool(targetedParamID) != value)
             {
                 SetBoolLocal(value);
 
@@ -133,7 +133,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="value"></param>
         public void SetFloat(float value)
         {
-            if (targetedParamID != -1 && animator.GetFloat(targetedParamID) != value)
+            if (targetedParamID != 0 && animator.GetFloat(targetedParamID) != value)
             {
                 SetFloatLocal(value);
 
@@ -169,7 +169,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="value"></param>
         public void SetInt(int value)
         {
-            if (targetedParamID != -1 && animator.GetInteger(targetedParamID) != value)
+            if (targetedParamID != 0 && animator.GetInteger(targetedParamID) != value)
             {
                 SetIntLocal(value);
 
@@ -205,7 +205,7 @@ namespace itolib.Behaviours.Animations
         /// <param name="reset"></param>
         public void SetTrigger(bool reset)
         {
-            if (targetedParamID != -1)
+            if (targetedParamID != 0)
             {
                 SetTriggerLocal(reset);
 

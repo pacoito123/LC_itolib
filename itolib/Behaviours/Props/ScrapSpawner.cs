@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Props
 {
@@ -103,7 +104,8 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [SerializeField] private bool useMoonScrapSpawns;
+        [FormerlySerializedAs("useMoonScrapSpawns")]
+        [SerializeField] private bool addMoonScrapSpawns;
 
         /// <summary>
         ///     TODO.
@@ -297,23 +299,22 @@ namespace itolib.Behaviours.Props
         {
             SyncedItems = new();
 
-            if (NetworkManager.Singleton.IsHost)
-            {
-                if (useMoonScrapSpawns)
-                {
-                    List<SpawnableItemWithRarity> spawnableScrap = LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap;
-                    WeightedEntries = new ScrapWeightEntry[spawnableScrap.Count];
-
-                    for (int i = 0; i < spawnableScrap.Count; i++)
-                    {
-                        WeightedEntries[i] = new(spawnableScrap[i]);
-                    }
-                }
-            }
-
             if (!WeightedSelf.InitializedWeights)
             {
                 WeightedSelf.InitializeWeights();
+            }
+
+            if (addMoonScrapSpawns)
+            {
+                List<SpawnableItemWithRarity> spawnableScrap = LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap;
+                ScrapWeightEntry[] scrapEntries = new ScrapWeightEntry[spawnableScrap.Count];
+
+                for (int i = 0; i < spawnableScrap.Count; i++)
+                {
+                    scrapEntries[i] = new(spawnableScrap[i]);
+                }
+
+                WeightedSelf.AddWeights(scrapEntries);
             }
 
             base.Awake();

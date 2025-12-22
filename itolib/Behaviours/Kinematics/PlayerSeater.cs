@@ -195,6 +195,7 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     Attach player on the local client.
         /// </summary>
+        /// <param name="player">Player to attach.</param>
         public override void AttachPlayerLocal(PlayerControllerB player)
         {
             base.AttachPlayerLocal(player);

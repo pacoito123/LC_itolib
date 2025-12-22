@@ -39,7 +39,7 @@ namespace itolib.Extensions
                 characters[i] = c;
             }
 
-            return new string(characters).TrimEnd('\0');
+            return new string(characters).Trim('\0');
         }
     }
 }

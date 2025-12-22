@@ -45,20 +45,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        private void OnDestroy()
-        {
-            if (!NetworkManager.Singleton.IsHost)
-            {
-                return;
-            }
-
-            DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(CopyHazardCurve);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        private void CopyHazardCurve()
+        public void OnDungeonComplete(Dungeon dungeon)
         {
             if (!NetworkManager.Singleton.IsHost)
             {
@@ -72,6 +59,7 @@ namespace itolib.Behaviours.Props
             }
 
             SelectableLevel currentLevel = LevelManager.CurrentExtendedLevel.SelectableLevel;
+            ExtendedDungeonFlow currentDungeon = DungeonManager.CurrentExtendedDungeonFlow;
 
             string[] hazardNames = new string[currentLevel.spawnableMapObjects.Length];
 
@@ -80,38 +68,50 @@ namespace itolib.Behaviours.Props
                 hazardNames[i] = currentLevel.spawnableMapObjects[i].prefabToSpawn.name;
             }
 
+            string[] extendedHazardNames = new string[currentDungeon.SpawnableMapObjects.Count];
+
+            for (int i = 0; i < extendedHazardNames.Length; i++)
+            {
+                extendedHazardNames[i] = currentDungeon.SpawnableMapObjects[i].prefabToSpawn.name;
+            }
+
             for (int i = 0; i < hazardReplacements.Length; i++)
             {
-                SpawnableMapObject? originalHazard = null, replacingHazard = null;
+                SpawnableMapObject? originalHazard = null;
 
                 for (int j = 0; j < hazardNames.Length; j++)
                 {
                     if (hazardReplacements[i].originalHazard.CompareOrdinal(hazardNames[j]))
                     {
                         originalHazard = currentLevel.spawnableMapObjects[j];
-                    }
-                    else if (hazardReplacements[i].replacingHazard.CompareOrdinal(hazardNames[j]))
-                    {
-                        replacingHazard = currentLevel.spawnableMapObjects[j];
-                    }
 
-                    if (originalHazard != null && replacingHazard != null)
-                    {
                         break;
                     }
                 }
 
                 if (originalHazard == null)
                 {
-                    Plugin.StaticLogger.LogWarning($"Could not find original hazard '{hazardReplacements[i].originalHazard}' in the moon's "
+                    Plugin.StaticLogger.LogWarning($"Could not find hazard '{hazardReplacements[i].originalHazard}' in the moon's "
                         + "SpawnableMapObject list; its spawn rates will not be modified.");
 
                     continue;
                 }
 
+                SpawnableMapObject? replacingHazard = null;
+
+                for (int j = 0; j < extendedHazardNames.Length; j++)
+                {
+                    if (hazardReplacements[i].replacingHazard.CompareOrdinal(extendedHazardNames[j]))
+                    {
+                        replacingHazard = currentDungeon.SpawnableMapObjects[j];
+
+                        break;
+                    }
+                }
+
                 if (replacingHazard == null)
                 {
-                    Plugin.StaticLogger.LogWarning($"Could not find replacement hazard '{hazardReplacements[i].replacingHazard}' in the moon's "
+                    Plugin.StaticLogger.LogWarning($"Could not find hazard '{hazardReplacements[i].replacingHazard}' in the dungeon's "
                         + "SpawnableMapObject list; its spawn rates will not be modified.");
 
                     continue;
@@ -119,20 +119,6 @@ namespace itolib.Behaviours.Props
 
                 replacingHazard.numberToSpawn = originalHazard.numberToSpawn;
             }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="dungeon"></param>
-        public void OnDungeonComplete(Dungeon dungeon)
-        {
-            if (!NetworkManager.Singleton.IsHost)
-            {
-                return;
-            }
-
-            DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(CopyHazardCurve);
         }
     }
 }

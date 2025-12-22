@@ -37,8 +37,6 @@ namespace itolib.Behaviours.Helpers
                 {
                     outOfBounds.transform.position = new(dungeon.transform.position.x + offsetToApply.x, dungeon.transform.position.y
                         + dungeon.Bounds.min.y + offsetToApply.y, dungeon.transform.position.z + offsetToApply.z);
-
-                    break;
                 }
             }
         }

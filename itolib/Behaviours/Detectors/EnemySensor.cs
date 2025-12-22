@@ -126,10 +126,10 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         protected override void Awake()
         {
-            if (!NetworkManager.Singleton.IsHost && regionCollider != null)
+            /* if (!NetworkManager.Singleton.IsHost && regionCollider != null)
             {
                 regionCollider.enabled = false;
-            }
+            } */
 
             if (NetworkManager.Singleton.IsHost && enemyFilters != null && enemyFilters.Length > 0)
             {

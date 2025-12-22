@@ -58,7 +58,7 @@ namespace itolib.Behaviours.Detectors
 
         /// <summary>
         ///     Attach if the player is alive.
-        ///     Detach if the player is dead, or presses the set (<c>playerAction</c>).
+        ///     Detach if the player is dead.
         /// </summary>
         protected override void Awake()
         {
