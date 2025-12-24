@@ -46,14 +46,51 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Space(5.0f)]
+        [Header("Gift Overrides")]
         [Tooltip("")]
-        [SerializeField] private ParticleSystem? poofParticleOverride;
+        [SerializeField] private ParticleSystem[]? poofParticleOverrides;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [SerializeField] private AudioClip? openGiftAudioOverride;
+        [SerializeField] private AudioClip[]? openGiftAudioOverrides;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private Material[]? giftMaterialOverrides;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(5.0f)]
+        [Header("Scan Node")]
+        [Tooltip("")]
+        [SerializeField] private bool overrideGiftScanNode;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private ScanNodeInfo giftScanNode;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private int scanNodeLayer;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        protected override void Awake()
+        {
+            scanNodeLayer = LayerMask.NameToLayer("ScanNode");
+
+            base.Awake();
+        }
 
         /// <summary>
         ///     TODO.
@@ -94,17 +131,59 @@ namespace itolib.Behaviours.Props
 
             gift.objectInPresentValue = scrapValue;
 
-            if (poofParticleOverride != null)
+            if (poofParticleOverrides?.Length > 0)
             {
-                gift.PoofParticle = Instantiate(poofParticleOverride, Vector3.zero, Quaternion.identity, gift.transform);
+                int particleIndex = isSeededRandom ? SeededSelf.GetSeededRandom().Next(0, poofParticleOverrides.Length)
+                    : Random.RandomRangeInt(0, poofParticleOverrides.Length);
+
+                gift.PoofParticle = Instantiate(poofParticleOverrides[particleIndex], Vector3.zero, Quaternion.identity,
+                    gift.transform);
             }
 
-            if (openGiftAudioOverride != null)
+            if (openGiftAudioOverrides?.Length > 0)
             {
-                gift.openGiftAudio = openGiftAudioOverride;
+                int clipIndex = isSeededRandom ? SeededSelf.GetSeededRandom().Next(0, openGiftAudioOverrides.Length)
+                    : Random.RandomRangeInt(0, openGiftAudioOverrides.Length);
+
+                gift.openGiftAudio = openGiftAudioOverrides[clipIndex];
+            }
+
+            if (giftMaterialOverrides?.Length > 0)
+            {
+                int materialIndex = isSeededRandom ? SeededSelf.GetSeededRandom().Next(0, giftMaterialOverrides.Length)
+                    : Random.RandomRangeInt(0, giftMaterialOverrides.Length);
+
+                MeshRenderer[] renderers = gift.GetComponentsInChildren<MeshRenderer>();
+
+                for (int i = 0; i < renderers.Length; i++)
+                {
+                    if (renderers[i].gameObject.layer != scanNodeLayer)
+                    {
+                        renderers[i].sharedMaterial = giftMaterialOverrides[materialIndex];
+                    }
+                }
+            }
+
+            if (overrideGiftScanNode)
+            {
+                ScanNodeProperties? giftScanNode = gift.GetComponentInChildren<ScanNodeProperties>();
+                ScanNodeInfo giftScanNodeInfo = this.giftScanNode;
+
+                if (giftScanNode != null)
+                {
+                    giftScanNode.headerText = giftScanNodeInfo.headerText;
+                    giftScanNode.subText = giftScanNodeInfo.subText;
+                    giftScanNode.minRange = giftScanNodeInfo.minRange;
+                    giftScanNode.maxRange = giftScanNodeInfo.maxRange;
+                    giftScanNode.creatureScanID = giftScanNodeInfo.creatureScanID;
+                    giftScanNode.nodeType = giftScanNodeInfo.nodeType;
+                    giftScanNode.requiresLineOfSight = giftScanNodeInfo.requiresLineOfSight;
+                }
             }
 
             gift.loadedItemFromSave = true;
+
+            base.SpawnPerformed(item, spawnLocation);
         }
 
         /// <summary>

@@ -333,8 +333,6 @@ namespace itolib.Behaviours.Props
                     && changeEvent.Value.itemReference.TryGet(out GrabbableObject item))
                 {
                     SyncItemValues(item, changeEvent.Value);
-
-                    OnSpawnPerformed.Invoke(item);
                 }
             };
         }
@@ -436,10 +434,10 @@ namespace itolib.Behaviours.Props
                 item.FallToGround(randomizePosition, true);
             }
 
+            yield return Yielders.WaitForEndOfFrame;
+
             if (muteSpawnedScrap)
             {
-                yield return Yielders.WaitForEndOfFrame;
-
                 AudioSource[] sources = item.GetComponentsInChildren<AudioSource>();
 
                 for (int i = 0; i < sources.Length; i++)
@@ -447,6 +445,8 @@ namespace itolib.Behaviours.Props
                     sources[i].Stop();
                 }
             }
+
+            OnSpawnPerformed.Invoke(item);
         }
     }
 }
