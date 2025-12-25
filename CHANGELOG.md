@@ -1,5 +1,39 @@
 # Changelog
 
+## [v0.7.0]
+
+Added various scripts and features, fixed a couple issues, removed some deprecated/legacy stuff.
+
+- Added `ContentConditional`, for doing stuff that depends on certain modded content existing, or a specific plugin being found.
+- Added `PlayerWeightEvent`, which periodically checks a player's weight to determine if it should trigger or not.
+- Added `ShakeEffect`, which just triggers a screen shake effect for the local client.
+  - Might swap it to something that inherits from `PlayerSensor` at some point.
+- Added `VehicleSensor`, for checking if the Cruiser is inside, entering and/or exiting a region.
+  - Will eventually add some bonus functions for doing stuff to the Cruiser (like applying force or dealing damage).
+- Added `ReverbTriggerAdjuster`, to tweak certain `AudioReverbTriggers` not normally accessible from the moon scene.
+  - Can adjust, replace, or disable `AudioReverbTriggers` present in the ship scene (`SampleSceneRelay`).
+  - Should be careful with its use, since some of the triggers that can be replaced or disabled might be doing something important...
+- Added `SyncedSpawn` activation time, to trigger scripts right before `SpawnSyncedObjects` begin their spawning.
+- Added `onConditionalFail` to `BaseConditional`-inheriting scripts, which is called whenever the match in question fails.
+- Added material overrides to `GiftSpawner`, which can be used to replace the gift's texture when spawned.
+  - Also made it so multiple overrides can be selected for the gift's poof particle and opening sound effect.
+- Changed `ScrapSpawner`'s moon scrap spawns field to add the scraps instead of completely overriding the weights.
+- Changed `ScrapSpawner`'s `onSpawnPerformed` to be called only until after the scrap item has finished being initialized and synced.
+- Changed `BaseConditional`-inheriting scripts to no longer stop after the first match, to continue applying other overrides.
+  - Will likely add a field for this, in case cascading overrides are not desired.
+- Changed `OutOfBoundsAdjuster` to not exit early after finding a kill trigger, in case the current moon has multiple for whatever reason.
+- Renamed `DungeonStoryLog` to `EventfulStoryLog`, for it is no longer limited to just interiors.
+- Fixed some issues with `IWeightedScript`-inheriting scripts when manually adding or modifying weights.
+- Fixed `ScriptableEvents` with the same GUID not actually referring to the same instance.
+- Fixed `MoonConditional` not matching moons properly due to a string-related issue.
+- Fixed `TwinApparatus` shutting off power for good after only one being pulled.
+- Fixed `ScrapSpawner`'s `onSpawnPerformed` callback only being called for the host.
+- Fixed `ScrapSensor`'s `onRegionEntered` and `onRegionExited` callbacks only working for the host (probably).
+- Removed a couple deprecated fields and scripts:
+  - Removed deprecated `ActivationTime` field for the scripts that had it.
+  - Removed obsolete (extra) `AudioGroup` script.
+- Removed `PlatformUnstable` script, since its functionality can be recreated using other, more abstract scripts.
+
 ## [v0.6.1]
 
 Some small optimizations and tweaks.
