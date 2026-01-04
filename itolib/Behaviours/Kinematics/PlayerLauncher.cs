@@ -157,7 +157,7 @@ namespace itolib.Behaviours.Kinematics
         public bool clampAngle = true;
 
         /// <summary>
-        ///     Cached transform of the currently attached player's model.
+        ///     Cached <c>Transform</c> of the currently attached player's model.
         /// </summary>
         private Transform playerModelTransform = null!;
 
@@ -183,7 +183,7 @@ namespace itolib.Behaviours.Kinematics
         }
 
         /// <summary>
-        ///     Ramp up towards the target force, smoothly rotate player model transform, and/or continually set the player as no longer taking fall damage. 
+        ///     Ramp up towards the target force, smoothly rotate player model transform, and/or continually set the player as no longer taking fall damage.
         /// </summary>
         protected override void Update()
         {

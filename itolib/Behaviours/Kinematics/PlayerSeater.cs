@@ -128,7 +128,7 @@ namespace itolib.Behaviours.Kinematics
         private InputAction? playerAction;
 
         /* /// <summary>
-        ///     Cached transform of the currently attached player's camera.
+        ///     Cached <c>Transform</c> of the currently attached player's camera.
         /// </summary>
         private Transform playerCamera = null!; */
 

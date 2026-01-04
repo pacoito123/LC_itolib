@@ -92,7 +92,7 @@ namespace itolib.Behaviours.Effects
         protected PlayerControllerB? attachedPlayer;
 
         /// <summary>
-        ///     Cached transform of the currently attached player (if there is one).
+        ///     Cached <c>Transform</c> of the currently attached player (if there is one).
         /// </summary>
         protected Transform attachedPlayerTransform = null!;
 

@@ -68,7 +68,7 @@ namespace itolib.Behaviours.Kinematics
         private InputAction? playerAction;
 
         /// <summary>
-        ///     Cached transform for this platform.
+        ///     Cached <c>Transform</c> for this platform.
         /// </summary>
         private Transform platformTransform = null!;
 
