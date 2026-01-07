@@ -1,7 +1,7 @@
+using itolib.Behaviours.Networking;
+using itolib.Util;
 using System;
 using System.Collections;
-using itolib.Util;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace itolib.Behaviours.Notifications
@@ -27,9 +27,9 @@ namespace itolib.Behaviours.Notifications
         public string bodyText = string.Empty;
 
         /// <summary>
-        ///     Amount of time the dialogue box should remain open after the text is fully shown, in seconds.
+        ///     Amount of time the dialogue box should remain open after the text is fully shown, in seconds. Default vanilla wait time is <c>4</c> seconds.
         /// </summary>
-        [Tooltip("Amount of time the dialogue box should remain open after the text is fully shown, in seconds.")]
+        [Tooltip("Amount of time the dialogue box should remain open after the text is fully shown, in seconds. Default vanilla wait time is '4' seconds.")]
         [Min(0.0f)]
         public float waitTime = 4.0f;
 
@@ -75,7 +75,7 @@ namespace itolib.Behaviours.Notifications
     /// <summary>
     ///     Represents an alert or message sent to the player, in the form of a dialogue box (e.g. ship leaving alert).
     /// </summary>
-    public class AlertDialogue : NetworkBehaviour
+    public class AlertDialogue : NetworkedAlert<DialogueEntry>
     {
         /// <summary>
         ///     Hash of the bool parameter to toggle to display the dialogue box.
@@ -83,17 +83,10 @@ namespace itolib.Behaviours.Notifications
         private static readonly int openAnimationID = Animator.StringToHash("Open");
 
         /// <summary>
-        ///     List of every <c>DialogueEntry</c> to display to alerted players, either sequentially or individually.
-        /// </summary>
-        [Header("Alert Dialogue")]
-        [Tooltip("List of every dialogue entry to display to alerted players, either sequentially or individually.")]
-        [SerializeField] private DialogueEntry[]? dialogueEntries;
-
-        /// <summary>
         ///     Whether the dialogue box opening sound effect should play or not.
         /// </summary>
         [Space(5.0f)]
-        [Header("SFX")]
+        [Header("Alert Dialogue")]
         [Tooltip("Whether the dialogue box opening sound effect should play or not.")]
         [SerializeField] private bool playOpenSFX = true;
 
@@ -116,131 +109,43 @@ namespace itolib.Behaviours.Notifications
         [SerializeField] private AudioClip?[]? letterTypingSFX;
 
         /// <summary>
-        ///     Display each dialogue entry sequentially, starting from the beginning.
+        ///     List of every <c>DialogueEntry</c> to display to alerted players, either sequentially or individually.
         /// </summary>
-        public void PlayDialogueSequence()
-        {
-            PlayDialogueSequence(0);
-        }
+        /// <remarks>Deprecated. Should be ignored.</remarks>
+        [Space(10.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("[Deprecated] List of every dialogue entry to display to alerted players, either sequentially or individually.")]
+        [SerializeField] private DialogueEntry[]? dialogueEntries;
 
         /// <summary>
-        ///     Display each dialogue entry sequentially, starting from a specific point.
+        ///     Use deprecated entries, if any are present without any entries in the other list.
         /// </summary>
-        /// <param name="startingIndex">Index to skip to when displaying the dialogue entries.</param>
-        public void PlayDialogueSequence(int startingIndex)
+        private void Start()
         {
-            // Check if given index is valid.
-            if (dialogueEntries?.Length > startingIndex)
+            if ((alertEntries == null || alertEntries.Length == 0) && dialogueEntries?.Length > 0)
             {
-                // Display dialogue sequence for the local client.
-                PlayDialogueSequenceLocal(startingIndex);
-
-                // Check if object is spawned.
-                if (IsSpawned)
-                {
-                    // Display dialogue sequence for all other clients.
-                    PlayDialogueSequenceRpc(startingIndex);
-                }
+                alertEntries = dialogueEntries;
             }
         }
 
         /// <summary>
-        ///     Display dialogue sequence for all other clients.
+        ///     Display dialogue entries, sequentially.
         /// </summary>
-        /// <param name="startingIndex"></param>
-        [Rpc(SendTo.NotMe, RequireOwnership = false)]
-        private void PlayDialogueSequenceRpc(int startingIndex)
+        /// <param name="alerts">Dialogue entries to display.</param>
+        protected override void PlayAlerts(DialogueEntry[] alerts)
         {
-            // Display dialogue sequence for the local client.
-            PlayDialogueSequenceLocal(startingIndex);
-        }
+            HUDManager? hud = HUDManager.Instance;
 
-        /// <summary>
-        ///     Display each dialogue entry sequentially for the local client, starting from the beginning.
-        /// </summary>
-        public void PlayDialogueSequenceLocal()
-        {
-            PlayDialogueSequenceLocal(0);
-        }
-
-        /// <summary>
-        ///     Display each dialogue entry sequentially for the local client, starting from a specific point.
-        /// </summary>
-        /// <param name="startingIndex">Index to skip to when playing the dialogue entries.</param>
-        public void PlayDialogueSequenceLocal(int startingIndex)
-        {
-            // Check if given index is valid.
-            if (dialogueEntries?.Length > startingIndex)
+            if (hud != null)
             {
-                HUDManager? hud = HUDManager.Instance;
-
-                if (hud != null)
+                if (hud.readDialogueCoroutine != null)
                 {
-                    if (hud.readDialogueCoroutine != null)
-                    {
-                        // Stop any existing dialogue Coroutine.
-                        hud.StopCoroutine(hud.readDialogueCoroutine);
-                    }
-
-                    // Start Coroutine to display the dialogue entries sequentially, starting from the given index.
-                    hud.readDialogueCoroutine = hud.StartCoroutine(ReadOutDialogue(dialogueEntries[startingIndex..]));
+                    // Stop any existing dialogue Coroutine.
+                    hud.StopCoroutine(hud.readDialogueCoroutine);
                 }
-            }
-        }
 
-        /// <summary>
-        ///     Display a single dialogue entry.
-        /// </summary>
-        /// <param name="dialogueIndex">Index of the dialogue entry to play.</param>
-        public void PlayDialogueSingle(int dialogueIndex)
-        {
-            // Check if given index is valid.
-            if (dialogueEntries?.Length > dialogueIndex)
-            {
-                // Display a single dialogue entry for the local client.
-                PlayDialogueSingleLocal(dialogueIndex);
-
-                if (IsSpawned)
-                {
-                    // Display a single dialogue entry for all other clients.
-                    PlayDialogueSingleRpc(dialogueIndex);
-                }
-            }
-        }
-
-        /// <summary>
-        ///     Display a single dialogue entry for all other clients.
-        /// </summary>
-        /// <param name="dialogueIndex">Index of the dialogue entry to play.</param>
-        [Rpc(SendTo.NotMe, RequireOwnership = false)]
-        private void PlayDialogueSingleRpc(int dialogueIndex)
-        {
-            // Display a single dialogue entry for the local client.
-            PlayDialogueSingleLocal(dialogueIndex);
-        }
-
-        /// <summary>
-        ///     Display a single dialogue entry for the local client.
-        /// </summary>
-        /// <param name="dialogueIndex">Index of the dialogue entry to play.</param>
-        public void PlayDialogueSingleLocal(int dialogueIndex)
-        {
-            // Check if given index is valid.
-            if (dialogueEntries?.Length > dialogueIndex)
-            {
-                HUDManager? hud = HUDManager.Instance;
-
-                if (hud != null)
-                {
-                    if (hud.readDialogueCoroutine != null)
-                    {
-                        // Stop any existing dialogue Coroutine.
-                        hud.StopCoroutine(hud.readDialogueCoroutine);
-                    }
-
-                    // Start Coroutine to display the single dialogue entry.
-                    hud.readDialogueCoroutine = hud.StartCoroutine(ReadOutDialogue([dialogueEntries[dialogueIndex]]));
-                }
+                // Start Coroutine to display the dialogue entries sequentially, starting from the given index.
+                hud.readDialogueCoroutine = hud.StartCoroutine(ReadOutDialogue(alerts));
             }
         }
 
@@ -276,15 +181,20 @@ namespace itolib.Behaviours.Notifications
                 {
                     // Obtain list of audio clips to play when opening the dialogue box.
                     AudioClip?[]? openClips = (dialogue.overrideOpenSFX && dialogue.dialogueOpenSFX?.Length > 0)
-                        ? dialogue.dialogueOpenSFX : (playOpenSFX && dialogueOpenSFX?.Length > 0)
-                        ? dialogueOpenSFX : ((dialogue.overrideOpenSFX || playOpenSFX) && hud.dialogueBleeps?.Length > 0)
-                        ? hud.dialogueBleeps : null;
+                        ? dialogue.dialogueOpenSFX : ((playOpenSFX && dialogueOpenSFX?.Length > 0)
+                        ? dialogueOpenSFX : (((dialogue.overrideOpenSFX || playOpenSFX) && hud.dialogueBleeps?.Length > 0)
+                        ? hud.dialogueBleeps : null));
 
                     if (openClips?.Length > 0)
                     {
                         // Play a random sound effect from the list of audio clips.
                         hud.dialogueBoxSFX.PlayOneShot(openClips[UnityEngine.Random.Range(0, openClips.Length)]);
                     }
+                }
+
+                if (hud.dialogeBoxText == null)
+                {
+                    continue;
                 }
 
                 // Check if body text should be displayed with a delay between each letter.
@@ -324,12 +234,73 @@ namespace itolib.Behaviours.Notifications
                     hud.dialogeBoxText.text = dialogue.bodyText;
                 }
 
-                // Wait for the specified amount of time before closing the dialogue box and moving onto the next (if there is one).
-                yield return Yielders.WaitForSeconds(dialogueArray[i].waitTime);
+                if (dialogue.waitTime > 0.0f)
+                {
+                    // Wait for the specified amount of time before closing the dialogue box and moving onto the next (if there is one).
+                    yield return Yielders.WaitForSeconds(dialogue.waitTime);
+                }
             }
 
             // Disable the dialogue box bool parameter, to close it.
             hud.dialogueBoxAnimator.SetBool(openAnimationID, false);
+        }
+
+        /// <summary>
+        ///     [Deprecated] Display each dialogue entry sequentially, starting from the beginning.
+        /// </summary>
+        [Obsolete("Switch to PlayAlertSequence() function.")]
+        public void PlayDialogueSequence()
+        {
+            PlayDialogueSequence(0);
+        }
+
+        /// <summary>
+        ///     [Deprecated] Display each dialogue entry sequentially, starting from a specific point.
+        /// </summary>
+        /// <param name="startingIndex">Index to skip to when displaying the dialogue entries.</param>
+        [Obsolete("Switch to PlayAlertSequence() function.")]
+        public void PlayDialogueSequence(int startingIndex)
+        {
+            PlayAlertSequence(startingIndex);
+        }
+
+        /// <summary>
+        ///     [Deprecated] Display each dialogue entry sequentially for the local client, starting from the beginning.
+        /// </summary>
+        [Obsolete("Switch to PlayAlertSequenceLocal() function.")]
+        public void PlayDialogueSequenceLocal()
+        {
+            PlayDialogueSequenceLocal(0);
+        }
+
+        /// <summary>
+        ///     [Deprecated] Display each dialogue entry sequentially for the local client, starting from a specific point.
+        /// </summary>
+        /// <param name="startingIndex">Index to skip to when playing the dialogue entries.</param>
+        [Obsolete("Switch to PlayAlertSequenceLocal() function.")]
+        public void PlayDialogueSequenceLocal(int startingIndex)
+        {
+            PlayAlertSequenceLocal(startingIndex);
+        }
+
+        /// <summary>
+        ///     [Deprecated] Display a single dialogue entry.
+        /// </summary>
+        /// <param name="dialogueIndex">Index of the dialogue entry to play.</param>
+        [Obsolete("Switch to PlayAlertSingle() function.")]
+        public void PlayDialogueSingle(int dialogueIndex)
+        {
+            PlayAlertSingle(dialogueIndex);
+        }
+
+        /// <summary>
+        ///     [Deprecated] Display a single dialogue entry for the local client.
+        /// </summary>
+        /// <param name="dialogueIndex">Index of the dialogue entry to play.</param>
+        [Obsolete("Switch to PlayAlertSingleLocal() function.")]
+        public void PlayDialogueSingleLocal(int dialogueIndex)
+        {
+            PlayAlertSingleLocal(dialogueIndex);
         }
     }
 }
