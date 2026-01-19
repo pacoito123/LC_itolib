@@ -245,7 +245,7 @@ namespace itolib.Behaviours.Effects
         }
 
         /// <summary>
-        ///     Coroutine to despawn after a specified amount of time passes.
+        ///     <c>Coroutine</c> to despawn after a specified amount of time passes.
         /// </summary>
         private IEnumerator DespawnDelayed()
         {

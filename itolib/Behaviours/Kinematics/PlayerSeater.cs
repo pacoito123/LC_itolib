@@ -19,14 +19,14 @@ namespace itolib.Behaviours.Kinematics
         private static readonly int stopAnimationID = Animator.StringToHash("SA_stopAnimation");
 
         /// <summary>
-        ///     Hash of the trigger parameter ..
-        /// </summary>
-        private static readonly int notInSpecialAnimID = Animator.StringToHash("notInSpecialAnim");
-
-        /// <summary>
         ///     Hash of the bool parameter to toggle the player's crouching animation.
         /// </summary>
         private static readonly int crouchingID = Animator.StringToHash("crouching");
+
+        /// <summary>
+        ///     Hash of the tag to check if the player is currently not in a special animation (sitting down).
+        /// </summary>
+        private static readonly int notInSpecialAnimTag = Animator.StringToHash("notInSpecialAnim");
 
         /// <summary>
         ///    Position and rotation to be used for sitting players.
@@ -126,11 +126,6 @@ namespace itolib.Behaviours.Kinematics
         ///     Cached reference to the player action required to be pressed in order to unseat.
         /// </summary>
         private InputAction? playerAction;
-
-        /* /// <summary>
-        ///     Cached <c>Transform</c> of the currently attached player's camera.
-        /// </summary>
-        private Transform playerCamera = null!; */
 
         /// <summary>
         ///     Hash of the trigger parameter to activate upon sitting down.
@@ -283,8 +278,6 @@ namespace itolib.Behaviours.Kinematics
 
                 if (player.IsLocalClient())
                 {
-                    // playerCamera = player.gameplayCamera.transform;
-
                     // Send special animation status to other clients.
                     player.UpdateSpecialAnimationValue(true, (short)targetTransform.eulerAngles.y, 0.0f, false);
                 }
@@ -334,7 +327,7 @@ namespace itolib.Behaviours.Kinematics
                 }
 
                 // Disable player camera clamping.
-                player.gameplayCamera.transform.localEulerAngles = Vector3.zero;
+                player.gameplayCamera.transform.localRotation = Quaternion.identity;
                 player.ladderCameraHorizontal = 0.0f;
                 player.clampLooking = false;
                 // ...
@@ -352,7 +345,7 @@ namespace itolib.Behaviours.Kinematics
                 }
 
                 // Check if player is in a sitting animation.
-                if (player.playerBodyAnimator.GetCurrentAnimatorStateInfo(5).tagHash == notInSpecialAnimID)
+                if (player.playerBodyAnimator.GetCurrentAnimatorStateInfo(5).tagHash != notInSpecialAnimTag)
                 {
                     // Reset the unseating player's animations.
                     player.playerBodyAnimator.SetTrigger(stopAnimationID);

@@ -97,6 +97,11 @@ namespace itolib.Behaviours.Effects
         protected Transform attachedPlayerTransform = null!;
 
         /// <summary>
+        ///     Cached <c>Transform</c> of the currently attached player's camera (if there is one).
+        /// </summary>
+        protected Transform attachedPlayerCameraTransform = null!;
+
+        /// <summary>
         ///     Whether or not the local player is attached.
         /// </summary>
         protected bool localPlayerAttached;
@@ -289,6 +294,7 @@ namespace itolib.Behaviours.Effects
             // Attach given player.
             attachedPlayer = player;
             attachedPlayerTransform = player.transform;
+            attachedPlayerCameraTransform = player.gameplayCamera.transform;
 
             // Invoke attach event.
             onAttach.Invoke(player);
@@ -360,6 +366,7 @@ namespace itolib.Behaviours.Effects
             // Remove attached player.
             attachedPlayer = null;
             attachedPlayerTransform = null!;
+            attachedPlayerCameraTransform = null!;
             localPlayerAttached = false;
 
             // Disable update loop.

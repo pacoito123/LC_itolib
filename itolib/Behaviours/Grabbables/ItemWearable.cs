@@ -229,7 +229,7 @@ namespace itolib.Behaviours.Grabbables
             }
             else
             {
-                item.parentObject = player.IsOwner ? player.localItemHolder.transform : player.serverItemHolder.transform;
+                item.parentObject = player.IsOwner ? player.localItemHolder : player.serverItemHolder;
             }
 
             if (applyOffsetTo != null)
