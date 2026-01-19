@@ -1,4 +1,5 @@
 using itolib.Behaviours.Effects;
+using itolib.Extensions;
 using itolib.Structs;
 using UnityEngine;
 
@@ -25,6 +26,12 @@ namespace itolib.Behaviours.Kinematics
         [SerializeField] private Vector3 playerOffset = Vector3.zero;
 
         /// <summary>
+        ///     Whether the tracker should match the player's rotation or not.
+        /// </summary>
+        [Tooltip("Whether the tracker should match the player's rotation or not.")]
+        [SerializeField] private bool rotateWithPlayer;
+
+        /// <summary>
         ///     List of pivots to rotate towards the tracker.
         /// </summary>
         [Space(5.0f)]
@@ -37,9 +44,14 @@ namespace itolib.Behaviours.Kinematics
         private Transform trackerTransform = null!;
 
         /// <summary>
-        ///     Current or initial velocity for the tracking.
+        ///     Current or initial velocity for the position tracking.
         /// </summary>
-        private Vector3 trackingVelocity = Vector3.zero;
+        private Vector3 trackingVelocityPos = Vector3.zero;
+
+        /// <summary>
+        ///     Current or initial velocity for the rotation tracking.
+        /// </summary>
+        private Vector3 trackingVelocityRot = Vector3.zero;
 
         /// <summary>
         ///     Current or initial velocities for every pivot's rotation.
@@ -75,16 +87,22 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     Handle tracker's position following the attached player, and pivots' rotations looking towards the tracker.
         /// </summary>
-        protected override void Update()
+        private void LateUpdate()
         {
             if (attachedPlayer != null)
             {
                 // Obtain attached player's position, with the offset applied.
-                Vector3 targetPosition = attachedPlayerTransform.position + playerOffset;
+                Vector3 targetPosition = attachedPlayerTransform.position + (rotateWithPlayer ? attachedPlayerTransform.rotation * playerOffset : playerOffset);
 
                 // Move tracker towards the attached player.
                 trackerTransform.position = (trackingTime == 0.0f) ? targetPosition
-                    : Vector3.SmoothDamp(trackerTransform.position, targetPosition, ref trackingVelocity, trackingTime);
+                    : Vector3.SmoothDamp(trackerTransform.position, targetPosition, ref trackingVelocityPos, trackingTime);
+
+                if (rotateWithPlayer)
+                {
+                    trackerTransform.rotation = (trackingTime == 0.0f) ? attachedPlayerTransform.rotation
+                        : trackerTransform.rotation.SmoothDamp(attachedPlayerTransform.rotation, ref trackingVelocityRot, trackingTime);
+                }
 
                 // Apply rotations towards the tracker to each pivot.
                 for (int i = 0; i < pivotsToRotate?.Length; i++)
@@ -92,8 +110,6 @@ namespace itolib.Behaviours.Kinematics
                     pivotsToRotate[i].Apply(trackerTransform.position, ref pivotVelocities[i]);
                 }
             }
-
-            base.Update();
         }
     }
 }
