@@ -4,50 +4,62 @@ using UnityEngine.Events;
 namespace itolib.Behaviours.Events
 {
     /// <summary>
-    /// 	TODO.
+    /// 	Represents an event invoked after a specified amount of time, either once or repeatedly.
     /// </summary>
-    public class DelayedEvent : MonoBehaviour // TODO: Networked?
+    public class DelayedEvent : MonoBehaviour
     {
         /// <summary>
-        ///     TODO.
+        ///     Amount of time to wait before invoking the event, in seconds.
         /// </summary>
         [Header("Delayed Event")]
-        [Tooltip("")]
+        [Tooltip("Amount of time to wait before invoking the event, in seconds.")]
+        [Min(0.0f)]
         [SerializeField] private float delayTimer = 1.0f;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether the timer should be reset back to <c>0</c> upon pausing the timer or not.
         /// </summary>
-        [Tooltip("")]
-        [SerializeField] private bool runsContinuously;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
+        [Tooltip("Whether the timer should be reset back to '0' upon pausing the timer or not.")]
         [SerializeField] private bool resetOnToggle = true;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether the timer should disable itself upon triggering once or not.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Whether the timer should disable itself upon triggering once or not.")]
+        [SerializeField] private bool runsContinuously;
+
+        /// <summary>
+        ///     Whether the timer should disable itself at the start or not.
+        /// </summary>
+        /// <remarks><b>NOTE:</b> Only really here as a reminder that enabling/disabling the <c>DelayedEvent</c> is what pauses/unpauses it.</remarks>
+        [Tooltip("Whether the timer should disable itself at the start or not. NOTE: Only really here as a reminder that enabling/disabling "
+            + "the delayed event itself is what pauses/unpauses it.")]
+        [SerializeField] private bool disableOnAwake = true;
+
+        /// <summary>
+        ///     Callback invoked after the specified amount of time passes.
+        /// </summary>
+        [Tooltip("Callback invoked after the specified amount of time passes.")]
         [SerializeField] private UnityEvent onDelayedEvent = new();
 
         /// <summary>
-        ///     TODO.
+        ///     Time passed since enabling the event (or invoking, if set to run continuously).
         /// </summary>
         private float timer;
 
         /// <summary>
-        ///     TODO.
+        ///     Start disabled, if set to do so.
         /// </summary>
         private void Awake()
         {
-            enabled = false;
+            if (disableOnAwake)
+            {
+                enabled = false;
+            }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle updating the timer before the event is invoked.
         /// </summary>
         private void Update()
         {
@@ -57,17 +69,19 @@ namespace itolib.Behaviours.Events
                 return;
             }
 
+            // Invoke event and reset timer.
             onDelayedEvent.Invoke();
             ResetTimer();
 
             if (!runsContinuously)
             {
+                // Disable after triggering once.
                 enabled = false;
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Reset the timer back to <c>0</c> upon enabling the event, if set to do so.
         /// </summary>
         private void OnEnable()
         {
@@ -78,18 +92,7 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     TODO.
-        /// </summary>
-        private void OnDisable()
-        {
-            if (resetOnToggle)
-            {
-                ResetTimer();
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
+        ///     Manually reset the timer back to <c>0</c>.
         /// </summary>
         public void ResetTimer()
         {

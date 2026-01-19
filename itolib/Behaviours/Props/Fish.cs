@@ -163,6 +163,12 @@ namespace itolib.Behaviours.Props
         [SerializeField] private bool isSeededRandom = true;
 
         /// <summary>
+        ///     Fish.
+        /// </summary>
+        [Tooltip("Fish.")]
+        [SerializeField] private bool parentToSelf = true;
+
+        /// <summary>
         ///     Desired <c>ActivationTime</c> for the fish.
         /// </summary>
         [field: Tooltip("Desired activation time for the fish.")]
@@ -267,8 +273,11 @@ namespace itolib.Behaviours.Props
         {
             if (FishBowl != null)
             {
-                GameObject fishBowl = Instantiate(FishBowl, spawnPosition, spawnRotation * Quaternion.Euler(-90.0f, 0.0f, 0.0f),
-                    (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null) ? RoundManager.Instance.mapPropsContainer.transform : null);
+                Transform? parent = parentToSelf ? transform : ((RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null)
+                    ? RoundManager.Instance.mapPropsContainer.transform : null);
+
+                GameObject fishBowl = Instantiate(FishBowl, spawnPosition, spawnRotation * Quaternion.Euler(-90.0f, 0.0f, 0.0f));
+                fishBowl.transform.SetParent(parent);
 
                 if (!includeBowl && fishBowl.TryGetComponent(out MeshFilter fishBowlMesh)
                     && fishBowl.TryGetComponent(out MeshRenderer fishBowlRenderer))
