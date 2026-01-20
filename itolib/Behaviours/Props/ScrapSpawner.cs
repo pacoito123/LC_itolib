@@ -38,6 +38,7 @@ namespace itolib.Behaviours.Props
         /// </summary>
         [field: Tooltip("")]
         [field: SerializeField] public bool SingleUse { get; set; }
+
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -178,6 +179,14 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Space(10.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Use 'addMoonScrapSpawns' field instead.")]
+        [SerializeField] private bool useMoonScrapSpawns;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
@@ -304,7 +313,7 @@ namespace itolib.Behaviours.Props
                 WeightedSelf.InitializeWeights();
             }
 
-            if (addMoonScrapSpawns)
+            if (useMoonScrapSpawns || addMoonScrapSpawns)
             {
                 List<SpawnableItemWithRarity> spawnableScrap = LevelManager.CurrentExtendedLevel.SelectableLevel.spawnableScrap;
                 ScrapWeightEntry[] scrapEntries = new ScrapWeightEntry[spawnableScrap.Count];

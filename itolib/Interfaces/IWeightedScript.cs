@@ -110,6 +110,8 @@ namespace itolib.Interfaces
 
             WeightedEntries = (WeightedEntries?.Length > 0) ? [.. WeightedEntries, .. entries] : entries;
             CumulativeWeights = (CumulativeWeights?.Length > 0) ? [.. CumulativeWeights, .. cumulativeWeights] : cumulativeWeights;
+
+            InitializedWeights = true;
         }
 
         /// <summary>
