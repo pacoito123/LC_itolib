@@ -10,7 +10,7 @@ using UnityEngine.Serialization;
 namespace itolib.Behaviours.Grabbables
 {
     /// <summary>
-    ///     Represents an <i>eventful</i> item, with event callbacks for everything that would otherwise require overriding from an inheriting class.
+    ///     Represents an <i>eventful</i> <c>GrabbableObject</c>, with event callbacks for everything that would otherwise require overriding from an inheriting class.
     /// </summary>
     public class ItemGrabbable : GrabbableObject, IEventfulItem
     {
@@ -25,17 +25,17 @@ namespace itolib.Behaviours.Grabbables
         public int VariantIndex { get; set; } = -1; // TODO: Use a NetworkVariable for this.
 
         /// <summary>
-        ///     Whether items should keep their material variant when reloading the save file or not.
+        ///     Whether the item should keep its material variant when reloading the save file or not.
         /// </summary>
         [field: Header("Item Grabbable")]
-        [field: Tooltip("Whether items should keep their material variant when reloading the save file or not.")]
+        [field: Tooltip("Whether the item should keep its material variant when reloading the save file or not.")]
         [field: FormerlySerializedAs("saveMaterialVariant")]
         [field: SerializeField] public bool SaveMaterialVariant { get; set; }
 
         /// <summary>
-        ///     Whether items should keep their mesh variant when reloading the save file or not.
+        ///     Whether the item should keep its mesh variant when reloading the save file or not.
         /// </summary>
-        [field: Tooltip("Whether items should keep their mesh variant when reloading the save file or not.")]
+        [field: Tooltip("Whether the item should keep its mesh variant when reloading the save file or not.")]
         [field: FormerlySerializedAs("saveMeshVariant")]
         [field: SerializeField] public bool SaveMeshVariant { get; set; }
 
@@ -61,7 +61,7 @@ namespace itolib.Behaviours.Grabbables
         ///     Callback invoked when the item's <c>GrabbableObjectPhysicsTrigger</c> is triggered by a player or an enemy, with the <c>Collider</c> in question
         ///     given as parameter.
         /// </summary>
-        [field: Tooltip("Callback invoked when the item's GrabbableObjectPhysicsTrigger is triggered by a player or an enemy, with the Collider in question "
+        [field: Tooltip("Callback invoked when the item's 'GrabbableObjectPhysicsTrigger' is triggered by a player or an enemy, with the collider in question "
             + "given as parameter.")]
         [field: FormerlySerializedAs("onActivatePhysicsTrigger")]
         [field: SerializeField] public UnityEvent<Collider> OnActivatePhysicsTrigger { get; set; } = new();
@@ -74,9 +74,10 @@ namespace itolib.Behaviours.Grabbables
         [field: SerializeField] public UnityEvent OnBatteryCharge { get; set; } = new();
 
         /// <summary>
-        ///     Callback invoked EVERY FRAME when the item's battery is being used up.
+        ///     Callback invoked when the item's battery is being used up.
         /// </summary>
-        [field: Tooltip("Callback invoked EVERY FRAME when the item's battery is being used up.")]
+        /// <remarks><b>NOTE:</b> Called every frame.</remarks>
+        [field: Tooltip("Callback invoked when the item's battery is being used up. NOTE: Called every frame")]
         [field: FormerlySerializedAs("onBatteryDrain")]
         [field: SerializeField] public UnityEvent OnBatteryDrain { get; set; } = new();
 
@@ -216,7 +217,7 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     Callback invoked when the item is placed onto a <c>PlaceableObjectsSurface</c>.
         /// </summary>
-        [field: Tooltip("Callback invoked when the item is placed onto a PlaceableObjectsSurface.")]
+        [field: Tooltip("Callback invoked when the item is placed onto a 'PlaceableObjectsSurface'.")]
         [field: FormerlySerializedAs("onPlace")]
         [field: SerializeField] public UnityEvent OnPlace { get; set; } = new();
 
@@ -237,7 +238,7 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     Callback invoked when the item is placed on a <c>DepositItemsDesk</c>.
         /// </summary>
-        [field: Tooltip("Callback invoked when the item is placed on a DepositItemsDesk.")]
+        [field: Tooltip("Callback invoked when the item is placed on a 'DepositItemsDesk'.")]
         [field: SerializeField] public UnityEvent OnReactToSellCounter { get; set; } = new();
 
         /// <summary>
@@ -249,10 +250,10 @@ namespace itolib.Behaviours.Grabbables
             if ((SaveMeshVariant || SaveMaterialVariant) && mainObjectRenderer == null)
             {
                 Plugin.StaticLogger.LogWarning($"Main object renderer not set for item '{name}', its variant will not be saved!");
-
                 return -1;
             }
 
+            // Return the mesh variant index, if set to save mesh variant.
             if (SaveMeshVariant && mainObjectRenderer.TryGetComponent(out MeshFilter itemMesh))
             {
                 for (int i = 0; i < itemProperties.meshVariants.Length; i++)
@@ -264,6 +265,7 @@ namespace itolib.Behaviours.Grabbables
                 }
             }
 
+            // Return the material variant index, if set to save material variant. Gets overridden by mesh index.
             if (SaveMaterialVariant)
             {
                 for (int i = 0; i < itemProperties.materialVariants.Length; i++)
@@ -289,12 +291,14 @@ namespace itolib.Behaviours.Grabbables
                 return;
             }
 
+            // Load the mesh variant index, if saved.
             if (SaveMeshVariant && saveData < itemProperties.meshVariants.Length
                 && mainObjectRenderer.TryGetComponent(out MeshFilter itemMesh))
             {
                 itemMesh.sharedMesh = itemProperties.meshVariants[saveData];
             }
 
+            // Load the material variant index, if saved.
             if (SaveMaterialVariant && saveData < itemProperties.materialVariants.Length)
             {
                 mainObjectRenderer.sharedMaterial = itemProperties.materialVariants[saveData];
@@ -302,10 +306,10 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item being activated (<c>LMB</c>) by a player.
         /// </summary>
-        /// <param name="used"></param>
-        /// <param name="buttonDown"></param>
+        /// <param name="used">Whether the item has already been used or not.</param>
+        /// <param name="buttonDown">Whether the button is being held down or not.</param>
         public override void ItemActivate(bool used, bool buttonDown = true)
         {
             base.ItemActivate(used, buttonDown);
@@ -313,9 +317,9 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item's <c>GrabbableObjectPhysicsTrigger</c> being triggered by a player or an enemy.
         /// </summary>
-        /// <param name="other"></param>
+        /// <param name="other">Collider that triggered the physics trigger.</param>
         public override void ActivatePhysicsTrigger(Collider other)
         {
             base.ActivatePhysicsTrigger(other);
@@ -323,7 +327,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item's battery being charged.
         /// </summary>
         public override void ChargeBatteries()
         {
@@ -332,8 +336,9 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item's battery being used up.
         /// </summary>
+        /// <remarks>Called every frame.</remarks>
         public override void UseUpBatteries()
         {
             base.UseUpBatteries();
@@ -341,7 +346,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item being brought back to the ship.
         /// </summary>
         public override void OnBroughtToShip()
         {
@@ -351,9 +356,9 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item being destroyed from the player's hand.
         /// </summary>
-        /// <param name="playerHolding"></param>
+        /// <param name="playerHolding">Player holding the item.</param>
         public override void DestroyObjectInHand(PlayerControllerB playerHolding)
         {
             OnDestroyHeldEarly.Invoke(playerHolding);
@@ -361,12 +366,13 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item being dropped.
         /// </summary>
         public override void DiscardItem()
         {
             if (playerHeldBy != null)
             {
+                // Set player as no longer holding an item with a left/right interact.
                 playerHeldBy.equippedUsableItemQE = false;
                 isBeingUsed = false;
             }
@@ -377,7 +383,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item playing its drop sound effect.
         /// </summary>
         public override void PlayDropSFX()
         {
@@ -387,8 +393,9 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item being grabbed by an enemy.
         /// </summary>
+        /// <param name="enemy">Enemy that grabbed the item.</param>
         public override void GrabItemFromEnemy(EnemyAI enemy)
         {
             base.GrabItemFromEnemy(enemy);
@@ -396,7 +403,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item being dropped by an enemy.
         /// </summary>
         public override void DiscardItemFromEnemy()
         {
@@ -405,7 +412,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item being equipped in your hand.
         /// </summary>
         public override void EquipItem()
         {
@@ -415,6 +422,7 @@ namespace itolib.Behaviours.Grabbables
 
             if (playerHeldBy != null)
             {
+                // Set player as holding an item with a left/right interact, to allow their use.
                 playerHeldBy.equippedUsableItemQE = true;
             }
 
@@ -422,7 +430,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item being grabbed by a player.
         /// </summary>
         public override void GrabItem()
         {
@@ -431,7 +439,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item landing on the ground.
         /// </summary>
         public override void OnHitGround()
         {
@@ -448,7 +456,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item being inspected by a player.
         /// </summary>
         public override void InspectItem()
         {
@@ -458,7 +466,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle <c>E</c> being pressed on the item by a player when trying to pick it up.
         /// </summary>
         public override void InteractItem()
         {
@@ -467,8 +475,9 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle <c>Q</c> or <c>E</c> being pressed by a player while holding the item.
         /// </summary>
+        /// <param name="right">Whether right interact was triggered or not.</param>
         public override void ItemInteractLeftRight(bool right)
         {
             base.ItemInteractLeftRight(right);
@@ -484,7 +493,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item being placed onto a <c>PlaceableObjectsSurface</c>.
         /// </summary>
         public override void OnPlaceObject()
         {
@@ -493,12 +502,13 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item being pocketed by the player holding it.
         /// </summary>
         public override void PocketItem()
         {
             if (playerHeldBy != null && playerHeldBy.IsLocalClient())
             {
+                // Set player as no longer holding an item with a left/right interact.
                 playerHeldBy.equippedUsableItemQE = false;
                 isBeingUsed = false;
             }
@@ -514,7 +524,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item reacting to being placed on a <c>DepositItemsDesk</c>.
         /// </summary>
         public override void ReactToSellingItemOnCounter()
         {
@@ -522,7 +532,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle the item's falling curve, or its override if one is set.
         /// </summary>
         public override void FallWithCurve()
         {
@@ -537,7 +547,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Sync the item's current mesh or material variant with other clients, if it has one.
         /// </summary>
         public void SyncItemVariant()
         {
@@ -548,8 +558,9 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Send the item's current mesh or material variant to everyone.
         /// </summary>
+        /// <param name="variantIndex">Index of the item's mesh or material variant.</param>
         [Rpc(SendTo.ClientsAndHost, RequireOwnership = false)]
         private void SyncItemVariantRpc(int variantIndex)
         {

@@ -60,7 +60,6 @@ namespace itolib.Behaviours.Scenes
         [Tooltip("")]
         public bool ignoreAudioChanges;
 
-
         /// <summary>
         ///     TODO.
         /// </summary>

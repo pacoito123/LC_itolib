@@ -3,24 +3,24 @@ using UnityEngine;
 namespace itolib.Enums
 {
     /// <summary>
-    /// 	TODO.
+    /// 	Valid places to attach a player wearable to.
     /// </summary>
     public enum WearablePosition
     {
         /// <summary>
-        ///     TODO.
+        ///     Attach to a specific bone, or none at all.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Attach to a specific bone, or none at all.")]
         Custom = -1,
         /// <summary>
-        ///     TODO.
+        ///     Attach to the player's head costume container.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Attach to the player's head costume container.")]
         Head,
         /// <summary>
-        ///     TODO.
+        ///     Attach to the player's lower torso costume container.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Attach to the player's lower torso costume container.")]
         Belt
     }
 }

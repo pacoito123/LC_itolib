@@ -48,7 +48,6 @@ namespace itolib.Behaviours.Events
         [Tooltip("")]
         [SerializeField] private UnityEvent<bool> toggleOff = new();
 
-
         /// <summary>
         ///     Cache already-cast <c>IActivationScript</c> instance.
         /// </summary>

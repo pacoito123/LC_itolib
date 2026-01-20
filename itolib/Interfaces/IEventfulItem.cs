@@ -28,8 +28,9 @@ namespace itolib.Interfaces
         UnityEvent OnBatteryCharge { get; set; }
 
         /// <summary>
-        ///     Callback invoked EVERY FRAME when the item's battery is being used up.
+        ///     Callback invoked when the item's battery is being used up.
         /// </summary>
+        /// <remarks><b>NOTE:</b> Called every frame.</remarks>
         UnityEvent OnBatteryDrain { get; set; }
 
         /// <summary>
@@ -158,12 +159,12 @@ namespace itolib.Interfaces
         bool HideOnPocket { get; set; }
 
         /// <summary>
-        ///     Whether items should keep their material variant when reloading the save file or not.
+        ///     Whether the item should keep its material variant when reloading the save file or not.
         /// </summary>
         bool SaveMaterialVariant { get; set; }
 
         /// <summary>
-        ///     Whether items should keep their mesh variant when reloading the save file or not.
+        ///     Whether the item should keep its mesh variant when reloading the save file or not.
         /// </summary>
         bool SaveMeshVariant { get; set; }
 

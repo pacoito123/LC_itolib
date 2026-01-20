@@ -7,136 +7,141 @@ using UnityEngine;
 namespace itolib.Behaviours.Grabbables
 {
     /// <summary>
-    ///     TODO.
+    ///     Adds <i>wearability</i> to an <i>eventful</i> <c>GrabbableObject</c>. Mimics <c>BeltBagItem</c>, when pocketed.
     /// </summary>
     public class ItemWearable : NetworkBehaviour
     {
         /// <summary>
-        ///     TODO.
+        ///     Item with <i>eventful</i> properties (e.g. <c>ItemGrabbable</c> or <c>EventfulApparatus</c>).
         /// </summary>
         [Header("Item Wearable")]
-        [Tooltip("")]
+        [Tooltip("Item with 'eventful' properties (e.g. 'ItemGrabbable' or 'EventfulApparatus').")]
         [SerializeField] private GrabbableObject item = null!;
 
         /// <summary>
-        ///     TODO.
+        ///     What the wearable should attach to when pocketed.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("What the wearable should attach to when pocketed.")]
         [SerializeField] private WearablePosition wearPosition = WearablePosition.Custom;
 
         /// <summary>
-        ///     TODO.
+        ///     Path of the bone to attach the wearable to when pocketed, if set to a custom position.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Path of the bone to attach the wearable to when pocketed, if set to a custom position.")]
         [SerializeField] private string customBone = string.Empty;
 
         /// <summary>
-        ///     TODO.
+        ///     <c>Transform</c> to apply the position and rotation offsets to.
         /// </summary>
         [Header("Offset")]
-        [Tooltip("")]
+        [Tooltip("Transform to apply the position and rotation offsets to.")]
         [SerializeField] private Transform? applyOffsetTo;
 
         /// <summary>
-        ///     TODO.
+        ///     Position offset to apply to the wearable when equipped.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Position offset to apply to the wearable when equipped.")]
         [SerializeField] private Vector3 wearPositionOffset = Vector3.zero;
 
         /// <summary>
-        ///     TODO.
+        ///     Rotation offset to apply to the wearable when equipped.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Rotation offset to apply to the wearable when equipped.")]
         [SerializeField] private Quaternion wearRotationOffset = Quaternion.identity;
 
         /// <summary>
-        ///     TODO.
+        ///     Default local position of the wearable to reset back to when unequipping.
         /// </summary>
         private Vector3 initialPosition = Vector3.zero;
 
         /// <summary>
-        ///     TODO.
+        ///     Default local rotation of the wearable to reset back to when unequipping.
         /// </summary>
         private Quaternion initialRotation = Quaternion.identity;
 
         /// <summary>
-        ///     TODO.
+        ///     <c>Transform</c> that the wearable will be attached to.
         /// </summary>
         private Transform? boneToAttachTo;
 
         /// <summary>
-        ///     TODO.
+        ///     Cached instance of the <c>ItemWearable</c>'s item as an <c>IEventfulItem</c>, to avoid having to cast.
         /// </summary>
         private IEventfulItem? eventfulSelf;
 
         /// <summary>
-        ///     TODO.
+        ///     Initialize stuff required to mimic a <c>BeltBagItem</c>'s wearability.
         /// </summary>
         private void Awake()
         {
-            if (item == null || !TryGetComponent(out item) || item is not IEventfulItem eventfulItem)
+            // Make sure the item field implements IEventfulItem, and cache a reference to it as one.
+            if ((item == null && !TryGetComponent(out item)) || item is not IEventfulItem eventfulItem)
             {
-                // TODO: Log warning
+                Plugin.StaticLogger.LogWarning($"Could not find IEventfulItem for ItemWearable component in GameObject '{gameObject.name}'.");
                 enabled = false;
 
                 return;
             }
-
             eventfulSelf = eventfulItem;
 
+            // Wearables are equipped when pocketed, thus should not be hidden.
             eventfulSelf.HideOnPocket = false;
 
+            // Subscribe to related event callbacks:
             eventfulItem.OnDiscardEarly.AddListener(OnDiscardEarly);
             eventfulItem.OnEquip.AddListener(OnEquip);
             eventfulItem.OnGrab.AddListener(SetWearablePosition);
             eventfulItem.OnPocket.AddListener(OnPocket);
+            // ...
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Save local position and rotation for the wearable when unequipped.
         /// </summary>
         private void Start()
         {
             if (applyOffsetTo != null)
             {
-                initialPosition = applyOffsetTo.localPosition;
-                initialRotation = applyOffsetTo.localRotation;
+                applyOffsetTo.GetLocalPositionAndRotation(out initialPosition, out initialRotation);
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set <c>Transform</c> for the wearable to attach to when equipped. Updates when grabbed by a player.
         /// </summary>
         private void SetWearablePosition()
         {
             if (item.playerHeldBy != null && item.playerHeldBy.IsOwner)
             {
+                // Set Transform to attach to on the local client.
                 SetWearablePositionLocal(item.playerHeldBy);
 
                 if (IsSpawned)
                 {
+                    // Send Transform to attach to to all other clients.
                     SetWearablePositionRpc(item.playerHeldBy);
                 }
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set <c>Transform</c> for the wearable to attach to for all other clients.
         /// </summary>
-        /// <param name="playerReference"></param>
+        /// <param name="playerReference">Network reference of the player that grabbed the wearable.</param>
         [Rpc(SendTo.NotMe, RequireOwnership = false)]
         private void SetWearablePositionRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
+                // Set Transform to attach to on the local client.
                 SetWearablePositionLocal(player);
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set <c>Transform</c> for the wearable to attach to for the local client.
         /// </summary>
-        /// <param name="player"></param>
+        /// <param name="player">Player that grabbed the wearable.</param>
         private void SetWearablePositionLocal(PlayerControllerB player)
         {
             switch (wearPosition)
@@ -156,7 +161,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Unequip, reset, and remove parent upon dropping the wearable.
         /// </summary>
         private void OnDiscardEarly()
         {
@@ -166,7 +171,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Unequip and reset upon holding the wearable.
         /// </summary>
         private void OnEquip()
         {
@@ -174,7 +179,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Equip upon pocketing the wearable.
         /// </summary>
         private void OnPocket()
         {
@@ -182,41 +187,44 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Equip wearable item for the player that has it. Updates when the item is grabbed, dropped, or pocketed.
         /// </summary>
-        /// <param name="reset"></param>
+        /// <param name="reset">Whether the wearable is being unequipped or not.</param>
         private void EquipWearable(bool reset = false)
         {
             if (item.playerHeldBy != null && item.playerHeldBy.IsOwner)
             {
+                // Equip wearable item on the local client.
                 EquipWearableLocal(item.playerHeldBy, reset);
 
                 if (IsSpawned)
                 {
+                    // Send wearable item being equipped to all other clients.
                     EquipWearableRpc(item.playerHeldBy, reset);
                 }
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Equip wearable item for the player that has it for all other clients. 
         /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="reset"></param>
+        /// <param name="playerReference">Network reference of the player equipping or unequipping the wearable.</param>
+        /// <param name="reset">Whether the wearable is being unequipped or not.</param>
         [Rpc(SendTo.NotMe, RequireOwnership = false)]
         private void EquipWearableRpc(NetworkBehaviourReference playerReference, bool reset = false)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
+                // Equip wearable item on the local client.
                 EquipWearableLocal(player, reset);
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Equip wearable item for the local client.
         /// </summary>
-        /// <param name="player"></param>
-        /// <param name="reset"></param>
+        /// <param name="player">Player equipping or unequipping the wearable.</param>
+        /// <param name="reset">Whether the wearable is being unequipped or not.</param>
         private void EquipWearableLocal(PlayerControllerB player, bool reset = false)
         {
             if (!reset)
