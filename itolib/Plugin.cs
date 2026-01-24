@@ -2,6 +2,7 @@
 using BepInEx.Logging;
 using HarmonyLib;
 using itolib.Compatibility;
+using itolib.Compatibility.Moons;
 using itolib.Patches;
 using itolib.Structs;
 using System;
@@ -55,6 +56,10 @@ namespace itolib
                 {
                     Harmony.PatchAll(typeof(WeatherRegistryCompatibility));
                 }
+
+                // Special moon compatibilities:
+                BerunahCompatibility.RegisterCompat();
+                // ...
 
                 StaticLogger.LogInfo($"{PLUGIN_NAME} v{VERSION} loaded!");
             }
