@@ -1,6 +1,7 @@
 using FacilityMeltdown;
 using FacilityMeltdown.API;
 using itolib.PlayZone;
+using System;
 using System.Runtime.CompilerServices;
 using Unity.Netcode;
 
@@ -25,9 +26,6 @@ namespace itolib.Compatibility
         }
         private static bool? _enabled;
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         internal static void HalveTwinValue(TwinApparatus twinApparatus)
         {
@@ -37,15 +35,25 @@ namespace itolib.Compatibility
             }
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         internal static void InitiateMeltdown()
         {
             if (NetworkManager.Singleton.IsHost)
             {
                 MeltdownAPI.StartMeltdown(Plugin.PLUGIN_GUID);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        internal static void RegisterMeltdownListener(Action listener, bool remove = false)
+        {
+            if (!remove)
+            {
+                MeltdownAPI.OnMeltdownStart += listener;
+            }
+            else
+            {
+                MeltdownAPI.OnMeltdownStart -= listener;
             }
         }
     }

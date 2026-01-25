@@ -59,6 +59,7 @@ A proper write-up and documentation for all components and their intended usage 
     * **NOTE:** Can be replaced with `PlayerSeater` for functionally the same effect, without the vanilla bug where two players get softlocked if they sit down at the same time.
   * **InteractTalkable:** An `InteractTrigger` that can transmit a player's voice over the Walkie while held; though only for one-way communication.
 * **Events:** Assortment of various events invoked in different ways.
+  * **ApparatusEvent:** An event that gets invoked after an Apparatus gets pulled by a player.
   * **DelayedEvent:** An event that gets invoked after a specified amount of time, either continuously or only once (until re-enabled).
   * **HourEvent:** An event that gets invoked at a certain time of the day, when the hour changes (while enabled).
   * **ToggleEvent:** An event that simply has two states that can be toggled, and is synced across clients.

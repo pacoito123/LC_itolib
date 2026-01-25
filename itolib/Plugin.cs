@@ -48,6 +48,7 @@ namespace itolib
                 SerializeNetworkVariables();
 
                 // Apply all patches.
+                Harmony.PatchAll(typeof(ApparatusPatches));
                 Harmony.PatchAll(typeof(DoorwayPatch));
                 Harmony.PatchAll(typeof(LoadPatch));
                 // ...
