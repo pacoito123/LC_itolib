@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Enums;
 using itolib.Extensions;
 using UnityEngine;
 
@@ -39,7 +40,7 @@ namespace itolib.Behaviours.Effects
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [SerializeField] private int deathAnimation;
+        [SerializeField] private PlayerRagdollVariant deathAnimation = PlayerRagdollVariant.Normal;
 
         /// <summary>
         ///     TODO.
@@ -59,8 +60,7 @@ namespace itolib.Behaviours.Effects
             }
 
             int damageTaken = Random.Range(minDamage, maxDamage + 1);
-            playerHurt.DamagePlayer(damageTaken, playDamageSFX, true, deathCause,
-                deathAnimation, false, deathLaunchForce);
+            playerHurt.DamagePlayer(damageTaken, playDamageSFX, true, deathCause, (int)deathAnimation, false, deathLaunchForce);
         }
     }
 }

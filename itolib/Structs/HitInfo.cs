@@ -1,4 +1,5 @@
 using System;
+using itolib.Enums;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -27,7 +28,7 @@ namespace itolib.Structs
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public int hitID = 1;
+        public WeaponHitID hitID = WeaponHitID.Shovel;
 
         /// <summary>
         ///     TODO.

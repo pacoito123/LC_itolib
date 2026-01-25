@@ -1,6 +1,8 @@
 using GameNetcodeStuff;
+using itolib.Enums;
 using itolib.Extensions;
 using itolib.Structs;
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -78,7 +80,7 @@ namespace itolib.Behaviours.Networking
             {
                 damage = force,
                 direction = hitDirection,
-                hitID = hitID,
+                hitID = Enum.IsDefined(typeof(WeaponHitID), hitID) ? (WeaponHitID)hitID : WeaponHitID.None,
                 hitByPlayer = playerWhoHit != null
             };
 
@@ -144,25 +146,33 @@ namespace itolib.Behaviours.Networking
             {
                 if (player.IsLocalClient())
                 {
-                    if (hitInfo.hitID == 1)
+                    switch (hitInfo.hitID)
                     {
-                        onShovelHitLocal.Invoke(player);
-                    }
-                    else if (hitInfo.hitID == 5)
-                    {
-                        onKnifeHitLocal.Invoke(player);
+                        case WeaponHitID.Shovel:
+                            onShovelHitLocal.Invoke(player);
+                            break;
+                        case WeaponHitID.Knife:
+                            onKnifeHitLocal.Invoke(player);
+                            break;
+                        case WeaponHitID.None:
+                        default:
+                            break;
                     }
 
                     onPlayerHitLocal.Invoke(player);
                 }
 
-                if (hitInfo.hitID == 1)
+                switch (hitInfo.hitID)
                 {
-                    onShovelHit.Invoke(player);
-                }
-                else if (hitInfo.hitID == 5)
-                {
-                    onKnifeHit.Invoke(player);
+                    case WeaponHitID.Shovel:
+                        onShovelHit.Invoke(player);
+                        break;
+                    case WeaponHitID.Knife:
+                        onKnifeHit.Invoke(player);
+                        break;
+                    case WeaponHitID.None:
+                    default:
+                        break;
                 }
 
                 onPlayerHit.Invoke(player);

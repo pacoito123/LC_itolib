@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Enums;
 using itolib.Extensions;
 using itolib.Interfaces;
 using itolib.Util;
@@ -38,18 +39,12 @@ namespace itolib.Behaviours.Grabbables
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [SerializeField] private int hitID = 1;
+        [SerializeField] private WeaponHitID hitID = WeaponHitID.Shovel;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Audio")]
-        [Tooltip("")]
-        [SerializeField] private AudioSource? weaponAudio;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [Tooltip("")]
         [SerializeField] private bool playHitSFX = true;
 
@@ -400,7 +395,7 @@ namespace itolib.Behaviours.Grabbables
                         playerHit = true;
                     }
 
-                    if (hittable.Hit(weaponDamage, gameplayCamera.forward, lastHeldBy, playHitSFX, hitID)
+                    if (hittable.Hit(weaponDamage, gameplayCamera.forward, lastHeldBy, playHitSFX, (int)hitID)
                         && enemyAICollision != null)
                     {
                         hitEnemies?.Add(enemyAICollision.mainScript);
