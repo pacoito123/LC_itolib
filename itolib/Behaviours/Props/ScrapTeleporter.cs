@@ -24,7 +24,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public NetworkList<ItemInfo> SyncedItems { get; private set; } = null!;
+        public NetworkList<ItemInfo> SyncedItems { get; private set; }
 
         /// <summary>
         ///     Cached instance of the current <c>ScrapTeleporter</c> as an <c>IActivationScript</c>, to avoid having to cast.
@@ -117,6 +117,8 @@ namespace itolib.Behaviours.Props
         {
             ActivationSelf = this;
             SeededSelf = this;
+
+            SyncedItems = null!;
         }
 
         /// <summary>

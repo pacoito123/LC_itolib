@@ -71,7 +71,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public NetworkList<ItemInfo> SyncedItems { get; private set; } = null!;
+        public NetworkList<ItemInfo> SyncedItems { get; private set; }
 
         /// <summary>
         ///     Cached instance of <c>ScrapSpawner</c> as an <c>IWeightedScript</c>, to avoid having to cast.
@@ -299,6 +299,8 @@ namespace itolib.Behaviours.Props
         protected ScrapSpawner() : base()
         {
             WeightedSelf = this;
+
+            SyncedItems = null!;
         }
 
         /// <summary>

@@ -109,6 +109,9 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         protected override void Reset()
         {
+            ActivationTime = Enums.ActivationTime.Manual;
+            maxObjects = 32;
+
             layerMask = LayerMask.GetMask("Player", "Enemies", "MapHazards");
             coverMask = LayerMask.GetMask("Room", "Vehicle");
         }

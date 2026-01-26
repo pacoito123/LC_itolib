@@ -1,5 +1,24 @@
 # Changelog
 
+## [v0.8.0]
+
+Added a few more alert scripts and an event, did several other small tweaks and fixes.
+
+- Updated `README` to actually include ~~nearly~~ all components in the library.
+  - `50+` previously unlisted ones were added, along with a short description of their intended usage.
+- Added `ApparatusEvent`, which simply invokes an event callback when an Apparatus is pulled by a player.
+- Added `AlertToast`, which can display a toast message to players (e.g. dropship items missed alert).
+- Added `AlertNotification`, which can display a notification message to players (e.g. new creature data alert).
+- Added `AlertSignal`, which can display a signal translator message to players that can go over the vanilla letter cap.
+- Made `AlertDialogue` inherit from the more abstract `NetworkedAlert`, just like the other alerts.
+- Made `NetworkedHittable` and `ItemWhackable`'s weapon `hitID` fields a dropdown selection instead of a number value.
+- Made `PlayerOuchie`'s player body ragdoll field a dropdown selection instead of a number value.
+- Fixed `PlayerSeater` not resetting player animation state after sitting down (again).
+- Readded a renamed (now deprecated) field to `ScrapSpawner`, for some backwards compatibility.
+- Added a temporary hotfix for `Berunah` (from [Wesley's Moons](https://thunderstore.io/c/lethal-company/p/Magic_Wesley/Wesleys_Moons)).
+  - Fixed error spam due to a leftover testing `Camera`.
+- Made various other small additions and improvements.
+
 ## [v0.7.0]
 
 Added various scripts and features, fixed a couple issues, removed some deprecated/legacy stuff.

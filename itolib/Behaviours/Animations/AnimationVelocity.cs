@@ -37,7 +37,7 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         [Header("Animation Velocity")]
         [Tooltip("")]
-        [SerializeField] private Animator animator = null!;
+        [SerializeField] private Animator animator;
 
         /// <summary>
         ///     TODO.
@@ -102,6 +102,8 @@ namespace itolib.Behaviours.Animations
         {
             ActivationSelf = this;
             SeededSelf = this;
+
+            animator = null!;
         }
 
         /// <summary>
