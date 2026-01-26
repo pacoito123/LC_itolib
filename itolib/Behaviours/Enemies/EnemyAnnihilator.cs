@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace itolib.Behaviours.Enemies
 {
@@ -12,7 +13,17 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
-        private readonly List<EnemyAI?> enemiesToAnnihilate = [];
+        private readonly HashSet<EnemyAI?> enemiesToAnnihilate = [];
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private EnemyAI? targetedEnemy;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private int enemiesKilled;
 
         /// <summary>
         ///     TODO.
@@ -30,6 +41,26 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Space(5.0f)]
+        [Header("Events")]
+        [Tooltip("")]
+        [SerializeField] private UnityEvent<EnemyAI> onEnemyHit = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private UnityEvent<EnemyAI> onEnemyKill = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private UnityEvent<int> onEnemiesKilled = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void AnnihilateEnemies()
         {
             if (!NetworkManager.Singleton.IsHost)
@@ -37,36 +68,16 @@ namespace itolib.Behaviours.Enemies
                 return;
             }
 
-            for (int i = 0; i < enemiesToAnnihilate.Count; i++)
+            enemiesKilled = 0;
+
+            foreach (EnemyAI? enemy in enemiesToAnnihilate)
             {
-                EnemyAI? enemy = enemiesToAnnihilate[i];
+                AnnihilateEnemy(enemy!);
+            }
 
-                if (enemy == null || !enemy.IsSpawned)
-                {
-                    continue;
-                }
-
-                if (enemy.enemyType != null && enemy.enemyType.canDie)
-                {
-                    if (!enemy.isEnemyDead)
-                    {
-                        enemy.KillEnemy(destroyKillable);
-                    }
-                }
-                else if (destroyUnkillable)
-                {
-                    if (RoundManager.Instance != null && RoundManager.Instance.SpawnedEnemies != null)
-                    {
-                        _ = RoundManager.Instance.SpawnedEnemies.Remove(enemy);
-                    }
-
-                    if (!enemy.removedPowerLevel)
-                    {
-                        enemy.SubtractFromPowerLevel();
-                    }
-
-                    enemy.GetComponent<NetworkObject>().Despawn(true);
-                }
+            if (enemiesKilled > 0)
+            {
+                onEnemiesKilled.Invoke(enemiesKilled);
             }
 
             enemiesToAnnihilate.Clear();
@@ -78,15 +89,78 @@ namespace itolib.Behaviours.Enemies
         /// <param name="enemy"></param>
         public void PrepareForAnnihilation(EnemyAI enemy)
         {
-            if (!NetworkManager.Singleton.IsHost)
+            if (enemy == null || enemy.isEnemyDead || !enemy.IsSpawned || !enemy.IsHost)
             {
                 return;
             }
 
-            if (enemy.IsSpawned && !enemiesToAnnihilate.Contains(enemy))
+            _ = enemiesToAnnihilate.Add(enemy);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void AnnihilateEnemy()
+        {
+            AnnihilateEnemy(targetedEnemy!);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="enemy"></param>
+        public void AnnihilateEnemy(EnemyAI enemy)
+        {
+            if (enemy == null || enemy.isEnemyDead || !enemy.IsSpawned || !enemy.IsHost)
             {
-                enemiesToAnnihilate.Add(enemy);
+                return;
             }
+
+            if (enemy.enemyType != null && enemy.enemyType.canDie)
+            {
+                onEnemyKill.Invoke(enemy);
+                enemy.KillEnemy(destroyKillable);
+
+                enemiesKilled++;
+            }
+            else if (destroyUnkillable)
+            {
+                onEnemyKill.Invoke(enemy);
+
+                if (RoundManager.Instance != null && RoundManager.Instance.SpawnedEnemies != null)
+                {
+                    _ = RoundManager.Instance.SpawnedEnemies.Remove(enemy);
+                }
+
+                enemy.SubtractFromPowerLevel();
+                enemy.GetComponent<NetworkObject>().Despawn(destroy: true);
+
+                enemiesKilled++;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="damage"></param>
+        public void DamageEnemy(int damage)
+        {
+            if (targetedEnemy == null || targetedEnemy.isEnemyDead || !targetedEnemy.IsSpawned)
+            {
+                return;
+            }
+
+            targetedEnemy.HitEnemyOnLocalClient(damage);
+            onEnemyHit.Invoke(targetedEnemy);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="targetedEnemy"></param>
+        public void SwitchTarget(EnemyAI targetedEnemy)
+        {
+            this.targetedEnemy = targetedEnemy;
         }
     }
 }
