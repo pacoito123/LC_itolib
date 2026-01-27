@@ -3,7 +3,7 @@ using LethalLevelLoader;
 using System;
 using System.Collections.Generic;
 
-namespace itolib.Behaviours.Helpers
+namespace itolib.Util
 {
     /// <summary>
     ///     TODO.
