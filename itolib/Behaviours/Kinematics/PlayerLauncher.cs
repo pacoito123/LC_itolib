@@ -43,6 +43,11 @@ namespace itolib.Behaviours.Kinematics
     public class PlayerLauncher : PlayerAttachable
     {
         /// <summary>
+        ///     Hash of the bool parameter for a player jumping.
+        /// </summary>
+        private static readonly int jumpingBoolID = Animator.StringToHash("Jumping");
+
+        /// <summary>
         ///     List of forces to apply to the attached player.
         /// </summary>
         /// <remarks>If multiple forces are specified, they are all combined and applied in unison.</remarks>
@@ -282,7 +287,7 @@ namespace itolib.Behaviours.Kinematics
                 player.isFallingFromJump = false;
 
                 // Reset player jump animation.
-                player.playerBodyAnimator.SetBool("Jumping", false);
+                player.playerBodyAnimator.SetBool(jumpingBoolID, false);
             }
 
             // Check if the local player is not attached.

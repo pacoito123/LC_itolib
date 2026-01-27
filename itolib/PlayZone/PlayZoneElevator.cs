@@ -13,6 +13,21 @@ namespace itolib.PlayZone
     public class PlayZoneElevator : NetworkBehaviour
     {
         /// <summary>
+        ///     Hash of the bool parameter to open the elevator doors.
+        /// </summary>
+        private static readonly int openID = Animator.StringToHash("Open");
+
+        /// <summary>
+        ///     Hash of the bool parameter to move the elevator up.
+        /// </summary>
+        private static readonly int elevatorGoingUpID = Animator.StringToHash("ElevatorGoingUp");
+
+        /// <summary>
+        ///     Hash of the trigger parameter to deactivate the elevator.
+        /// </summary>
+        private static readonly int deactivatedID = Animator.StringToHash("Deactivated");
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         public ElevatorState CurrentState { get; private set; } = ElevatorState.IdleDown;
@@ -229,7 +244,7 @@ namespace itolib.PlayZone
 
                     if (elevatorAnimator != null)
                     {
-                        elevatorAnimator.SetBool("ElevatorGoingUp", up);
+                        elevatorAnimator.SetBool(elevatorGoingUpID, up);
                     }
 
                     onElevatorTravelStart.Invoke(up);
@@ -240,7 +255,7 @@ namespace itolib.PlayZone
                 case ElevatorState.Deactivated:
                     if (elevatorAnimator != null)
                     {
-                        elevatorAnimator.SetTrigger("Deactivated");
+                        elevatorAnimator.SetTrigger(deactivatedID);
                     }
 
                     CurrentState = newState;
@@ -359,14 +374,14 @@ namespace itolib.PlayZone
             switch (CurrentState)
             {
                 case ElevatorState.IdleUp:
-                    if (doorAnimatorUpper != null && doorAnimatorUpper.GetBool("Open") == !open)
+                    if (doorAnimatorUpper != null && doorAnimatorUpper.GetBool(openID) == !open)
                     {
                         if (doorSourceUpper != null && doorAudioOpen != null)
                         {
                             doorSourceUpper.PlayOneShot(doorAudioOpen);
                         }
 
-                        doorAnimatorUpper.SetBool("Open", open);
+                        doorAnimatorUpper.SetBool(openID, open);
 
                         if (open)
                         {
@@ -380,14 +395,14 @@ namespace itolib.PlayZone
 
                     break;
                 case ElevatorState.IdleDown:
-                    if (doorAnimatorLower != null && doorAnimatorLower.GetBool("Open") == !open)
+                    if (doorAnimatorLower != null && doorAnimatorLower.GetBool(openID) == !open)
                     {
                         if (doorSourceLower != null && doorAudioOpen != null)
                         {
                             doorSourceLower.PlayOneShot(doorAudioOpen);
                         }
 
-                        doorAnimatorLower.SetBool("Open", open);
+                        doorAnimatorLower.SetBool(openID, open);
 
                         if (open)
                         {
@@ -428,9 +443,9 @@ namespace itolib.PlayZone
                     break;
             }
 
-            if (doorAnimatorLower != null && doorAnimatorLower.GetBool("Open"))
+            if (doorAnimatorLower != null && doorAnimatorLower.GetBool(openID))
             {
-                doorAnimatorLower.SetBool("Open", false);
+                doorAnimatorLower.SetBool(openID, false);
 
                 if (doorSourceLower != null && doorAudioOpen != null)
                 {
@@ -438,9 +453,9 @@ namespace itolib.PlayZone
                 }
             }
 
-            if (doorAnimatorUpper != null && doorAnimatorUpper.GetBool("Open"))
+            if (doorAnimatorUpper != null && doorAnimatorUpper.GetBool(openID))
             {
-                doorAnimatorUpper.SetBool("Open", false);
+                doorAnimatorUpper.SetBool(openID, false);
 
                 if (doorSourceUpper != null && doorAudioOpen != null)
                 {
@@ -478,8 +493,8 @@ namespace itolib.PlayZone
 
             if (doorAnimatorLower != null && doorAnimatorUpper != null)
             {
-                doorAnimatorLower.SetBool("Open", true);
-                doorAnimatorUpper.SetBool("Open", false);
+                doorAnimatorLower.SetBool(openID, true);
+                doorAnimatorUpper.SetBool(openID, false);
             }
         }
     }

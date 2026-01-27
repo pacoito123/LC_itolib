@@ -17,6 +17,16 @@ namespace itolib.Behaviours.Grabbables
     public class ItemWhackable : NetworkBehaviour
     {
         /// <summary>
+        ///     Hash of the trigger parameter to begin a <c>Shovel</c> hit.
+        /// </summary>
+        private static readonly int shovelHitID = Animator.StringToHash("shovelHit");
+
+        /// <summary>
+        ///     Hash of the bool parameter to reel up a <c>Shovel</c>.
+        /// </summary>
+        private static readonly int reelingUpID = Animator.StringToHash("reelingUp");
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Item Whackable")]
@@ -274,8 +284,8 @@ namespace itolib.Behaviours.Grabbables
 
             lastHeldBy.activatingItem = true;
             lastHeldBy.twoHanded = true;
-            lastHeldBy.playerBodyAnimator.ResetTrigger("shovelHit"); // TODO: Use ID
-            lastHeldBy.playerBodyAnimator.SetBool("reelingUp", true);
+            lastHeldBy.playerBodyAnimator.ResetTrigger(shovelHitID);
+            lastHeldBy.playerBodyAnimator.SetBool(reelingUpID, true);
 
             onReelingStart.Invoke();
             yield return Yielders.WaitForSeconds(chargeTimer);
@@ -284,7 +294,7 @@ namespace itolib.Behaviours.Grabbables
             yield return waitUntilReelingStop;
 
             // Handle swing.
-            lastHeldBy.playerBodyAnimator.SetBool("reelingUp", false);
+            lastHeldBy.playerBodyAnimator.SetBool(reelingUpID, false);
             if (item.isHeld)
             {
                 onWeaponSwing.Invoke();
@@ -472,7 +482,7 @@ namespace itolib.Behaviours.Grabbables
 
             if (lastHeldBy != null)
             {
-                lastHeldBy.playerBodyAnimator.SetTrigger("shovelHit");
+                lastHeldBy.playerBodyAnimator.SetTrigger(shovelHitID);
             }
         }
     }
