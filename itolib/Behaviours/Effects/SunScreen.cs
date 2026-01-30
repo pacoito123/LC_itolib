@@ -70,13 +70,8 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         private void OnEnable()
         {
-            if (DungeonManager.CurrentExtendedDungeonFlow == null)
-            {
-                return;
-            }
-
-            DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onPlayerEnterDungeon.AddListener(HideSun);
-            DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onPlayerExitDungeon.AddListener(RevealSun);
+            DungeonManager.GlobalDungeonEvents.onPlayerEnterDungeon.AddListener(HideSun);
+            DungeonManager.GlobalDungeonEvents.onPlayerExitDungeon.AddListener(RevealSun);
 
             if (StartOfRound.Instance != null)
             {
@@ -89,13 +84,8 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         private void OnDisable()
         {
-            if (DungeonManager.CurrentExtendedDungeonFlow == null)
-            {
-                return;
-            }
-
-            DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onPlayerEnterDungeon.RemoveListener(HideSun);
-            DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onPlayerExitDungeon.RemoveListener(RevealSun);
+            DungeonManager.GlobalDungeonEvents.onPlayerEnterDungeon.RemoveListener(HideSun);
+            DungeonManager.GlobalDungeonEvents.onPlayerExitDungeon.RemoveListener(RevealSun);
 
             if (StartOfRound.Instance != null)
             {
