@@ -232,7 +232,8 @@ namespace itolib.Behaviours.Effects
                         }
                         else if (objectHit.TryGetComponent(out IHittable hittable))
                         {
-                            _ = hittable.Hit(Mathf.RoundToInt(otherDamageCurve.Evaluate(damageTime)), explosionOrigin);
+                            _ = hittable.Hit(Mathf.RoundToInt(otherDamageCurve.Evaluate(damageTime)), explosionOrigin,
+                                GameNetworkManager.Instance.localPlayerController);
                         }
                     }
                 }
