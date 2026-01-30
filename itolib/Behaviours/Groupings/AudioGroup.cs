@@ -1,4 +1,5 @@
 using itolib.Enums;
+using System;
 using UnityEngine;
 
 namespace itolib.Behaviours.Groupings
@@ -8,6 +9,19 @@ namespace itolib.Behaviours.Groupings
     /// </summary>
     public class AudioGroup : ComponentGroup<AudioSource>
     {
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private enum AudioActions
+        {
+            Play,
+            Pause,
+            Unpause,
+            Stop,
+            StopIncludingOneShots,
+            SyncWith
+        }
+
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -26,11 +40,57 @@ namespace itolib.Behaviours.Groupings
 
             if (autoInitialize)
             {
-                PerformGroupAction(source =>
-                {
+                PerformGroupAction(AudioActions.Pause);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="actionID"></param>
+        /// <param name="parameter"></param>
+        protected override void PerformSingleAction(AudioSource source, Enum actionID, object? parameter = null)
+        {
+            if (actionID is not AudioActions audioActionID)
+            {
+                return;
+            }
+
+            switch (audioActionID)
+            {
+                case AudioActions.Play:
                     source.Play();
+                    break;
+                case AudioActions.Pause:
+                    if (!source.isPlaying)
+                    {
+                        source.Play();
+                    }
                     source.Pause();
-                });
+                    break;
+                case AudioActions.Unpause:
+                    if (!source.isPlaying)
+                    {
+                        source.Play();
+                        source.Pause();
+                    }
+                    source.UnPause();
+                    break;
+                case AudioActions.Stop:
+                    source.Stop();
+                    break;
+                case AudioActions.StopIncludingOneShots:
+                    source.Stop(stopOneShots: true);
+                    break;
+                case AudioActions.SyncWith:
+                    if (parameter is AudioSource syncSource)
+                    {
+                        source.time = syncSource.time;
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -39,7 +99,7 @@ namespace itolib.Behaviours.Groupings
         /// </summary>
         public void PlayAll()
         {
-            PerformGroupAction(source => source.Play());
+            PerformGroupAction(AudioActions.Play);
         }
 
         /// <summary>
@@ -47,15 +107,7 @@ namespace itolib.Behaviours.Groupings
         /// </summary>
         public void PauseAll()
         {
-            PerformGroupAction(source =>
-            {
-                if (!source.isPlaying)
-                {
-                    source.Play();
-                }
-
-                source.Pause();
-            });
+            PerformGroupAction(AudioActions.Pause);
         }
 
         /// <summary>
@@ -63,16 +115,7 @@ namespace itolib.Behaviours.Groupings
         /// </summary>
         public void UnpauseAll()
         {
-            PerformGroupAction(source =>
-            {
-                if (!source.isPlaying)
-                {
-                    source.Play();
-                    source.Pause();
-                }
-
-                source.UnPause();
-            });
+            PerformGroupAction(AudioActions.Unpause);
         }
 
         /// <summary>
@@ -80,7 +123,7 @@ namespace itolib.Behaviours.Groupings
         /// </summary>
         public void StopAll()
         {
-            PerformGroupAction(source => source.Stop());
+            PerformGroupAction(AudioActions.Stop);
         }
 
         /// <summary>
@@ -88,7 +131,7 @@ namespace itolib.Behaviours.Groupings
         /// </summary>
         public void StopAllIncludingOneShots()
         {
-            PerformGroupAction(source => source.Stop(stopOneShots: true));
+            PerformGroupAction(AudioActions.StopIncludingOneShots);
         }
 
         /// <summary>
@@ -97,7 +140,7 @@ namespace itolib.Behaviours.Groupings
         /// <param name="syncSource"></param>
         public void SyncWith(AudioSource syncSource)
         {
-            PerformGroupAction(source => source.time = syncSource.time);
+            PerformGroupAction(AudioActions.SyncWith, syncSource);
         }
     }
 }

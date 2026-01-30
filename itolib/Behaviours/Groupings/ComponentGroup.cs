@@ -2,7 +2,7 @@ using DunGen;
 using itolib.Enums;
 using itolib.Interfaces;
 using System;
-using Unity.Netcode;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace itolib.Behaviours.Groupings
@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Groupings
     ///     TODO.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class ComponentGroup<T> : NetworkBehaviour, IActivationScript where T : Component
+    public abstract class ComponentGroup<T> : MonoBehaviour, IActivationScript where T : Component
     {
         /// <summary>
         ///     Cached instance of the current <c>ComponentGroup</c> as an <c>IActivationScript</c>, to avoid having to cast.
@@ -26,7 +26,7 @@ namespace itolib.Behaviours.Groupings
         /// <summary>
         ///     TODO.
         /// </summary>
-        private T[]? components;
+        private T?[]? components;
 
         /// <summary>
         ///     TODO.
@@ -39,7 +39,7 @@ namespace itolib.Behaviours.Groupings
         ///     Desired <c>ActivationTime</c> for the <c><typeparamref name="T"/></c> search.
         /// </summary>
         [field: Tooltip($"Desired activation time for the {nameof(T)} search.")]
-        [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.DungeonComplete;
+        [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.Immediate;
 
         /// <summary>
         ///     Cache already-cast <c>IActivationScript</c> instance.
@@ -60,11 +60,9 @@ namespace itolib.Behaviours.Groupings
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnDestroy()
+        private void OnDestroy()
         {
             ActivationSelf.UnsubscribeFromEvents();
-
-            base.OnDestroy();
         }
 
         /// <summary>
@@ -72,15 +70,22 @@ namespace itolib.Behaviours.Groupings
         /// </summary>
         private void FindComponentsInObjects()
         {
+            if (PerformedActivation)
+            {
+                return;
+            }
+
+            HashSet<T> uniqueComponents = [];
+
             for (int i = 0; i < objectsToSearch?.Length; i++)
             {
                 if (objectsToSearch[i] != null)
                 {
-                    components = components?.Length > 0
-                        ? [.. components, .. objectsToSearch[i].GetComponentsInChildren<T>()]
-                        : [.. objectsToSearch[i].GetComponentsInChildren<T>()];
+                    uniqueComponents.UnionWith(objectsToSearch[i].GetComponentsInChildren<T>());
                 }
             }
+
+            components = [.. uniqueComponents];
         }
 
         /// <summary>
@@ -95,17 +100,28 @@ namespace itolib.Behaviours.Groupings
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="action"></param>
-        protected virtual void PerformGroupAction(Action<T> action)
+        /// <param name="actionID"></param>
+        /// <param name="parameter"></param>
+        protected void PerformGroupAction(Enum actionID, object? parameter = null)
         {
             for (int i = 0; i < components?.Length; i++)
             {
-                if (components[i] != null)
+                T? component = components[i];
+
+                if (component != null)
                 {
-                    action.Invoke(components[i]);
+                    PerformSingleAction(component, actionID, parameter);
                 }
             }
         }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="component"></param>
+        /// <param name="actionID"></param>
+        /// <param name="parameter"></param>
+        protected abstract void PerformSingleAction(T component, Enum actionID, object? parameter = null);
 
         /// <summary>
         ///     <c>DunGen</c> listener called when the Dungeon finishes generating.

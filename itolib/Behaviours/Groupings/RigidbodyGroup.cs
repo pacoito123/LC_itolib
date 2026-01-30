@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace itolib.Behaviours.Groupings
@@ -10,10 +11,101 @@ namespace itolib.Behaviours.Groupings
         /// <summary>
         ///     TODO.
         /// </summary>
+        private enum RigidbodyActions
+        {
+            ApplyAcceleration,
+            ApplyAccelerationRelative,
+            ApplyForce,
+            ApplyForceRelative,
+            ApplyImpulse,
+            ApplyImpulseRelative,
+            ApplyVelocityChange,
+            ApplyVelocityChangeRelative,
+            Sleep,
+            WakeUp
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(5.0f)]
+        [Header("Rigidbody Group")]
+        [Tooltip("")]
+        [SerializeField] private bool respectSleep;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="rigidbody"></param>
+        /// <param name="actionID"></param>
+        /// <param name="parameter"></param>
+        protected override void PerformSingleAction(Rigidbody rigidbody, Enum actionID, object? parameter = null)
+        {
+            if (actionID is not RigidbodyActions rigidbodyActionID)
+            {
+                return;
+            }
+
+            if (respectSleep && (int)rigidbodyActionID < 8 && rigidbody.IsSleeping())
+            {
+                return;
+            }
+
+            if ((int)rigidbodyActionID > 7 || parameter is not Vector3 force)
+            {
+                return;
+            }
+
+            switch (rigidbodyActionID)
+            {
+                case RigidbodyActions.ApplyAcceleration:
+                    rigidbody.AddForce(force, ForceMode.Acceleration);
+                    break;
+                case RigidbodyActions.ApplyAccelerationRelative:
+                    rigidbody.AddRelativeForce(force, ForceMode.Acceleration);
+                    break;
+                case RigidbodyActions.ApplyForce:
+                    rigidbody.AddForce(force, ForceMode.Force);
+                    break;
+                case RigidbodyActions.ApplyForceRelative:
+                    rigidbody.AddRelativeForce(force, ForceMode.Force);
+                    break;
+                case RigidbodyActions.ApplyImpulse:
+                    rigidbody.AddForce(force, ForceMode.Impulse);
+                    break;
+                case RigidbodyActions.ApplyImpulseRelative:
+                    rigidbody.AddRelativeForce(force, ForceMode.Impulse);
+                    break;
+                case RigidbodyActions.ApplyVelocityChange:
+                    rigidbody.AddForce(force, ForceMode.VelocityChange);
+                    break;
+                case RigidbodyActions.ApplyVelocityChangeRelative:
+                    rigidbody.AddRelativeForce(force, ForceMode.VelocityChange);
+                    break;
+                case RigidbodyActions.Sleep:
+                    if (!rigidbody.IsSleeping())
+                    {
+                        rigidbody.Sleep();
+                    }
+                    break;
+                case RigidbodyActions.WakeUp:
+                    if (rigidbody.IsSleeping())
+                    {
+                        rigidbody.WakeUp();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="acceleration"></param>
         public void ApplyContinuousAcceleration(Vector3 acceleration)
         {
-            PerformGroupAction(rigidbody => rigidbody.AddForce(acceleration, ForceMode.Acceleration));
+            PerformGroupAction(RigidbodyActions.ApplyAcceleration, acceleration);
         }
 
         /// <summary>
@@ -22,7 +114,7 @@ namespace itolib.Behaviours.Groupings
         /// <param name="acceleration"></param>
         public void ApplyRelativeContinuousAcceleration(Vector3 acceleration)
         {
-            PerformGroupAction(rigidbody => rigidbody.AddRelativeForce(acceleration, ForceMode.Acceleration));
+            PerformGroupAction(RigidbodyActions.ApplyAccelerationRelative, acceleration);
         }
 
         /// <summary>
@@ -31,7 +123,7 @@ namespace itolib.Behaviours.Groupings
         /// <param name="force"></param>
         public void ApplyContinuousForce(Vector3 force)
         {
-            PerformGroupAction(rigidbody => rigidbody.AddForce(force, ForceMode.Force));
+            PerformGroupAction(RigidbodyActions.ApplyForce, force);
         }
 
         /// <summary>
@@ -40,7 +132,7 @@ namespace itolib.Behaviours.Groupings
         /// <param name="force"></param>
         public void ApplyRelativeContinuousForce(Vector3 force)
         {
-            PerformGroupAction(rigidbody => rigidbody.AddRelativeForce(force, ForceMode.Force));
+            PerformGroupAction(RigidbodyActions.ApplyForceRelative, force);
         }
 
         /// <summary>
@@ -49,7 +141,7 @@ namespace itolib.Behaviours.Groupings
         /// <param name="impulse"></param>
         public void ApplyInstantImpulse(Vector3 impulse)
         {
-            PerformGroupAction(rigidbody => rigidbody.AddForce(impulse, ForceMode.Impulse));
+            PerformGroupAction(RigidbodyActions.ApplyImpulse, impulse);
         }
 
         /// <summary>
@@ -58,7 +150,7 @@ namespace itolib.Behaviours.Groupings
         /// <param name="impulse"></param>
         public void ApplyRelativeInstantImpulse(Vector3 impulse)
         {
-            PerformGroupAction(rigidbody => rigidbody.AddRelativeForce(impulse, ForceMode.Impulse));
+            PerformGroupAction(RigidbodyActions.ApplyImpulseRelative, impulse);
         }
 
         /// <summary>
@@ -67,7 +159,7 @@ namespace itolib.Behaviours.Groupings
         /// <param name="velocityChange"></param>
         public void ApplyInstantVelocityChange(Vector3 velocityChange)
         {
-            PerformGroupAction(rigidbody => rigidbody.AddForce(velocityChange, ForceMode.VelocityChange));
+            PerformGroupAction(RigidbodyActions.ApplyVelocityChange, velocityChange);
         }
 
         /// <summary>
@@ -76,7 +168,7 @@ namespace itolib.Behaviours.Groupings
         /// <param name="velocityChange"></param>
         public void ApplyRelativeInstantVelocityChange(Vector3 velocityChange)
         {
-            PerformGroupAction(rigidbody => rigidbody.AddRelativeForce(velocityChange, ForceMode.VelocityChange));
+            PerformGroupAction(RigidbodyActions.ApplyVelocityChangeRelative, velocityChange);
         }
 
         /// <summary>
@@ -84,13 +176,7 @@ namespace itolib.Behaviours.Groupings
         /// </summary>
         public void SleepAll()
         {
-            PerformGroupAction(rigidbody =>
-            {
-                if (!rigidbody.IsSleeping())
-                {
-                    rigidbody.Sleep();
-                }
-            });
+            PerformGroupAction(RigidbodyActions.Sleep);
         }
 
         /// <summary>
@@ -98,13 +184,7 @@ namespace itolib.Behaviours.Groupings
         /// </summary>
         public void WakeUpAll()
         {
-            PerformGroupAction(rigidbody =>
-            {
-                if (rigidbody.IsSleeping())
-                {
-                    rigidbody.WakeUp();
-                }
-            });
+            PerformGroupAction(RigidbodyActions.WakeUp);
         }
     }
 }
