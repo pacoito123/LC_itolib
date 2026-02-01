@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
+using itolib.Interfaces;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -50,7 +51,7 @@ namespace itolib.Behaviours.Grabbables
 
         /// <summary>
         ///     TODO.
-        /// </summary> 
+        /// </summary>
         protected override void Reset()
         {
             maxDistance = 12.0f;
@@ -95,7 +96,10 @@ namespace itolib.Behaviours.Grabbables
         {
             base.Awake();
 
-            eventfulSelf?.OnActivatePhysicsTrigger.AddListener(ActivatePhysicsTrigger);
+            if (item is IEventfulItem eventfulItem)
+            {
+                eventfulItem.OnActivatePhysicsTrigger.AddListener(ActivatePhysicsTrigger);
+            }
         }
 
         /// <summary>
@@ -104,13 +108,19 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="other"></param>
         private void ActivatePhysicsTrigger(Collider other)
         {
+            if (item == null || itemTransform == null || StartOfRound.Instance == null || RoundManager.Instance == null)
+            {
+                return;
+            }
+
             if (Physics.Linecast(other.gameObject.transform.position + Vector3.up, itemTransform.position + (Vector3.up * 0.5f),
                 StartOfRound.Instance.collidersAndRoomMaskAndDefault, QueryTriggerInteraction.Ignore))
             {
                 return;
             }
 
-            if (item.parentObject != null || (itemTransform.GetParent() != RoundManager.Instance.spawnedScrapContainer
+            if (item.parentObject != null || itemTransform.GetParent() != null
+                || (itemTransform.GetParent() != RoundManager.Instance.spawnedScrapContainer
                 && itemTransform.GetParent() != StartOfRound.Instance.propsContainer
                 && itemTransform.GetParent() != StartOfRound.Instance.elevatorTransform))
             {
@@ -147,6 +157,11 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         protected override void FallWithCurve()
         {
+            if (item == null || itemTransform == null)
+            {
+                return;
+            }
+
             float magnitude = (item.startFallingPosition - item.targetFloorPosition).magnitude;
 
             itemTransform.rotation = Quaternion.Lerp(itemTransform.rotation, Quaternion.Euler(item.itemProperties.restingRotation.x, itemTransform.eulerAngles.y,
@@ -180,8 +195,14 @@ namespace itolib.Behaviours.Grabbables
         /// <returns></returns>
         protected override bool TryGetDestination(out Vector3 destination, Transform origin)
         {
-            Vector3 pos = itemTransform.position;
+            destination = Vector3.zero;
 
+            if (item == null || itemTransform == null)
+            {
+                return false;
+            }
+
+            Vector3 pos = itemTransform.position;
             Vector3 direction = (pos - origin.position) * 1000.0f;
             direction = Vector3.Normalize(direction);
             direction.y = 0.15f;
@@ -202,8 +223,6 @@ namespace itolib.Behaviours.Grabbables
 
                 return true;
             }
-
-            destination = Vector3.zero;
 
             return false;
         }

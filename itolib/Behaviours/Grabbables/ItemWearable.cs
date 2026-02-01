@@ -16,7 +16,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Header("Item Wearable")]
         [Tooltip("Item with 'eventful' properties (e.g. 'ItemGrabbable' or 'EventfulApparatus').")]
-        [SerializeField] private GrabbableObject item = null!;
+        [SerializeField] private GrabbableObject? item;
 
         /// <summary>
         ///     What the wearable should attach to when pocketed.
@@ -65,16 +65,11 @@ namespace itolib.Behaviours.Grabbables
         private Transform? boneToAttachTo;
 
         /// <summary>
-        ///     Cached instance of the <c>ItemWearable</c>'s item as an <c>IEventfulItem</c>, to avoid having to cast.
-        /// </summary>
-        private IEventfulItem? eventfulSelf;
-
-        /// <summary>
         ///     Initialize stuff required to mimic a <c>BeltBagItem</c>'s wearability.
         /// </summary>
         private void Awake()
         {
-            // Make sure the item field implements IEventfulItem, and cache a reference to it as one.
+            // Make sure the item field implements IEventfulItem.
             if ((item == null && !TryGetComponent(out item)) || item is not IEventfulItem eventfulItem)
             {
                 Plugin.StaticLogger.LogWarning($"Could not find IEventfulItem for ItemWearable component in GameObject '{gameObject.name}'.");
@@ -82,10 +77,9 @@ namespace itolib.Behaviours.Grabbables
 
                 return;
             }
-            eventfulSelf = eventfulItem;
 
             // Wearables are equipped when pocketed, thus should not be hidden.
-            eventfulSelf.HideOnPocket = false;
+            eventfulItem.HideOnPocket = false;
 
             // Subscribe to related event callbacks:
             eventfulItem.OnDiscardEarly.AddListener(OnDiscardEarly);
@@ -111,7 +105,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         private void SetWearablePosition()
         {
-            if (item.playerHeldBy != null && item.playerHeldBy.IsOwner)
+            if (item != null && item.playerHeldBy != null && item.playerHeldBy.IsOwner)
             {
                 // Set Transform to attach to on the local client.
                 SetWearablePositionLocal(item.playerHeldBy);
@@ -192,7 +186,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="reset">Whether the wearable is being unequipped or not.</param>
         private void EquipWearable(bool reset = false)
         {
-            if (item.playerHeldBy != null && item.playerHeldBy.IsOwner)
+            if (item != null && item.playerHeldBy != null && item.playerHeldBy.IsOwner)
             {
                 // Equip wearable item on the local client.
                 EquipWearableLocal(item.playerHeldBy, reset);
@@ -206,7 +200,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     Equip wearable item for the player that has it for all other clients. 
+        ///     Equip wearable item for the player that has it for all other clients.
         /// </summary>
         /// <param name="playerReference">Network reference of the player equipping or unequipping the wearable.</param>
         /// <param name="reset">Whether the wearable is being unequipped or not.</param>

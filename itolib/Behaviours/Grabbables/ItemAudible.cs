@@ -1,3 +1,4 @@
+using itolib.Extensions;
 using itolib.Interfaces;
 using Unity.Netcode;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Header("Item Audible")]
         [Tooltip("")]
-        [SerializeField] private GrabbableObject item = null!;
+        [SerializeField] private GrabbableObject? item;
 
         /// <summary>
         ///     TODO.
@@ -121,26 +122,19 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        private IEventfulItem? eventfulSelf;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         private void Awake()
         {
             if (item == null || !TryGetComponent(out item) || item is not IEventfulItem eventfulItem)
             {
-                // TODO: Log warning
+                Plugin.StaticLogger.LogWarning($"Could not find IEventfulItem for ItemAudible component in GameObject '{gameObject.name}'.");
                 enabled = false;
 
                 return;
             }
 
-            eventfulSelf = eventfulItem;
-
             if (!triggerFromElsewhere)
             {
-                eventfulSelf.OnActivate.AddListener(ItemActivate);
+                eventfulItem.OnActivate.AddListener(ItemActivate);
             }
         }
 
@@ -155,34 +149,16 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void StopAudio()
-        {
-            if (!item.IsOwner || item.playerHeldBy == null)
-            {
-                return;
-            }
-
-            StopAudioLocal();
-
-            if (IsSpawned)
-            {
-                StopAudioRpc();
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         /// <param name="used"></param>
         /// <param name="buttonDown"></param>
         private void ItemActivate(bool used, bool buttonDown)
         {
-            if (audioClips == null)
+            if (item == null || audioClips == null)
             {
                 return;
             }
 
-            if ((requireHolding && (!item.IsOwner || item.playerHeldBy == null)) || (!requireHolding && !IsHost))
+            if ((requireHolding && (item.playerHeldBy == null || !item.playerHeldBy.IsLocalClient())) || (!requireHolding && !IsHost))
             {
                 return;
             }
@@ -249,32 +225,63 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="loudness"></param>
         private void PlayAudioLocal(int clip, int clipFar = -1, float volume = 1.0f, float pitch = 1.0f, float loudness = 0.5f)
         {
+            if (item == null)
+            {
+                return;
+            }
+
             if (itemSource != null && audioClips?[clip] != null)
             {
                 itemSource.pitch = pitch;
                 itemSource.PlayOneShot(audioClips[clip], volume);
 
-                if (itemSourceFar != null && audioClipsFar?[clipFar] != null)
-                {
-                    itemSourceFar.pitch = pitch;
-                    itemSourceFar.PlayOneShot(audioClipsFar[clipFar], volume);
-                }
-
                 if (transmitOverWalkie)
                 {
                     WalkieTalkie.TransmitOneShotAudio(itemSource, audioClips[clip], volume);
                 }
+            }
 
-                if (loudness > 0.0f)
+            if (itemSourceFar != null && audioClipsFar?[clipFar] != null)
+            {
+                itemSourceFar.pitch = pitch;
+                itemSourceFar.PlayOneShot(audioClipsFar[clipFar], volume);
+            }
+
+            if (loudness > 0.0f)
+            {
+                if (RoundManager.Instance != null)
                 {
                     RoundManager.Instance.PlayAudibleNoise(item.transform.position, audibleRange, loudness, 0,
-                        item.isInElevator && StartOfRound.Instance.hangarDoorsClosed, 0);
-
-                    if (loudness >= 0.6f && item.playerHeldBy != null)
-                    {
-                        item.playerHeldBy.timeSinceMakingLoudNoise = 0.0f;
-                    }
+                        item.isInElevator && StartOfRound.Instance != null && StartOfRound.Instance.hangarDoorsClosed, 0);
                 }
+
+                if (loudness >= 0.6f && item.playerHeldBy != null)
+                {
+                    item.playerHeldBy.timeSinceMakingLoudNoise = 0.0f;
+                }
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void StopAudio()
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            if ((requireHolding && (item.playerHeldBy == null || !item.playerHeldBy.IsLocalClient())) || (!requireHolding && !IsHost))
+            {
+                return;
+            }
+
+            StopAudioLocal();
+
+            if (IsSpawned)
+            {
+                StopAudioRpc();
             }
         }
 

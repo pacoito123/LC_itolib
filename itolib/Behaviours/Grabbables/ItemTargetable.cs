@@ -103,13 +103,13 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Header("Item Targetable")]
         [Tooltip("")]
-        [SerializeField] protected GrabbableObject item = null!;
+        [SerializeField] protected GrabbableObject? item;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [SerializeField] protected Transform itemTransform = null!;
+        [SerializeField] protected Transform? itemTransform;
 
         /// <summary>
         ///     TODO.
@@ -182,11 +182,6 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        protected IEventfulItem? eventfulSelf;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         protected abstract void Reset();
 
         /// <summary>
@@ -196,27 +191,20 @@ namespace itolib.Behaviours.Grabbables
         {
             if (item == null || !TryGetComponent(out item) || item is not IEventfulItem eventfulItem)
             {
-                // TODO: Log warning
+                itemTransform = transform;
+
+                Plugin.StaticLogger.LogWarning($"Could not find IEventfulItem for ItemTargetable component in GameObject '{gameObject.name}'.");
                 enabled = false;
 
                 return;
             }
 
-            eventfulSelf = eventfulItem;
+            itemTransform = item.transform;
 
-            eventfulSelf.OnGrab.AddListener(eventfulSelf.ResetCurveOverride);
-            eventfulSelf.OnEnemyGrab.AddListener(eventfulSelf.ResetCurveOverride);
-        }
+            eventfulItem.OnGrab.AddListener(eventfulItem.ResetCurveOverride);
+            eventfulItem.OnEnemyGrab.AddListener(eventfulItem.ResetCurveOverride);
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        private void Start()
-        {
-            if (eventfulSelf != null)
-            {
-                eventfulSelf.FallWithCurveOverride = FallWithCurve;
-            }
+            eventfulItem.FallWithCurveOverride = FallWithCurve;
         }
 
         /// <summary>
@@ -255,15 +243,15 @@ namespace itolib.Behaviours.Grabbables
             if (StartOfRound.Instance.shipBounds != null && StartOfRound.Instance.shipBounds.bounds.Contains(targetPosition))
             {
                 setInElevator = true;
-                setInShipRoom = StartOfRound.Instance.shipInnerRoomBounds != null
+                setInShipRoom = StartOfRound.Instance != null && StartOfRound.Instance.shipInnerRoomBounds != null
                     && StartOfRound.Instance.shipInnerRoomBounds.bounds.Contains(targetPosition);
 
-                targetPosition = StartOfRound.Instance.elevatorTransform != null
+                targetPosition = (StartOfRound.Instance != null && StartOfRound.Instance.elevatorTransform != null)
                     ? StartOfRound.Instance.elevatorTransform.InverseTransformPoint(targetPosition) : targetPosition;
             }
             else
             {
-                targetPosition = StartOfRound.Instance.propsContainer != null
+                targetPosition = (StartOfRound.Instance != null && StartOfRound.Instance.propsContainer != null)
                     ? StartOfRound.Instance.propsContainer.InverseTransformPoint(targetPosition) : targetPosition;
             }
 
@@ -311,9 +299,19 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="destinationInfo"></param>
         protected virtual void BeginTrajectoryLocal(DestinationInfo destinationInfo)
         {
-            if (eventfulSelf != null)
+            if (item == null)
             {
-                eventfulSelf.FallWithCurveOverride = FallWithCurve;
+                return;
+            }
+
+            if (itemTransform == null)
+            {
+                itemTransform = item.transform;
+            }
+
+            if (item is IEventfulItem eventfulItem)
+            {
+                eventfulItem.FallWithCurveOverride = FallWithCurve;
             }
 
             item.fallTime = 0.0f;
@@ -325,8 +323,11 @@ namespace itolib.Behaviours.Grabbables
                 player.SetItemInElevator(destinationInfo.setInShipRoom, destinationInfo.setInElevator, item);
             }
 
-            itemTransform.SetParent(destinationInfo.setInElevator ? StartOfRound.Instance.elevatorTransform
-                : StartOfRound.Instance.propsContainer, true);
+            if (StartOfRound.Instance != null)
+            {
+                itemTransform.SetParent(destinationInfo.setInElevator ? StartOfRound.Instance.elevatorTransform
+                    : StartOfRound.Instance.propsContainer, true);
+            }
 
             item.startFallingPosition = itemTransform.GetParent().InverseTransformPoint(destinationInfo.startPosition);
             item.targetFloorPosition = destinationInfo.targetPosition;

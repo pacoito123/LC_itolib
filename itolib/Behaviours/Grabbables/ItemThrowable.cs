@@ -1,5 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
+using itolib.Interfaces;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -33,7 +34,7 @@ namespace itolib.Behaviours.Grabbables
 
         /// <summary>
         ///     TODO.
-        /// </summary> 
+        /// </summary>
         protected override void Reset()
         {
             maxDistance = 12.0f;
@@ -73,9 +74,12 @@ namespace itolib.Behaviours.Grabbables
         {
             base.Awake();
 
-            eventfulSelf?.OnActivate.AddListener(ItemActivate);
-            eventfulSelf?.OnGroundReached.AddListener(OnHitGround);
-            eventfulSelf?.OnGroundReachedVariant.AddListener(OnHitGround);
+            if (item is IEventfulItem eventfulItem)
+            {
+                eventfulItem.OnActivate.AddListener(ItemActivate);
+                eventfulItem.OnGroundReached.AddListener(OnHitGround);
+                eventfulItem.OnGroundReachedVariant.AddListener(OnHitGround);
+            }
         }
 
         /// <summary>
@@ -85,7 +89,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="buttonDown"></param>
         private void ItemActivate(bool used, bool buttonDown)
         {
-            if (item.playerHeldBy == null || !item.playerHeldBy.IsLocalClient())
+            if (item == null || item.playerHeldBy == null || !item.playerHeldBy.IsLocalClient())
             {
                 return;
             }
@@ -128,6 +132,11 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         protected override void FallWithCurve()
         {
+            if (item == null || itemTransform == null)
+            {
+                return;
+            }
+
             float magnitude = (item.startFallingPosition - item.targetFloorPosition).magnitude;
 
             itemTransform.rotation = Quaternion.Lerp(itemTransform.rotation, Quaternion.Euler(item.itemProperties.restingRotation.x, itemTransform.eulerAngles.y,
@@ -151,6 +160,13 @@ namespace itolib.Behaviours.Grabbables
         /// <returns></returns>
         protected override bool TryGetDestination(out Vector3 destination, Transform origin)
         {
+            destination = Vector3.zero;
+
+            if (item == null || itemTransform == null)
+            {
+                return false;
+            }
+
             trajectoryRay = new(item.playerHeldBy.gameplayCamera.transform.position, item.playerHeldBy.gameplayCamera.transform.forward);
 
             destination = Physics.Raycast(trajectoryRay, out rayHit, maxDistance, collisionMask, QueryTriggerInteraction.Ignore)

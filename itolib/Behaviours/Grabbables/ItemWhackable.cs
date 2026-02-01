@@ -201,7 +201,7 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        private IEventfulItem? eventfulSelf;
+        private int variantIndex;
 
         /// <summary>
         ///     TODO.
@@ -220,16 +220,16 @@ namespace itolib.Behaviours.Grabbables
         {
             if (item == null || !TryGetComponent(out item) || item is not IEventfulItem eventfulItem)
             {
-                // TODO: Log warning
+                Plugin.StaticLogger.LogWarning($"Could not find IEventfulItem for Itemwhackable component in GameObject '{gameObject.name}'.");
                 enabled = false;
 
                 return;
             }
 
-            eventfulSelf = eventfulItem;
+            eventfulItem.OnActivate.AddListener(ItemActivate);
+            eventfulItem.OnDiscardEarly.AddListener(DiscardItemEarly);
 
-            eventfulSelf.OnActivate.AddListener(ItemActivate);
-            eventfulSelf.OnDiscardEarly.AddListener(DiscardItemEarly);
+            variantIndex = eventfulItem.VariantIndex;
         }
 
         /// <summary>
@@ -445,7 +445,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="surfaceIndex"></param>
         private void WeaponHitLocal(bool enemyHit, int surfaceIndex)
         {
-            if (eventfulSelf == null || eventfulSelf.VariantIndex < 0)
+            if (variantIndex < 0)
             {
                 if (item.IsOwner)
                 {
@@ -458,10 +458,10 @@ namespace itolib.Behaviours.Grabbables
             {
                 if (item.IsOwner)
                 {
-                    onWeaponHitVariantLocal.Invoke(eventfulSelf.VariantIndex);
+                    onWeaponHitVariantLocal.Invoke(variantIndex);
                 }
 
-                onWeaponHitVariant.Invoke(eventfulSelf.VariantIndex);
+                onWeaponHitVariant.Invoke(variantIndex);
             }
 
             if (!enemyHit && surfaceIndex != -1)
