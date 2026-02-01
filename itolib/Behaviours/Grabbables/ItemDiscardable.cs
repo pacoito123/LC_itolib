@@ -1,6 +1,7 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
 using itolib.Util;
+using System;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -9,95 +10,103 @@ using UnityEngine.Events;
 namespace itolib.Behaviours.Grabbables
 {
     /// <summary>
-    ///     TODO.
+    ///     Adds <i>discardability</i> to any <c>GrabbableObject</c>.
     /// </summary>
     public class ItemDiscardable : NetworkBehaviour
     {
         /// <summary>
-        ///     TODO.
+        ///     Item to target for discarding.
         /// </summary>
         [Header("Item Discardable")]
-        [Tooltip("")]
-        [SerializeField] private GrabbableObject item = null!;
+        [Tooltip("Item to target for discarding.")]
+        [SerializeField] private GrabbableObject? item;
 
         /// <summary>
-        ///     TODO.
+        ///     Parent <c>NetworkObject</c> to attempt to despawn once discarded, if set to despawn after discarding.
         /// </summary>
-        [Tooltip("")]
-        [SerializeField] private NetworkObject parentNetworkObject = null!;
+        [Tooltip("Parent NetworkObject to attempt to despawn once discarded, if set to despawn after discarding.")]
+        [SerializeField] private NetworkObject? parentNetworkObject;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether to disable grabbing the item after being discarded or not.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Whether to disable grabbing the item after being discarded or not.")]
         [SerializeField] private bool disableGrabOnDiscard = false;
 
         /// <summary>
-        ///     TODO.
+        ///     Callback invoked when the item is discarded.
         /// </summary>
+        [Space(5.0f)]
         [Header("Events")]
-        [Tooltip("")]
+        [Tooltip("Callback invoked when the item is discarded.")]
         [SerializeField] private UnityEvent<PlayerControllerB> onDiscardItem = new();
 
         /// <summary>
-        ///     TODO.
+        ///     Callback invoked when the item is discarded while held by the player.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Callback invoked when the item is discarded while held by the player.")]
         [SerializeField] private UnityEvent<PlayerControllerB> onDiscardItemHeld = new();
 
         /// <summary>
-        ///     TODO.
+        ///     Callback invoked when the item is discarded while pocketed by the player.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Callback invoked when the item is discarded while pocketed by the player.")]
         [SerializeField] private UnityEvent<PlayerControllerB> onDiscardItemPocketed = new();
 
         /// <summary>
-        ///     TODO.
+        ///     Callback invoked when the item is discarded from dropping all items in the player's inventory.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Callback invoked when the item is discarded from dropping all items in the player's inventory.")]
         [SerializeField] private UnityEvent<PlayerControllerB> onDiscardItemsAll = new();
 
         /// <summary>
-        ///     TODO.
+        ///     Whether to despawn the item after being discarded or not.
         /// </summary>
         [Space(5.0f)]
         [Header("Despawn")]
-        [Tooltip("")]
+        [Tooltip("Whether to despawn the item after being discarded or not.")]
         [SerializeField] private bool despawnOnDiscard = false;
 
         /// <summary>
-        ///     TODO.
+        ///     Additional timer until the item is despawned, in seconds.
         /// </summary>
-        [Tooltip("")]
+        /// <remarks><b>NOTE:</b> Should be used with <c>disableGrabOnDiscard</c> enabled, or else it could despawn while in the player's inventory.</remarks>
+        [Tooltip("Additional timer until the item is despawned, in seconds. NOTE: Should be used with 'disableGrabOnDiscard' enabled, or else it could "
+            + "despawn while in the player's inventory.")]
         [Min(0.0f)]
         [SerializeField] private float despawnTimer = 0.0f;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether to 'hide' the item instead of despawning it or not.
         /// </summary>
-        [Tooltip("")]
+        /// <remarks><b>NOTE:</b>Vanilla items that destroy themselves (e.g. <c>Easter Egg</c>) are simply deactivated until despawning at the end of the round.</remarks>
+        [Tooltip("Whether to 'hide' the item instead of despawning it or not. NOTE: Vanilla items that destroy themselves (e.g. Easter Egg) are simply deactivated "
+            + "until despawning at the end of the round.")]
         [SerializeField] private bool despawnOnlyHides = true;
 
         /// <summary>
-        ///     TODO.
+        ///     Callback invoked when the despawn timer for the item starts.
         /// </summary>
-        [Tooltip("")]
+        [Space(5.0f)]
+        [Header("Events")]
+        [Tooltip("Callback invoked when the despawn timer for the item starts.")]
         [SerializeField] private UnityEvent onDespawnTimerStart = new();
 
         /// <summary>
-        ///     TODO.
+        ///     Callback invoked when the despawn timer for the item ends.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Callback invoked when the despawn timer for the item ends.")]
         [SerializeField] private UnityEvent onDespawnTimerEnd = new();
 
         /// <summary>
-        ///     TODO.
+        ///     Attempt to find a <c>GrabbableObject</c> to discard, if missing.
         /// </summary>
         private void Awake()
         {
-            if (item == null || !TryGetComponent(out item))
+            // Make sure the item field is not blank.
+            if (item == null && !TryGetComponent(out item))
             {
-                // TODO: Log warning
+                Plugin.StaticLogger.LogWarning($"Could not find GrabbableObject for ItemDiscardable component in GameObject '{gameObject.name}'.");
                 enabled = false;
 
                 return;
@@ -105,7 +114,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Forcibly discard the item from the player's inventory by specifically targeting it.
         /// </summary>
         public void ForceDropItem()
         {
@@ -113,7 +122,7 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Forcibly discard the item from the player's inventory by dropping all their items.
         /// </summary>
         public void ForceDropItems()
         {
@@ -121,187 +130,227 @@ namespace itolib.Behaviours.Grabbables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Forcibly discard the item from the player's inventory.
         /// </summary>
-        /// <param name="dropAll"></param>
+        /// <param name="dropAll">Whether all other items should be dropped or not.</param>
         private void ForceDropItem(bool dropAll)
         {
-            if (item.playerHeldBy == null || !item.playerHeldBy.IsLocalClient())
+            // Check if item is held by the local player.
+            if (item == null || item.playerHeldBy == null || !item.playerHeldBy.IsLocalClient())
             {
                 return;
             }
 
-            PlayerControllerB player = item.playerHeldBy;
+            // Obtain slot the item is in, or '-1' if dropping all items.
+            int slot = !dropAll ? Array.IndexOf(item.playerHeldBy.ItemSlots, item) : -1;
 
-            if (dropAll)
-            {
-                player.DropAllHeldItemsAndSync();
+            // Obtain whether the item is currently held by the player or not.
+            bool inHand = !dropAll && !item.playerHeldBy.throwingObject && item.playerHeldBy.isHoldingObject
+                && item.playerHeldBy.currentItemSlot == slot && item.playerHeldBy.currentlyHeldObjectServer == item;
 
-                onDiscardItem?.Invoke(player);
-                onDiscardItemsAll?.Invoke(player);
-
-                return;
-            }
-            else if (!player.throwingObject && player.isHoldingObject && player.currentlyHeldObjectServer == item)
-            {
-                player.DiscardHeldObject();
-
-                onDiscardItem?.Invoke(player);
-                onDiscardItemHeld?.Invoke(player);
-
-                return;
-            }
-
-            int slot = -1;
-
-            for (int i = 0; i < player.ItemSlots.Length; i++)
-            {
-                if (player.ItemSlots[i] == item)
-                {
-                    slot = i;
-
-                    break;
-                }
-            }
-
-            ForceDropItemLocal(player, slot);
+            // Discard item on the local client.
+            ForceDropItemLocal(item.playerHeldBy, slot, inHand, dropAll);
 
             if (IsSpawned)
             {
-                ForceDropItemRpc(player, slot);
+                // Send item being discarded to all other clients.
+                ForceDropItemRpc(item.playerHeldBy, slot, inHand, dropAll);
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Forcibly discard the item from the player's inventory for all other clients.
         /// </summary>
-        /// <param name="playerReference"></param>
-        /// <param name="slot"></param>
+        /// <param name="playerReference">Network reference of the player holding the item to discard.</param>
+        /// <param name="slot">Slot in the player's inventory the item to discard is in.</param>
+        /// <param name="inHand">Whether the player is holding the item to discard or not.</param>
+        /// <param name="dropAll">Whether all other items should be dropped or not.</param>
         [Rpc(SendTo.NotMe, RequireOwnership = false)]
-        private void ForceDropItemRpc(NetworkBehaviourReference playerReference, int slot)
+        private void ForceDropItemRpc(NetworkBehaviourReference playerReference, int slot, bool inHand, bool dropAll)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
-                ForceDropItemLocal(player, slot);
+                // Discard item on the local client.
+                ForceDropItemLocal(player, slot, inHand, dropAll);
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Forcibly discard the item from the player's inventory for the local client.
         /// </summary>
-        /// <param name="player"></param>
-        /// <param name="slot"></param>
-        private void ForceDropItemLocal(PlayerControllerB player, int slot)
+        /// <param name="player">Player holding the item to discard.</param>
+        /// <param name="slot">Slot in the player's inventory the item to discard is in.</param>
+        /// <param name="inHand">Whether the player is holding the item to discard or not.</param>
+        /// <param name="dropAll">Whether all other items should be dropped or not.</param>
+        private void ForceDropItemLocal(PlayerControllerB player, int slot, bool inHand, bool dropAll)
         {
-            item.parentObject = null;
-            item.heldByPlayerOnServer = false;
-
-            if (item.isInElevator)
+            // Check if item to discard exists.
+            if (item == null)
             {
-                transform.SetParent(player.playersManager.elevatorTransform, true);
-            }
-            else
-            {
-                transform.SetParent(player.playersManager.propsContainer, true);
+                return;
             }
 
-            player.SetItemInElevator(player.isInHangarShipRoom, player.isInElevator, item);
-
-            item.EnablePhysics(true);
-            item.EnableItemMeshes(true);
-
-            transform.localScale = item.originalScale;
-
-            item.isHeld = false;
-            item.isPocketed = false;
-
-            item.startFallingPosition = transform.parent.InverseTransformPoint(transform.position);
-            item.FallToGround(true, false, Vector3.zero);
-            item.fallTime = Random.Range(-0.3f, 0.05f);
-
-            if (slot > -1)
+            // Check if item should be despawned after being discarded.
+            if (despawnOnDiscard)
             {
-                player.ItemSlots[slot] = null;
+                // Start timer for despawning the item.
+                _ = StartCoroutine(DespawnItemDelayed());
             }
 
-            if (player.IsLocalClient())
-            {
-                item.DiscardItemOnClient();
-
-                if (slot > -1)
-                {
-                    HUDManager.Instance.itemSlotIcons[slot].enabled = false;
-                }
-            }
-            else if (!item.itemProperties.syncDiscardFunction)
-            {
-                item.playerHeldBy = null;
-            }
-
+            // Check if item should be set as ungrabbable after being discarded.
             if (disableGrabOnDiscard || despawnOnDiscard)
             {
                 item.grabbable = false;
                 item.grabbableToEnemies = false;
             }
 
-            onDiscardItem?.Invoke(player);
-            onDiscardItemPocketed?.Invoke(player);
-
-            if (despawnOnDiscard)
+            if (dropAll)
             {
-                _ = StartCoroutine(DespawnItemDelayed());
+                // Discard all items the player has.
+                player.DropAllHeldItems();
+
+                // Invoke all items dropped event.
+                onDiscardItemsAll.Invoke(player);
             }
+            else if (inHand)
+            {
+                // Discard the player's currently held item.
+                player.DiscardHeldObject();
+
+                // Invoke held item dropped event.
+                onDiscardItemHeld.Invoke(player);
+            }
+            else
+            {
+                // Discard the item in the specified inventory slot.
+                player.DiscardHeldObject(slot);
+
+                // Invoke pocketed item dropped event.
+                onDiscardItemPocketed.Invoke(player);
+            }
+
+            // Invoke item discard event.
+            onDiscardItem.Invoke(player);
         }
 
+        /// <summary>
+        ///     Despawn item, or simply hide it (like vanilla).
+        /// </summary>
         private void DespawnItem()
         {
-            // Vanilla item "despawning":
-            item.deactivated = true;
-
-            if (item.radarIcon != null)
+            // Check if item to despawn exists.
+            if (item == null)
             {
-                Destroy(item.radarIcon.gameObject);
+                return;
             }
 
-            foreach (Renderer renderer in item.GetComponentsInChildren<Renderer>())
+            // Check if item should be hidden (vanilla 'despawning').
+            if (despawnOnlyHides)
             {
-                // Destroy(renderer);
-                renderer.enabled = false;
-            }
+                item.deactivated = true;
 
-            foreach (Collider collider in item.GetComponentsInChildren<Collider>())
-            {
-                // Destroy(collider);
-                collider.enabled = false;
-            }
-            // ...
-
-            if (!despawnOnlyHides)
-            {
-                if (RoundManager.Instance != null)
+                // Destroy the item's radar map icon.
+                if (item.radarIcon != null)
                 {
-                    _ = RoundManager.Instance.spawnedSyncedObjects.Remove(item.gameObject);
+                    Destroy(item.radarIcon.gameObject);
                 }
 
-                if (IsHost && parentNetworkObject != null && parentNetworkObject.IsSpawned)
+                // Disable any Renderers present in the item.
+                Renderer[] renderers = item.GetComponentsInChildren<Renderer>(includeInactive: false);
+                for (int i = 0; i < renderers.Length; i++)
                 {
-                    parentNetworkObject.Despawn(true);
+                    renderers[i].enabled = false;
+                    // Destroy(renderers[i]);
                 }
+
+                // Disable any Colliders present in the item.
+                Collider[] colliders = item.GetComponentsInChildren<Collider>(includeInactive: false);
+                for (int i = 0; i < colliders.Length; i++)
+                {
+                    colliders[i].enabled = false;
+                    // Destroy(colliders[i]);
+                }
+
+                return;
+            }
+
+            if (RoundManager.Instance != null)
+            {
+                // Remove item from the list of spawned objects, if present.
+                _ = RoundManager.Instance.spawnedSyncedObjects.Remove(item.gameObject);
+            }
+
+            if (IsHost && parentNetworkObject != null && parentNetworkObject.IsSpawned)
+            {
+                // Actually despawn the item.
+                parentNetworkObject.Despawn(true);
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     <c>Coroutine</c> to despawn the item after a specified amount of time passes.
         /// </summary>
         private IEnumerator DespawnItemDelayed()
         {
+            // Invoke despawn timer start event.
             onDespawnTimerStart.Invoke();
             yield return Yielders.WaitForSeconds(despawnTimer);
 
+            // Invoke despawn timer end event.
             onDespawnTimerEnd.Invoke();
             yield return Yielders.WaitForEndOfFrame;
 
+            // Despawn item.
             DespawnItem();
+        }
+
+        /// <summary>
+        ///     Switch item to discard.
+        /// </summary>
+        /// <param name="replacingItem">Item to target for discarding.</param>
+        public void SwitchDiscardItem(GrabbableObject replacingItem)
+        {
+            // Check if already set as the item to discard.
+            if (item == replacingItem)
+            {
+                return;
+            }
+
+            // Switch item to discard on the local client.
+            SwitchDiscardItemLocal(replacingItem);
+
+            if (IsSpawned)
+            {
+                // Send item to discard switch to all other clients.
+                SwitchDiscardItemRpc(replacingItem);
+            }
+        }
+
+        /// <summary>
+        ///     Switch item to discard for all other clients.
+        /// </summary>
+        /// <param name="itemReference">Network reference of the item to target for discarding.</param>
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void SwitchDiscardItemRpc(NetworkBehaviourReference itemReference)
+        {
+            if (itemReference.TryGet(out GrabbableObject replacingItem))
+            {
+                // Switch item to discard on the local client.
+                SwitchDiscardItemLocal(replacingItem);
+            }
+        }
+
+        /// <summary>
+        ///     Switch item to discard for the local client.
+        /// </summary>
+        /// <param name="replacingItem">Item to target for discarding.</param>
+        private void SwitchDiscardItemLocal(GrabbableObject replacingItem)
+        {
+            if (item != null && item.TryGetComponent(out parentNetworkObject) && parentNetworkObject!.IsSpawned)
+            {
+                // Switch item to discard.
+                item = replacingItem;
+            }
         }
     }
 }

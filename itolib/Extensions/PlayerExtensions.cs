@@ -70,5 +70,72 @@ namespace itolib.Extensions
 
             return playerAction != null;
         }
+
+        /// <summary>
+        ///     Force a player to drop an item held in a specified item slot.
+        /// </summary>
+        /// <param name="player">Player who shall drop the item.</param>
+        /// <param name="slot">Inventory slot to target.</param>
+        public static void DiscardHeldObject(this PlayerControllerB player, int slot)
+        {
+            // Check if slot number is valid.
+            if (slot <= -1 || slot >= player.ItemSlots.Length)
+            {
+                return;
+            }
+
+            // Attempt to obtain item at the specified item slot.
+            GrabbableObject? item = player.ItemSlots[slot];
+
+            // Check if item exists at the specified item slot.
+            if (item == null)
+            {
+                return;
+            }
+
+            // Pretty much the same as 'PlayerControllerB.DropAllHeldItems()', except just for a single item:
+            item.parentObject = null;
+            item.heldByPlayerOnServer = false;
+
+            if (item.isInElevator)
+            {
+                item.transform.SetParent(player.playersManager.elevatorTransform, true);
+            }
+            else
+            {
+                item.transform.SetParent(player.playersManager.propsContainer, true);
+            }
+
+            player.SetItemInElevator(player.isInHangarShipRoom, player.isInElevator, item);
+
+            item.EnablePhysics(true);
+            item.EnableItemMeshes(true);
+
+            item.transform.localScale = item.originalScale;
+
+            item.isHeld = false;
+            item.isPocketed = false;
+
+            item.startFallingPosition = item.transform.parent.InverseTransformPoint(item.transform.position);
+            item.FallToGround(randomizePosition: true);
+            item.fallTime = Random.Range(-0.3f, 0.05f);
+
+            player.ItemSlots[slot] = null;
+
+            if (player.IsLocalClient())
+            {
+                item.DiscardItemOnClient();
+
+                if (HUDManager.Instance != null)
+                {
+                    HUDManager.Instance.itemSlotIcons[slot].enabled = false;
+                }
+            }
+            else if (!item.itemProperties.syncDiscardFunction)
+            {
+                item.playerHeldBy = null;
+            }
+            // ...
+        }
     }
 }
