@@ -134,12 +134,22 @@ namespace itolib.Behaviours.Kinematics
 
         /// <summary>
         ///     Attach if the player is alive.
+        /// </summary>
+        /// <param name="player">Player to check for attaching.</param>
+        /// <returns>Whether the player should attach or not.</returns>
+        protected override bool AttachCondition(PlayerControllerB player)
+        {
+            return !player.isPlayerDead;
+        }
+
+        /// <summary>
         ///     Detach if the player is dead, or presses the set (<c>playerAction</c>).
         /// </summary>
-        protected override void Awake()
+        /// <param name="player">Player to check for detaching.</param>
+        /// <returns>Whether the player should detach or not.</returns>
+        protected override bool DetachCondition(PlayerControllerB player)
         {
-            attachCondition = player => !player.isPlayerDead;
-            detachCondition = player => player.isPlayerDead || (actionToUnseat.Length > 0 && (playerAction == null || playerAction.IsPressed()));
+            return player.isPlayerDead || (actionToUnseat.Length > 0 && (playerAction == null || playerAction.IsPressed()));
         }
 
         /// <summary>

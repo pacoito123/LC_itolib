@@ -1,7 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
 using itolib.Util;
-using System;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -87,6 +86,12 @@ namespace itolib.Behaviours.Networking
         [SerializeField] protected bool attachLocally;
 
         /// <summary>
+        ///     Whether players should be able to attach or not, acting as a kill switch of sorts.
+        /// </summary>
+        [Tooltip("Whether players should be able to attach or not, acting as a kill switch of sorts.")]
+        public bool attachDisabled;
+
+        /// <summary>
         ///     The player that's currently attached.
         /// </summary>
         protected PlayerControllerB? attachedPlayer;
@@ -112,16 +117,6 @@ namespace itolib.Behaviours.Networking
         protected bool hasTriggered;
 
         /// <summary>
-        ///     Condition needed for the player to be attached.
-        /// </summary>
-        protected Predicate<PlayerControllerB> attachCondition = _ => true;
-
-        /// <summary>
-        ///     Condition needed for the player to be detached.
-        /// </summary>
-        protected Predicate<PlayerControllerB> detachCondition = _ => false;
-
-        /// <summary>
         ///     Define any specific default values that should be applied for an inheriting script.
         /// </summary>
         protected virtual void Reset()
@@ -137,9 +132,18 @@ namespace itolib.Behaviours.Networking
         }
 
         /// <summary>
-        ///     Define the conditions for attaching and detaching, which may vary depending on inheriting scripts.
+        ///     Define the conditions needed for the player to be attached, which may vary depending on inheriting scripts.
         /// </summary>
-        protected abstract void Awake();
+        /// <param name="player">Player to check for attaching.</param>
+        /// <returns>Whether the player should attach or not.</returns>
+        protected abstract bool AttachCondition(PlayerControllerB player);
+
+        /// <summary>
+        ///     Define the conditions needed for the player to be detached, which may vary depending on inheriting scripts.
+        /// </summary>
+        /// <param name="player">Player to check for detaching.</param>
+        /// <returns>Whether the player should detach or not.</returns>
+        protected abstract bool DetachCondition(PlayerControllerB player);
 
         /// <summary>
         ///     Start with the script disabled, as the <c>Update()</c> loop should only run while a player is attached.
@@ -201,7 +205,7 @@ namespace itolib.Behaviours.Networking
             }
 
             // Detach attached player, if the detach condition is met for the local client.
-            if (localPlayerAttached && detachCondition(attachedPlayer))
+            if (localPlayerAttached && (attachDisabled || DetachCondition(attachedPlayer)))
             {
                 DetachPlayer();
             }
@@ -214,7 +218,7 @@ namespace itolib.Behaviours.Networking
         public virtual void AttachPlayer(PlayerControllerB player)
         {
             // Check if attach condition is met.
-            if (!player.IsLocalClient() || !attachCondition(player))
+            if (attachDisabled || !player.IsLocalClient() || !AttachCondition(player))
             {
                 return;
             }

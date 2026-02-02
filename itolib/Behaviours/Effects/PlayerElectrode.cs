@@ -1,3 +1,4 @@
+using GameNetcodeStuff;
 using itolib.Behaviours.Networking;
 using UnityEngine;
 
@@ -44,12 +45,22 @@ namespace itolib.Behaviours.Effects
 
         /// <summary>
         ///     Attach if the player is alive and enabled.
+        /// </summary>
+        /// <param name="player">Player to check for attaching.</param>
+        /// <returns>Whether the player should attach or not.</returns>
+        protected override bool AttachCondition(PlayerControllerB player)
+        {
+            return !player.isPlayerDead && player.isActiveAndEnabled;
+        }
+
+        /// <summary>
         ///     Detach if the player is dead or disabled.
         /// </summary>
-        protected override void Awake()
+        /// <param name="player">Player to check for detaching.</param>
+        /// <returns>Whether the player should detach or not.</returns>
+        protected override bool DetachCondition(PlayerControllerB player)
         {
-            attachCondition = player => !player.isPlayerDead && player.isActiveAndEnabled;
-            detachCondition = player => player.isPlayerDead || !player.isActiveAndEnabled;
+            return player.isPlayerDead || !player.isActiveAndEnabled;
         }
 
         /// <summary>

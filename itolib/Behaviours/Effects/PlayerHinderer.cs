@@ -161,13 +161,23 @@ namespace itolib.Behaviours.Effects
         }
 
         /// <summary>
-        ///     Attach if the player is alive.
-        ///     Detach if the player is dead.
+        ///     Attach if the player is alive and enabled.
         /// </summary>
-        protected override void Awake()
+        /// <param name="player">Player to check for attaching.</param>
+        /// <returns>Whether the player should attach or not.</returns>
+        protected override bool AttachCondition(PlayerControllerB player)
         {
-            attachCondition = player => !player.isPlayerDead;
-            detachCondition = player => player.isPlayerDead;
+            return !player.isPlayerDead && player.isActiveAndEnabled;
+        }
+
+        /// <summary>
+        ///     Detach if the player is dead or disabled.
+        /// </summary>
+        /// <param name="player">Player to check for detaching.</param>
+        /// <returns>Whether the player should detach or not.</returns>
+        protected override bool DetachCondition(PlayerControllerB player)
+        {
+            return player.isPlayerDead || !player.isActiveAndEnabled;
         }
 
         /// <summary>

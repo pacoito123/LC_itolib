@@ -1,3 +1,4 @@
+using GameNetcodeStuff;
 using itolib.Behaviours.Networking;
 using itolib.Extensions;
 using UnityEngine;
@@ -74,14 +75,24 @@ namespace itolib.Behaviours.Kinematics
 
         /// <summary>
         ///     Attach if the player is alive, not holding a two-handed item (<c>allowTwoHanded</c>), and the player action is being held (<c>playerAction</c>).
-        ///     Detach if the player is dead, collides with an enemy (<c>detachOnEnemyCollision</c>), enters a special animation (<c>detachOnSpecialAnimation</c>),
-        ///         or stops holding the player action (<c>playerAction</c>).
         /// </summary>
-        protected override void Awake()
+        /// <param name="player">Player to check for attaching.</param>
+        /// <returns>Whether the player should attach or not.</returns>
+        protected override bool AttachCondition(PlayerControllerB player)
         {
-            attachCondition = player => !player.isPlayerDead && (allowTwoHanded || !player.twoHanded)
+            return !player.isPlayerDead && (allowTwoHanded || !player.twoHanded)
                 && (actionToHold.Length == 0 || (playerAction != null && playerAction.IsPressed()));
-            detachCondition = player => player.isPlayerDead || (detachOnEnemyCollision && player.inAnimationWithEnemy) || (detachOnSpecialAnimation
+        }
+
+        /// <summary>
+        ///     Detach if the player is dead, collides with an enemy (<c>detachOnEnemyCollision</c>), enters a special animation (<c>detachOnSpecialAnimation</c>),
+        ///     or stops holding the player action (<c>playerAction</c>).
+        /// </summary>
+        /// <param name="player">Player to check for detaching.</param>
+        /// <returns>Whether the player should detach or not.</returns>
+        protected override bool DetachCondition(PlayerControllerB player)
+        {
+            return player.isPlayerDead || (detachOnEnemyCollision && player.inAnimationWithEnemy) || (detachOnSpecialAnimation
                 && player.inSpecialInteractAnimation) || (actionToHold.Length > 0 && (playerAction == null || !playerAction.IsPressed()));
         }
 

@@ -178,12 +178,22 @@ namespace itolib.Behaviours.Kinematics
 
         /// <summary>
         ///     Attach if the player is alive and not crouching (<c>crouchingPreventsLaunch</c>).
+        /// </summary>
+        /// <param name="player">Player to check for attaching.</param>
+        /// <returns>Whether the player should attach or not.</returns>
+        protected override bool AttachCondition(PlayerControllerB player)
+        {
+            return !player.isPlayerDead && !(crouchingPreventsLaunch && player.isCrouching);
+        }
+
+        /// <summary>
         ///     Detach if the player is dead, touches the ground (<c>detachOnLand</c>), or the full force has just been applied (<c>detachOnPeak</c>).
         /// </summary>
-        protected override void Awake()
+        /// <param name="player">Player to check for detaching.</param>
+        /// <returns>Whether the player should detach or not.</returns>
+        protected override bool DetachCondition(PlayerControllerB player)
         {
-            attachCondition = player => !player.isPlayerDead && !(crouchingPreventsLaunch && player.isCrouching);
-            detachCondition = player => player.isPlayerDead || (detachOnLand && player.thisController != null && player.thisController.isGrounded)
+            return player.isPlayerDead || (detachOnLand && player.thisController != null && player.thisController.isGrounded)
                 || (detachOnPeak && launchTimer * launchSpeed > 1.0f);
         }
 
