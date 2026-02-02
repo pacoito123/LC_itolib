@@ -1,4 +1,5 @@
 using GameNetcodeStuff;
+using itolib.Behaviours.Networking;
 using itolib.Extensions;
 using Unity.Netcode;
 using UnityEngine;
@@ -221,7 +222,7 @@ namespace itolib.Behaviours.Effects
                 {
                     if (hindererCollider?.bounds.Contains(AttachedPlayer.gameplayCamera.transform.position) == true)
                     {
-                        
+
                     }
                 } */
             }
@@ -265,7 +266,7 @@ namespace itolib.Behaviours.Effects
         ///     Hinder given player for all clients, unless not spawned or attaching locally.
         /// </summary>
         /// <param name="player">Player to be hindered.</param>
-        /// <param name="stop">Whether to stop hindering the player or not.</param> 
+        /// <param name="stop">Whether to stop hindering the player or not.</param>
         private void HinderPlayer(PlayerControllerB player, bool stop)
         {
             // Check if hindering the local client.
@@ -303,7 +304,7 @@ namespace itolib.Behaviours.Effects
         ///     Hinder given player on the local client.
         /// </summary>
         /// <param name="player">Player to be hindered.</param>
-        /// <param name="stop">Whether to stop hindering the player or not.</param> 
+        /// <param name="stop">Whether to stop hindering the player or not.</param>
         private void HinderPlayerLocal(PlayerControllerB player, bool stop)
         {
             if (!stop)

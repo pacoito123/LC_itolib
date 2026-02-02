@@ -1,4 +1,4 @@
-using itolib.Behaviours.Effects;
+using itolib.Behaviours.Networking;
 using itolib.Extensions;
 using itolib.Structs;
 using UnityEngine;

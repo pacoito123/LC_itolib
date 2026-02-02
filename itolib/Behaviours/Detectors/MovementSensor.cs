@@ -1,5 +1,5 @@
 using GameNetcodeStuff;
-using itolib.Behaviours.Effects;
+using itolib.Behaviours.Networking;
 using itolib.Extensions;
 using Unity.Netcode;
 using UnityEngine;

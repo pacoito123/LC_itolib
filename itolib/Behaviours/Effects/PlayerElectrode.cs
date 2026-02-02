@@ -1,3 +1,4 @@
+using itolib.Behaviours.Networking;
 using UnityEngine;
 
 namespace itolib.Behaviours.Effects
