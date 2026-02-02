@@ -97,13 +97,15 @@ namespace itolib.Extensions
             item.parentObject = null;
             item.heldByPlayerOnServer = false;
 
+            Transform itemTransform = item.transform;
+
             if (item.isInElevator)
             {
-                item.transform.SetParent(player.playersManager.elevatorTransform, true);
+                itemTransform.SetParent(player.playersManager.elevatorTransform, true);
             }
             else
             {
-                item.transform.SetParent(player.playersManager.propsContainer, true);
+                itemTransform.SetParent(player.playersManager.propsContainer, true);
             }
 
             player.SetItemInElevator(player.isInHangarShipRoom, player.isInElevator, item);
@@ -111,12 +113,12 @@ namespace itolib.Extensions
             item.EnablePhysics(true);
             item.EnableItemMeshes(true);
 
-            item.transform.localScale = item.originalScale;
+            itemTransform.localScale = item.originalScale;
 
             item.isHeld = false;
             item.isPocketed = false;
 
-            item.startFallingPosition = item.transform.parent.InverseTransformPoint(item.transform.position);
+            item.startFallingPosition = itemTransform.GetParent().InverseTransformPoint(itemTransform.position);
             item.FallToGround(randomizePosition: true);
             item.fallTime = Random.Range(-0.3f, 0.05f);
 

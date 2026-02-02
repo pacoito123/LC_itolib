@@ -62,6 +62,8 @@ A proper write-up and documentation for all components and their intended usage 
   * **ApparatusEvent:** An event that gets invoked after an Apparatus gets pulled by a player.
   * **DelayedEvent:** An event that gets invoked after a specified amount of time, either continuously or only once (until re-enabled).
   * **HourEvent:** An event that gets invoked at a certain time of the day, when the hour changes (while enabled).
+  * **RenderEvent:** _(Niche)_ An event that gets invoked when a `Renderer` becomes visible or invisible to any `Camera` displayed on the local client.
+    * **NOTE:** Relies on Unity's `OnBecameVisible()` and `OnBecameInvisible()` calls so it might not fully work as expected, particularly with a `LODGroup`.
   * **ToggleEvent:** An event that simply has two states that can be toggled, and is synced across clients.
   * **WeightedEvent:** Invokes an event (or several) from a specified list, each with its own weighted chance of being picked.
   * **ScriptableEvent:** A `ScriptableObject` that can define an arbitrary 'global' event that can be invoked from any event callback, as long as their parameters match.

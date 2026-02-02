@@ -38,7 +38,7 @@ namespace itolib.Behaviours.Interactables
 
         /// <summary>
         ///     TODO.
-        /// </summary> 
+        /// </summary>
         public Notification() { }
 
         /// <summary>

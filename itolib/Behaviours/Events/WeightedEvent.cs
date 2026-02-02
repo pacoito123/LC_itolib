@@ -213,7 +213,7 @@ namespace itolib.Behaviours.Events
 
         /// <summary>
         ///     TODO.
-        /// </summary> 
+        /// </summary>
         public void RollFromServer()
         {
             if (!NetworkManager.Singleton.IsHost)
@@ -226,7 +226,7 @@ namespace itolib.Behaviours.Events
 
         /// <summary>
         ///     TODO.
-        /// </summary> 
+        /// </summary>
         public void RollFromClient(PlayerControllerB player)
         {
             if (!player.IsLocalClient())

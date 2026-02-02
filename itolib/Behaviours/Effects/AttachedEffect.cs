@@ -41,12 +41,12 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        private Transform currentPosition = null!;
+        private Transform currentPosition;
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        private Transform targetPosition = null!;
+        private Transform targetPosition;
 
         /// <summary>
         ///     TODO.
@@ -194,7 +194,7 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <returns></returns> 
+        /// <returns></returns>
         public override IPooledObject<Collider> CreateInstance()
         {
             AttachedEffect instance = Instantiate(effectToAttach, transform.GetParent(), false);

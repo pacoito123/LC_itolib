@@ -45,7 +45,7 @@ namespace itolib.Behaviours.Interactables
         private bool localPlayerSeated;
 
         /// <summary>
-        ///     
+        ///     TODO.
         /// </summary>
         private Vector3 playerExitPoint = Vector3.zero;
 

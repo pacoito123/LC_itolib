@@ -1,11 +1,30 @@
 # Changelog
 
+## [v0.8.1]
+
+Added a niche event, did a couple small additions and small fixes.
+
+- Added `RenderEvent`, which invokes an event callback when a `Renderer` becomes visible or invisible.
+  - Relies on Unity's `OnBecameVisible` and `OnBecameInvisible` calls so it might not fully work as expected, particularly with a `LODGroup` in the mix.
+- Added some stuff to `RigidbodyGroup`:
+  - Added functions to add force relative to the position of each `Rigidbody`.
+  - Added functions to to sleep and wake up each `Rigidbody`.
+  - Reworked all `ComponentGroup` scripts internally, too.
+- Added `attachDisabled` field to `PlayerAttachable`, which can be toggled to effectively disable `PlayerAttachable`-inheriting scripts.
+  - `PlayerAttachable` disables itself without a player attached and reenables itself when a player attaches, so turning off the script doesn't actually work to prevent players from attaching.
+- Made `ItemGrabbable` and `EventfulApparatus` invoke `onCollect` event when spawned inside the ship (for lobby reloads and/or late joins).
+- Fixed `ItemDiscardable` items not being despawned in some circumstances, with `despawnOnDiscard` enabled.
+  - Should be more reliable, in terms of networking.
+- Fixed `ExplodeEffect` erroring out when damaging other players.
+- Fixed `SunScreen` only actually working when used by interiors.
+
 ## [v0.8.0]
 
 Added a few more alert scripts and an event, did several other small tweaks and fixes.
 
 - Updated `README` to actually include ~~nearly~~ all components in the library.
   - `50+` previously unlisted ones were added, along with a short description of their intended usage.
+- Added `PlayerTracker`, which can follow players and rotate multiple objects to point towards it at configurable speeds.
 - Added `ApparatusEvent`, which simply invokes an event callback when an Apparatus is pulled by a player.
 - Added `AlertToast`, which can display a toast message to players (e.g. dropship items missed alert).
 - Added `AlertNotification`, which can display a notification message to players (e.g. new creature data alert).

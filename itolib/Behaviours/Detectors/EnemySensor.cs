@@ -104,7 +104,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
-        private int[] enemyAmounts = null!;
+        private int[] enemyAmounts;
 
         /// <summary>
         ///     TODO.
