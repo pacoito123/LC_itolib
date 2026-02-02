@@ -381,6 +381,10 @@ namespace itolib.Behaviours.Grabbables
 
                 OnApparatusActivate.Invoke();
             }
+            else
+            {
+                OnBroughtToShip();
+            }
         }
 
         /// <summary>

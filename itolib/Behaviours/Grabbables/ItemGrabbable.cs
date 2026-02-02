@@ -242,6 +242,32 @@ namespace itolib.Behaviours.Grabbables
         [field: SerializeField] public UnityEvent OnReactToSellCounter { get; set; } = new();
 
         /// <summary>
+        ///     Invoke brought to ship event callback upon being created (inside the ship).
+        /// </summary>
+        public override void Start()
+        {
+            base.Start();
+
+            if (isInShipRoom && IsHost)
+            {
+                OnBroughtToShip();
+            }
+        }
+
+        /// <summary>
+        ///     Invoke brought to ship event callback upon being spawned (inside the ship).
+        /// </summary>
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            if (isInShipRoom && !IsHost)
+            {
+                OnBroughtToShip();
+            }
+        }
+
+        /// <summary>
         ///     Save the item's mesh or material variant index.
         /// </summary>
         /// <returns>The item's variant index, or <c>-1</c> if no variants are set.</returns>
