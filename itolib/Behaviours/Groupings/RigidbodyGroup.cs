@@ -102,6 +102,27 @@ namespace itolib.Behaviours.Groupings
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="rigidbody"></param>
+        /// <param name="enabled"></param>
+        protected override void EnableSingleComponent(Rigidbody rigidbody, bool enabled)
+        {
+            rigidbody.isKinematic = !enabled;
+            rigidbody.detectCollisions = enabled;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="rigidbody"></param>
+        protected override void ToggleSingleComponent(Rigidbody rigidbody)
+        {
+            rigidbody.isKinematic = !rigidbody.isKinematic;
+            rigidbody.detectCollisions = !rigidbody.isKinematic; // Detect collisions only when not kinematic.
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="acceleration"></param>
         public void ApplyContinuousAcceleration(Vector3 acceleration)
         {

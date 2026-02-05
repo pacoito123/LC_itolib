@@ -36,6 +36,12 @@ namespace itolib.Behaviours.Groupings
         [SerializeField] private GameObject[]? objectsToSearch;
 
         /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Tooltip("")]
+        [SerializeField] private string[]? tagsToIgnore;
+
+        /// <summary>
         ///     Desired <c>ActivationTime</c> for the <c><typeparamref name="T"/></c> search.
         /// </summary>
         [field: Tooltip($"Desired activation time for the {nameof(T)} search.")]
@@ -85,6 +91,11 @@ namespace itolib.Behaviours.Groupings
                 }
             }
 
+            for (int i = 0; i < tagsToIgnore?.Length; i++)
+            {
+                _ = uniqueComponents.RemoveWhere(component => component.CompareTag(tagsToIgnore[i]));
+            }
+
             components = [.. uniqueComponents];
         }
 
@@ -122,6 +133,77 @@ namespace itolib.Behaviours.Groupings
         /// <param name="actionID"></param>
         /// <param name="parameter"></param>
         protected abstract void PerformSingleAction(T component, Enum actionID, object? parameter = null);
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="enabled"></param>
+        public void EnableComponents(bool enabled)
+        {
+            EnableGroupComponents(enabled);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="enabled"></param>
+        protected void EnableGroupComponents(bool enabled)
+        {
+            for (int i = 0; i < components?.Length; i++)
+            {
+                T? component = components[i];
+
+                if (component != null)
+                {
+                    EnableSingleComponent(component, enabled);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="component"></param>
+        /// <param name="enabled"></param>
+        protected abstract void EnableSingleComponent(T component, bool enabled);
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public void ToggleComponents()
+        {
+            for (int i = 0; i < components?.Length; i++)
+            {
+                T? component = components[i];
+
+                if (component != null)
+                {
+                    ToggleSingleComponent(component);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        protected void ToggleGroupComponents()
+        {
+            for (int i = 0; i < components?.Length; i++)
+            {
+                T? component = components[i];
+
+                if (component != null)
+                {
+                    ToggleSingleComponent(component);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="component"></param>
+        protected abstract void ToggleSingleComponent(T component);
 
         /// <summary>
         ///     <c>DunGen</c> listener called when the Dungeon finishes generating.

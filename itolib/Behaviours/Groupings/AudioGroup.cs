@@ -97,6 +97,25 @@ namespace itolib.Behaviours.Groupings
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="source"></param>
+        /// <param name="enabled"></param>
+        protected override void EnableSingleComponent(AudioSource source, bool enabled)
+        {
+            source.enabled = enabled;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="source"></param>
+        protected override void ToggleSingleComponent(AudioSource source)
+        {
+            source.enabled = !source.enabled;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         public void PlayAll()
         {
             PerformGroupAction(AudioActions.Play);
