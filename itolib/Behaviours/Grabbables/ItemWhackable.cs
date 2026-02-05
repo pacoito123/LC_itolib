@@ -31,7 +31,7 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Header("Item Whackable")]
         [Tooltip("")]
-        [SerializeField] private GrabbableObject item = null!;
+        [SerializeField] private GrabbableObject? item;
 
         /// <summary>
         ///     TODO.
@@ -201,7 +201,7 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
-        private int variantIndex;
+        private IEventfulItem? eventfulSelf;
 
         /// <summary>
         ///     TODO.
@@ -229,7 +229,7 @@ namespace itolib.Behaviours.Grabbables
             eventfulItem.OnActivate.AddListener(ItemActivate);
             eventfulItem.OnDiscardEarly.AddListener(DiscardItemEarly);
 
-            variantIndex = eventfulItem.VariantIndex;
+            eventfulSelf = eventfulItem;
         }
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace itolib.Behaviours.Grabbables
             hitBuffer = new RaycastHit[maxObjectHits];
             hitEnemies = new(maxObjectHits);
 
-            waitUntilReelingStop = new WaitUntil(() => !isHoldingButton || !item.isHeld);
+            waitUntilReelingStop = new WaitUntil(() => !isHoldingButton || item == null || !item.isHeld);
         }
 
         /// <summary>
@@ -250,7 +250,7 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="buttonDown"></param>
         private void ItemActivate(bool used, bool buttonDown)
         {
-            if (item.playerHeldBy == null)
+            if (item == null || item.playerHeldBy == null)
             {
                 return;
             }
@@ -277,7 +277,7 @@ namespace itolib.Behaviours.Grabbables
         /// <returns></returns>
         private IEnumerator HandleWhacking()
         {
-            if (lastHeldBy == null)
+            if (lastHeldBy == null || lastHeldBy.playerBodyAnimator == null)
             {
                 yield break;
             }
@@ -295,7 +295,7 @@ namespace itolib.Behaviours.Grabbables
 
             // Handle swing.
             lastHeldBy.playerBodyAnimator.SetBool(reelingUpID, false);
-            if (item.isHeld)
+            if (item != null && item.isHeld)
             {
                 onWeaponSwing.Invoke();
                 lastHeldBy.UpdateSpecialAnimationValue(true, (short)lastHeldBy.transform.localEulerAngles.y, 0.4f, false);
@@ -338,7 +338,7 @@ namespace itolib.Behaviours.Grabbables
 
             lastHeldBy.activatingItem = false;
 
-            if (!item.isHeld)
+            if (item == null || !item.isHeld)
             {
                 return;
             }
@@ -351,7 +351,12 @@ namespace itolib.Behaviours.Grabbables
             bool weaponHit = false, enemyHit = false, playerHit = false;
             int surfaceIndex = -1;
 
-            Transform gameplayCamera = lastHeldBy.gameplayCamera.transform;
+            Transform? gameplayCamera = lastHeldBy.gameplayCamera != null ? lastHeldBy.gameplayCamera.transform : null;
+
+            if (gameplayCamera == null)
+            {
+                return;
+            }
 
             // TODO: Parameterize hit position, radius, and distance.
             objectsHit = Physics.SphereCastNonAlloc(gameplayCamera.position + (-0.35f * gameplayCamera.right), 0.8f,
@@ -445,9 +450,19 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="surfaceIndex"></param>
         private void WeaponHitLocal(bool enemyHit, int surfaceIndex)
         {
-            if (variantIndex < 0)
+            if (eventfulSelf == null)
             {
-                if (item.IsOwner)
+                if (item is not IEventfulItem eventfulItem)
+                {
+                    return;
+                }
+
+                eventfulSelf = eventfulItem;
+            }
+
+            if (eventfulSelf.VariantIndex < 0)
+            {
+                if (item != null && item.playerHeldBy != null && item.playerHeldBy.IsLocalClient())
                 {
                     onWeaponHitLocal.Invoke();
                 }
@@ -456,17 +471,17 @@ namespace itolib.Behaviours.Grabbables
             }
             else
             {
-                if (item.IsOwner)
+                if (item != null && item.playerHeldBy != null && item.playerHeldBy.IsLocalClient())
                 {
-                    onWeaponHitVariantLocal.Invoke(variantIndex);
+                    onWeaponHitVariantLocal.Invoke(eventfulSelf.VariantIndex);
                 }
 
-                onWeaponHitVariant.Invoke(variantIndex);
+                onWeaponHitVariant.Invoke(eventfulSelf.VariantIndex);
             }
 
             if (!enemyHit && surfaceIndex != -1)
             {
-                if (item.IsOwner)
+                if (item != null && item.playerHeldBy != null && item.playerHeldBy.IsLocalClient())
                 {
                     onSurfaceHitLocal.Invoke(surfaceIndex);
                 }

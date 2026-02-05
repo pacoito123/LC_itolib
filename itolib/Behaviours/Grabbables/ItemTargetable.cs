@@ -182,6 +182,11 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        private IEventfulItem? eventfulSelf;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         protected abstract void Reset();
 
         /// <summary>
@@ -205,6 +210,8 @@ namespace itolib.Behaviours.Grabbables
             eventfulItem.OnEnemyGrab.AddListener(eventfulItem.ResetCurveOverride);
 
             eventfulItem.FallWithCurveOverride = FallWithCurve;
+
+            eventfulSelf = eventfulItem;
         }
 
         /// <summary>
@@ -309,10 +316,17 @@ namespace itolib.Behaviours.Grabbables
                 itemTransform = item.transform;
             }
 
-            if (item is IEventfulItem eventfulItem)
+            if (eventfulSelf == null)
             {
-                eventfulItem.FallWithCurveOverride = FallWithCurve;
+                if (item is not IEventfulItem eventfulItem)
+                {
+                    return;
+                }
+
+                eventfulSelf = eventfulItem;
             }
+
+            eventfulSelf.FallWithCurveOverride = FallWithCurve;
 
             item.fallTime = 0.0f;
             item.hasHitGround = false;
