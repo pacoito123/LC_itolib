@@ -14,13 +14,21 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         [Header("Connected Rope")]
         [Tooltip("")]
-        [SerializeField] private LineRenderer lineRenderer = null!;
+        [SerializeField] private LineRenderer lineRenderer;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
         [SerializeField] private Transform?[]? connectedPoints;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(5.0f)]
+        [Header("Other")]
+        [Tooltip("")]
+        [SerializeField] private bool disableWhenCulled = true;
 
         /// <summary>
         ///     TODO.
@@ -40,11 +48,6 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         private void Awake()
         {
-            if (lineRenderer == null)
-            {
-                lineRenderer = GetComponent<LineRenderer>();
-            }
-
             positions = new Vector3[connectedPoints?.Length ?? 1];
         }
 
@@ -53,12 +56,11 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         private void OnEnable()
         {
-            if (connectedPoints == null || connectedPoints.Length == 0 || connectedPoints.Length > lineRenderer.positionCount)
+            if (lineRenderer == null || !TryGetComponent(out lineRenderer)
+                || connectedPoints == null || connectedPoints.Length == 0 || connectedPoints.Length > lineRenderer.positionCount)
             {
-                // TODO: Log warning.
+                Plugin.StaticLogger.LogWarning($"Could not find LineRenderer for ConnectedRope component in GameObject '{gameObject.name}'.");
                 enabled = false;
-
-                return;
             }
         }
 
@@ -75,6 +77,34 @@ namespace itolib.Behaviours.Animations
             }
 
             lineRenderer.SetPositions(positions);
+        }
+
+        /// <summary>
+        ///     Handle invoking event upon the <c>LineRenderer</c> becoming visible.
+        /// </summary>
+        private void OnBecameVisible()
+        {
+            // Check if called from Editor.
+            if (Application.isEditor || !disableWhenCulled)
+            {
+                return;
+            }
+
+            enabled = true;
+        }
+
+        /// <summary>
+        ///     Handle invoking event upon the <c>LineRenderer</c> becoming invisible.
+        /// </summary>
+        private void OnBecameInvisible()
+        {
+            // Check if called from Editor.
+            if (Application.isEditor || !disableWhenCulled)
+            {
+                return;
+            }
+
+            enabled = false;
         }
 
         /// <summary>
