@@ -86,12 +86,6 @@ namespace itolib.Behaviours.Networking
         [SerializeField] protected bool attachLocally;
 
         /// <summary>
-        ///     Whether players should be able to attach or not, acting as a kill switch of sorts.
-        /// </summary>
-        [Tooltip("Whether players should be able to attach or not, acting as a kill switch of sorts.")]
-        public bool attachDisabled;
-
-        /// <summary>
         ///     The player that's currently attached.
         /// </summary>
         protected PlayerControllerB? attachedPlayer;
@@ -115,6 +109,11 @@ namespace itolib.Behaviours.Networking
         ///     Whether or not a player has attached once already.
         /// </summary>
         protected bool hasTriggered;
+
+        /// <summary>
+        ///     Whether players should be able to attach or not, acting as a kill switch of sorts.
+        /// </summary>
+        protected bool attachDisabled;
 
         /// <summary>
         ///     Define any specific default values that should be applied for an inheriting script.
@@ -415,6 +414,15 @@ namespace itolib.Behaviours.Networking
 
             // Despawn parent NetworkObject on the server.
             DespawnNetworkObjectRpc();
+        }
+
+        /// <summary>
+        ///     Enable or disable players being able to attach.
+        /// </summary>
+        /// <param name="enabled">Whether attaching should be enabled or not.</param>
+        public void EnableAttaching(bool enabled)
+        {
+            attachDisabled = !enabled;
         }
     }
 }
