@@ -82,7 +82,8 @@ namespace itolib.Behaviours.Detectors
         protected override void Start()
         {
             // Try obtain player action that triggers this sensor.
-            if (!GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToTrigger))
+            if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null
+                || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToTrigger))
             {
                 Plugin.StaticLogger.LogWarning($"Could not find movement action '{actionToTrigger}' defined for MovementSensor component in '{name}'!");
             }
@@ -96,7 +97,8 @@ namespace itolib.Behaviours.Detectors
         private void OnEnable()
         {
             // Try obtain player action that triggers this sensor, if it happens to be missing.
-            if (playerAction == null && !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToTrigger))
+            if (playerAction == null && (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null
+                || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToTrigger)))
             {
                 Plugin.StaticLogger.LogWarning($"Could not find movement action '{actionToTrigger}' defined for MovementSensor component in '{name}'!");
 
@@ -128,8 +130,8 @@ namespace itolib.Behaviours.Detectors
                     return;
                 }
 
-                // Check if the player action to detect was not pressed, or stopped being held.
-                if (playerAction == null || (holdAction && !playerAction.IsPressed()) || (!holdAction && !playerAction.WasPerformedThisFrame()))
+                // Check if the player action stopped being held, if set as a hold action.
+                if (!holdAction || playerAction == null || !playerAction.IsPressed())
                 {
                     return;
                 }
@@ -140,17 +142,77 @@ namespace itolib.Behaviours.Detectors
                     return;
                 }
 
-                // Invoke movement detected event on the local client.
-                onMovementDetected.Invoke(attachedPlayer);
+                // Trigger movement detection.
+                PlayerMoved(attachedPlayer);
+            }
+        }
 
-                if (IsSpawned) // TODO: Separate local effect field?
+        /// <summary>
+        ///     Attach player on the local client.
+        /// </summary>
+        /// <param name="player">Player to attach.</param>
+        public override void AttachPlayerLocal(PlayerControllerB player)
+        {
+            base.AttachPlayerLocal(player);
+
+            if (localPlayerAttached && !holdAction && playerAction != null)
+            {
+                // Subscribe to the action starting event, if not set as a hold action.
+                playerAction.started += PlayerMoved;
+            }
+        }
+
+        /// <summary>
+        ///     Detach player on the local client.
+        /// </summary>
+        public override void DetachPlayerLocal()
+        {
+            if (localPlayerAttached && !holdAction && playerAction != null)
+            {
+                // Unsubscribe to the action starting event, if not set as a hold action.
+                playerAction.started -= PlayerMoved;
+            }
+
+            base.DetachPlayerLocal();
+        }
+
+        /// <summary>
+        ///     Trigger movement detection from an attached player.
+        /// </summary>
+        private void PlayerMoved(InputAction.CallbackContext _)
+        {
+            if (localPlayerAttached && attachedPlayer != null)
+            {
+                // Check if detection is currently on cooldown.
+                if (timer < triggerInterval)
                 {
-                    // Send movement detection to all other clients.
-                    PlayerMovedRpc(attachedPlayer);
+                    return;
                 }
 
-                // Reset cooldown timer after triggering.
-                timer = 0.0f;
+                // Check if the player does not have enough stamina to trigger detection, if set to require stamina.
+                if (actionRequiresStamina && attachedPlayer.isExhausted)
+                {
+                    return;
+                }
+
+                // Trigger movement detection from the attached player.
+                PlayerMoved(attachedPlayer);
+            }
+        }
+
+        /// <summary>
+        ///     Trigger movement detection from an attached player.
+        /// </summary>
+        /// <param name="player">Player whose movement was detected.</param>
+        protected virtual void PlayerMoved(PlayerControllerB player)
+        {
+            // Trigger movement detection on the local client.
+            PlayerMovedLocal(player);
+
+            if (IsSpawned) // TODO: Separate local effect field?
+            {
+                // Send movement detection to all other clients.
+                PlayerMovedRpc(player);
             }
         }
 
@@ -163,8 +225,24 @@ namespace itolib.Behaviours.Detectors
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
-                // Invoke movement detected event on the local client.
-                onMovementDetected.Invoke(player);
+                // Trigger movement detection on the local client.
+                PlayerMovedLocal(player);
+            }
+        }
+
+        /// <summary>
+        ///     Trigger movement detection on the local client.
+        /// </summary>
+        /// <param name="player">Player whose movement was detected.</param>
+        protected virtual void PlayerMovedLocal(PlayerControllerB player)
+        {
+            // Invoke movement detected callback, with the detected player as parameter.
+            onMovementDetected.Invoke(player);
+
+            if (localPlayerAttached || !attachLocally)
+            {
+                // Reset cooldown timer after triggering.
+                timer = 0.0f;
             }
         }
     }

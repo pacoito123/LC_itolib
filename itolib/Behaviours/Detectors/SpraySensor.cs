@@ -2,7 +2,6 @@ using GameNetcodeStuff;
 using itolib.Extensions;
 using System;
 using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -99,12 +98,6 @@ namespace itolib.Behaviours.Detectors
         [SerializeField] private float proximityRange = -1.0f;
 
         /// <summary>
-        ///     Callback invoked when a spray is successfully detected, with the player in question as parameter.
-        /// </summary>
-        [Tooltip("Callback invoked when a spray is successfully detected, with the player in question as parameter.")]
-        [SerializeField] private UnityEvent<PlayerControllerB> onSprayPerformed = new();
-
-        /// <summary>
         ///     <c>LayerMask</c> for all layers that should block spray detection.
         /// </summary>
         [Space(10f)]
@@ -146,9 +139,6 @@ namespace itolib.Behaviours.Detectors
             // Sort thresholds by lowest to greatest number of sprays required.
             sprayThresholds.Sort((thresholdA, thresholdB) => thresholdB.spraysRequired - thresholdA.spraysRequired);
 
-            // Add spray performed function to the movement detected callback.
-            onMovementDetected.AddListener(PerformSpray);
-
             base.Start();
         }
 
@@ -156,16 +146,10 @@ namespace itolib.Behaviours.Detectors
         ///     Trigger spray detection from an attached player.
         /// </summary>
         /// <param name="player">Player whose spraying was detected.</param>
-        private void PerformSpray(PlayerControllerB player)
+        protected override void PlayerMoved(PlayerControllerB player)
         {
-            // Check if player is not the local client.
-            if (player == null || !player.IsLocalClient())
-            {
-                return;
-            }
-
-            // Check if player is not holding an item.
-            if (player.throwingObject || !player.isHoldingObject || player.currentlyHeldObjectServer == null)
+            // Check if player is not holding an item or is unable to use it for any reason.
+            if (player.throwingObject || !player.CanUseItem())
             {
                 return;
             }
@@ -178,44 +162,24 @@ namespace itolib.Behaviours.Detectors
             }
 
             // Check if the player is within range and has unobstructed line of sight with the sensor.
-            if (player.HasLineOfSightToPosition(transform.position, sprayAngle, sprayRange, proximityRange, layerMask))
+            if (!player.HasLineOfSightToPosition(transform.position, sprayAngle, sprayRange, proximityRange, layerMask))
             {
-                // Trigger spray detection on the local client.
-                PerformedSprayLocal(player);
-
-                if (IsSpawned) // TODO: Separate local field?
-                {
-                    // Send spray detection to all other clients.
-                    PerformedSprayRpc(player);
-                }
+                return;
             }
+
+            base.PlayerMoved(player);
         }
 
         /// <summary>
-        ///     Trigger spray detection on all other clients.
-        /// </summary>
-        /// <param name="playerReference">Network reference of the detected player.</param>
-        [Rpc(SendTo.NotMe, RequireOwnership = false)]
-        private void PerformedSprayRpc(NetworkBehaviourReference playerReference)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player))
-            {
-                // Trigger spray detection on the local client.
-                PerformedSprayLocal(player);
-            }
-        }
-
-        /// <summary>
-        ///     Trigger spray detection on the local client.
+        ///     Trigger spray detection from an attached player on the local client.
         /// </summary>
         /// <param name="player">Player whose spraying was detected.</param>
-        private void PerformedSprayLocal(PlayerControllerB player)
+        protected override void PlayerMovedLocal(PlayerControllerB player)
         {
+            base.PlayerMovedLocal(player);
+
             // Increment amount of times sprayed.
             timesSprayed++;
-
-            // Invoke spray performed callback, with the detected player as parameter.
-            onSprayPerformed.Invoke(player);
 
             // Check all spray thresholds.
             foreach (SprayThreshold sprayThreshold in sprayThresholds)

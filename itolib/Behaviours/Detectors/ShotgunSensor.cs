@@ -1,9 +1,7 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
 using System;
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace itolib.Behaviours.Detectors
 {
@@ -35,12 +33,6 @@ namespace itolib.Behaviours.Detectors
         [SerializeField] private float proximityRange = -1.0f;
 
         /// <summary>
-        ///     Callback invoked when a shot is successfully detected, with the player in question as parameter.
-        /// </summary>
-        [Tooltip("Callback invoked when a shot is successfully detected, with the player in question as parameter.")]
-        [SerializeField] private UnityEvent<PlayerControllerB> onShotPerformed = new();
-
-        /// <summary>
         ///     <c>LayerMask</c> for all layers that should block shot detection.
         /// </summary>
         [Space(10f)]
@@ -70,76 +62,30 @@ namespace itolib.Behaviours.Detectors
         }
 
         /// <summary>
-        ///     Handle additional initialization.
-        /// </summary>
-        protected override void Start()
-        {
-            // Add shot performed function to the movement detected callback.
-            onMovementDetected.AddListener(PerformShot);
-
-            base.Start();
-        }
-
-        /// <summary>
         ///     Trigger shot detection from an attached player.
         /// </summary>
         /// <param name="player">Player whose shooting was detected.</param>
-        private void PerformShot(PlayerControllerB player)
+        protected override void PlayerMoved(PlayerControllerB player)
         {
-            // Check if player is not the local client.
-            if (player == null || !player.IsLocalClient())
+            // Check if player is not holding an item or is unable to use it for any reason.
+            if (player.throwingObject || !player.CanUseItem())
             {
                 return;
             }
 
-            // Check if player is not holding an item.
-            if (player.throwingObject || !player.isHoldingObject || player.currentlyHeldObjectServer == null)
-            {
-                return;
-            }
-
-            // Check if the item being activated is not a shotgun, or the shotgun is reloading, has no shells, or has its safety enabled.
-            if (player.currentlyHeldObjectServer is not ShotgunItem shotgun || shotgun.isReloading || shotgun.shellsLoaded == 0 || shotgun.safetyOn)
+            // Check if the item being activated is not a shotgun, or the shotgun is reloading, has no shells, has its safety enabled, or is on cooldown.
+            if (player.currentlyHeldObjectServer is not ShotgunItem shotgun || shotgun.isReloading || shotgun.shellsLoaded == 0 || shotgun.safetyOn || shotgun.currentUseCooldown > 0.0f)
             {
                 return;
             }
 
             // Check if the player is within range and has unobstructed line of sight with the sensor.
-            if (player.HasLineOfSightToPosition(transform.position, shootAngle, shootRange, proximityRange, layerMask))
+            if (!player.HasLineOfSightToPosition(transform.position, shootAngle, shootRange, proximityRange, layerMask))
             {
-                // Trigger shot detection on the local client.
-                PerformedShotLocal(player);
-
-                if (IsSpawned) // TODO: Separate local field?
-                {
-                    // Send shot detection to all other clients.
-                    PerformedShotRpc(player);
-                }
+                return;
             }
-        }
 
-        /// <summary>
-        ///     Trigger shot detection on all other clients.
-        /// </summary>
-        /// <param name="playerReference">Network reference of the detected player.</param>
-        [Rpc(SendTo.NotMe, RequireOwnership = false)]
-        private void PerformedShotRpc(NetworkBehaviourReference playerReference)
-        {
-            if (playerReference.TryGet(out PlayerControllerB player))
-            {
-                // Trigger shot detection on the local client.
-                PerformedShotLocal(player);
-            }
-        }
-
-        /// <summary>
-        ///     Trigger shot detection on the local client.
-        /// </summary>
-        /// <param name="player">Player whose shooting was detected.</param>
-        private void PerformedShotLocal(PlayerControllerB player)
-        {
-            // Invoke shot performed callback, with the detected player as parameter.
-            onShotPerformed.Invoke(player);
+            base.PlayerMoved(player);
         }
     }
 }

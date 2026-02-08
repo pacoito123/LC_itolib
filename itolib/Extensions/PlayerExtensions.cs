@@ -66,9 +66,11 @@ namespace itolib.Extensions
             if (player.playerActions != null && player.playerActions.m_Movement != null)
             {
                 playerAction = player.playerActions.m_Movement.FindAction(actionId);
+
+                return true;
             }
 
-            return playerAction != null;
+            return false;
         }
 
         /// <summary>
