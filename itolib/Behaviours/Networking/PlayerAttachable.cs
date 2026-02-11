@@ -24,13 +24,13 @@ namespace itolib.Behaviours.Networking
         ///     Whether players can attach multiple times to the same object or not.
         /// </summary>
         [Tooltip("Whether players can attach multiple times to the same object or not.")]
-        [SerializeField] protected bool triggerOnce;
+        [SerializeField] private bool triggerOnce;
 
         /// <summary>
         ///     Whether players automatically attach upon entering the attach region or not.
         /// </summary>
         [Tooltip("Whether players automatically attach upon entering the attach region or not.")]
-        [SerializeField] protected bool attachOnEnter = true;
+        [SerializeField] private bool attachOnEnter = true;
 
         /// <summary>
         ///     Callback invoked immediately before a player detaches, with the player in question as parameter.
@@ -44,7 +44,7 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         [Tooltip("Delay in seconds until the player is forcibly detached. Can be left at '0' to attach to the player for an indefinite amount of time.")]
         [Min(0.0f)]
-        [SerializeField] protected float detachTimer;
+        [SerializeField] private float detachTimer;
 
         /// <summary>
         ///     Whether players automatically detach upon leaving the attach region or not.
@@ -57,7 +57,7 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         [Header("Despawn")]
         [Tooltip("Parent NetworkObject to attempt to despawn once detached, if set to despawn upon detaching.")]
-        [SerializeField] protected NetworkObject? parentNetworkObject;
+        [SerializeField] private NetworkObject? parentNetworkObject;
 
         /// <summary>
         ///     Callback invoked immediately before despawning.
@@ -69,14 +69,14 @@ namespace itolib.Behaviours.Networking
         ///     Whether the specified parent <c>NetworkObject</c> should despawn after the player detaches or not.
         /// </summary>
         [Tooltip("Whether the specified parent NetworkObject should despawn after the player detaches or not.")]
-        [SerializeField] protected bool despawnOnDetach;
+        [SerializeField] private bool despawnOnDetach;
 
         /// <summary>
         ///     Delay in seconds until despawning after detaching the player, to allow effects to play.
         /// </summary>
         [Tooltip("Delay in seconds until despawning after detaching the player, to allow effects to play.")]
         [Min(0.0f)]
-        [SerializeField] protected float despawnTimer;
+        [SerializeField] private float despawnTimer;
 
         /// <summary>
         ///     Whether players attach locally or not, otherwise only one player can attach at a time.
@@ -104,11 +104,6 @@ namespace itolib.Behaviours.Networking
         ///     Whether or not the local player is attached.
         /// </summary>
         protected bool localPlayerAttached;
-
-        /// <summary>
-        ///     Whether or not a player has attached once already.
-        /// </summary>
-        protected bool hasTriggered;
 
         /// <summary>
         ///     Whether players should be able to attach or not, acting as a kill switch of sorts.
@@ -216,14 +211,20 @@ namespace itolib.Behaviours.Networking
         /// <param name="player">Player to attach.</param>
         public virtual void AttachPlayer(PlayerControllerB player)
         {
+            // Check if attaching is disabled.
+            if (attachDisabled)
+            {
+                return;
+            }
+
             // Check if attach condition is met.
-            if (attachDisabled || !player.IsLocalClient() || !AttachCondition(player))
+            if (!player.IsLocalClient() || !AttachCondition(player))
             {
                 return;
             }
 
             // Check if the player attaching should be sent to all clients.
-            if (!IsSpawned || attachLocally)
+            if (attachLocally || !IsSpawned)
             {
                 // Attach player on the local client.
                 AttachPlayerLocal(player);
@@ -253,7 +254,7 @@ namespace itolib.Behaviours.Networking
         ///     Attach the given player on all clients.
         /// </summary>
         /// <param name="playerReference">Network reference of the player to attach.</param>
-        [Rpc(SendTo.ClientsAndHost)]
+        [Rpc(SendTo.ClientsAndHost, RequireOwnership = true)]
         private void AttachPlayerClientRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
@@ -277,18 +278,16 @@ namespace itolib.Behaviours.Networking
         /// <param name="player">Player to attach.</param>
         public virtual void AttachPlayerLocal(PlayerControllerB player)
         {
-            // Check if a player has attached once already.
-            if (triggerOnce)
+            // Check if attaching is disabled.
+            if (attachDisabled)
             {
-                if (!hasTriggered)
-                {
-                    // Set as already having been attached to.
-                    hasTriggered = true;
-                }
-                else
-                {
-                    return;
-                }
+                return;
+            }
+
+            // Check if attach condition is met, when attaching locally.
+            if (attachLocally && (!player.IsLocalClient() || !AttachCondition(player)))
+            {
+                return;
             }
 
             // Set whether or not the local player is attached.
@@ -364,6 +363,12 @@ namespace itolib.Behaviours.Networking
             {
                 // Invoke detach event.
                 onDetach.Invoke(attachedPlayer);
+
+                if (triggerOnce)
+                {
+                    // Disable attaching after triggering once, if set to do so.
+                    EnableAttaching(false);
+                }
             }
 
             // Remove attached player.
@@ -374,6 +379,63 @@ namespace itolib.Behaviours.Networking
 
             // Disable update loop.
             enabled = false;
+        }
+
+        /// <summary>
+        ///     Switch player to attach for all clients, unless already attached or no player is attached.
+        /// </summary>
+        /// <param name="player">Player to attach.</param>
+        public void TransferPlayer(PlayerControllerB player)
+        {
+            // Check if attaching is disabled, or attaching locally.
+            if (attachDisabled || attachLocally)
+            {
+                return;
+            }
+
+            // Check if attach condition is met.
+            if (!player.IsLocalClient() || !AttachCondition(player))
+            {
+                return;
+            }
+
+            // Check if attached player is eligible to be transferred.
+            if (!localPlayerAttached && attachedPlayer != null && IsSpawned)
+            {
+                // Transfer player on all clients.
+                TransferPlayerServerRpc(player);
+            }
+        }
+
+        /// <summary>
+        ///     Switch player to attach on the server.
+        /// </summary>
+        /// <param name="playerReference">Network reference of the player to attach.</param>
+        [Rpc(SendTo.Server, RequireOwnership = false)]
+        private void TransferPlayerServerRpc(NetworkBehaviourReference playerReference)
+        {
+            if (attachedPlayer != null)
+            {
+                // Attach the player on all clients.
+                TransferPlayerClientRpc(playerReference);
+            }
+        }
+
+        /// <summary>
+        ///     Switch player to attach on all other clients.
+        /// </summary>
+        /// <param name="playerReference">Network reference of the player to attach.</param>
+        [Rpc(SendTo.ClientsAndHost, RequireOwnership = true)]
+        private void TransferPlayerClientRpc(NetworkBehaviourReference playerReference)
+        {
+            if (playerReference.TryGet(out PlayerControllerB player))
+            {
+                // Detach the player on the local client.
+                DetachPlayerLocal();
+
+                // Attach the player on the local client.
+                AttachPlayerLocal(player);
+            }
         }
 
         /// <summary>
@@ -423,6 +485,14 @@ namespace itolib.Behaviours.Networking
         public void EnableAttaching(bool enabled)
         {
             attachDisabled = !enabled;
+        }
+
+        /// <summary>
+        ///     Toggle players being able to attach.
+        /// </summary>
+        public void ToggleAttaching()
+        {
+            attachDisabled = !attachDisabled;
         }
     }
 }
