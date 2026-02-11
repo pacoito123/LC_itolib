@@ -247,7 +247,10 @@ namespace itolib.Behaviours.Props
         /// <param name="spawnLocation"></param>
         private void SummonFish(Transform spawnLocation)
         {
-            SummonFish(spawnLocation.position, !useLocalRotation ? spawnLocation.rotation : spawnLocation.localRotation);
+            Transform? parent = parentToSelf ? spawnLocation : ((RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null)
+                    ? RoundManager.Instance.mapPropsContainer.transform : null);
+
+            SummonFish(spawnLocation.position, !useLocalRotation ? spawnLocation.rotation : spawnLocation.localRotation, parent);
         }
 
         /// <summary>
@@ -261,7 +264,10 @@ namespace itolib.Behaviours.Props
             Transform spawnTransform = spawnArea.transform;
             Vector3 spawnPosition = spawnTransform.TransformPoint(point + spawnArea.center);
 
-            SummonFish(spawnPosition, !useLocalRotation ? spawnTransform.rotation : spawnTransform.localRotation);
+            Transform? parent = parentToSelf ? spawnTransform : ((RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null)
+                    ? RoundManager.Instance.mapPropsContainer.transform : null);
+
+            SummonFish(spawnPosition, !useLocalRotation ? spawnTransform.rotation : spawnTransform.localRotation, parent);
         }
 
         /// <summary>
@@ -269,15 +275,13 @@ namespace itolib.Behaviours.Props
         /// </summary>
         /// <param name="spawnPosition"></param>
         /// <param name="spawnRotation"></param>
-        private void SummonFish(Vector3 spawnPosition, Quaternion spawnRotation)
+        /// <param name="spawnParent"></param>
+        private void SummonFish(Vector3 spawnPosition, Quaternion spawnRotation, Transform? spawnParent)
         {
             if (FishBowl != null)
             {
-                Transform? parent = parentToSelf ? transform : ((RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null)
-                    ? RoundManager.Instance.mapPropsContainer.transform : null);
-
                 GameObject fishBowl = Instantiate(FishBowl, spawnPosition, spawnRotation * Quaternion.Euler(-90.0f, 0.0f, 0.0f));
-                fishBowl.transform.SetParent(parent);
+                fishBowl.transform.SetParent(spawnParent);
 
                 if (!includeBowl && fishBowl.TryGetComponent(out MeshFilter fishBowlMesh)
                     && fishBowl.TryGetComponent(out MeshRenderer fishBowlRenderer))
