@@ -14,8 +14,8 @@ namespace itolib.Behaviours.Groupings
         /// </summary>
         private enum RendererActions
         {
-            ReceiveShadowsAll,
-            SetShadowCastingModeAll
+            ReceiveShadows,
+            SetShadowCastingMode
         }
 
         /// <summary>
@@ -33,10 +33,10 @@ namespace itolib.Behaviours.Groupings
 
             switch (rendererActionID)
             {
-                case RendererActions.ReceiveShadowsAll:
+                case RendererActions.ReceiveShadows:
                     renderer.receiveShadows = parameter is true;
                     break;
-                case RendererActions.SetShadowCastingModeAll:
+                case RendererActions.SetShadowCastingMode:
                     if (parameter is ShadowCastingMode mode)
                     {
                         renderer.shadowCastingMode = mode;
@@ -53,7 +53,7 @@ namespace itolib.Behaviours.Groupings
         /// <param name="enabled"></param>
         public void ReceiveShadowsAll(bool enabled)
         {
-            PerformGroupAction(RendererActions.ReceiveShadowsAll, enabled);
+            PerformGroupAction(RendererActions.ReceiveShadows, enabled);
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace itolib.Behaviours.Groupings
         {
             if (Enum.IsDefined(typeof(ShadowCastingMode), mode))
             {
-                PerformGroupAction(RendererActions.SetShadowCastingModeAll, mode);
+                PerformGroupAction(RendererActions.SetShadowCastingMode, mode);
             }
         }
 
