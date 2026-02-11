@@ -33,6 +33,12 @@ namespace itolib.Behaviours.Kinematics
         [SerializeField] private bool rotateWithPlayer;
 
         /// <summary>
+        ///     Whether the tracker should match the player's camera tilt or not.
+        /// </summary>
+        [Tooltip("Whether the tracker should match the player's camera tilt or not.")]
+        [SerializeField] private bool tiltWithPlayer;
+
+        /// <summary>
         ///     List of pivots to rotate towards the tracker.
         /// </summary>
         [Space(5.0f)]
@@ -111,8 +117,15 @@ namespace itolib.Behaviours.Kinematics
 
                 if (rotateWithPlayer)
                 {
-                    trackerTransform.rotation = (trackingTime == 0.0f) ? attachedPlayerTransform.rotation
-                        : trackerTransform.rotation.SmoothDamp(attachedPlayerTransform.rotation, ref trackingVelocityRot, trackingTime);
+                    Quaternion targetRotation = attachedPlayerTransform.rotation;
+
+                    if (tiltWithPlayer)
+                    {
+                        targetRotation *= attachedPlayerCameraTransform.localRotation;
+                    }
+
+                    trackerTransform.rotation = (trackingTime == 0.0f) ? targetRotation
+                        : trackerTransform.rotation.SmoothDamp(targetRotation, ref trackingVelocityRot, trackingTime);
                 }
 
                 // Apply rotations towards the tracker to each pivot.
