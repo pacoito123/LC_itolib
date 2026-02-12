@@ -7,13 +7,13 @@ using WeatherRegistry.Networking;
 namespace itolib.Compatibility
 {
     /// <summary>
-    ///     Compatibility between WeatherConditional and WeatherRegistry.
+    ///     Compatibility between <c>WeatherConditional</c> and <c>WeatherRegistry</c>.
     /// </summary>
     [HarmonyPatch]
     internal sealed class WeatherRegistryCompatibility
     {
         /// <summary>
-        ///     Whether WeatherRegistry is present in the BepInEx Chainloader or not.
+        ///     Whether <c>WeatherRegistry</c> is present in the BepInEx Chainloader or not.
         /// </summary>
         public static bool Enabled
         {
@@ -26,9 +26,6 @@ namespace itolib.Compatibility
         }
         private static bool? _enabled;
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         internal static event Action<LevelWeatherType[]>? OnWeatherEffectsApply;
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
@@ -42,7 +39,7 @@ namespace itolib.Compatibility
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         internal static bool ApplyWeatherOverrides(Action<LevelWeatherType[]> weatherAction)
         {
-            if (WeatherManager.GetCurrentLevelWeather().Type is WeatherType.Clear)
+            if (WeatherManager.GetCurrentLevelWeather() == WeatherManager.NoneWeather)
             {
                 return false;
             }

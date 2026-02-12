@@ -48,12 +48,12 @@
         <PackageReference Include="LethalCompany.GameLibs.Steam" Version="73.0.0-ngd.0" PrivateAssets="all" Publicize="true" />
         <!-- <PackageReference Include="IAmBatby.LethalLevelLoader" Version="1.4.*" PrivateAssets="all" Publicize="true" /> -->
 
-        <PackageReference Include="TeamXiaolan.DawnLib" Version="0.5.*" PrivateAssets="all" />
-        <PackageReference Include="mrov.WeatherRegistry" Version="0.7.*" PrivateAssets="all" />
+        <PackageReference Include="TeamXiaolan.DawnLib" Version="0.7.*" PrivateAssets="all" />
+        <PackageReference Include="mrov.WeatherRegistry" Version="0.8.*" PrivateAssets="all" />
         <PackageReference Include="mrov-WeatherTweaks" Version="1.1.*" PrivateAssets="all" />
 
         <PackageReference Include="CrowdControl-CrowdControl_LethalCompany" Version="1.1.*" PrivateAssets="all" Publicize="true" />
-        <PackageReference Include="loaforc-FacilityMeltdown" Version="2.7.*" PrivateAssets="all" Publicize="true" />
+        <PackageReference Include="TeamXiaolan-FacilityMeltdown" Version="2.8.*" PrivateAssets="all" Publicize="true" />
         <PackageReference Include="BGN-PizzaTowerEscapeMusic" Version="2.4.*" PrivateAssets="all" Publicize="true" />
         <PackageReference Include="Rattenbonkers-TVLoader" Version="1.1.*" PrivateAssets="all" Publicize="true" />
 
