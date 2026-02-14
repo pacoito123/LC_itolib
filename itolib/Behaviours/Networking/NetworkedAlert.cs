@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -5,11 +6,27 @@ using UnityEngine.Serialization;
 namespace itolib.Behaviours.Networking
 {
     /// <summary>
+    ///     Represents an alert entry to display to the player.
+    /// </summary>
+    public interface IAlertEntry
+    {
+        /// <summary>
+        ///     Whether this alert entry should only be displayed once or not.
+        /// </summary>
+        bool SingleUse { get; set; }
+    }
+
+    /// <summary>
     ///     Represents an abstract alert or message to be sent to the player.
     /// </summary>
-    /// <typeparam name="T">Any struct composing an alert to send to players.</typeparam>
-    public abstract class NetworkedAlert<T> : NetworkBehaviour where T : struct
+    /// <typeparam name="T">Any struct that implements <c>IAlertEntry</c> representing an alert to send to players.</typeparam>
+    public abstract class NetworkedAlert<T> : NetworkBehaviour where T : struct, IAlertEntry
     {
+        /// <summary>
+        ///     Cached array for playing a single alert.
+        /// </summary>
+        private static readonly T[] alertSingle = new T[1];
+
         /// <summary>
         ///     List of alert entries to display to players.
         /// </summary>
@@ -19,9 +36,53 @@ namespace itolib.Behaviours.Networking
         [SerializeField] protected T[]? alertEntries;
 
         /// <summary>
-        ///     Cached array for playing a single alert.
+        ///     <c>BitArray</c> containing whether the alert entry at each index has been exhausted or not.
         /// </summary>
-        private readonly T[] alertSingle = new T[1];
+        private BitArray? exhaustedAlerts;
+
+        /// <summary>
+        ///     Number of alerts that have been exhausted.
+        /// </summary>
+        private int exhaustedCount;
+
+        /// <summary>
+        ///     Initialize <c>BitArray</c> based on number of alert entires.
+        /// </summary>
+        protected virtual void Start()
+        {
+            if (alertEntries?.Length > 0)
+            {
+                exhaustedAlerts = new(alertEntries.Length);
+            }
+        }
+
+        /// <summary>
+        ///     Check if the alert entry should be skipped or not, and also set it to be.
+        /// </summary>
+        /// <param name="entry">Alert entry to check.</param>
+        /// <param name="index">Index of the alert entry to check.</param>
+        /// <returns>Whether the alert entry should be skipped or not.</returns>
+        protected bool CheckSingleUse(IAlertEntry entry, int index)
+        {
+            // Don't skip if alert entry can be displayed more than once.
+            if (!entry.SingleUse)
+            {
+                return false;
+            }
+
+            // Skip if alert entry is already exhausted.
+            if (exhaustedAlerts == null || index >= exhaustedAlerts.Length || exhaustedAlerts[index])
+            {
+                return true;
+            }
+
+            // Set alert entry as exhausted.
+            exhaustedAlerts[index] = true;
+            exhaustedCount++;
+
+            // Don't skip alert entry.
+            return false;
+        }
 
         /// <summary>
         ///     Play each alert entry sequentially, starting from the beginning.
@@ -37,8 +98,14 @@ namespace itolib.Behaviours.Networking
         /// <param name="startingIndex">Index to skip to when playing the alert entries.</param>
         public void PlayAlertSequence(int startingIndex)
         {
+            // Check if all alerts have been exhausted.
+            if (exhaustedCount == exhaustedAlerts?.Length)
+            {
+                return;
+            }
+
             // Check if given index is valid.
-            if (alertEntries?.Length > startingIndex)
+            if (startingIndex < alertEntries?.Length)
             {
                 // Play alert sequence for the local client.
                 PlayAlertSequenceLocal(startingIndex);
@@ -77,10 +144,16 @@ namespace itolib.Behaviours.Networking
         /// <param name="startingIndex">Index to skip to when playing the alert entries.</param>
         public void PlayAlertSequenceLocal(int startingIndex)
         {
-            // Check if given index is valid.
-            if (alertEntries?.Length > startingIndex)
+            // Check if all alerts have been exhausted.
+            if (exhaustedCount == exhaustedAlerts?.Length)
             {
-                PlayAlerts(alertEntries[startingIndex..]);
+                return;
+            }
+
+            // Check if given index is valid.
+            if (startingIndex < alertEntries?.Length)
+            {
+                PlayAlerts(alertEntries, startingIndex);
             }
         }
 
@@ -90,8 +163,14 @@ namespace itolib.Behaviours.Networking
         /// <param name="alertIndex">Index of the alert entry to play.</param>
         public void PlayAlertSingle(int alertIndex)
         {
+            // Check if alert has been exhausted.
+            if (exhaustedAlerts?[alertIndex] == true)
+            {
+                return;
+            }
+
             // Check if given index is valid.
-            if (alertEntries?.Length > alertIndex)
+            if (alertIndex < alertEntries?.Length)
             {
                 // Play a single alert entry for the local client.
                 PlayAlertSingleLocal(alertIndex);
@@ -121,8 +200,14 @@ namespace itolib.Behaviours.Networking
         /// <param name="alertIndex">Index of the alert entry to play.</param>
         public void PlayAlertSingleLocal(int alertIndex)
         {
+            // Check if alert has been exhausted.
+            if (exhaustedAlerts?[alertIndex] == true)
+            {
+                return;
+            }
+
             // Check if given index is valid.
-            if (alertEntries?.Length > alertIndex)
+            if (alertIndex < alertEntries?.Length)
             {
                 PlayAlert(alertEntries[alertIndex]);
             }
@@ -142,6 +227,7 @@ namespace itolib.Behaviours.Networking
         ///     Display multiple alert entries, sequentially.
         /// </summary>
         /// <param name="alerts">Alert entries to display.</param>
-        protected abstract void PlayAlerts(T[] alerts);
+        /// <param name="startingIndex">Index to skip to when playing the alert entries.</param>
+        protected abstract void PlayAlerts(T[] alerts, int startingIndex = 0);
     }
 }

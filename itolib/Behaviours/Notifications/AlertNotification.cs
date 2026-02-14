@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Notifications
     ///     Represents a single notification entry to display to alerted players.
     /// </summary>
     [Serializable]
-    public struct NotificationEntry
+    public struct NotificationEntry : IAlertEntry
     {
         /// <summary>
         ///     Type of notification to display. Affects notification color, animation, and default opening sound effect.
@@ -62,6 +62,14 @@ namespace itolib.Behaviours.Notifications
         public AudioClip?[]? letterDelaySFX;
 
         /// <summary>
+        ///     Whether this notification entry should only be displayed once or not.
+        /// </summary>
+        [field: Space(5.0f)]
+        [field: Header(header: "Other")]
+        [field: Tooltip("Whether this notification entry should only be displayed once or not.")]
+        [field: SerializeField] public bool SingleUse { get; set; }
+
+        /// <summary>
         ///     Constructor for the struct type (needed to allow default parameter values).
         /// </summary>
         public NotificationEntry() { }
@@ -73,12 +81,9 @@ namespace itolib.Behaviours.Notifications
     public class AlertNotification : NetworkedAlert<NotificationEntry>
     {
         /// <summary>
-        ///     Whether the notification opening sound effect (which depends on selected <c>NotificationType</c>) should play or not.
+        ///     Time to wait before pausing the notification animation, to display it for longer.
         /// </summary>
-        [Space(5.0f)]
-        [Header("Alert Notification")]
-        [Tooltip("Whether the notification opening sound effect (which depends on selected notification type) should play or not.")]
-        [SerializeField] private bool playOpenSFX = true;
+        private const float notificationAnimationDuration = 6.25f;
 
         /// <summary>
         ///     Hash of the parameter to trigger a hint.
@@ -96,9 +101,17 @@ namespace itolib.Behaviours.Notifications
         private static readonly int triggerNotifAnimationID = Animator.StringToHash("TriggerNotif");
 
         /// <summary>
-        ///     Time to wait before pausing the notification animation, to display it for longer.
+        ///     Cached array for playing a single <c>AudioClip</c>.
         /// </summary>
-        private const float notificationAnimationDuration = 6.25f;
+        private static readonly AudioClip[] clipSingle = new AudioClip[1];
+
+        /// <summary>
+        ///     Whether the notification opening sound effect (which depends on selected <c>NotificationType</c>) should play or not.
+        /// </summary>
+        [Space(5.0f)]
+        [Header("Alert Notification")]
+        [Tooltip("Whether the notification opening sound effect (which depends on selected notification type) should play or not.")]
+        [SerializeField] private bool playOpenSFX = true;
 
         /// <summary>
         ///     <c>Coroutine</c> for the current notification, if any are playing.
@@ -106,15 +119,11 @@ namespace itolib.Behaviours.Notifications
         private Coroutine? notificationCoroutine;
 
         /// <summary>
-        ///     Cached array for playing a single <c>AudioClip</c>.
-        /// </summary>
-        private readonly AudioClip[] clipSingle = new AudioClip[1];
-
-        /// <summary>
         ///     Display notification entries, sequentially.
         /// </summary>
         /// <param name="alerts">Notification entries to display.</param>
-        protected override void PlayAlerts(NotificationEntry[] alerts)
+        /// <param name="startingIndex">Index to skip to when displaying the notification entries.</param>
+        protected override void PlayAlerts(NotificationEntry[] alerts, int startingIndex)
         {
             HUDManager? hud = HUDManager.Instance;
 
@@ -127,7 +136,7 @@ namespace itolib.Behaviours.Notifications
                 }
 
                 // Start Coroutine to display the notification entries sequentially, starting from the given index.
-                notificationCoroutine = hud.StartCoroutine(DisplayNotifications(alerts));
+                notificationCoroutine = hud.StartCoroutine(DisplayNotifications(alerts, startingIndex));
             }
         }
 
@@ -135,21 +144,24 @@ namespace itolib.Behaviours.Notifications
         ///     <c>Coroutine</c> to display the given notification entries sequentially.
         /// </summary>
         /// <param name="notificationArray">List of notification entries to display.</param>
-        private IEnumerator DisplayNotifications(NotificationEntry[] notificationArray)
+        /// <param name="startingIndex">Index to skip to when displaying the notification entries.</param>
+        private IEnumerator DisplayNotifications(NotificationEntry[] notificationArray, int startingIndex)
         {
             HUDManager? hud = HUDManager.Instance;
 
-            if (hud == null || notificationArray == null)
+            if (hud == null || hud.globalNotificationAnimator == null)
             {
                 yield break;
             }
 
             // Play each given notification entry sequentially.
-            for (int i = 0; i < notificationArray.Length; i++)
+            for (int i = startingIndex; i < notificationArray?.Length; i++)
             {
+                // Obtain notification entry at the current index.
                 NotificationEntry notification = notificationArray[i];
 
-                if (hud.globalNotificationAnimator == null)
+                // Check if notification entry is exhausted.
+                if (CheckSingleUse(notification, i))
                 {
                     continue;
                 }
@@ -157,14 +169,17 @@ namespace itolib.Behaviours.Notifications
                 // Start counting how long the notification animation has been playing for.
                 float animationTime = 0.0f;
 
-                // Set the Trigger parameter for the type of message to display.
-                hud.globalNotificationAnimator.SetTrigger(notification.messageType switch
+                // Obtain hash of the trigger parameter for the type of message to display.
+                int messageType = notification.messageType switch
                 {
                     MessageType.Tip => triggerHintAnimationID,
                     MessageType.Warning => triggerWarningAnimationID,
                     MessageType.Notification => triggerNotifAnimationID,
                     _ => default,
-                });
+                };
+
+                // Set trigger parameter for the type of message to display.
+                hud.globalNotificationAnimator.SetTrigger(messageType);
 
                 if (playOpenSFX && hud.UIAudio != null)
                 {
@@ -256,6 +271,9 @@ namespace itolib.Behaviours.Notifications
                     // Wait for the specified amount of time before closing the notification and moving onto the next (if there is one).
                     yield return Yielders.WaitForSeconds(notificationArray[i].waitTime);
                 }
+
+                // Reset trigger parameter after displaying the alert.
+                hud.globalNotificationAnimator.ResetTrigger(messageType);
             }
         }
     }

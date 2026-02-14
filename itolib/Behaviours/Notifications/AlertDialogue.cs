@@ -10,7 +10,7 @@ namespace itolib.Behaviours.Notifications
     ///     Represents a single dialogue entry to display to alerted players.
     /// </summary>
     [Serializable]
-    public struct DialogueEntry
+    public struct DialogueEntry : IAlertEntry
     {
         /// <summary>
         ///     Header text to display on the dialogue box.
@@ -67,6 +67,14 @@ namespace itolib.Behaviours.Notifications
         public AudioClip?[]? letterTypingSFX;
 
         /// <summary>
+        ///     Whether this dialogue box entry should only be displayed once or not.
+        /// </summary>
+        [field: Space(5.0f)]
+        [field: Header(header: "Other")]
+        [field: Tooltip("Whether this dialogue box entry should only be displayed once or not.")]
+        [field: SerializeField] public bool SingleUse { get; set; }
+
+        /// <summary>
         ///     Constructor for the struct type (needed to allow default parameter values).
         /// </summary>
         public DialogueEntry() { }
@@ -120,19 +128,22 @@ namespace itolib.Behaviours.Notifications
         /// <summary>
         ///     Use deprecated entries, if any are present without any entries in the other list.
         /// </summary>
-        private void Start()
+        protected override void Start()
         {
             if ((alertEntries == null || alertEntries.Length == 0) && dialogueEntries?.Length > 0)
             {
                 alertEntries = dialogueEntries;
             }
+
+            base.Start();
         }
 
         /// <summary>
         ///     Display dialogue entries, sequentially.
         /// </summary>
         /// <param name="alerts">Dialogue entries to display.</param>
-        protected override void PlayAlerts(DialogueEntry[] alerts)
+        /// <param name="startingIndex">Index to skip to when displaying the dialogue entries.</param>
+        protected override void PlayAlerts(DialogueEntry[] alerts, int startingIndex)
         {
             HUDManager? hud = HUDManager.Instance;
 
@@ -145,7 +156,7 @@ namespace itolib.Behaviours.Notifications
                 }
 
                 // Start Coroutine to display the dialogue entries sequentially, starting from the given index.
-                hud.readDialogueCoroutine = hud.StartCoroutine(ReadOutDialogue(alerts));
+                hud.readDialogueCoroutine = hud.StartCoroutine(ReadOutDialogue(alerts, startingIndex));
             }
         }
 
@@ -153,11 +164,12 @@ namespace itolib.Behaviours.Notifications
         ///     <c>Coroutine</c> to display the given dialogue entries sequentially.
         /// </summary>
         /// <param name="dialogueArray">List of dialogue entries to display.</param>
-        private IEnumerator ReadOutDialogue(DialogueEntry[] dialogueArray)
+        /// <param name="startingIndex">Index to skip to when displaying the dialogue entries.</param>
+        private IEnumerator ReadOutDialogue(DialogueEntry[] dialogueArray, int startingIndex)
         {
             HUDManager? hud = HUDManager.Instance;
 
-            if (hud == null || hud.dialogueBoxAnimator == null || dialogueArray == null)
+            if (hud == null || hud.dialogueBoxAnimator == null || hud.dialogeBoxText == null)
             {
                 yield break;
             }
@@ -166,10 +178,16 @@ namespace itolib.Behaviours.Notifications
             hud.dialogueBoxAnimator.SetBool(openAnimationID, true);
 
             // Play each given dialogue entry sequentially.
-            for (int i = 0; i < dialogueArray.Length; i++)
+            for (int i = startingIndex; i < dialogueArray?.Length; i++)
             {
                 // Obtain dialogue entry at the current index.
                 DialogueEntry dialogue = dialogueArray[i];
+
+                // Check if dialogue entry is exhausted.
+                if (CheckSingleUse(dialogue, i))
+                {
+                    continue;
+                }
 
                 if (hud.dialogeBoxHeaderText != null)
                 {
@@ -190,11 +208,6 @@ namespace itolib.Behaviours.Notifications
                         // Play a random sound effect from the list of audio clips.
                         hud.dialogueBoxSFX.PlayOneShot(openClips[UnityEngine.Random.Range(0, openClips.Length)]);
                     }
-                }
-
-                if (hud.dialogeBoxText == null)
-                {
-                    continue;
                 }
 
                 // Check if body text should be displayed with a delay between each letter.

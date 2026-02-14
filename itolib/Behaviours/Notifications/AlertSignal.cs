@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Notifications
     ///     Represents a single signal message entry to display to alerted players.
     /// </summary>
     [Serializable]
-    public struct SignalEntry
+    public struct SignalEntry : IAlertEntry
     {
         /// <summary>
         ///     Text to transmit on the signal message.
@@ -81,6 +81,14 @@ namespace itolib.Behaviours.Notifications
         /// </summary>
         [Tooltip("List of audio clips to play when the signal message finishes being typed.")]
         public AudioClip?[]? signalFinishSFX;
+
+        /// <summary>
+        ///     Whether this signal message entry should only be displayed once or not.
+        /// </summary>
+        [field: Space(5.0f)]
+        [field: Header(header: "Other")]
+        [field: Tooltip("Whether this signal message entry should only be displayed once or not.")]
+        [field: SerializeField] public bool SingleUse { get; set; }
 
         /// <summary>
         ///     Constructor for the struct type (needed to allow default parameter values).
@@ -231,7 +239,8 @@ namespace itolib.Behaviours.Notifications
         ///     Transmit signal message entries, sequentially.
         /// </summary>
         /// <param name="alerts">Signal message entries to transmit.</param>
-        protected override void PlayAlerts(SignalEntry[] alerts)
+        /// <param name="startingIndex">Index to skip to when displaying the signal message entries.</param>
+        protected override void PlayAlerts(SignalEntry[] alerts, int startingIndex)
         {
             HUDManager? hud = HUDManager.Instance;
 
@@ -244,7 +253,7 @@ namespace itolib.Behaviours.Notifications
                 }
 
                 // Start Coroutine to transmit the signal messages sequentially, starting from the given index.
-                signalCoroutine = hud.StartCoroutine(TransmitSignalMessage(alerts));
+                signalCoroutine = hud.StartCoroutine(TransmitSignalMessage(alerts, startingIndex));
             }
         }
 
@@ -252,11 +261,12 @@ namespace itolib.Behaviours.Notifications
         ///     <c>Coroutine</c> to transmit the given signal message entries sequentially.
         /// </summary>
         /// <param name="signalArray">List of signal message entries to transmit.</param>
-        private IEnumerator TransmitSignalMessage(SignalEntry[] signalArray)
+        /// <param name="startingIndex">Index to skip to when displaying the signal message entries.</param>
+        private IEnumerator TransmitSignalMessage(SignalEntry[] signalArray, int startingIndex)
         {
             HUDManager? hud = HUDManager.Instance;
 
-            if (hud == null || hud.signalTranslatorAnimator == null || signalArray == null)
+            if (hud == null || hud.signalTranslatorAnimator == null || hud.signalTranslatorText == null)
             {
                 yield break;
             }
@@ -264,10 +274,16 @@ namespace itolib.Behaviours.Notifications
             // Enable the signal translator bool parameter, to open it.
             hud.signalTranslatorAnimator.SetBool(startTransmissionID, true);
 
-            for (int i = 0; i < signalArray.Length; i++)
+            for (int i = startingIndex; i < signalArray?.Length; i++)
             {
                 // Obtain signal message entry at the current index.
                 SignalEntry signal = signalArray[i];
+
+                // Check if signal message entry is exhausted.
+                if (CheckSingleUse(signal, i))
+                {
+                    continue;
+                }
 
                 if (playOpenSFX && hud.UIAudio != null)
                 {
@@ -284,11 +300,6 @@ namespace itolib.Behaviours.Notifications
                         // Play a random sound effect from the list of audio clips.
                         hud.UIAudio.PlayOneShot(openClips[UnityEngine.Random.Range(0, openClips.Length)]);
                     }
-                }
-
-                if (hud.signalTranslatorText == null)
-                {
-                    continue;
                 }
 
                 // Clear signal message body text.

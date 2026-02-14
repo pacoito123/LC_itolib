@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Notifications
     ///     Represents a single toast entry to display to alerted players.
     /// </summary>
     [Serializable]
-    public struct ToastEntry
+    public struct ToastEntry : IAlertEntry
     {
         /// <summary>
         ///     Type of toast to display. Affects toast color, animation, and default opening sound effect.
@@ -68,6 +68,14 @@ namespace itolib.Behaviours.Notifications
         public AudioClip?[]? letterDelaySFX;
 
         /// <summary>
+        ///     Whether this toast entry should only be displayed once or not.
+        /// </summary>
+        [field: Space(5.0f)]
+        [field: Header(header: "Other")]
+        [field: Tooltip("Whether this toast entry should only be displayed once or not.")]
+        [field: SerializeField] public bool SingleUse { get; set; }
+
+        /// <summary>
         ///     Constructor for the struct type (needed to allow default parameter values).
         /// </summary>
         public ToastEntry() { }
@@ -115,7 +123,8 @@ namespace itolib.Behaviours.Notifications
         ///     Display toast entries, sequentially.
         /// </summary>
         /// <param name="alerts">Toast entries to display.</param>
-        protected override void PlayAlerts(ToastEntry[] alerts)
+        /// <param name="startingIndex">Index to skip to when displaying the toast entries.</param>
+        protected override void PlayAlerts(ToastEntry[] alerts, int startingIndex)
         {
             HUDManager? hud = HUDManager.Instance;
 
@@ -128,7 +137,7 @@ namespace itolib.Behaviours.Notifications
                 }
 
                 // Start Coroutine to display the toast entries sequentially, starting from the given index.
-                hud.tipsPanelCoroutine = hud.StartCoroutine(DisplayToasts(alerts));
+                hud.tipsPanelCoroutine = hud.StartCoroutine(DisplayToasts(alerts, startingIndex));
             }
         }
 
@@ -136,21 +145,24 @@ namespace itolib.Behaviours.Notifications
         ///     <c>Coroutine</c> to display the given toast entries sequentially.
         /// </summary>
         /// <param name="toastArray">List of toast entries to display.</param>
-        private IEnumerator DisplayToasts(ToastEntry[] toastArray)
+        /// <param name="startingIndex">Index to skip to when displaying the toast entries.</param>
+        private IEnumerator DisplayToasts(ToastEntry[] toastArray, int startingIndex)
         {
             HUDManager? hud = HUDManager.Instance;
 
-            if (hud == null || toastArray == null)
+            if (hud == null || toastArray == null || hud.tipsPanelAnimator == null || hud.tipsPanelBody == null)
             {
                 yield break;
             }
 
             // Play each given toast entry sequentially.
-            for (int i = 0; i < toastArray.Length; i++)
+            for (int i = startingIndex; i < toastArray.Length; i++)
             {
+                // Obtain toast entry at the current index.
                 ToastEntry toast = toastArray[i];
 
-                if (hud.tipsPanelAnimator == null)
+                // Check if toast entry is exhausted.
+                if (CheckSingleUse(toast, i))
                 {
                     continue;
                 }
@@ -158,14 +170,17 @@ namespace itolib.Behaviours.Notifications
                 // Start counting how long the toast animation has been playing for.
                 float animationTime = 0.0f;
 
-                // Set the Trigger parameter for the type of message to display.
-                hud.tipsPanelAnimator.SetTrigger(toast.messageType switch
+                // Obtain hash of the trigger parameter for the type of message to display.
+                int messageType = toast.messageType switch
                 {
                     MessageType.Tip => triggerHintAnimationID,
                     MessageType.Warning => triggerWarningAnimationID,
                     MessageType.Notification => triggerNotifAnimationID,
                     _ => default,
-                });
+                };
+
+                // Set trigger parameter for the type of message to display.
+                hud.tipsPanelAnimator.SetTrigger(messageType);
 
                 if (hud.tipsPanelHeader != null)
                 {
@@ -196,11 +211,6 @@ namespace itolib.Behaviours.Notifications
                         // Play a random sound effect from the list of audio clips.
                         hud.UIAudio.PlayOneShot(openClips[UnityEngine.Random.Range(0, openClips.Length)]);
                     }
-                }
-
-                if (hud.tipsPanelBody == null)
-                {
-                    continue;
                 }
 
                 // Check if body text should be displayed with a delay between each letter.
@@ -263,6 +273,9 @@ namespace itolib.Behaviours.Notifications
                     // Wait for the specified amount of time before closing the toast and moving onto the next (if there is one).
                     yield return Yielders.WaitForSeconds(toast.waitTime);
                 }
+
+                // Reset trigger parameter after displaying the alert.
+                hud.tipsPanelAnimator.ResetTrigger(messageType);
             }
         }
     }
