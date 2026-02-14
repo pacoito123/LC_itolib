@@ -1,5 +1,5 @@
-using System.Collections;
 using itolib.Util;
+using System.Collections;
 using UnityEngine;
 
 namespace itolib.Behaviours.Effects

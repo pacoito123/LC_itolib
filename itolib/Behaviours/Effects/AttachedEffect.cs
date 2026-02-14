@@ -17,7 +17,7 @@ namespace itolib.Behaviours.Effects
         [Space(5.0f)]
         [Header("Attached Effect")]
         [Tooltip("")]
-        [SerializeField] private AttachedEffect effectToAttach = null!;
+        [SerializeField] private AttachedEffect effectToAttach;
 
         /// <summary>
         ///     TODO.

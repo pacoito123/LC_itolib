@@ -13,7 +13,7 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         [Header("Animation Param Setter")]
         [Tooltip("")]
-        [SerializeField] private Animator animator = null!;
+        [SerializeField] private Animator animator;
 
         /// <summary>
         ///     TODO.
@@ -39,7 +39,7 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         private void OnEnable()
         {
-            if (animator == null)
+            if (animator == null && !TryGetComponent(out animator))
             {
                 Plugin.StaticLogger.LogWarning($"Could not find Animator for AnimationParamSetter component in GameObject '{gameObject.name}'.");
                 enabled = false;
