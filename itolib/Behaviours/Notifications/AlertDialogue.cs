@@ -256,6 +256,9 @@ namespace itolib.Behaviours.Notifications
 
             // Disable the dialogue box bool parameter, to close it.
             hud.dialogueBoxAnimator.SetBool(openAnimationID, false);
+
+            // Clear Coroutine after displaying the alert sequence.
+            hud.readDialogueCoroutine = null;
         }
 
         /// <summary>

@@ -273,10 +273,10 @@ namespace itolib.Behaviours.Notifications
                     // Wait for the specified amount of time before closing the toast and moving onto the next (if there is one).
                     yield return Yielders.WaitForSeconds(toast.waitTime);
                 }
-
-                // Reset trigger parameter after displaying the alert.
-                hud.tipsPanelAnimator.ResetTrigger(messageType);
             }
+
+            // Clear Coroutine after displaying the alert sequence.
+            hud.tipsPanelCoroutine = null;
         }
     }
 }

@@ -371,6 +371,9 @@ namespace itolib.Behaviours.Notifications
 
             // Disable the signal translator bool parameter, to close it.
             hud.signalTranslatorAnimator.SetBool(startTransmissionID, false);
+
+            // Clear Coroutine after displaying the alert sequence.
+            signalCoroutine = null;
         }
     }
 }

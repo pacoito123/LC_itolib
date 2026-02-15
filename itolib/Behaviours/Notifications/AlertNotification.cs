@@ -261,20 +261,20 @@ namespace itolib.Behaviours.Notifications
                     {
                         yield return Yielders.WaitForSeconds(notificationAnimationDuration - animationTime);
                     }
-                    hud.tipsPanelAnimator.enabled = false;
+                    hud.globalNotificationAnimator.enabled = false;
 
                     yield return Yielders.WaitForSeconds(notificationArray[i].waitTime - notificationAnimationDuration);
-                    hud.tipsPanelAnimator.enabled = true;
+                    hud.globalNotificationAnimator.enabled = true;
                 }
                 else
                 {
                     // Wait for the specified amount of time before closing the notification and moving onto the next (if there is one).
                     yield return Yielders.WaitForSeconds(notificationArray[i].waitTime);
                 }
-
-                // Reset trigger parameter after displaying the alert.
-                hud.globalNotificationAnimator.ResetTrigger(messageType);
             }
+
+            // Clear Coroutine after displaying the alert sequence.
+            notificationCoroutine = null;
         }
     }
 }
