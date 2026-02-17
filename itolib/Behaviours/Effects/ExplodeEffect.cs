@@ -114,6 +114,8 @@ namespace itolib.Behaviours.Effects
 
             layerMask = LayerMask.GetMask("Player", "Enemies", "MapHazards");
             coverMask = LayerMask.GetMask("Room", "Vehicle");
+
+            base.Reset();
         }
 
         /// <summary>

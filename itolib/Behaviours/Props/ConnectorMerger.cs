@@ -47,6 +47,8 @@ namespace itolib.Behaviours.Props
         {
             maxObjects = 8;
             layerMask = LayerMask.NameToLayer("Room");
+
+            base.Reset();
         }
 
         /// <summary>

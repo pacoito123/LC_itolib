@@ -15,6 +15,8 @@ namespace itolib.Behaviours.Detectors
         {
             maxObjects = 8;
             layerMask = LayerMask.NameToLayer("MapHazards");
+
+            base.Reset();
         }
 
         /// <summary>

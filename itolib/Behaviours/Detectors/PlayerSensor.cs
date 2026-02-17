@@ -40,6 +40,8 @@ namespace itolib.Behaviours.Detectors
         {
             maxObjects = 12;
             layerMask = LayerMask.GetMask("Player", "PlayerRagdoll");
+
+            base.Reset();
         }
 
         /// <summary>

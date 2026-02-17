@@ -15,6 +15,8 @@ namespace itolib.Behaviours.Detectors
         {
             maxObjects = 16;
             layerMask = LayerMask.GetMask("Vehicle");
+
+            base.Reset();
         }
 
         /// <summary>

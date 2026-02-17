@@ -32,6 +32,8 @@ namespace itolib.Behaviours.Detectors
         protected override void Reset()
         {
             layerMask = LayerMask.GetMask("Props", "PhysicsObject");
+
+            base.Reset();
         }
 
         /// <summary>

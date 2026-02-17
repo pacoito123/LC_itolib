@@ -119,6 +119,8 @@ namespace itolib.Behaviours.Detectors
                 collider.layerOverridePriority = 100;
                 collider.excludeLayers = (collider.excludeLayers == 0) ? ~layerMask : (collider.excludeLayers & ~layerMask);
             } */
+
+            base.Reset();
         }
 
         /// <summary>
