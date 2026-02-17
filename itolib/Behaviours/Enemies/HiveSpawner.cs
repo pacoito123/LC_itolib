@@ -5,6 +5,7 @@ using LethalLevelLoader;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace itolib.Behaviours.Enemies
 {
@@ -107,6 +108,14 @@ namespace itolib.Behaviours.Enemies
         /// </summary>
         [Tooltip("")]
         [SerializeField] private ScanNodeInfo hiveScanNode;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        [Space(5.0f)]
+        [Header("Events")]
+        [Tooltip("")]
+        [SerializeField] private UnityEvent<GrabbableObject> onHiveSpawned;
 
         /// <summary>
         ///     TODO.
@@ -425,6 +434,8 @@ namespace itolib.Behaviours.Enemies
 
                 RoundManager.Instance.totalScrapValueInLevel += syncedHive.itemInfo.scrapValue;
             }
+
+            onHiveSpawned.Invoke(bees.hive);
         }
     }
 }

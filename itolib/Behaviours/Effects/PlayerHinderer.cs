@@ -78,9 +78,8 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     Whether the player should be able to drown in the hinderance region or not.
         /// </summary>
-        /// <remarks><b>NOTE:</b> Not currently implemented.</remarks>
         [Header("Water")]
-        [Tooltip("Whether the player should be able to drown in the hinderance region or not. NOTE: Not currently implemented.")]
+        [Tooltip("Whether the player should be able to drown in the hinderance region or not.")]
         [SerializeField] private bool drownPlayer;
 
         /// <summary>
