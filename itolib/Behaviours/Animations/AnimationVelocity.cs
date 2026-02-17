@@ -2,15 +2,17 @@ using DunGen;
 using itolib.Enums;
 using itolib.Extensions;
 using itolib.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace itolib.Behaviours.Animations
 {
     /// <summary>
-    ///     TODO.
+    ///     Smoothly changes an <c>Animator</c>'s defined <i>speed</i> multiplier parameter to a desired value, and syncs it across clients.
     /// </summary>
-    public class AnimationVelocity : NetworkBehaviour, IActivationScript, ISeededScript<AnimationVelocity>
+    public sealed class AnimationVelocity : NetworkBehaviour, IActivationScript, ISeededScript<AnimationVelocity>
     {
         /// <summary>
         ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>IActivationScript</c>, to avoid having to cast.
@@ -28,72 +30,98 @@ namespace itolib.Behaviours.Animations
         public bool PerformedActivation { get; set; }
 
         /// <summary>
-        ///     TODO.
-        /// </summary>
-        public float InitialSpeed { get; private set; }
-
-        /// <summary>
-        ///     TODO.
+        ///     <c>Animator</c> with a <i>speed</i> multiplier parameter to target.
         /// </summary>
         [Header("Animation Velocity")]
-        [Tooltip("")]
+        [Tooltip("Animator with a speed multiplier parameter to target.")]
         [SerializeField] private Animator animator;
 
         /// <summary>
-        ///     TODO.
+        ///     Approximate time until reaching the target speed, in seconds.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Approximate time until reaching the target speed, in seconds.")]
+        [Min(0.0f)]
+        [FormerlySerializedAs("stoppingSpeed")]
+        [SerializeField] private float transitionTime = 1.0f;
+
+        /// <summary>
+        ///     Name of the <c>Animator</c> state to begin playing after syncing speed with clients.
+        /// </summary>
+        [Tooltip("Name of the Animator state to begin playing after syncing speed with clients.")]
         [SerializeField] private string initialState = string.Empty;
 
         /// <summary>
-        ///     TODO.
+        ///     Name of the <i>speed</i> multiplier parameter defined in the <c>Animator</c>.
         /// </summary>
-        [Tooltip("")]
+        /// <remarks><b>NOTE:</b> Needs to be set as the speed multiplier value of the <c>Animator</c> state.</remarks>
+        [Tooltip("Name of the speed multiplier parameter defined in the Animator. NOTE: Needs to be set as the speed multiplier value of the Animator state.")]
         [SerializeField] private string speedParameter = string.Empty;
 
         /// <summary>
-        ///     TODO.
+        ///     Minimum value for the <i>speed</i> multiplier parameter when rolling a random value.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Minimum value for the speed multiplier parameter when rolling a random value.")]
         [SerializeField] private float minStartingSpeed = 1.0f;
 
         /// <summary>
-        ///     TODO.
+        ///     Maximum value for the <i>speed</i> multiplier parameter when rolling a random value.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Maximum value for the speed multiplier parameter when rolling a random value.")]
         [SerializeField] private float maxStartingSpeed = 1.0f;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether the random <i>speed</i> multiplier parameter rolling should be seeded or not.
         /// </summary>
-        [Tooltip("")]
-        [SerializeField] private float stoppingSpeed = 1.0f;
+        [Tooltip("Whether the random speed multiplier parameter rolling should be seeded or not.")]
+        [SerializeField] private bool isSeededRandom = true;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the initial velocity sync.
+        ///     Desired <c>ActivationTime</c> for the initial speed sync.
         /// </summary>
-        [field: Tooltip("Desired activation time for the initial velocity sync.")]
+        [field: Tooltip("Desired activation time for the initial speed sync.")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.StartOfRound;
 
         /// <summary>
-        ///     TODO.
+        ///     Hash of the <c>Animator</c> state to begin playing after syncing speed with clients.
         /// </summary>
-        private float transitionTimer;
+        private int initialStateID;
 
         /// <summary>
-        ///     TODO.
+        ///     Hash of the <i>speed</i> multiplier parameter defined in the <c>Animator</c>.
+        /// </summary>
+        private int speedParameterID;
+
+        /// <summary>
+        ///     Current or initial velocity for the <i>speed</i> multiplier parameter.
+        /// </summary>
+        private float transitionVelocity;
+
+        /// <summary>
+        ///     Whether the target <i>speed</i> multiplier parameter value has been reached or not.
         /// </summary>
         private bool targetReached = true;
 
         /// <summary>
-        ///     TODO.
+        ///     Starting or initial target value of the <i>speed</i> multiplier parameter, to reset back to.
         /// </summary>
-        private float previousTarget;
+        private float startingSpeed;
 
         /// <summary>
-        ///     TODO.
+        ///     Current value of the <i>speed</i> multiplier parameter.
         /// </summary>
-        private float currentTarget;
+        private float currentSpeed;
+
+        /// <summary>
+        ///     Target value for the <i>speed</i> multiplier parameter.
+        /// </summary>
+        private float targetSpeed;
+
+        /// <summary>
+        ///     Speed of the transition between current speed and target speed.
+        /// </summary>
+        /// <remarks>Deprecated. Should be ignored.</remarks>
+        [SuppressMessage("Style", "IDE0044:Add readonly modifier", Justification = "Deprecated.")]
+        private float stoppingSpeed = -1.0f;
 
         /// <summary>
         ///     Cache already-cast <c>IActivationScript</c> and <c>ISeededScript</c> instances.
@@ -107,24 +135,33 @@ namespace itolib.Behaviours.Animations
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Hash defined <i>speed</i> parameter and <c>Animator</c> state names.
         /// </summary>
-        public override void OnNetworkSpawn()
+        private void Awake()
         {
-            base.OnNetworkSpawn();
+            initialStateID = Animator.StringToHash(initialState);
+            speedParameterID = Animator.StringToHash(speedParameter);
 
-            if (!IsHost)
+            // Convert deprecated stopping speed to transition time.
+            if (stoppingSpeed > 0.0f)
             {
-                return;
+                transitionTime = 1 / stoppingSpeed;
             }
+        }
 
-            InitialSpeed = SeededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed);
-
+        /// <summary>
+        ///     Roll initial value for the <c>Animator</c>'s <i>speed</i> parameter.
+        /// </summary>
+        private void Start()
+        {
+            startingSpeed = (minStartingSpeed >= maxStartingSpeed) ? minStartingSpeed : (isSeededRandom
+                ? SeededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed)
+                : Random.Range(minStartingSpeed, maxStartingSpeed));
             ActivationSelf.Initialize();
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Make sure there is an <c>Animator</c> component to target.
         /// </summary>
         private void OnEnable()
         {
@@ -138,34 +175,31 @@ namespace itolib.Behaviours.Animations
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle smooth transition between <i>speed</i> multiplier parameter values.
         /// </summary>
         private void FixedUpdate()
         {
             if (targetReached)
             {
-                // Disable update loop.
+                // Disable update loop if the target speed is reached.
                 enabled = false;
 
                 return;
             }
 
-            transitionTimer += Time.fixedDeltaTime;
+            // Move towards the target speed and set current parameter value.
+            currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref transitionVelocity, transitionTime);
+            animator.SetFloat(speedParameterID, currentSpeed);
 
-            float currentSpeed = Mathf.Lerp(previousTarget, currentTarget, transitionTimer * stoppingSpeed);
-            animator.SetFloat(speedParameter, currentSpeed);
-
-            if (currentSpeed == currentTarget)
+            if (currentSpeed == targetSpeed)
             {
-                previousTarget = currentSpeed;
-
-                transitionTimer = 0.0f;
+                // Set target speed as reached.
                 targetReached = true;
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Unsubscribe from any events that may have been subscribed to.
         /// </summary>
         public override void OnDestroy()
         {
@@ -175,62 +209,87 @@ namespace itolib.Behaviours.Animations
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Reset <i>speed</i> multiplier parameter to its starting or initial target value.
         /// </summary>
         public void ResetSpeed()
         {
-            ChangeSpeed(InitialSpeed);
+            ChangeSpeed(startingSpeed);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Roll and set a new <i>speed</i> multiplier parameter value, within the specified range.
         /// </summary>
-        public void ResetSpeedLocal()
+        /// <param name="restart">Whether to use the rolled number as the starting or initial target value or not, which also resets the <c>Animator</c> state.</param>
+        public void RerollSpeed(bool restart = false)
         {
-            ChangeSpeedLocal(InitialSpeed);
-        }
+            float targetSpeed = (minStartingSpeed >= maxStartingSpeed) ? minStartingSpeed : (isSeededRandom
+                ? SeededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed)
+                : Random.Range(minStartingSpeed, maxStartingSpeed));
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public void RerollSpeed()
-        {
-            SyncSpeed(SeededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed));
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="targetSpeed"></param>
-        public void ChangeSpeed(float targetSpeed)
-        {
-            ChangeSpeedLocal(targetSpeed);
-
-            if (IsSpawned)
+            if (!restart)
             {
-                ChangeSpeedRpc(targetSpeed);
+                // Change target speed to the rolled value.
+                ChangeSpeed(targetSpeed);
+            }
+            else
+            {
+                // Restart Animator with the rolled value as the starting or initial target speed.
+                SyncSpeed(targetSpeed);
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Change target value for the <i>speed</i> multiplier parameter.
         /// </summary>
-        /// <param name="targetSpeed"></param>
-        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        /// <param name="targetSpeed">Target speed value to change to.</param>
+        public void ChangeSpeed(float targetSpeed)
+        {
+            if (!PerformedActivation)
+            {
+                // Sync speed with clients, if not already done.
+                SyncSpeed(targetSpeed);
+
+                return;
+            }
+
+            // Check if already at the target speed.
+            if (this.targetSpeed == targetSpeed)
+            {
+                return;
+            }
+
+            // Check if object is spawned.
+            if (IsSpawned)
+            {
+                // Change target speed for all clients to the given value.
+                ChangeSpeedRpc(targetSpeed);
+            }
+            else
+            {
+                // Change target speed for the local client to the given value.
+                ChangeSpeedLocal(targetSpeed);
+            }
+        }
+
+        /// <summary>
+        ///     Change target value for the <i>speed</i> multiplier parameter for all clients.
+        /// </summary>
+        /// <param name="targetSpeed">Target speed value to change to.</param>
+        [Rpc(SendTo.ClientsAndHost, DeferLocal = true, RequireOwnership = false)]
         private void ChangeSpeedRpc(float targetSpeed)
         {
+            // Change target speed for the local client.
             ChangeSpeedLocal(targetSpeed);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Change target value for the <i>speed</i> multiplier parameter for the local client.
         /// </summary>
-        /// <param name="targetSpeed"></param>
+        /// <param name="targetSpeed">Target speed value to change to.</param>
         public void ChangeSpeedLocal(float targetSpeed)
         {
-            currentTarget = targetSpeed;
-
-            transitionTimer = 0.0f;
+            // Set new target speed.
+            this.targetSpeed = targetSpeed;
             targetReached = false;
 
             // Enable update loop.
@@ -238,61 +297,94 @@ namespace itolib.Behaviours.Animations
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set starting or initial target for the <i>speed</i> multiplier parameter.
         /// </summary>
-        public void SyncSpeed()
+        /// <param name="startingSpeed">Starting or initial target speed value to use.</param>
+        public void SyncSpeed(float startingSpeed)
         {
-            SyncSpeed(InitialSpeed);
-        }
+            // Check if already set as the starting or initial speed.
+            if (this.startingSpeed == startingSpeed)
+            {
+                return;
+            }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="initialSpeed"></param>
-        public void SyncSpeed(float initialSpeed)
-        {
-            SyncSpeedLocal(initialSpeed);
-
+            // Check if object is spawned.
             if (IsSpawned)
             {
-                SyncSpeedRpc(initialSpeed);
+                // Send given starting or initial target speed value to the server.
+                SyncSpeedServerRpc(startingSpeed);
+            }
+            else
+            {
+                // Set starting or initial target speed to the given value, for the local client.
+                SyncSpeedLocal(startingSpeed);
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set starting or initial target for the <i>speed</i> multiplier parameter on the server.
         /// </summary>
-        /// <param name="initialSpeed"></param>
-        [Rpc(SendTo.NotMe, RequireOwnership = false)]
-        private void SyncSpeedRpc(float initialSpeed)
+        /// <param name="startingSpeed">Starting or initial target speed value to use.</param>
+        [Rpc(SendTo.Server, RequireOwnership = false)]
+        private void SyncSpeedServerRpc(float startingSpeed)
         {
-            SyncSpeedLocal(initialSpeed);
+            // Check if already set as the starting or initial speed.
+            if (this.startingSpeed == startingSpeed)
+            {
+                return;
+            }
+
+            // Set starting or initial target speed to the given value, for all clients.
+            SyncSpeedClientRpc(startingSpeed);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set starting or initial target for the <i>speed</i> multiplier parameter on all clients.
         /// </summary>
-        /// <param name="initialSpeed"></param>
-        public void SyncSpeedLocal(float initialSpeed)
+        /// <param name="startingSpeed">Starting or initial target speed value to use.</param>
+        /// <remarks>Delayed by a network tick for the host due to <c>DeferLocal</c> being true, to sync up better with clients.</remarks>
+        [Rpc(SendTo.ClientsAndHost, DeferLocal = true, RequireOwnership = true)]
+        private void SyncSpeedClientRpc(float startingSpeed)
         {
-            InitialSpeed = initialSpeed;
-            previousTarget = initialSpeed;
-            currentTarget = initialSpeed;
+            // Set starting or initial target speed to the given value, for the local client.
+            SyncSpeedLocal(startingSpeed);
+        }
 
-            transitionTimer = 0.0f;
-            targetReached = true;
+        /// <summary>
+        ///     Set starting or initial target for the <i>speed</i> multiplier parameter on the local client.
+        /// </summary>
+        /// <param name="startingSpeed">Starting or initial target speed value to use.</param>
+        public void SyncSpeedLocal(float startingSpeed)
+        {
+            // Set starting or initial target speed.
+            this.startingSpeed = startingSpeed;
 
-            animator.Play(initialState);
-            animator.SetFloat(speedParameter, initialSpeed);
+            currentSpeed = animator.GetFloat(speedParameterID);
+            targetSpeed = startingSpeed;
+            targetReached = false;
+
+            enabled = true;
+            // ...
+
+            // Completely reset Animator state when syncing speed with clients:
+            animator.Rebind();
+            animator.Update(0.0f);
+            animator.Play(initialStateID);
+
+            animator.enabled = true;
+            // ...
+
+            // Set activation as performed, if not already done.
+            PerformedActivation = true;
         }
 
         /// <summary>
         ///     Perform script activation at the specified <c>ActivationTime</c>.
         /// </summary>
         /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
-        public virtual void PerformActivation(ActivationTime activationTime)
+        public void PerformActivation(ActivationTime activationTime)
         {
-            SyncSpeed();
+            SyncSpeed(startingSpeed);
         }
 
         /// <summary>
