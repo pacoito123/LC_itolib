@@ -1,3 +1,4 @@
+using itolib.Extensions;
 using itolib.Interfaces;
 using itolib.Util;
 using System;
@@ -51,7 +52,8 @@ namespace itolib.Behaviours.Enemies
         /// <param name="enemyWithRarity"></param>
         public EnemyWeightEntry(SpawnableEnemyWithRarity enemyWithRarity)
         {
-            enemyName = (enemyWithRarity.enemyType != null) ? enemyWithRarity.enemyType.enemyName : string.Empty;
+            // enemyName = (enemyWithRarity.enemyType != null) ? enemyWithRarity.enemyType.enemyName : string.Empty;
+            enemyToSpawn = enemyWithRarity.enemyType;
             Weight = enemyWithRarity.rarity;
         }
     }
@@ -101,7 +103,8 @@ namespace itolib.Behaviours.Enemies
         /// <returns></returns>
         public override NetworkObject? GetPrefabToSpawn()
         {
-            if (SearchContent.TryFindEnemy(out EnemyType enemy, enemyToSpawn) && TryGetNetworkObject(out NetworkObject enemyNetworkObject, enemy))
+            if (!enemyToSpawn.IsNullOrEmpty() && SearchContent.TryFindEnemy(out EnemyType enemy, enemyToSpawn)
+                && TryGetNetworkObject(out NetworkObject enemyNetworkObject, enemy))
             {
                 return enemyNetworkObject;
             }
@@ -113,8 +116,8 @@ namespace itolib.Behaviours.Enemies
                 {
                     return enemyNetworkObject;
                 }
-                else if (entry.enemyToSpawn != null && SearchContent.TryFindEnemy(out enemy, entry.enemyToSpawn.name)
-                    && TryGetNetworkObject(out enemyNetworkObject, enemy))
+                else if (entry.enemyToSpawn != null && (TryGetNetworkObject(out enemyNetworkObject, entry.enemyToSpawn) || (SearchContent.TryFindEnemy(out enemy,
+                    entry.enemyToSpawn.name, checkObjectName: true) && TryGetNetworkObject(out enemyNetworkObject, enemy))))
                 {
                     return enemyNetworkObject;
                 }

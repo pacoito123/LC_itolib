@@ -36,11 +36,28 @@ namespace itolib.Util
                 return true;
             }
 
+            if (LethalLibCompatibility.Enabled)
+            {
+                Item? lethalLibItem = LethalLibCompatibility.GetLethalLibItem(itemName, checkObjectName);
+
+                if (lethalLibItem != null)
+                {
+                    item = lethalLibItem;
+
+                    return true;
+                }
+            }
+
             if (DawnLibCompatibility.Enabled)
             {
-                Item? dawnItem = DawnLibCompatibility.GetDawnItem(itemName);
+                Item? dawnItem = DawnLibCompatibility.GetDawnItem(itemName, checkObjectName);
 
-                return true;
+                if (dawnItem != null)
+                {
+                    item = dawnItem;
+
+                    return true;
+                }
             }
 
             return false;
@@ -72,11 +89,28 @@ namespace itolib.Util
                 return true;
             }
 
+            if (LethalLibCompatibility.Enabled)
+            {
+                EnemyType? lethalLibEnemy = LethalLibCompatibility.GetLethalLibEnemyType(enemyName, checkObjectName);
+
+                if (lethalLibEnemy != null)
+                {
+                    enemy = lethalLibEnemy;
+
+                    return true;
+                }
+            }
+
             if (DawnLibCompatibility.Enabled)
             {
-                EnemyType? dawnEnemy = DawnLibCompatibility.GetDawnEnemyType(enemyName);
+                EnemyType? dawnEnemy = DawnLibCompatibility.GetDawnEnemyType(enemyName, checkObjectName);
 
-                return true;
+                if (dawnEnemy != null)
+                {
+                    enemy = dawnEnemy;
+
+                    return true;
+                }
             }
 
             return false;

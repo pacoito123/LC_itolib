@@ -57,7 +57,8 @@ namespace itolib.Behaviours.Props
         /// <param name="itemWithRarity"></param>
         public ScrapWeightEntry(SpawnableItemWithRarity itemWithRarity)
         {
-            itemName = (itemWithRarity.spawnableItem != null) ? itemWithRarity.spawnableItem.itemName : string.Empty;
+            // itemName = (itemWithRarity.spawnableItem != null) ? itemWithRarity.spawnableItem.itemName : string.Empty;
+            itemToSpawn = itemWithRarity.spawnableItem;
             Weight = itemWithRarity.rarity;
         }
     }
@@ -201,8 +202,8 @@ namespace itolib.Behaviours.Props
                 {
                     return itemNetworkObject;
                 }
-                else if (entry.itemToSpawn != null && SearchContent.TryFindItem(out item, entry.itemToSpawn.name, checkObjectName: true)
-                    && TryGetNetworkObject(out itemNetworkObject, item))
+                else if (entry.itemToSpawn != null && (TryGetNetworkObject(out itemNetworkObject, entry.itemToSpawn) || (SearchContent.TryFindItem(out item,
+                    entry.itemToSpawn.name, checkObjectName: true) && TryGetNetworkObject(out itemNetworkObject, item))))
                 {
                     return itemNetworkObject;
                 }

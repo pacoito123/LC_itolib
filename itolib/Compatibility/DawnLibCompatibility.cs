@@ -24,7 +24,7 @@ namespace itolib.Compatibility
         private static bool? _enabled;
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        internal static EnemyType? GetDawnEnemyType(string enemyName)
+        internal static EnemyType? GetDawnEnemyType(string enemyName, bool checkObjectName = false)
         {
             foreach (DawnEnemyInfo dawnEnemyInfo in LethalContent.Enemies.Values)
             {
@@ -34,8 +34,8 @@ namespace itolib.Compatibility
                     continue;
                 }
 
-                if (dawnEnemyInfo.EnemyType != null && dawnEnemyInfo.EnemyType.enemyPrefab != null
-                    && dawnEnemyInfo.EnemyType.enemyPrefab.name.CompareOrdinal(enemyName))
+                if (dawnEnemyInfo.EnemyType != null && (!checkObjectName ? dawnEnemyInfo.EnemyType.enemyName.CompareOrdinal(enemyName)
+                    : dawnEnemyInfo.EnemyType.name.CompareOrdinal(enemyName)))
                 {
                     return dawnEnemyInfo.EnemyType;
                 }
@@ -45,7 +45,7 @@ namespace itolib.Compatibility
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        internal static Item? GetDawnItem(string itemName)
+        internal static Item? GetDawnItem(string itemName, bool checkObjectName = false)
         {
             foreach (DawnItemInfo dawnItemInfo in LethalContent.Items.Values)
             {
@@ -55,7 +55,8 @@ namespace itolib.Compatibility
                     continue;
                 }
 
-                if (dawnItemInfo.Item != null && dawnItemInfo.Item.name.CompareOrdinal(itemName))
+                if (dawnItemInfo.Item != null && (!checkObjectName ? dawnItemInfo.Item.itemName.CompareOrdinal(itemName)
+                    : dawnItemInfo.Item.name.CompareOrdinal(itemName)))
                 {
                     return dawnItemInfo.Item;
                 }
