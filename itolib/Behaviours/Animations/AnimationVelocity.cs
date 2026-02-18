@@ -154,9 +154,6 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         private void Start()
         {
-            startingSpeed = (minStartingSpeed >= maxStartingSpeed) ? minStartingSpeed : (isSeededRandom
-                ? SeededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed)
-                : Random.Range(minStartingSpeed, maxStartingSpeed));
             ActivationSelf.Initialize();
         }
 
@@ -275,7 +272,7 @@ namespace itolib.Behaviours.Animations
         ///     Change target value for the <i>speed</i> multiplier parameter for all clients.
         /// </summary>
         /// <param name="targetSpeed">Target speed value to change to.</param>
-        [Rpc(SendTo.ClientsAndHost, DeferLocal = true, RequireOwnership = false)]
+        [Rpc(SendTo.ClientsAndHost, RequireOwnership = false)]
         private void ChangeSpeedRpc(float targetSpeed)
         {
             // Change target speed for the local client.
@@ -328,12 +325,6 @@ namespace itolib.Behaviours.Animations
         [Rpc(SendTo.Server, RequireOwnership = false)]
         private void SyncSpeedServerRpc(float startingSpeed)
         {
-            // Check if already set as the starting or initial speed.
-            if (this.startingSpeed == startingSpeed)
-            {
-                return;
-            }
-
             // Set starting or initial target speed to the given value, for all clients.
             SyncSpeedClientRpc(startingSpeed);
         }
@@ -342,8 +333,7 @@ namespace itolib.Behaviours.Animations
         ///     Set starting or initial target for the <i>speed</i> multiplier parameter on all clients.
         /// </summary>
         /// <param name="startingSpeed">Starting or initial target speed value to use.</param>
-        /// <remarks>Delayed by a network tick for the host due to <c>DeferLocal</c> being true, to sync up better with clients.</remarks>
-        [Rpc(SendTo.ClientsAndHost, DeferLocal = true, RequireOwnership = true)]
+        [Rpc(SendTo.ClientsAndHost, RequireOwnership = true)] // TODO: Consider DeferLocal but only with other clients connected.
         private void SyncSpeedClientRpc(float startingSpeed)
         {
             // Set starting or initial target speed to the given value, for the local client.
@@ -384,6 +374,9 @@ namespace itolib.Behaviours.Animations
         /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
         public void PerformActivation(ActivationTime activationTime)
         {
+            float startingSpeed = (minStartingSpeed >= maxStartingSpeed) ? minStartingSpeed : (isSeededRandom
+                ? SeededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed)
+                : Random.Range(minStartingSpeed, maxStartingSpeed));
             SyncSpeed(startingSpeed);
         }
 
