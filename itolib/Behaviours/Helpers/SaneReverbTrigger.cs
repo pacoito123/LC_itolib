@@ -27,6 +27,32 @@ namespace itolib.Behaviours.Helpers
         /// <summary>
         ///     TODO.
         /// </summary>
+        private void Reset()
+        {
+            if (TryGetComponent(out AudioReverbTrigger reverbTrigger))
+            {
+                reverbPreset = reverbTrigger.reverbPreset;
+                usePreset = reverbTrigger.usePreset;
+                audioChanges = [.. reverbTrigger.audioChanges];
+                elevatorTriggerForProps = reverbTrigger.elevatorTriggerForProps;
+                setInElevatorTrigger = reverbTrigger.setInElevatorTrigger;
+                isShipRoom = reverbTrigger.isShipRoom;
+                toggleLocalFog = reverbTrigger.toggleLocalFog;
+                fogEnabledAmount = reverbTrigger.fogEnabledAmount;
+                localFog = reverbTrigger.localFog;
+                terrainObj = reverbTrigger.terrainObj;
+                setInsideAtmosphere = reverbTrigger.setInsideAtmosphere;
+                insideLighting = reverbTrigger.insideLighting;
+                weatherEffect = reverbTrigger.weatherEffect;
+                effectEnabled = reverbTrigger.effectEnabled;
+                disableAllWeather = reverbTrigger.disableAllWeather;
+                enableCurrentLevelWeather = reverbTrigger.enableCurrentLevelWeather;
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         private void Awake()
         {
             timeSinceLastCheck = delayCheck;

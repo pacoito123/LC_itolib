@@ -119,7 +119,7 @@ namespace itolib.Behaviours.Grabbables
                 return;
             }
 
-            if (item.parentObject != null || itemTransform.GetParent() != null
+            if (item.parentObject != null || itemTransform.GetParent() == null
                 || (itemTransform.GetParent() != RoundManager.Instance.spawnedScrapContainer
                 && itemTransform.GetParent() != StartOfRound.Instance.propsContainer
                 && itemTransform.GetParent() != StartOfRound.Instance.elevatorTransform))

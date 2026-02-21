@@ -108,13 +108,6 @@ namespace itolib.Behaviours.Kinematics
         {
             if (attachedPlayer != null)
             {
-                // Obtain attached player's position, with the offset applied.
-                Vector3 targetPosition = attachedPlayerTransform.position + (rotateWithPlayer ? attachedPlayerTransform.rotation * playerOffset : playerOffset);
-
-                // Move tracker towards the attached player.
-                trackerTransform.position = (trackingTime == 0.0f) ? targetPosition
-                    : Vector3.SmoothDamp(trackerTransform.position, targetPosition, ref trackingVelocityPos, trackingTime);
-
                 if (rotateWithPlayer)
                 {
                     Quaternion targetRotation = attachedPlayerTransform.rotation;
@@ -127,6 +120,13 @@ namespace itolib.Behaviours.Kinematics
                     trackerTransform.rotation = (trackingTime == 0.0f) ? targetRotation
                         : trackerTransform.rotation.SmoothDamp(targetRotation, ref trackingVelocityRot, trackingTime);
                 }
+
+                // Obtain attached player's position, with the offset applied.
+                Vector3 targetPosition = attachedPlayerTransform.position + (trackerTransform.rotation * playerOffset);
+
+                // Move tracker towards the attached player.
+                trackerTransform.position = (trackingTime == 0.0f) ? targetPosition
+                    : Vector3.SmoothDamp(trackerTransform.position, targetPosition, ref trackingVelocityPos, trackingTime);
 
                 // Apply rotations towards the tracker to each pivot.
                 for (int i = 0; i < pivotsToRotate?.Length; i++)

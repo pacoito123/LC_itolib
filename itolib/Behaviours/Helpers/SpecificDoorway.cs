@@ -63,5 +63,24 @@ namespace itolib.Behaviours.Helpers
         [field: Tooltip("")]
         [field: Min(0.0f)]
         [field: SerializeField] public float WeightMultiplier { get; private set; } = 1.0f;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void Reset()
+        {
+            if (TryGetComponent(out Doorway doorway))
+            {
+                DoorPrefabPriority = doorway.DoorPrefabPriority;
+                ConnectorPrefabWeights = [.. doorway.ConnectorPrefabWeights];
+                BlockerPrefabWeights = [.. doorway.BlockerPrefabWeights];
+                AvoidRotatingDoorPrefab = doorway.AvoidRotatingDoorPrefab;
+                AvoidRotatingBlockerPrefab = doorway.AvoidRotatingBlockerPrefab;
+                ConnectorSceneObjects = [.. doorway.ConnectorSceneObjects];
+                BlockerSceneObjects = [.. doorway.BlockerSceneObjects];
+                Tags.Tags = [.. doorway.Tags.Tags];
+                socket = doorway.Socket;
+            }
+        }
     }
 }

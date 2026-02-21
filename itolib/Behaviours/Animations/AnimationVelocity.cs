@@ -216,8 +216,16 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     Roll and set a new <i>speed</i> multiplier parameter value, within the specified range.
         /// </summary>
+        public void RerollSpeed()
+        {
+            RerollSpeed(restart: false);
+        }
+
+        /// <summary>
+        ///     Roll and set a new <i>speed</i> multiplier parameter value, within the specified range.
+        /// </summary>
         /// <param name="restart">Whether to use the rolled number as the starting or initial target value or not, which also resets the <c>Animator</c> state.</param>
-        public void RerollSpeed(bool restart = false)
+        public void RerollSpeed(bool restart)
         {
             float targetSpeed = (minStartingSpeed >= maxStartingSpeed) ? minStartingSpeed : (isSeededRandom
                 ? SeededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed)
