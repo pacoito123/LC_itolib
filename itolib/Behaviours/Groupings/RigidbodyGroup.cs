@@ -51,9 +51,14 @@ namespace itolib.Behaviours.Groupings
                 return;
             }
 
-            if ((int)rigidbodyActionID > 7 || parameter is not Vector3 force)
+            Vector3 force = Vector3.zero;
+            if ((int)rigidbodyActionID < 8)
             {
-                return;
+                if (parameter is not Vector3 vector)
+                {
+                    return;
+                }
+                force = vector;
             }
 
             switch (rigidbodyActionID)

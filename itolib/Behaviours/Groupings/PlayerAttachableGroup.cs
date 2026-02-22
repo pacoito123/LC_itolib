@@ -32,18 +32,23 @@ namespace itolib.Behaviours.Groupings
                 return;
             }
 
-            if ((int)attachableActionID < 2 || parameter is not PlayerControllerB player)
+            PlayerControllerB playerToAttach = null!;
+            if (attachableActionID is not AttachableActions.DetachPlayer)
             {
-                return;
+                if (parameter is not PlayerControllerB player)
+                {
+                    return;
+                }
+                playerToAttach = player;
             }
 
             switch (attachableActionID)
             {
                 case AttachableActions.AttachPlayer:
-                    attachable.AttachPlayer(player);
+                    attachable.AttachPlayer(playerToAttach);
                     break;
                 case AttachableActions.TransferPlayer:
-                    attachable.TransferPlayer(player);
+                    attachable.TransferPlayer(playerToAttach);
                     break;
                 case AttachableActions.DetachPlayer:
                     attachable.DetachPlayer();
