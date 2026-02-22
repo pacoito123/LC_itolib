@@ -77,11 +77,13 @@ namespace itolib.Behaviours.Detectors
         [SerializeField] private bool allowWeedKiller = true;
 
         /// <summary>
-        ///     Minimum angle required for the spray to be considered within line of sight, in degrees.
+        ///     Distance-based angle required for the spray to be considered within line of sight, in degrees (<c>0°</c> to <c>180°</c>).
         /// </summary>
-        [Tooltip("Minimum angle required for the spray to be considered within line of sight, in degrees.")]
-        [Range(0.0f, 180.0f)]
-        [SerializeField] private float sprayAngle = 45.0f;
+        /// <remarks><c>0</c> is as close to the sensor as possible, <c>1</c> is at maximum range from the sensor.</remarks>
+        [Space(5.0f)]
+        [Tooltip("Distance-based angle required for the spray to be considered within line of sight, in degrees ('0°' to '180°'). '0' is as close to the sensor "
+            + "as possible, '1' is at maximum range from the sensor.")]
+        [SerializeField] private AnimationCurve angleCurve = AnimationCurve.Linear(0.0f, 45.0f, 1.0f, 5.0f);
 
         /// <summary>
         ///     Maximum range for a spray to be detected.
@@ -100,10 +102,20 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     <c>LayerMask</c> for all layers that should block spray detection.
         /// </summary>
-        [Space(10f)]
+        [Space(10.0f)]
         [Header("Layer Mask")]
         [Tooltip("LayerMask for all layers that should block spray detection.")]
         [SerializeField] private LayerMask layerMask;
+
+        /// <summary>
+        ///     Minimum angle required for the spray to be considered within line of sight, in degrees.
+        /// </summary>
+        /// <remarks>Deprecated. Should be ignored.</remarks>
+        [Space(5.0f)]
+        [Header("== DEPRECATED ==")]
+        [Tooltip("(Deprecated) Minimum angle required for the spray to be considered within line of sight, in degrees.")]
+        [Range(0.0f, 180.0f)]
+        [SerializeField] private float sprayAngle = -1.0f;
 
         /// <summary>
         ///     Total number of sprays that have been detected.
@@ -148,6 +160,12 @@ namespace itolib.Behaviours.Detectors
         /// <param name="player">Player whose spraying was detected.</param>
         protected override void PlayerMoved(PlayerControllerB player)
         {
+            // Check if spray range is valid.
+            if (sprayRange <= 0.0f)
+            {
+                return;
+            }
+
             // Check if player is not holding an item or is unable to use it for any reason.
             if (player.throwingObject || !player.CanUseItem())
             {
@@ -161,8 +179,14 @@ namespace itolib.Behaviours.Detectors
                 return;
             }
 
+            Vector3 pos = transform.position;
+            float sqrRange = sprayRange * sprayRange,
+                sqrDistance = (attachedPlayerTransform.position - pos).sqrMagnitude,
+                sqrProximityRange = (proximityRange > 0.0f) ? proximityRange * proximityRange : -1.0f,
+                sprayAngle = Mathf.Clamp(angleCurve.Evaluate(Mathf.Sqrt(sqrDistance / sqrRange)), 0.0f, 180.0f);
+
             // Check if the player is within range and has unobstructed line of sight with the sensor.
-            if (!player.HasLineOfSightToPosition(transform.position, sprayAngle, sprayRange, proximityRange, layerMask))
+            if (!player.HasLineOfSightToPosition(transform.position, sprayAngle, sprayRange, sqrProximityRange, layerMask))
             {
                 return;
             }

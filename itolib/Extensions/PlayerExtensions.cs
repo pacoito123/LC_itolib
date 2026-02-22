@@ -45,11 +45,32 @@ namespace itolib.Extensions
         public static bool HasLineOfSightToPosition(this PlayerControllerB player, Vector3 pos, float width = 45f, float range = 60,
             float proximityAwareness = -1f, LayerMask layerMask = default)
         {
+            Transform playerEye = player.playerEye.transform;
             float sqrDistance = (player.transform.position - pos).sqrMagnitude;
 
-            return sqrDistance < range * range && (Vector3.Angle(player.playerEye.transform.forward, pos - player.gameplayCamera.transform.position) < width
-                || (proximityAwareness > 0 && sqrDistance < proximityAwareness * proximityAwareness)) && !Physics.Linecast(player.playerEye.transform.position,
-                    pos, out player.hit, layerMask, QueryTriggerInteraction.Ignore);
+            return sqrDistance < (range * range) && ((proximityAwareness > 0 && sqrDistance < (proximityAwareness * proximityAwareness))
+                || Vector3.Angle(playerEye.forward, pos - player.gameplayCamera.transform.position) < width)
+                && !Physics.Linecast(playerEye.position, pos, out player.hit, layerMask, QueryTriggerInteraction.Ignore);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="pos"></param>
+        /// <param name="distance"></param>
+        /// <param name="width"></param>
+        /// <param name="range"></param>
+        /// <param name="proximityAwareness"></param>
+        /// <param name="layerMask"></param>
+        /// <returns></returns>
+        public static bool HasLineOfSightToPosition(this PlayerControllerB player, Vector3 pos, float distance, float width = 45f, float range = 60,
+            float proximityAwareness = -1f, LayerMask layerMask = default)
+        {
+            Transform playerEye = player.playerEye.transform;
+
+            return distance < range && (distance < proximityAwareness || Vector3.Angle(playerEye.forward, pos - player.gameplayCamera.transform.position) < width)
+                && !Physics.Linecast(playerEye.position, pos, out player.hit, layerMask, QueryTriggerInteraction.Ignore);
         }
 
         /// <summary>
