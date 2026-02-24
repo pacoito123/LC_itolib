@@ -102,6 +102,11 @@ namespace itolib.Behaviours.Animations
         private bool targetReached = true;
 
         /// <summary>
+        ///     Whether the current target <i>speed</i> is allowed to be changed or not.
+        /// </summary>
+        private bool targetLocked;
+
+        /// <summary>
         ///     Starting or initial target value of the <i>speed</i> multiplier parameter, to reset back to.
         /// </summary>
         private float startingSpeed;
@@ -257,8 +262,8 @@ namespace itolib.Behaviours.Animations
                 return;
             }
 
-            // Check if already at the target speed.
-            if (this.targetSpeed == targetSpeed)
+            // Check if target is locked, or already at the target speed.
+            if (targetLocked || this.targetSpeed == targetSpeed)
             {
                 return;
             }
@@ -293,6 +298,12 @@ namespace itolib.Behaviours.Animations
         /// <param name="targetSpeed">Target speed value to change to.</param>
         public void ChangeSpeedLocal(float targetSpeed)
         {
+            // Check if target is locked, or already at the target speed.
+            if (targetLocked || this.targetSpeed == targetSpeed)
+            {
+                return;
+            }
+
             // Set new target speed.
             this.targetSpeed = targetSpeed;
             targetReached = false;
@@ -360,6 +371,7 @@ namespace itolib.Behaviours.Animations
             currentSpeed = animator.GetFloat(speedParameterID);
             targetSpeed = startingSpeed;
             targetReached = false;
+            targetLocked = false;
 
             enabled = true;
             // ...
@@ -374,6 +386,33 @@ namespace itolib.Behaviours.Animations
 
             // Set activation as performed, if not already done.
             PerformedActivation = true;
+        }
+
+        /// <summary>
+        ///     Change target value for the <i>speed</i> multiplier parameter and lock it.
+        /// </summary>
+        /// <param name="targetSpeed">Target speed value to change to.</param>
+        public void LockSpeed(float targetSpeed)
+        {
+            if (IsSpawned && !targetLocked)
+            {
+                LockSpeedRpc(targetSpeed);
+            }
+        }
+
+        /// <summary>
+        ///     Change target value for the <i>speed</i> multiplier parameter and lock it for all clients.
+        /// </summary>
+        /// <remarks><b>NOTE:</b> Only unlocks when resyncing the entire <c>Animator</c>.</remarks>
+        /// <param name="targetSpeed">Target speed value to change to.</param>
+        [Rpc(SendTo.ClientsAndHost, RequireOwnership = false)]
+        private void LockSpeedRpc(float targetSpeed)
+        {
+            if (!targetLocked)
+            {
+                ChangeSpeedLocal(targetSpeed);
+                targetLocked = true;
+            }
         }
 
         /// <summary>
