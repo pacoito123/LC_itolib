@@ -234,6 +234,23 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
+        public override void ClearDestroyed()
+        {
+            for (int i = PrefabInstances.Count - 1; i >= 0; i--)
+            {
+                RedLocustBees? spawnedBees = PrefabInstances[i];
+
+                if (spawnedBees == null)
+                {
+                    PrefabInstances.RemoveAt(i);
+                    SyncedHives.RemoveAt(i);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         private void Reset()
         {
             beesScanNode = new()

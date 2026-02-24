@@ -119,6 +119,23 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
+        public override void ClearDestroyed()
+        {
+            for (int i = PrefabInstances.Count - 1; i >= 0; i--)
+            {
+                NetworkObject? spawnedPrefab = PrefabInstances[i];
+
+                if (spawnedPrefab == null)
+                {
+                    PrefabInstances.RemoveAt(i);
+                    SyncedPrefabs.RemoveAt(i);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         private void Reset()
         {
             if (TryGetComponent(out SpawnSyncedObject syncedObject) && syncedObject.spawnPrefab != null)

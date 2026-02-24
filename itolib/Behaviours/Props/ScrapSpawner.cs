@@ -294,6 +294,23 @@ namespace itolib.Behaviours.Props
         }
 
         /// <summary>
+        ///     TODO.
+        /// </summary>
+        public override void ClearDestroyed()
+        {
+            for (int i = PrefabInstances.Count - 1; i >= 0; i--)
+            {
+                GrabbableObject? spawnedItem = PrefabInstances[i];
+
+                if (spawnedItem == null)
+                {
+                    PrefabInstances.RemoveAt(i);
+                    SyncedItems.RemoveAt(i);
+                }
+            }
+        }
+
+        /// <summary>
         ///     Cache already-cast <c>IWeightedScript</c> instance.
         /// </summary>
         protected ScrapSpawner() : base()

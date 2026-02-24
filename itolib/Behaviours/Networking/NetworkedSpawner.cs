@@ -410,6 +410,14 @@ namespace itolib.Behaviours.Networking
         }
 
         /// <summary>
+        ///     TODO.
+        /// </summary>
+        public virtual void ClearDestroyed()
+        {
+            _ = PrefabInstances.RemoveAll(spawnedObject => spawnedObject == null);
+        }
+
+        /// <summary>
         ///     <c>DunGen</c> listener called when the Dungeon finishes generating.
         /// </summary>
         /// <param name="dungeon">Dungeon that just finished generating.</param>
