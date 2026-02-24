@@ -162,7 +162,7 @@ namespace itolib.Behaviours.Interactables
                 if (isPickingLock)
                 {
                     lockPickTimeLeft -= Time.deltaTime;
-                    doorTrigger.disabledHoverTip = string.Format(CultureInfo.InvariantCulture, lockPickUnlockMessage, (int)lockPickTimeLeft);
+                    doorTrigger.disabledHoverTip = string.Format(CultureInfo.InvariantCulture, lockPickUnlockTimerMessage, (int)lockPickTimeLeft);
 
                     if (IsServer && lockPickTimeLeft < 0.0f)
                     {

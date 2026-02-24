@@ -62,7 +62,9 @@ namespace itolib.Compatibility
             }
             else
             {
+#pragma warning disable CS8601 // Possible null reference assignment.
                 MeltdownAPI.OnMeltdownStart -= listener;
+#pragma warning restore CS8601 // Possible null reference assignment.
             }
         }
 

@@ -161,7 +161,10 @@ namespace itolib.Behaviours.Grabbables
         {
             OnEquip();
 
-            item.parentObject = null;
+            if (item != null)
+            {
+                item.parentObject = null;
+            }
         }
 
         /// <summary>
@@ -221,6 +224,11 @@ namespace itolib.Behaviours.Grabbables
         /// <param name="reset">Whether the wearable is being unequipped or not.</param>
         private void EquipWearableLocal(PlayerControllerB player, bool reset = false)
         {
+            if (item == null)
+            {
+                return;
+            }
+
             if (!reset)
             {
                 player.IsInspectingItem = false;

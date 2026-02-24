@@ -183,7 +183,7 @@ namespace itolib.Behaviours.Detectors
             float sqrRange = sprayRange * sprayRange,
                 sqrDistance = (attachedPlayerTransform.position - pos).sqrMagnitude,
                 sqrProximityRange = (proximityRange > 0.0f) ? proximityRange * proximityRange : -1.0f,
-                sprayAngle = Mathf.Clamp(angleCurve.Evaluate(Mathf.Sqrt(sqrDistance / sqrRange)), 0.0f, 180.0f);
+                sprayAngle = (this.sprayAngle >= 0.0f) ? Mathf.Clamp(angleCurve.Evaluate(Mathf.Sqrt(sqrDistance / sqrRange)), 0.0f, 180.0f) : this.sprayAngle;
 
             // Check if the player is within range and has unobstructed line of sight with the sensor.
             if (!player.HasLineOfSightToPosition(transform.position, sprayAngle, sprayRange, sqrProximityRange, layerMask))

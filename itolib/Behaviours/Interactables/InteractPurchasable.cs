@@ -1,5 +1,6 @@
 using itolib.Extensions;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -157,7 +158,8 @@ namespace itolib.Behaviours.Interactables
         /// <param name="success">Whether or not the purchase was succesful.</param>
         /// <param name="rpcParams"></param>
         [Rpc(SendTo.SpecifiedInParams)]
-        private void SendNotificationRpc(int price, bool success, RpcParams rpcParams)
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Netcode patched RPC.")]
+        private void SendNotificationRpc(int price, bool success, RpcParams rpcParams = default)
         {
             if (HUDManager.Instance == null)
             {

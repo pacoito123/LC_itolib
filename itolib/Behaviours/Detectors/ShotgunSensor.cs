@@ -100,7 +100,7 @@ namespace itolib.Behaviours.Detectors
             float sqrRange = shootRange * shootRange,
                 sqrDistance = (attachedPlayerTransform.position - pos).sqrMagnitude,
                 sqrProximityRange = (proximityRange > 0.0f) ? proximityRange * proximityRange : -1.0f,
-                shootAngle = Mathf.Clamp(angleCurve.Evaluate(Mathf.Sqrt(sqrDistance / sqrRange)), 0.0f, 180.0f);
+                shootAngle = (this.shootAngle >= 0.0f) ? Mathf.Clamp(angleCurve.Evaluate(Mathf.Sqrt(sqrDistance / sqrRange)), 0.0f, 180.0f) : this.shootAngle;
 
             // Check if the player is within range and has unobstructed line of sight with the sensor.
             if (!player.HasLineOfSightToPosition(pos, sqrDistance, shootAngle, sqrRange, sqrProximityRange, layerMask))

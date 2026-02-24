@@ -67,18 +67,6 @@ namespace itolib.PlayZone
         /// <summary>
         ///     TODO.
         /// </summary>
-        [Tooltip("")]
-        [SerializeField] private InteractTrigger? openDoors;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        [SerializeField] private InteractTrigger? closeDoors;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [Header("Audio")]
         [Tooltip("")]
         [SerializeField] private AudioSource? elevatorSource;
@@ -94,12 +82,6 @@ namespace itolib.PlayZone
         /// </summary>
         [Tooltip("")]
         [SerializeField] private AudioSource? doorSourceLower;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [Tooltip("")]
-        [SerializeField] private AudioClip? elevatorAudioTravel;
 
         /// <summary>
         ///     TODO.
