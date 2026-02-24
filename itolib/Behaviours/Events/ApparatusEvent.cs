@@ -40,19 +40,16 @@ namespace itolib.Behaviours.Events
         [SerializeField] private UnityEvent onFacilityMeltdown = new();
 
         /// <summary>
-        ///     Whether a <c>LungProp</c> has already been pulled by a player or not.
+        ///     Callback invoked when <c>FacilityMeltdown</c> turns outside lights on.
         /// </summary>
-        private bool hasBeenPulled;
+        [Tooltip("Callback invoked when FacilityMeltdown turns outside lights on.")]
+        [SerializeField] private UnityEvent onFacilityMeltdownLightsOn = new();
 
         /// <summary>
-        ///     Whether the radiation warning has already been displayed to players or not.
+        ///     Callback invoked when <c>FacilityMeltdown</c> turns outside lights off.
         /// </summary>
-        private bool hasRadiationWarningShown;
-
-        /// <summary>
-        ///     Whether <c>FacilityMeltdown</c> has started counting down or not.
-        /// </summary>
-        private bool hasMeltdownStarted;
+        [Tooltip("Callback invoked when FacilityMeltdown turns outside lights off.")]
+        [SerializeField] private UnityEvent onFacilityMeltdownLightsOff = new();
 
         /// <summary>
         ///     Subscribe to <c>LungProp</c>-related events.
@@ -65,6 +62,8 @@ namespace itolib.Behaviours.Events
             if (FacilityMeltdownCompatibility.Enabled)
             {
                 FacilityMeltdownCompatibility.RegisterMeltdownListener(OnMeltdownStart);
+                FacilityMeltdownCompatibility.OnMeltdownLightsOn += OnMeltdownLightsOn;
+                FacilityMeltdownCompatibility.OnMeltdownLightsOff += OnMeltdownLightsOff;
             }
         }
 
@@ -79,6 +78,8 @@ namespace itolib.Behaviours.Events
             if (FacilityMeltdownCompatibility.Enabled)
             {
                 FacilityMeltdownCompatibility.RegisterMeltdownListener(OnMeltdownStart, remove: true);
+                FacilityMeltdownCompatibility.OnMeltdownLightsOn -= OnMeltdownLightsOn;
+                FacilityMeltdownCompatibility.OnMeltdownLightsOff -= OnMeltdownLightsOff;
             }
         }
 
@@ -88,10 +89,11 @@ namespace itolib.Behaviours.Events
         /// <param name="apparatus"><c>LungProp</c> that was just pulled, as a <c>GrabbableObject</c>.</param>
         private void OnApparatusPull(GrabbableObject apparatus)
         {
-            if (!runOnce || !hasBeenPulled)
+            onApparatusPull.Invoke(apparatus);
+
+            if (runOnce)
             {
-                onApparatusPull.Invoke(apparatus);
-                hasBeenPulled = true;
+                LevelManager.GlobalLevelEvents.onApparatusTaken.RemoveListener(OnApparatusPull);
             }
         }
 
@@ -100,10 +102,11 @@ namespace itolib.Behaviours.Events
         /// </summary>
         private void OnRadiationWarning()
         {
-            if (!runOnce || !hasRadiationWarningShown)
+            onRadiationWarning.Invoke();
+
+            if (runOnce)
             {
-                onRadiationWarning.Invoke();
-                hasRadiationWarningShown = true;
+                ApparatusPatches.OnRadiationWarningHUD -= OnRadiationWarning;
             }
         }
 
@@ -112,10 +115,37 @@ namespace itolib.Behaviours.Events
         /// </summary>
         private void OnMeltdownStart()
         {
-            if (!runOnce || !hasMeltdownStarted)
+            onFacilityMeltdown.Invoke();
+
+            if (runOnce)
             {
-                onFacilityMeltdown.Invoke();
-                hasMeltdownStarted = true;
+                FacilityMeltdownCompatibility.RegisterMeltdownListener(OnMeltdownStart, remove: true);
+            }
+        }
+
+        /// <summary>
+        ///     Handle invoking event upon <c>FacilityMeltdown</c> turning outside lights on.
+        /// </summary>
+        private void OnMeltdownLightsOn()
+        {
+            onFacilityMeltdownLightsOn.Invoke();
+
+            if (runOnce)
+            {
+                FacilityMeltdownCompatibility.OnMeltdownLightsOn -= OnMeltdownLightsOn;
+            }
+        }
+
+        /// <summary>
+        ///     Handle invoking event upon <c>FacilityMeltdown</c> turning outside lights off.
+        /// </summary>
+        private void OnMeltdownLightsOff()
+        {
+            onFacilityMeltdownLightsOff.Invoke();
+
+            if (runOnce)
+            {
+                FacilityMeltdownCompatibility.OnMeltdownLightsOff -= OnMeltdownLightsOff;
             }
         }
     }

@@ -25,6 +25,11 @@ namespace itolib.Patches
             {
                 Plugin.Harmony.PatchAll(typeof(CrowdControlCompatibility));
             }
+
+            if (FacilityMeltdownCompatibility.Enabled)
+            {
+                Plugin.Harmony.PatchAll(typeof(FacilityMeltdownCompatibility));
+            }
         }
     }
 }
