@@ -6,6 +6,7 @@ using HarmonyLib;
 using itolib.PlayZone;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using Unity.Netcode;
@@ -73,30 +74,56 @@ namespace itolib.Compatibility
         [HarmonyTranspiler]
         internal static IEnumerable<CodeInstruction> EmergencyLightsTranspiler(IEnumerable<CodeInstruction> instructions)
         {
+            FieldInfo? meltdownLoggerInfo = typeof(MeltdownPlugin).GetField("logger", BindingFlags.Static | BindingFlags.NonPublic);
+            if (meltdownLoggerInfo == null)
+            {
+                Plugin.StaticLogger.LogError("Failed to find logger field in 'FacilityMeltdown.MeltdownPlugin'!");
+                return instructions;
+            }
+
+            MethodInfo logDebugInfo = typeof(ManualLogSource).GetMethod(nameof(ManualLogSource.LogDebug), BindingFlags.Instance | BindingFlags.Public);
             CodeMatcher codeMatcher = new CodeMatcher(instructions).MatchForward(useEnd: true,
-                new(OpCodes.Ldsfld, typeof(MeltdownPlugin).GetField(nameof(MeltdownPlugin.logger), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)),
+                new(OpCodes.Ldsfld, meltdownLoggerInfo),
                 new(OpCodes.Ldstr, "Switching lights ON"),
-                new(OpCodes.Callvirt, typeof(ManualLogSource).GetMethod(nameof(ManualLogSource.LogDebug), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)));
+                new(OpCodes.Callvirt, logDebugInfo));
 
             if (codeMatcher.Advance(1).IsInvalid)
             {
-                Plugin.StaticLogger.LogError("Failed to match code in 'MeltdownEffects.EmergencyLights'!");
+                Plugin.StaticLogger.LogError("Failed to match lights switching on code in 'MeltdownEffects.EmergencyLights'!");
                 return instructions;
             }
 
-            _ = codeMatcher.Insert(Transpilers.EmitDelegate(() => OnMeltdownLightsOn?.Invoke())).MatchForward(useEnd: true,
-                new(OpCodes.Ldsfld, typeof(MeltdownPlugin).GetField(nameof(MeltdownPlugin.logger), System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)),
+            MethodInfo onMeltdownLightsSwitchInfo = typeof(FacilityMeltdownCompatibility).GetMethod(nameof(OnMeltdownLightsSwitch), BindingFlags.Static | BindingFlags.NonPublic);
+            _ = codeMatcher.Insert(
+                new(OpCodes.Ldc_I4_1),
+                new(OpCodes.Call, onMeltdownLightsSwitchInfo))
+            .MatchForward(useEnd: true,
+                new(OpCodes.Ldsfld, meltdownLoggerInfo),
                 new(OpCodes.Ldstr, "Switching lights OFF"),
-                new(OpCodes.Callvirt, typeof(ManualLogSource).GetMethod(nameof(ManualLogSource.LogDebug), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)));
+                new(OpCodes.Callvirt, logDebugInfo));
 
             if (codeMatcher.Advance(1).IsInvalid)
             {
-                Plugin.StaticLogger.LogError("Failed to match code in 'MeltdownEffects.EmergencyLights'!");
+                Plugin.StaticLogger.LogError("Failed to match lights switching off code in 'MeltdownEffects.EmergencyLights'!");
                 return instructions;
             }
 
-            return codeMatcher.Insert(Transpilers.EmitDelegate(() => OnMeltdownLightsOff?.Invoke()))
-                .InstructionEnumeration();
+            return codeMatcher.Insert(
+                new(OpCodes.Ldc_I4_0),
+                new CodeInstruction(OpCodes.Call, onMeltdownLightsSwitchInfo))
+            .InstructionEnumeration();
+        }
+
+        private static void OnMeltdownLightsSwitch(bool on)
+        {
+            if (on)
+            {
+                OnMeltdownLightsOn?.Invoke();
+            }
+            else
+            {
+                OnMeltdownLightsOff?.Invoke();
+            }
         }
     }
 }

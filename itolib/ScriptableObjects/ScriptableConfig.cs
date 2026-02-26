@@ -1,10 +1,8 @@
 using BepInEx;
 using BepInEx.Configuration;
-using HarmonyLib;
 using itolib.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 
 namespace itolib.ScriptableObjects
@@ -97,26 +95,11 @@ namespace itolib.ScriptableObjects
             }
 
             // Remove old config settings.
-            ClearOrphanedEntries(Config);
+            Config.OrphanedEntries?.Clear();
 
             // Re-enable saving and save config.
             Config.SaveOnConfigSet = true;
             Config.Save();
-        }
-
-        /// <summary>
-        ///     Remove old (orphaned) configuration entries.
-        /// </summary>
-        /// <remarks>Obtained from: https://lethal.wiki/dev/intermediate/custom-configs#better-configuration</remarks>
-        /// <param name="config">The config file to clear orphaned entries from.</param>
-        public static void ClearOrphanedEntries(ConfigFile config)
-        {
-            // Obtain 'OrphanedEntries' dictionary from ConfigFile through reflection.
-            PropertyInfo orphanedEntriesProp = AccessTools.Property(typeof(ConfigFile), "OrphanedEntries");
-            Dictionary<ConfigDefinition, string>? orphanedEntries = (Dictionary<ConfigDefinition, string>?)orphanedEntriesProp.GetValue(config);
-
-            // Clear orphaned entries.
-            orphanedEntries?.Clear();
         }
     }
 }

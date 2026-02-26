@@ -15,7 +15,7 @@ namespace itolib.Behaviours.Detectors
         /// <remarks><c>0</c> is as close to the sensor as possible, <c>1</c> is at maximum range from the sensor.</remarks>
         [Space(5.0f)]
         [Header("Shotgun Sensor")]
-        [Tooltip("Distance-based angle required for the shot to be considered within line of sight, in degrees ('0°' to '180°'). '0' is as close to the sensor "
+        [Tooltip("Distance-based angle required for the shot to be considered within line of sight, in degrees (0° to 180°). '0' is as close to the sensor "
             + "as possible, '1' is at maximum range from the sensor.")]
         [SerializeField] private AnimationCurve angleCurve = AnimationCurve.Linear(0.0f, 45.0f, 1.0f, 5.0f);
 
@@ -48,7 +48,6 @@ namespace itolib.Behaviours.Detectors
         [Space(5.0f)]
         [Header("== DEPRECATED ==")]
         [Tooltip("(Deprecated) Minimum angle required for the shot to be considered within line of sight, in degrees.")]
-        [Range(0.0f, 180.0f)]
         [SerializeField] private float shootAngle = -1.0f;
 
         /// <summary>
@@ -100,7 +99,7 @@ namespace itolib.Behaviours.Detectors
             float sqrRange = shootRange * shootRange,
                 sqrDistance = (attachedPlayerTransform.position - pos).sqrMagnitude,
                 sqrProximityRange = (proximityRange > 0.0f) ? proximityRange * proximityRange : -1.0f,
-                shootAngle = (this.shootAngle >= 0.0f) ? Mathf.Clamp(angleCurve.Evaluate(Mathf.Sqrt(sqrDistance / sqrRange)), 0.0f, 180.0f) : this.shootAngle;
+                shootAngle = (this.shootAngle < 0.0f) ? Mathf.Clamp(angleCurve.Evaluate(Mathf.Sqrt(sqrDistance / sqrRange)), 0.0f, 180.0f) : this.shootAngle;
 
             // Check if the player is within range and has unobstructed line of sight with the sensor.
             if (!player.HasLineOfSightToPosition(pos, sqrDistance, shootAngle, sqrRange, sqrProximityRange, layerMask))
