@@ -3,7 +3,7 @@
     <PropertyGroup>
         <AssemblyName>itolib</AssemblyName>
         <Description>Wondrous gizmos and gadgets for the restless mind.</Description>
-        <Version>0.8.1</Version>
+        <Version>0.9.0</Version>
     </PropertyGroup>
 
     <!-- Project properties. -->

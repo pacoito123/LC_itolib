@@ -94,7 +94,9 @@ A proper write-up and documentation for all components and their intended usage 
 * **ComponentGroup:** Groups of components of a specific type (collected dynamically), to simply call functions in bulk for them all.
   * **AudioGroup:** A group of multiple `AudioSource` components, for performing audio operations (e.g. pausing and unpausing) to each of them all.
   * **RigidbodyGroup:** A group of multiple `Rigidbody` components, for applying a force of a certain type (e.g. `ForceMode.Impulse`) to each of them all.
-    * **RandomVector:** Simply outputs a random `Vector3` within a specified range to an event callback, where it can be used by other scripts (e.g. `RigidbodyGroup`). Has functions for modifying the minimum and maximum values for each axis, if so desired.
+    * **RandomVector:** _(Niche)_ Simply outputs a random `Vector3` within a specified range to an event callback, where it can be used by other scripts (e.g. `RigidbodyGroup`). Has functions for modifying the minimum and maximum values for each axis, if so desired.
+  * **RendererGroup:** A group of multiple `Renderer` components, for performing render operations (e.g. enabling/disabling shadow casting) to each of them all.
+  * **PlayerAttachableGroup:** _(Niche)_ A group of multiple `PlayerAttachable` components, for performing attach operations (e.g. attaching and detaching) to each of them all.
 * **Animations:**
   * **AnimationParamSetter:** Targets a specific `Animator` parameter (that _can_ be switched) to allow setting its value from an event call, while also syncing said value across clients.
   * **AnimationVelocity:** Can set a float parameter in an `Animator` to use as a speed multiplier for an `AnimationClip`, allowing smoothly changing between speed values and syncing it across clients.

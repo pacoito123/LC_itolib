@@ -1,5 +1,51 @@
 # Changelog
 
+## [v0.9.0]
+
+Added a couple niche scripts, reworked and overhauled various components, fixed several issues.
+
+- Added `RendererGroup`, for components that inherit from `Renderer`.
+  - Has functions for enabling/disabling every `Renderer`'s shadows, as well as changing their shadow casting mode.
+- Added `PlayerAttachableGroup`, for components that inherit from `PlayerAttachable`.
+  - Has functions for attaching/detaching players to/from each of them all.
+- Added generic functions to enable/disable or toggle every component in a `ComponentGroup`.
+- Added field to `ConnectedRope` to disable itself when not being looked at.
+- Added field to `PlayerTracker` to tilt in relation to the player's camera, if set to rotate with the player.
+- Added `onHiveSpawned` callback to `HiveSpawner`, for when the hive itself is spawned and fully synced with clients.
+- Added curve field to `ShotgunSensor` and `SpraySensor` to scale angle tolerance required to trigger the sensor depending on distance away from it.
+- Added event callbacks to `ApparatusEvent` for when emergency lights are turned on and off, after [FacilityMeltdown](https://thunderstore.io/c/lethal-company/p/loaforc/FacilityMeltdown) begins its meltdown sequence.
+- Made various improvements to `PlayerAttachable`:
+  - Added function to _transfer_ players, to gracefully _steal_ the spot of an attached player without having to manually perform the swap.
+  - Swapped `attachDisabled` field with a function that enables/disables attaching, so it'll actually show up in event callbacks.
+  - Added function to toggle attaching, which just inverts the current state of `attachDisabled`.
+  - Made the `triggerOnce` field simply disable attaching, so it can be reenabled if so desired.
+  - Made attach condition be taken into consideration when using `AttachPlayerLocal()`, while attaching locally.
+- Made various improvements to `MovementSensor` and its inheriting scripts:
+  - Made `MovementSensor` trigger immediately as the action is about to be performed, instead of a frame or two later.
+  - Added curve field to both `ShotgunSensor` and `SpraySensor` to scale angle tolerance required to trigger the sensor depending on distance away from it.
+  - Fixed `ShotgunSensor` being able to be triggered while paused, or with the `Shotgun` on cooldown.
+  - Removed specialized event callbacks from `ShotgunSensor` and `SpraySensor` (`onShotPerformed` and `onSprayPerformed`, respectively), since `onMovementDetected` now acts the same for both.
+- Made various improvements to `AnimationVelocity`:
+  - Switched from lerping to damping for the speed smoothing, and thus from a smoothing _speed_ to a smoothing _time_.
+  - Made initial speed syncing with clients also completely reset the `Animator`, in case the desired animation was already playing.
+  - Made changing speed function first sync the given value across clients, if not yet initialized.
+  - Added field to roll for the initial random speed using the current map seed.
+  - Added function to lock the target speed to the given value.
+  - Hashed any string values used for the `Animator`.
+  - Added some comments and tooltips.
+- Made various tweaks to `NetworkedAlert` and its inheriting scripts:
+  - Added field to all alert entries to set if the specific entry should be displayed only once (per instance).
+  - Fixed `AlertNotification` and `AlertToast` potentially causing some issues due to not resetting their respective trigger parameter.
+  - Did a few minor optimizations.
+- Made `SaneReverbTrigger` and `SpecificDoorway` copy the configuration of their respective parent components, to easily replace them.
+- Made `Fish` parent summoned fish to the objects that define their location instead, if `parentToSelf` is enabled.
+- Fixed `ScrapSpawner` and `EnemySpawner` not being able to spawn items and enemies registered through [LethalLib](https://thunderstore.io/c/lethal-company/p/Evaisa/LethalLib).
+- Fixed `ItemKickable` items not being... kickable.
+- Fixed `ItemWhackable` not respecting variant index number, if updated at a later point.
+- Fixed `InteractLockable` not showing the timer when unlocking a door with a custom tooltip.
+- Fixed compatibility with newest versions of [WeatherRegistry](https://thunderstore.io/c/lethal-company/p/mrov/WeatherRegistry).
+  - Should also be backwards-compatible with older versions, too.
+
 ## [v0.8.1]
 
 Added a niche event, did a couple small additions and small fixes.
