@@ -352,7 +352,7 @@ namespace itolib.Behaviours.Animations
         ///     Set starting or initial target for the <i>speed</i> multiplier parameter on all clients.
         /// </summary>
         /// <param name="startingSpeed">Starting or initial target speed value to use.</param>
-        [Rpc(SendTo.ClientsAndHost, RequireOwnership = true)] // TODO: Consider DeferLocal but only with other clients connected.
+        [Rpc(SendTo.ClientsAndHost, RequireOwnership = false)] // TODO: Consider DeferLocal but only with other clients connected.
         private void SyncSpeedClientRpc(float startingSpeed)
         {
             // Set starting or initial target speed to the given value, for the local client.

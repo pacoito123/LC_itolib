@@ -254,7 +254,7 @@ namespace itolib.Behaviours.Networking
         ///     Attach the given player on all clients.
         /// </summary>
         /// <param name="playerReference">Network reference of the player to attach.</param>
-        [Rpc(SendTo.ClientsAndHost, RequireOwnership = true)]
+        [Rpc(SendTo.ClientsAndHost, RequireOwnership = false)]
         private void AttachPlayerClientRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
@@ -425,7 +425,7 @@ namespace itolib.Behaviours.Networking
         ///     Switch player to attach on all other clients.
         /// </summary>
         /// <param name="playerReference">Network reference of the player to attach.</param>
-        [Rpc(SendTo.ClientsAndHost, RequireOwnership = true)]
+        [Rpc(SendTo.ClientsAndHost, RequireOwnership = false)]
         private void TransferPlayerClientRpc(NetworkBehaviourReference playerReference)
         {
             if (playerReference.TryGet(out PlayerControllerB player))

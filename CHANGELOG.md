@@ -6,6 +6,7 @@ WIP
 
 - Added tag-based connection rules to `SpecificDoorway`, similar to the ones that can be set for a `Tile`.
   - Can define one or several (`Doorway`) tags a `SpecificDoorway` should or should not be able to connect to.
+- Fixed clients not being able to attach to a `PlayerAttachable` when called from an item, due to the server not having ownership of it.
 
 ## [v0.9.0]
 
