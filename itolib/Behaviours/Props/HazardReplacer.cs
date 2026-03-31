@@ -61,29 +61,37 @@ namespace itolib.Behaviours.Props
             SelectableLevel currentLevel = LevelManager.CurrentExtendedLevel.SelectableLevel;
             ExtendedDungeonFlow currentDungeon = DungeonManager.CurrentExtendedDungeonFlow;
 
-            string[] hazardNames = new string[currentLevel.spawnableMapObjects.Length];
+            string[] hazardNames = new string[currentLevel.indoorMapHazards.Length];
 
             for (int i = 0; i < hazardNames.Length; i++)
             {
-                hazardNames[i] = currentLevel.spawnableMapObjects[i].prefabToSpawn.name;
+                if (currentLevel.indoorMapHazards[i] != null && currentLevel.indoorMapHazards[i].hazardType != null
+                    && currentLevel.indoorMapHazards[i].hazardType.prefabToSpawn != null)
+                {
+                    hazardNames[i] = currentLevel.indoorMapHazards[i].hazardType.prefabToSpawn.name;
+                }
             }
 
-            string[] extendedHazardNames = new string[currentDungeon.SpawnableMapObjects.Count];
+            string[] extendedHazardNames = new string[currentDungeon.IndoorMapHazards.Count];
 
             for (int i = 0; i < extendedHazardNames.Length; i++)
             {
-                extendedHazardNames[i] = currentDungeon.SpawnableMapObjects[i].prefabToSpawn.name;
+                if (currentDungeon.IndoorMapHazards[i] != null && currentDungeon.IndoorMapHazards[i].hazardType != null
+                    && currentDungeon.IndoorMapHazards[i].hazardType.prefabToSpawn != null)
+                {
+                    extendedHazardNames[i] = currentDungeon.IndoorMapHazards[i].hazardType.prefabToSpawn.name;
+                }
             }
 
             for (int i = 0; i < hazardReplacements.Length; i++)
             {
-                SpawnableMapObject? originalHazard = null;
+                IndoorMapHazard? originalHazard = null;
 
                 for (int j = 0; j < hazardNames.Length; j++)
                 {
                     if (hazardReplacements[i].originalHazard.CompareOrdinal(hazardNames[j]))
                     {
-                        originalHazard = currentLevel.spawnableMapObjects[j];
+                        originalHazard = currentLevel.indoorMapHazards[j];
 
                         break;
                     }
@@ -97,13 +105,13 @@ namespace itolib.Behaviours.Props
                     continue;
                 }
 
-                SpawnableMapObject? replacingHazard = null;
+                IndoorMapHazard? replacingHazard = null;
 
                 for (int j = 0; j < extendedHazardNames.Length; j++)
                 {
                     if (hazardReplacements[i].replacingHazard.CompareOrdinal(extendedHazardNames[j]))
                     {
-                        replacingHazard = currentDungeon.SpawnableMapObjects[j];
+                        replacingHazard = currentDungeon.IndoorMapHazards[j];
 
                         break;
                     }

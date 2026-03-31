@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.9.2]
+
+Updated for `v80`!
+
+- Added `Constant` ScreenShakeType to `ShakeEffect`.
+- Made `HazardReplacer` use the new `IndoorMapHazard` type.
+- Disabled `SpecificDoorway` patches for now (have not tested it alongside the new `DunGen` version).
+
 ## [v0.9.1]
 
 A couple small fixes before updating game version.

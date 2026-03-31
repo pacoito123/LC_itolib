@@ -72,7 +72,7 @@ namespace itolib.Util
                 }
                 if (challengeIndices[2] < 45)
                 {
-                    _ = anomalyRandom.Next(0, currentLevel.spawnableMapObjects.Length);
+                    _ = anomalyRandom.Next(0, currentLevel.indoorMapHazards.Length);
                 }
                 if (challengeIndices[3] < 45)
                 {

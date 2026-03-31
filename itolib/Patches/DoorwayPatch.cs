@@ -12,7 +12,7 @@ namespace itolib.Patches
     ///     Patch for <c>SpecificDoorway</c>'s functionality.
     /// </summary>
     [HarmonyPatch]
-    internal sealed class DoorwayPatch
+    internal static class DoorwayPatch
     {
         /// <summary>
         ///     Whether the current <c>Dungeon</c> is using <c>SpecificDoorway</c> or not. 

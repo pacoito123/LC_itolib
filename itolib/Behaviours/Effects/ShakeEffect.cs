@@ -28,6 +28,11 @@ namespace itolib.Behaviours.Effects
         private static readonly int veryStrongShakeID = Animator.StringToHash("veryStrongShake");
 
         /// <summary>
+        ///     Hash of the bool parameter to toggle constant camera shaking.
+        /// </summary>
+        private static readonly int shakingConstantID = Animator.StringToHash("ShakingConstant");
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         [Space(5.0f)]
@@ -64,18 +69,26 @@ namespace itolib.Behaviours.Effects
                 return;
             }
 
+            if (shakeType is ScreenShakeType.Constant)
+            {
+                HUDManager.Instance.playerScreenShakeAnimator.SetBool(shakingConstantID, true);
+
+                return;
+            }
+
             int shakeID = shakeType switch
             {
                 ScreenShakeType.Small => smallShakeID,
                 ScreenShakeType.Big => bigShakeID,
                 ScreenShakeType.Long => longShakeID,
                 ScreenShakeType.VeryStrong => veryStrongShakeID,
-                _ => 0,
+                ScreenShakeType.Constant or _ => 0,
             };
 
             if (shakeID != 0)
             {
                 HUDManager.Instance.playerScreenShakeAnimator.SetTrigger(shakeID);
+                HUDManager.Instance.playerScreenShakeAnimator.SetBool(shakingConstantID, false);
             }
         }
 

@@ -4,7 +4,7 @@ using System;
 namespace itolib.Patches
 {
     [HarmonyPatch]
-    internal sealed class ApparatusPatches
+    internal static class ApparatusPatches
     {
         internal static event Action? OnRadiationWarningHUD;
 
