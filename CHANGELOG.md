@@ -2,7 +2,7 @@
 
 ## [v0.9.1]
 
-WIP
+A couple small fixes before updating game version.
 
 - Added tag-based connection rules to `SpecificDoorway`, similar to the ones that can be set for a `Tile`.
   - Can define one or several (`Doorway`) tags a `SpecificDoorway` should or should not be able to connect to.
