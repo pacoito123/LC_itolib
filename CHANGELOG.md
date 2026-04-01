@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.9.4]
+
+WIP
+
+- Made `PlayerLauncher` dropping items no longer use `PlayerControllerB.DropAllHeldItemsAndSyncNonexact()`, in favor of the exact one.
+
 ## [v0.9.3]
 
 Small hotfix for a renamed method.

@@ -319,8 +319,12 @@ namespace itolib.Behaviours.Kinematics
 
             if (dropPlayerItemsAtStart)
             {
+                // Get the player eye's position and rotation.
+                player.playerEye.GetPositionAndRotation(out Vector3 eyePosition, out Quaternion eyeRotation);
+
                 // Drop the player's full inventory.
-                player.DropAllHeldItemsAndSyncNonexact();
+                player.DropAllHeldItemsAndSync(attachedPlayerTransform.position, player.localItemHolder.position,
+                    player.localItemHolder.localEulerAngles, eyePosition, eyeRotation.eulerAngles);
             }
         }
 
@@ -353,8 +357,12 @@ namespace itolib.Behaviours.Kinematics
 
                 if (dropPlayerItemsAtEnd)
                 {
+                    // Get the player eye's position and rotation.
+                    attachedPlayer.playerEye.GetPositionAndRotation(out Vector3 eyePosition, out Quaternion eyeRotation);
+
                     // Drop the player's full inventory.
-                    attachedPlayer.DropAllHeldItemsAndSyncNonexact();
+                    attachedPlayer.DropAllHeldItemsAndSync(attachedPlayerTransform.position, attachedPlayer.localItemHolder.position,
+                        attachedPlayer.localItemHolder.localEulerAngles, eyePosition, eyeRotation.eulerAngles);
                 }
             }
 
