@@ -320,7 +320,7 @@ namespace itolib.Behaviours.Kinematics
             if (dropPlayerItemsAtStart)
             {
                 // Drop the player's full inventory.
-                player.DropAllHeldItemsAndSync();
+                player.DropAllHeldItemsAndSyncNonexact();
             }
         }
 
@@ -354,7 +354,7 @@ namespace itolib.Behaviours.Kinematics
                 if (dropPlayerItemsAtEnd)
                 {
                     // Drop the player's full inventory.
-                    attachedPlayer.DropAllHeldItemsAndSync();
+                    attachedPlayer.DropAllHeldItemsAndSyncNonexact();
                 }
             }
 

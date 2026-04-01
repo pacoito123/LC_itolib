@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.9.3]
+
+Small hotfix for a renamed method.
+
+- Fixed `PlayerLauncher` erroring out due to `PlayerControllerB.DropAllHeldItemsAndSync()` being renamed to `PlayerControllerB.DropAllHeldItemsAndSyncNonexact()`.
+- Also added a missing null check to `PlayerSensor`.
+
 ## [v0.9.2]
 
 Updated for `v80`!

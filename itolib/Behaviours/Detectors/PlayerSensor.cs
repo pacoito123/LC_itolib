@@ -64,9 +64,9 @@ namespace itolib.Behaviours.Detectors
             {
                 base.CheckObjectsInRegion();
 
-                PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
+                PlayerControllerB? localPlayer = (GameNetworkManager.Instance != null) ? GameNetworkManager.Instance.localPlayerController : null;
 
-                if (!localPlayer.isPlayerDead && localPlayer.isActiveAndEnabled && regionCollider != null
+                if (localPlayer != null && !localPlayer.isPlayerDead && localPlayer.isActiveAndEnabled && regionCollider != null
                     && regionCollider.bounds.Contains(localPlayer.transform.position))
                 {
                     onPlayersAliveEach.Invoke(localPlayer);
