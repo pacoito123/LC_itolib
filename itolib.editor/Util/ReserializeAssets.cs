@@ -1,4 +1,3 @@
-using itolib.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -141,7 +140,7 @@ namespace itolib.editor.Util
             _ = EditorUtility.DisplayDialog($"Re-serialize {typeof(T).FullName} assets", $"Finished!", "Close");
         }
 
-        private static bool TryGetFiles(out string[] files, string pattern, bool recursive = false)
+        internal static bool TryGetFiles(out string[] files, string pattern, bool recursive = false)
         {
             files = null!;
 
@@ -150,7 +149,7 @@ namespace itolib.editor.Util
                 // Try get selected object.
                 string activePath = AssetDatabase.GetAssetPath(Selection.activeObject);
 
-                if (activePath.IsNullOrEmpty())
+                if (string.IsNullOrEmpty(activePath))
                 {
                     if (!ProjectWindowUtil.TryGetActiveFolderPath(out activePath))
                     {
