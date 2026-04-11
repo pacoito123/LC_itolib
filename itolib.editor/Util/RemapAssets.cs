@@ -1,7 +1,6 @@
 using itolib.editor.Data;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using UnityEditor;
@@ -11,40 +10,19 @@ namespace itolib.editor.Util
 {
     public static class RemapAssets
     {
-        private static readonly Regex gameAsset = new(@"Assets\/LethalCompany\/Game.*\.(?!cs).*");
-
-        private static readonly Dictionary<Regex, string> assetRemaps = [];
-        private static readonly HashSet<string> guidsToSkip = [];
-
-        private static UnityEngine.Object? GetAsset(string guid, string assetName)
-        {
-            if (guidsToSkip.Contains(guid))
-            {
-                return null;
-            }
-
-            string scriptPath = AssetDatabase.GUIDToAssetPath(guid);
-
-            if (!gameAsset.IsMatch(scriptPath))
-            {
-                _ = guidsToSkip.Add(guid);
-
-                return null;
-            }
-
-            return string.Equals(assetName, scriptPath.Split('/')[^1], StringComparison.Ordinal)
-                ? AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(scriptPath) : null;
-        }
+        private static readonly Regex assetReference = new(@"fileID:(?!.*100100000).*guid:[^,]*", GameAssets.regexOptions);
+        private static readonly Dictionary<string, string> assetRemaps = [];
 
         [MenuItem("Assets/itolib/Util/Legacy/Remap Assets")]
         public static void RemapSelectedAssets()
         {
             string projectInfoPath = EditorUtility.OpenFilePanel("Select Extracted Project Information", string.Empty, "json");
-
             if (string.IsNullOrEmpty(projectInfoPath))
             {
                 return;
             }
+
+            GameAssets.BuildGameFileCache();
 
             System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
@@ -55,124 +33,98 @@ namespace itolib.editor.Util
             Debug.Log($"[itolib] Opening JSON file took {stopwatch.Elapsed} ms");
 
             stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
             for (int i = 0; i < projectInformation.assetGuids.Length; i++)
             {
+                float progress = i / (float)projectInformation.assetGuids.Length;
+                EditorUtility.DisplayProgressBar("[itolib]", $"Parsing assets from JSON file... {i}/{projectInformation.assetGuids.Length} ({progress * 100}%)", progress);
+
                 ProjectInformation.AssetGuid assetInfo = projectInformation.assetGuids[i];
-                if (!gameAsset.IsMatch(assetInfo.assetPath))
+                if (assetInfo.assetPath.EndsWith(".cs", StringComparison.InvariantCultureIgnoreCase)
+                    || assetInfo.assetPath.EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase))
                 {
                     continue;
                 }
 
-                // System.Diagnostics.Stopwatch infoStopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-                UnityEngine.Object? asset = null;
-                string assetName = assetInfo.assetPath.Split('/')[^1];
-                int lastPeriod = assetName.LastIndexOf('.');
-
-                string[] foundAssetGUIDs = AssetDatabase.FindAssets((lastPeriod != -1) ? assetName[..assetName.LastIndexOf('.')] : assetName, ["Assets/LethalCompany/Game"]);
-                if (foundAssetGUIDs.Length > 0)
+                if (GameAssets.TryFindAsset(assetInfo.assetPath, out string guid, out long fileID))
                 {
-                    if (foundAssetGUIDs.Length == 1)
-                    {
-                        asset = GetAsset(foundAssetGUIDs[0], assetName);
-                    }
-                    else
-                    {
-                        for (int j = 0; j < foundAssetGUIDs.Length; j++)
-                        {
-                            asset = GetAsset(foundAssetGUIDs[j], assetName);
-                            if (asset != null)
-                            {
-                                break;
-                            }
-                        }
-                    }
+                    assetRemaps[assetInfo.originalGuid] = $"fileID: {fileID}, guid: {guid}";
                 }
-
-                if (asset != null)
-                {
-                    if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out string guid, out long fileID))
-                    {
-                        Regex regex = new(string.Format(CultureInfo.InvariantCulture, @"fileID:(?!.*100100000).*?{0}", Regex.Escape(assetInfo.originalGuid)));
-                        assetRemaps[regex] = $"fileID: {fileID}, guid: {guid}";
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"[itolib] GUID and fileID for asset at '{assetInfo.assetPath}' not found! Skipping...");
-                    }
-                }
-                else
-                {
-                    Debug.LogWarning($"[itolib] Asset at '{assetInfo.assetPath}' not found! Skipping...");
-                }
-
-                // infoStopwatch.Stop();
-                // Debug.Log($"[itolib] Searching for '{assetName}' took {infoStopwatch.Elapsed} ms. Succeeded: {asset != null}");
             }
 
             stopwatch.Stop();
             Debug.Log($"[itolib] Parsing JSON file took {stopwatch.Elapsed} ms");
+            EditorUtility.ClearProgressBar();
 
-            string[] extensions = ["*.prefab", "*.asset", "*.Unity"];
-            HashSet<string> allFiles = [];
-
-            for (int i = 0; i < extensions.Length; i++)
+            if (!FileUtils.TryGetSelectedFiles(out string[] files, "*.prefab;*.asset;*.Unity", recursive: true))
             {
-                if (!ReserializeAssets.TryGetFiles(out string[] files, extensions[i], recursive: true))
-                {
-                    continue;
-                }
-
-                allFiles.UnionWith(files);
-            }
-
-            if (allFiles == null || allFiles.Count == 0)
-            {
+                assetRemaps.Clear();
                 return;
             }
 
             stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-            foreach (string file in allFiles)
+            for (int i = 0; i < files.Length; i++)
             {
-                int remapsMade = 0;
-                string assetText = string.Empty;
+                float progress = i / (float)files.Length;
+                EditorUtility.DisplayProgressBar("[itolib]", $"Remapping assets... {i}/{files.Length} ({progress * 100}%)", progress);
 
-                try
+                string filePath = files[i];
+                if (string.IsNullOrEmpty(filePath))
                 {
-                    assetText = File.ReadAllText(file);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"[itolib] Could not read asset file: {e}");
                     continue;
                 }
 
-                foreach (Regex key in assetRemaps.Keys)
+                string[] lines;
+                try
                 {
-                    Debug.Log($"[itolib] Remapping: \"{key}\" -> \"{assetRemaps[key]}\"");
-
-                    assetText = key.Replace(assetText, match =>
-                    {
-                        remapsMade++;
-                        return assetRemaps[key];
-                    });
+                    lines = File.ReadAllLines(filePath);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"[itolib] Could not read file '{filePath}': {e}");
+                    continue;
                 }
 
-                if (remapsMade > 0)
+                int remapsDone = 0;
+                for (int j = 0; j < lines.Length; j++)
+                {
+                    string line = lines[j];
+                    if (string.IsNullOrEmpty(line))
+                    {
+                        continue;
+                    }
+
+                    ReadOnlySpan<char> span = line.AsSpan();
+                    Match guidLineMatch = assetReference.Match(line);
+                    if (guidLineMatch.Success)
+                    {
+                        string guid = guidLineMatch.Value.Split("guid: ")[^1];
+                        if (assetRemaps.TryGetValue(guid, out string replacement))
+                        {
+                            string left = span[..guidLineMatch.Index].ToString(),
+                                right = span[(guidLineMatch.Index + guidLineMatch.Length)..].ToString();
+
+                            lines[j] = left + replacement + right;
+                            remapsDone++;
+                        }
+                    }
+                }
+                if (remapsDone > 0)
                 {
                     try
                     {
-                        File.WriteAllText(file, assetText);
+                        File.WriteAllLines(filePath, lines);
                     }
                     catch (Exception e)
                     {
-                        Debug.LogError($"[itolib] Could not write asset file: {e}");
+                        Debug.LogError($"[itolib] Could not write file '{filePath}': {e}");
                     }
                 }
             }
             stopwatch.Stop();
             Debug.Log($"[itolib] Remapping took {stopwatch.Elapsed} ms");
+            EditorUtility.ClearProgressBar();
 
             AssetDatabase.Refresh();
             assetRemaps.Clear();

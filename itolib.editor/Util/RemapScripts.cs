@@ -1,7 +1,6 @@
 using itolib.editor.Data;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -12,7 +11,9 @@ namespace itolib.editor.Util
 {
     public static class RemapScripts
     {
-        private static readonly Dictionary<Regex, string> scriptRemaps = [];
+        private static readonly Regex scriptReference = new(@"fileID:.*guid:[^,]*", GameAssets.regexOptions);
+
+        private static readonly Dictionary<string, string> scriptRemaps = [];
         private static readonly Dictionary<string, MonoScript[]> scriptPaths = [];
         private static readonly HashSet<string> guidsToSkip = [];
 
@@ -68,7 +69,6 @@ namespace itolib.editor.Util
         public static void RemapSelectedScripts()
         {
             string projectInfoPath = EditorUtility.OpenFilePanel("Select Extracted Project Information", string.Empty, "json");
-
             if (string.IsNullOrEmpty(projectInfoPath))
             {
                 return;
@@ -85,7 +85,8 @@ namespace itolib.editor.Util
             stopwatch = System.Diagnostics.Stopwatch.StartNew();
             for (int i = 0; i < projectInformation.guids.Length; i++)
             {
-                System.Diagnostics.Stopwatch infoStopwatch = System.Diagnostics.Stopwatch.StartNew();
+                float progress = i / (float)projectInformation.assetGuids.Length;
+                EditorUtility.DisplayProgressBar("[itolib]", $"Parsing scripts from JSON file... {i}/{projectInformation.assetGuids.Length} ({progress * 100}%)", progress);
 
                 ProjectInformation.Guid scriptInfo = projectInformation.guids[i];
                 MonoScript? script = null;
@@ -115,8 +116,7 @@ namespace itolib.editor.Util
                 {
                     if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(script, out string guid, out long fileID))
                     {
-                        Regex regex = new(string.Format(CultureInfo.InvariantCulture, @"fileID:.*?{0}", Regex.Escape(scriptInfo.originalGuid)));
-                        scriptRemaps[regex] = $"fileID: {fileID}, guid: {guid}";
+                        scriptRemaps[scriptInfo.originalGuid] = $"fileID: {fileID}, guid: {guid}";
                     }
                     else
                     {
@@ -127,74 +127,81 @@ namespace itolib.editor.Util
                 {
                     Debug.LogWarning($"[itolib] Type '{scriptInfo.fullTypeName}' not found! Skipping...");
                 }
-
-                infoStopwatch.Stop();
-                Debug.Log($"[itolib] Searching for '{scriptInfo.fullTypeName}' took {infoStopwatch.Elapsed} ms. Succeeded: {script != null}");
             }
 
             stopwatch.Stop();
             Debug.Log($"[itolib] Parsing JSON file took {stopwatch.Elapsed} ms");
+            EditorUtility.ClearProgressBar();
 
-            string[] extensions = ["*.prefab", "*.asset", "*.Unity"];
-            HashSet<string> allFiles = [];
-
-            for (int i = 0; i < extensions.Length; i++)
+            if (!FileUtils.TryGetSelectedFiles(out string[] files, "*.prefab;*.asset;*.Unity", recursive: true))
             {
-                if (!ReserializeAssets.TryGetFiles(out string[] files, extensions[i], recursive: true))
-                {
-                    continue;
-                }
-
-                allFiles.UnionWith(files);
-            }
-
-            if (allFiles == null || allFiles.Count == 0)
-            {
+                scriptRemaps.Clear();
                 return;
             }
 
             stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-            foreach (string file in allFiles)
+            for (int i = 0; i < files.Length; i++)
             {
-                int remapsMade = 0;
-                string assetText = string.Empty;
+                float progress = i / (float)files.Length;
+                EditorUtility.DisplayProgressBar("[itolib]", $"Remapping scripts... {i}/{files.Length} ({progress * 100}%)", progress);
 
-                try
+                string filePath = files[i];
+                if (string.IsNullOrEmpty(filePath))
                 {
-                    assetText = File.ReadAllText(file);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"[itolib] Could not read asset file: {e}");
                     continue;
                 }
 
-                foreach (Regex key in scriptRemaps.Keys)
+                string[] lines;
+                try
                 {
-                    Debug.Log($"[itolib] Remapping: \"{key}\" -> \"{scriptRemaps[key]}\"");
-
-                    assetText = key.Replace(assetText, match =>
-                    {
-                        remapsMade++;
-                        return scriptRemaps[key];
-                    });
+                    lines = File.ReadAllLines(filePath);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"[itolib] Could not read file '{filePath}': {e}");
+                    continue;
                 }
 
-                if (remapsMade > 0)
+                int remapsDone = 0;
+                for (int j = 0; j < lines.Length; j++)
+                {
+                    string line = lines[j];
+                    if (string.IsNullOrEmpty(line))
+                    {
+                        continue;
+                    }
+
+                    ReadOnlySpan<char> span = line.AsSpan();
+                    Match guidLineMatch = scriptReference.Match(line);
+                    if (guidLineMatch.Success)
+                    {
+                        string guid = guidLineMatch.Value.Split("guid: ")[^1];
+                        if (scriptRemaps.TryGetValue(guid, out string replacement))
+                        {
+                            string left = span[..guidLineMatch.Index].ToString(),
+                                right = span[(guidLineMatch.Index + guidLineMatch.Length)..].ToString();
+
+                            lines[j] = left + replacement + right;
+                            remapsDone++;
+                        }
+                    }
+                }
+                if (remapsDone > 0)
                 {
                     try
                     {
-                        File.WriteAllText(file, assetText);
+                        File.WriteAllLines(filePath, lines);
                     }
                     catch (Exception e)
                     {
-                        Debug.LogError($"[itolib] Could not write asset file: {e}");
+                        Debug.LogError($"[itolib] Could not write file '{filePath}': {e}");
                     }
                 }
             }
             stopwatch.Stop();
             Debug.Log($"[itolib] Remapping took {stopwatch.Elapsed} ms");
+            EditorUtility.ClearProgressBar();
 
             AssetDatabase.Refresh();
             scriptRemaps.Clear();

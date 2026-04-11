@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -84,35 +82,24 @@ namespace itolib.editor.Util
             ReserializeAssetsOfType<Texture2D>("*.png", "*.jpg", "*.jpeg", "*.tga");
         }
 
-        private static void ReserializeAssetsOfType<T>(params string[] extensions) where T : UnityEngine.Object
+        private static void ReserializeAssetsOfType<T>(params string[] extensions) where T : Object
         {
             bool recursive = EditorUtility.DisplayDialog($"Re-serialize {typeof(T).FullName} assets", $"Should {typeof(T).FullName} assets in the "
                 + "current (or selected) directory be re-serialized recursively?", "Yes", "No");
 
-            string[]? allFiles = null;
-
-            for (int i = 0; i < extensions.Length; i++)
-            {
-                if (!TryGetFiles(out string[] files, extensions[i], recursive))
-                {
-                    continue;
-                }
-
-                allFiles = (allFiles?.Length > 0) ? [.. allFiles, .. files] : files;
-            }
-
-            if (allFiles == null)
+            if (!FileUtils.TryGetSelectedFiles(out string[] files, extensions, recursive) || files.Length == 0)
             {
                 _ = EditorUtility.DisplayDialog($"Re-serialize {typeof(T).FullName} assets", $"No {typeof(T).FullName} assets were found in the "
                     + "selected directory", "Close");
+
                 return;
             }
 
-            List<string> validPaths = new(allFiles.Length);
+            List<string> validPaths = new(files.Length);
 
-            for (int i = 0; i < allFiles.Length; i++)
+            for (int i = 0; i < files.Length; i++)
             {
-                T? asset = AssetDatabase.LoadAssetAtPath<T>(allFiles[i]);
+                T? asset = AssetDatabase.LoadAssetAtPath<T>(files[i]);
 
                 if (asset == null)
                 {
@@ -129,7 +116,7 @@ namespace itolib.editor.Util
                     continue;
                 }
 
-                validPaths.Add(allFiles[i]);
+                validPaths.Add(files[i]);
             }
 
             if (validPaths.Count > 0)
@@ -138,38 +125,6 @@ namespace itolib.editor.Util
             }
 
             _ = EditorUtility.DisplayDialog($"Re-serialize {typeof(T).FullName} assets", $"Finished!", "Close");
-        }
-
-        internal static bool TryGetFiles(out string[] files, string pattern, bool recursive = false)
-        {
-            files = null!;
-
-            try
-            {
-                // Try get selected object.
-                string activePath = AssetDatabase.GetAssetPath(Selection.activeObject);
-
-                if (string.IsNullOrEmpty(activePath))
-                {
-                    if (!ProjectWindowUtil.TryGetActiveFolderPath(out activePath))
-                    {
-                        Debug.LogWarning($"[itolib] Could not get current folder path or selection.");
-
-                        return false;
-                    }
-                }
-
-                files = Directory.GetFiles(activePath, pattern, recursive ? SearchOption.AllDirectories
-                    : SearchOption.TopDirectoryOnly);
-
-                return true;
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"[itolib] Could not get list of files: {e}");
-            }
-
-            return false;
         }
     }
 }
