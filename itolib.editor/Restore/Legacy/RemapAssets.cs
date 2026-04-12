@@ -1,9 +1,7 @@
 using itolib.editor.Data;
 using itolib.editor.Util;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
@@ -11,9 +9,6 @@ namespace itolib.editor.Restore.Legacy
 {
     public static class RemapAssets
     {
-        private static readonly Regex assetReference = new(@"fileID:(?!.*100100000).*guid:[^,]*", GameAssetUtils.regexOptions);
-        private static readonly Dictionary<string, string> assetRemaps = [];
-
         [MenuItem("Assets/itolib/Restore/Legacy/Remap Assets")]
         public static void RemapSelectedAssets()
         {
@@ -34,7 +29,6 @@ namespace itolib.editor.Restore.Legacy
             Debug.Log($"[itolib] Opening JSON file took {stopwatch.Elapsed} ms");
 
             stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
             for (int i = 0; i < projectInformation.assetGuids.Length; i++)
             {
                 float progress = i / (float)projectInformation.assetGuids.Length;
@@ -47,9 +41,9 @@ namespace itolib.editor.Restore.Legacy
                     continue;
                 }
 
-                if (GameAssetUtils.TryFindAsset(assetInfo.assetPath, out string guid, out long fileID))
+                if (GameAssetUtils.TryFindAsset(assetInfo.assetPath, out string guid, out long fileId))
                 {
-                    assetRemaps[assetInfo.originalGuid] = $"fileID: {fileID}, guid: {guid}";
+                    RemapUtils.AddRemap(assetInfo.originalGuid, guid, fileId);
                 }
             }
 
@@ -59,77 +53,11 @@ namespace itolib.editor.Restore.Legacy
 
             if (!FileUtils.TryGetSelectedFiles(out string[] files, "*.prefab;*.asset;*.Unity", recursive: true))
             {
-                assetRemaps.Clear();
+                RemapUtils.ClearRemaps();
                 return;
             }
 
-            stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-            for (int i = 0; i < files.Length; i++)
-            {
-                float progress = i / (float)files.Length;
-                EditorUtility.DisplayProgressBar("[itolib]", $"Remapping assets... {i}/{files.Length} ({progress * 100}%)", progress);
-
-                string filePath = files[i];
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    continue;
-                }
-
-                string[] lines;
-                try
-                {
-                    lines = File.ReadAllLines(filePath);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"[itolib] Could not read file '{filePath}': {e}");
-                    continue;
-                }
-
-                int remapsDone = 0;
-                for (int j = 0; j < lines.Length; j++)
-                {
-                    string line = lines[j];
-                    if (string.IsNullOrEmpty(line))
-                    {
-                        continue;
-                    }
-
-                    ReadOnlySpan<char> span = line.AsSpan();
-                    Match guidLineMatch = assetReference.Match(line);
-                    if (guidLineMatch.Success)
-                    {
-                        string guid = guidLineMatch.Value.Split("guid: ")[^1];
-                        if (assetRemaps.TryGetValue(guid, out string replacement))
-                        {
-                            string left = span[..guidLineMatch.Index].ToString(),
-                                right = span[(guidLineMatch.Index + guidLineMatch.Length)..].ToString();
-
-                            lines[j] = left + replacement + right;
-                            remapsDone++;
-                        }
-                    }
-                }
-                if (remapsDone > 0)
-                {
-                    try
-                    {
-                        File.WriteAllLines(filePath, lines);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError($"[itolib] Could not write file '{filePath}': {e}");
-                    }
-                }
-            }
-            stopwatch.Stop();
-            Debug.Log($"[itolib] Remapping took {stopwatch.Elapsed} ms");
-            EditorUtility.ClearProgressBar();
-
-            AssetDatabase.Refresh();
-            assetRemaps.Clear();
-            // guidsToSkip.Clear();
+            RemapUtils.RemapFiles(files);
         }
     }
 }
