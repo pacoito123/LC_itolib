@@ -1,9 +1,10 @@
+using itolib.editor.Util;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-namespace itolib.editor.Util
+namespace itolib.editor.Reserialize
 {
     /// <summary>
     ///     Reserialization utilities.
@@ -13,7 +14,7 @@ namespace itolib.editor.Util
         /// <summary>
         ///     Force save prefab assets in the current directory.
         /// </summary>
-        [MenuItem("Assets/itolib/Util/Reserialize/Prefabs")]
+        [MenuItem("Assets/itolib/Reserialize/Prefabs")]
         public static void ReserializePrefabs()
         {
             ReserializeAssetsOfType<GameObject>("*.prefab");
@@ -22,7 +23,7 @@ namespace itolib.editor.Util
         /// <summary>
         ///     Force save <c>AnimationClip</c> assets in the current directory.
         /// </summary>
-        [MenuItem("Assets/itolib/Util/Reserialize/AnimationClips")]
+        [MenuItem("Assets/itolib/Reserialize/AnimationClips")]
         public static void ReserializeAnimationClips()
         {
             ReserializeAssetsOfType<AnimationClip>("*.anim");
@@ -31,7 +32,7 @@ namespace itolib.editor.Util
         /// <summary>
         ///     Force save <c>AnimatorController</c> assets in the current directory.
         /// </summary>
-        [MenuItem("Assets/itolib/Util/Reserialize/AnimatorControllers")]
+        [MenuItem("Assets/itolib/Reserialize/AnimatorControllers")]
         public static void ReserializeAnimatorControllers()
         {
             ReserializeAssetsOfType<AnimatorController>("*.controller");
@@ -40,7 +41,7 @@ namespace itolib.editor.Util
         /// <summary>
         ///     Force save <c>AudioClip</c> assets in the current directory.
         /// </summary>
-        [MenuItem("Assets/itolib/Util/Reserialize/AudioClips")]
+        [MenuItem("Assets/itolib/Reserialize/AudioClips")]
         public static void ReserializeAudioClips()
         {
             ReserializeAssetsOfType<AudioClip>("*.mp3", "*.ogg", "*.wav");
@@ -49,7 +50,7 @@ namespace itolib.editor.Util
         /// <summary>
         ///     Force save <c>Material</c> assets in the current directory.
         /// </summary>
-        [MenuItem("Assets/itolib/Util/Reserialize/Materials")]
+        [MenuItem("Assets/itolib/Reserialize/Materials")]
         public static void ReserializeMaterials()
         {
             ReserializeAssetsOfType<Material>("*.mat");
@@ -58,7 +59,7 @@ namespace itolib.editor.Util
         /// <summary>
         ///     Force save <c>Mesh</c> assets in the current directory.
         /// </summary>
-        [MenuItem("Assets/itolib/Util/Reserialize/Meshes")]
+        [MenuItem("Assets/itolib/Reserialize/Meshes")]
         public static void ReserializeMeshes()
         {
             ReserializeAssetsOfType<Mesh>("*.mesh", "*.fbx");
@@ -67,7 +68,7 @@ namespace itolib.editor.Util
         /// <summary>
         ///     Force save <c>ScriptableObject</c> assets in the current directory.
         /// </summary>
-        [MenuItem("Assets/itolib/Util/Reserialize/ScriptableObjects")]
+        [MenuItem("Assets/itolib/Reserialize/ScriptableObjects")]
         public static void ReserializeScriptableObjects()
         {
             ReserializeAssetsOfType<ScriptableObject>("*.asset");
@@ -76,7 +77,7 @@ namespace itolib.editor.Util
         /// <summary>
         ///     Force save <c>Texture2D</c> assets in the current directory.
         /// </summary>
-        [MenuItem("Assets/itolib/Util/Reserialize/Textures")]
+        [MenuItem("Assets/itolib/Reserialize/Textures")]
         public static void ReserializeTextures()
         {
             ReserializeAssetsOfType<Texture2D>("*.png", "*.jpg", "*.jpeg", "*.tga");

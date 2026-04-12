@@ -1,4 +1,5 @@
 using itolib.editor.Data;
+using itolib.editor.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,11 +8,11 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
-namespace itolib.editor.Util
+namespace itolib.editor.Restore.Legacy
 {
     public static class RemapScripts
     {
-        private static readonly Regex scriptReference = new(@"fileID:.*guid:[^,]*", GameAssets.regexOptions);
+        private static readonly Regex scriptReference = new(@"fileID:.*guid:[^,]*", GameAssetUtils.regexOptions);
 
         private static readonly Dictionary<string, string> scriptRemaps = [];
         private static readonly Dictionary<string, MonoScript[]> scriptPaths = [];
@@ -65,7 +66,7 @@ namespace itolib.editor.Util
             return null;
         }
 
-        [MenuItem("Assets/itolib/Util/Legacy/Remap Scripts")]
+        [MenuItem("Assets/itolib/Restore/Legacy/Remap Scripts")]
         public static void RemapSelectedScripts()
         {
             string projectInfoPath = EditorUtility.OpenFilePanel("Select Extracted Project Information", string.Empty, "json");

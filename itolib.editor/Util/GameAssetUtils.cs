@@ -1,4 +1,3 @@
-using itolib.editor.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,9 +5,9 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
-namespace itolib.editor.Data
+namespace itolib.editor.Util
 {
-    internal static class GameAssets
+    internal static class GameAssetUtils
     {
         internal const RegexOptions regexOptions = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant;
 
