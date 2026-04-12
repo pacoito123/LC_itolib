@@ -31,7 +31,7 @@ namespace itolib.Patches
 
         [HarmonyPatch(typeof(DoorwayPairFinder), nameof(DoorwayPairFinder.IsValidDoorwayPairing))]
         [HarmonyPostfix]
-        private static void IsValidDoorwayPairingPost(ref bool __result, DoorwayProxy a, DoorwayProxy b, TileProxy previousTile, ref float weight)
+        private static void IsValidDoorwayPairingPost(ref bool __result, DoorwayProxy previousDoorway, DoorwayProxy nextDoorway, TileProxy previousTile, ref float weight)
         {
             if (!__result || specificDoorwayActive == false)
             {
@@ -39,17 +39,17 @@ namespace itolib.Patches
             }
 
             // Check if the first Doorway that generates is a SpecificDoorway and save the result.
-            specificDoorwayActive ??= a.DoorwayComponent is SpecificDoorway;
+            specificDoorwayActive ??= previousDoorway.DoorwayComponent is SpecificDoorway;
 
             if (specificDoorwayActive == false)
             {
                 return;
             }
 
-            if (a.DoorwayComponent is SpecificDoorway doorwayA)
+            if (previousDoorway.DoorwayComponent is SpecificDoorway doorwayA)
             {
                 // Check if Doorway should be allowed to connect, if any specified Tag is matched.
-                if (doorwayA.DoorwayConnectionTags?.Length > 0 && ValidateDoorwayTagConnection(doorwayA, b.DoorwayComponent))
+                if (doorwayA.DoorwayConnectionTags?.Length > 0 && ValidateDoorwayTagConnection(doorwayA, nextDoorway.DoorwayComponent))
                 {
                     __result = false;
                     weight = 0.0f;
@@ -64,8 +64,8 @@ namespace itolib.Patches
                     foreach (DoorwayProxy previousProxy in previousTile.UsedDoorways)
                     {
                         // Check if previous Doorway was an entrance used as an exit (inverse logic).
-                        if (previousProxy != a && previousProxy.DoorwayComponent is SpecificDoorway previousDoorway
-                            && previousDoorway.AllowSwap && previousDoorway.DoorwayType == doorwayA.DoorwayType)
+                        if (previousProxy != previousDoorway && previousProxy.DoorwayComponent is SpecificDoorway previousSpecificDoorway
+                            && previousSpecificDoorway.AllowSwap && previousSpecificDoorway.DoorwayType == doorwayA.DoorwayType)
                         {
                             __result = false;
                             weight = 0.0f;
@@ -84,10 +84,10 @@ namespace itolib.Patches
                 }
             }
 
-            if (b.DoorwayComponent is SpecificDoorway doorwayB)
+            if (nextDoorway.DoorwayComponent is SpecificDoorway doorwayB)
             {
                 // Check if Doorway should be allowed to be connected to, if any specified Tag is matched.
-                if (doorwayB.DoorwayConnectionTags?.Length > 0 && ValidateDoorwayTagConnection(doorwayB, a.DoorwayComponent))
+                if (doorwayB.DoorwayConnectionTags?.Length > 0 && ValidateDoorwayTagConnection(doorwayB, previousDoorway.DoorwayComponent))
                 {
                     __result = false;
                     weight = 0.0f;

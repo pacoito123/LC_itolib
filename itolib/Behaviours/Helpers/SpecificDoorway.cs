@@ -48,7 +48,7 @@ namespace itolib.Behaviours.Helpers
         [field: Space(5.0f)]
         [field: Header("Tags")]
         [field: Tooltip("Mode in which this specific Doorway should handle connecting to any Doorway with a matching Tag.")]
-        [field: SerializeField] public DungeonFlow.TagConnectionMode DoorwayTagConnectionMode { get; private set; }
+        [field: SerializeField] public DungeonFlow.TagConnectionMode DoorwayTagConnectionMode { get; private set; } = DungeonFlow.TagConnectionMode.Reject;
 
         /// <summary>
         ///     List of every <c>Tag</c> to search for when selecting a <c>Doorway</c> to connect to.
