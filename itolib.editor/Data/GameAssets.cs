@@ -114,7 +114,7 @@ namespace itolib.editor.Data
                 (string, long) assetEntry = (assetGuid, assetFileIdValue);
                 if (!fileCache.TryAdd(assetName, assetEntry))
                 {
-                    if (!fileCache.TryAdd(assetPath, assetEntry))
+                    if (!fileCache.TryAdd(assetPath.Replace('\\', '/'), assetEntry))
                     {
                         Debug.LogWarning($"[itolib] File '{assetPath}' already cached!");
                     }
