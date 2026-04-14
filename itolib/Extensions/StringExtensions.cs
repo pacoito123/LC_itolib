@@ -17,7 +17,7 @@ namespace itolib.Extensions
         /// <returns></returns>
         public static bool CompareOrdinal(this string strA, string strB)
         {
-            return string.CompareOrdinal(strA, strB) == 0;
+            return string.Equals(strA, strB, StringComparison.Ordinal);
         }
 
         /// <summary>
