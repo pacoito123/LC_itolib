@@ -10,7 +10,7 @@ namespace itolib.editor.Util
     internal static class RemapUtils
     {
         private static readonly Regex guidReference = new(@"fileID:(?!.*100100000).*guid:[^,]*", GameAssetUtils.regexOptions);
-        private static readonly Dictionary<string, string> guidRemaps = [];
+        internal static Dictionary<string, string> GuidRemaps { get; } = [];
 
         internal static void RemapFiles(string[] files)
         {
@@ -52,7 +52,7 @@ namespace itolib.editor.Util
                     if (guidLineMatch.Success)
                     {
                         string guid = guidLineMatch.Value.Split("guid: ")[^1];
-                        if (guidRemaps.TryGetValue(guid, out string replacement))
+                        if (GuidRemaps.TryGetValue(guid, out string replacement))
                         {
                             string left = span[..guidLineMatch.Index].ToString(),
                                 right = span[(guidLineMatch.Index + guidLineMatch.Length)..].ToString();
@@ -79,17 +79,22 @@ namespace itolib.editor.Util
             EditorUtility.ClearProgressBar();
 
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-            guidRemaps.Clear();
+            GuidRemaps.Clear();
         }
 
-        internal static void AddRemap(string key, string guid, long fileId)
+        internal static void AddRemap(string key, string guid, long fileId, bool overwrite = true)
         {
-            guidRemaps[key] = $"fileID: {fileId}, guid: {guid}";
-        }
+            string value = $"fileID: {fileId}, guid: {guid}";
+            if (GuidRemaps.TryAdd(key, value))
+            {
+                return;
+            }
 
-        internal static void ClearRemaps()
-        {
-            guidRemaps.Clear();
+            Debug.Log($"[itolib] Duplicate key '{key}' found! Overwriting value: {overwrite}");
+            if (overwrite)
+            {
+                GuidRemaps[key] = value;
+            }
         }
     }
 }
