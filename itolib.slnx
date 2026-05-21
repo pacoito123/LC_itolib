@@ -1,0 +1,4 @@
+﻿<Solution>
+	<Project Path="itolib/itolib.csproj" />
+	<Project Path="itolib.editor/itolib.editor.csproj" />
+</Solution>
