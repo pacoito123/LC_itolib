@@ -1,6 +1,7 @@
 using DunGen;
 using itolib.Enums;
 using itolib.Interfaces;
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -182,26 +183,35 @@ namespace itolib.Behaviours.Detectors
             // Reset number of found objects.
             objectsFound = 0;
 
+            Transform regionTransform = regionCollider.transform;
+            Vector3 lossyScale = regionTransform.lossyScale;
+
             // Perform non-allocating overlapping Collider search.
             if (regionCollider is BoxCollider box)
             {
-                Vector3 halfExtents = Vector3.Scale(box.size, box.transform.lossyScale) * 0.5f;
+                Vector3 halfExtents = Vector3.Scale(box.size, lossyScale) * 0.5f;
 
-                objectsFound = Physics.OverlapBoxNonAlloc(box.transform.TransformPoint(box.center), halfExtents, overlapBuffer,
-                    box.transform.rotation, layerMask, QueryTriggerInteraction.Collide);
+                objectsFound = Physics.OverlapBoxNonAlloc(regionTransform.TransformPoint(box.center), halfExtents, overlapBuffer,
+                    regionTransform.rotation, layerMask, QueryTriggerInteraction.Collide);
             }
             else if (regionCollider is SphereCollider sphere)
             {
-                objectsFound = Physics.OverlapSphereNonAlloc(sphere.transform.TransformPoint(sphere.center), sphere.radius, overlapBuffer,
-                    layerMask, QueryTriggerInteraction.Collide);
+                float largestComponent = Math.Max(Math.Abs(lossyScale.x), Math.Max(Math.Abs(lossyScale.y), Math.Abs(lossyScale.z)));
+
+                objectsFound = Physics.OverlapSphereNonAlloc(regionTransform.TransformPoint(sphere.center), sphere.radius * largestComponent,
+                    overlapBuffer, layerMask, QueryTriggerInteraction.Collide);
             }
             else if (regionCollider is CapsuleCollider capsule)
             {
-                Vector3 direction = capsule.transform.rotation * new Vector3() { [capsule.direction] = 1 };
-                float offset = (capsule.height * 0.5f) - capsule.radius;
+                lossyScale[capsule.direction] = 0.0f;
 
-                objectsFound = Physics.OverlapCapsuleNonAlloc(capsule.transform.TransformPoint(capsule.center - (offset * direction)),
-                    capsule.transform.TransformPoint(capsule.center + (offset * direction)), capsule.radius, overlapBuffer, layerMask,
+                float offset = (capsule.height * 0.5f) - capsule.radius;
+                Vector3 direction = regionTransform.rotation * new Vector3() { [capsule.direction] = 1 } * offset;
+
+                float largestComponent = Math.Max(Math.Abs(lossyScale.x), Math.Max(Math.Abs(lossyScale.y), Math.Abs(lossyScale.z)));
+
+                objectsFound = Physics.OverlapCapsuleNonAlloc(regionTransform.TransformPoint(capsule.center - direction),
+                    regionTransform.TransformPoint(capsule.center + direction), capsule.radius * largestComponent, overlapBuffer, layerMask,
                     QueryTriggerInteraction.Collide);
             }
             else
