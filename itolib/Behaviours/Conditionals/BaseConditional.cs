@@ -181,7 +181,7 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     Apply conditional overrides, with a given object to check.
         /// </summary>
-        /// <param name="objectToCheck">Object of type <typeparamref name="T"/> to perform the conditional check with.</param>
+        /// <param name="objectToCheck">Object of type <c><typeparamref name="T"/></c> to perform the conditional check with.</param>
         public void ApplyConditional(T objectToCheck)
         {
             ApplyConditional(objectToCheck, undo: false);
@@ -190,7 +190,7 @@ namespace itolib.Behaviours.Conditionals
         /// <summary>
         ///     Apply (or undo) conditional overrides, with a given object to check.
         /// </summary>
-        /// <param name="objectToCheck">Object of type <typeparamref name="T"/> to perform the conditional check with.</param>
+        /// <param name="objectToCheck">Object of type <c><typeparamref name="T"/></c> to perform the conditional check with.</param>
         /// <param name="undo">Whether the conditional override should be undone or not.</param>
         public abstract void ApplyConditional(T objectToCheck, bool undo);
 

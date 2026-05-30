@@ -1,4 +1,5 @@
 using DunGen;
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -18,7 +19,7 @@ namespace itolib.editor.UI
 
             Vector2 size = doorway.Socket.Size;
             Vector2 extents = size * 0.5f;
-            float origin = Mathf.Min(size.x, size.y);
+            float origin = Math.Min(size.x, size.y);
 
             Gizmos.color = EditorConstants.DoorDirectionColour;
             Gizmos.DrawLine(doorwayTransform.position + (doorwayTransform.up * extents.y), doorwayTransform.position + (doorwayTransform.up * extents.y) + (doorwayTransform.forward * origin));

@@ -43,8 +43,6 @@ namespace itolib.Behaviours.Animations
             {
                 Plugin.StaticLogger.LogWarning($"Could not find Animator for AnimationParamSetter component in GameObject '{gameObject.name}'.");
                 enabled = false;
-
-                return;
             }
         }
 
