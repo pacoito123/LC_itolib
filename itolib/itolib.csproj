@@ -52,6 +52,7 @@
         <PackageReference Include="TeamXiaolan.DawnLib" Version="0.9.*" PrivateAssets="all" />
         <PackageReference Include="mrov.WeatherRegistry" Version="0.8.*" PrivateAssets="all" />
         <PackageReference Include="mrov-WeatherTweaks" Version="1.1.*" PrivateAssets="all" />
+        <PackageReference Include="Beaniebe-Beanie_Lib" Version="1.0.*" PrivateAssets="all" />
 
         <PackageReference Include="CrowdControl-CrowdControl_LethalCompany" Version="1.1.*" PrivateAssets="all" Publicize="true" />
         <PackageReference Include="TeamXiaolan-FacilityMeltdown" Version="2.8.*" PrivateAssets="all" Publicize="true" />

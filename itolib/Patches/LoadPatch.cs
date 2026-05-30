@@ -30,6 +30,11 @@ namespace itolib.Patches
             {
                 Plugin.Harmony.PatchAll(typeof(FacilityMeltdownCompatibility));
             }
+
+            if (WeatherRegistryCompatibility.Enabled)
+            {
+                Plugin.Harmony.PatchAll(typeof(WeatherRegistryCompatibility));
+            }
         }
     }
 }

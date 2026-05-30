@@ -1,5 +1,7 @@
 using GameNetcodeStuff;
+using itolib.Compatibility;
 using itolib.Extensions;
+using System;
 using UnityEngine;
 
 namespace itolib.Behaviours.Detectors
@@ -89,8 +91,9 @@ namespace itolib.Behaviours.Detectors
                 return;
             }
 
-            // Check if the item being activated is not a shotgun, or the shotgun is reloading, has no shells, has its safety enabled, or is on cooldown.
-            if (player.currentlyHeldObjectServer is not ShotgunItem shotgun || shotgun.isReloading || shotgun.shellsLoaded == 0 || shotgun.safetyOn || shotgun.currentUseCooldown > 0.0f)
+            // Check if player has successfully fired a shotgun shell.
+            GrabbableObject heldItem = player.currentlyHeldObjectServer;
+            if (!CheckShotgunFire(heldItem) && (!BeanieLibCompatibility.Enabled || !BeanieLibCompatibility.CheckBeanieShotgunFire(heldItem)))
             {
                 return;
             }
@@ -98,8 +101,8 @@ namespace itolib.Behaviours.Detectors
             Vector3 pos = transform.position;
             float sqrRange = shootRange * shootRange,
                 sqrDistance = (attachedPlayerTransform.position - pos).sqrMagnitude,
-                sqrProximityRange = (proximityRange > 0.0f) ? proximityRange * proximityRange : -1.0f,
-                shootAngle = (this.shootAngle < 0.0f) ? Mathf.Clamp(angleCurve.Evaluate(Mathf.Sqrt(sqrDistance / sqrRange)), 0.0f, 180.0f) : this.shootAngle;
+                sqrProximityRange = (proximityRange > 0.0f) ? (proximityRange * proximityRange) : -1.0f,
+                shootAngle = (this.shootAngle < 0.0f) ? Math.Clamp(angleCurve.Evaluate(Mathf.Sqrt(sqrDistance / sqrRange)), 0.0f, 180.0f) : this.shootAngle;
 
             // Check if the player is within range and has unobstructed line of sight with the sensor.
             if (!player.HasLineOfSightToPosition(pos, sqrDistance, shootAngle, sqrRange, sqrProximityRange, layerMask))
@@ -108,6 +111,18 @@ namespace itolib.Behaviours.Detectors
             }
 
             base.PlayerMoved(player);
+        }
+
+        /// <summary>
+        ///     Check if the item being activated is a <c>ShotgunItem</c> that is not reloading, has shells, has its safety disabled, and is not on cooldown.
+        /// </summary>
+        /// <param name="heldItem"></param>
+        /// <returns>Whether the <c>ShotgunItem</c> was fired or not.</returns>
+        private static bool CheckShotgunFire(GrabbableObject? heldItem)
+        {
+            // TODO: Shells loaded count is inaccurate at this point, this check happens after firing reduces ammo count.
+            return heldItem is ShotgunItem shotgun && !shotgun.isReloading && shotgun.shellsLoaded != 0 && !shotgun.safetyOn
+                && (!shotgun.RequireCooldown() || shotgun.currentUseCooldown == shotgun.useCooldown);
         }
     }
 }

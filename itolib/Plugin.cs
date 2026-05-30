@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using itolib.Compatibility;
 using itolib.Compatibility.Moons;
 using itolib.Patches;
 using itolib.Structs;
@@ -13,13 +12,7 @@ namespace itolib
     /// <summary>
     ///     Wondrous gizmos and gadgets for the restless mind.
     /// </summary>
-    [BepInDependency(LethalLevelLoader.Plugin.ModGUID, "1.5.1")]
-    [BepInDependency("WarpWorld.CrowdControl", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency("com.github.teamxiaolan.dawnlib", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency("me.loaforc.facilitymeltdown", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency("bgn.pizzatowerescapemusic", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency("rattenbonkers.TVLoader", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency("mrov.WeatherRegistry", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(LethalLevelLoader.Plugin.ModGUID, "1.7.0")]
     [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, VERSION)]
     public class Plugin : BaseUnityPlugin
     {
@@ -52,11 +45,6 @@ namespace itolib
                 Harmony.PatchAll(typeof(DoorwayPatch));
                 Harmony.PatchAll(typeof(LoadPatch));
                 // ...
-
-                if (WeatherRegistryCompatibility.Enabled)
-                {
-                    Harmony.PatchAll(typeof(WeatherRegistryCompatibility));
-                }
 
                 // Special moon compatibilities:
                 BerunahCompatibility.RegisterCompat();

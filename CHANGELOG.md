@@ -5,6 +5,7 @@
 WIP
 
 - Made `PlayerLauncher` dropping items no longer use `PlayerControllerB.DropAllHeldItemsAndSyncNonexact()`, in favor of the exact one.
+- Added `ShotgunSensor` compatibility for [BeanieLib](https://thunderstore.io/c/lethal-company/p/Beaniebe/Beanie_Lib)'s `CustomShotgun` script.
 
 ## [v0.9.3]
 
