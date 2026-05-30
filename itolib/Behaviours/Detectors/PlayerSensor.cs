@@ -132,7 +132,7 @@ namespace itolib.Behaviours.Detectors
         {
             if (other.TryGetComponent(out PlayerControllerB player) && player.IsLocalClient())
             {
-                onRegionEntered.Invoke(player);
+                OnRegionEnter(player);
 
                 if (!onlyAffectLocalPlayer && IsSpawned)
                 {
@@ -149,11 +149,11 @@ namespace itolib.Behaviours.Detectors
         {
             if (other.TryGetComponent(out PlayerControllerB player) && player.IsLocalClient())
             {
-                onRegionExited.Invoke(player);
+                OnRegionEnter(player, exiting: true);
 
                 if (!onlyAffectLocalPlayer && IsSpawned)
                 {
-                    RegionEnteredRpc(player, exit: true);
+                    RegionEnteredRpc(player, exiting: true);
                 }
             }
         }
@@ -208,20 +208,13 @@ namespace itolib.Behaviours.Detectors
         ///     TODO.
         /// </summary>
         /// <param name="playerReference"></param>
-        /// <param name="exit"></param>
+        /// <param name="exiting"></param>
         [Rpc(SendTo.NotMe, RequireOwnership = false)]
-        private void RegionEnteredRpc(NetworkBehaviourReference playerReference, bool exit = false)
+        private void RegionEnteredRpc(NetworkBehaviourReference playerReference, bool exiting = false)
         {
             if (playerReference.TryGet(out PlayerControllerB player))
             {
-                if (!exit)
-                {
-                    onRegionEntered.Invoke(player);
-                }
-                else
-                {
-                    onRegionExited.Invoke(player);
-                }
+                OnRegionEnter(player, exiting);
             }
         }
     }

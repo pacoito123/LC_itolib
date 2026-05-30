@@ -311,14 +311,7 @@ namespace itolib.Behaviours.Detectors
         {
             if (enemyReference.TryGet(out EnemyAI enemy))
             {
-                if (!exit)
-                {
-                    onRegionEntered.Invoke(enemy);
-                }
-                else
-                {
-                    onRegionExited.Invoke(enemy);
-                }
+                OnRegionEnter(enemy, exit);
             }
         }
 

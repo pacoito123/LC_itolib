@@ -6,7 +6,7 @@ namespace itolib.Behaviours.Detectors
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class HazardSensor : DetectRegion<GameObject>
+    public class HazardSensor : DetectRegion<NetworkBehaviour>
     {
         /// <summary>
         ///     TODO.
@@ -53,10 +53,10 @@ namespace itolib.Behaviours.Detectors
                     continue;
                 }
 
-                if (hazardCollider.transform.root.TryGetComponent(out NetworkObject hazardNetworkObject)
-                    && hazardNetworkObject.IsSpawned)
+                IIndoorMapHazard possibleHazard = hazardCollider.transform.root.GetComponentInChildren<IIndoorMapHazard>(includeInactive: true);
+                if (possibleHazard is NetworkBehaviour hazardBehaviour && hazardBehaviour.IsSpawned)
                 {
-                    FoundHazardsEachRpc(hazardNetworkObject);
+                    FoundHazardsEachRpc(hazardBehaviour);
                     hazardsFound++;
                 }
             }
@@ -70,13 +70,49 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="other"></param>
+        protected override void OnTriggerEnter(Collider other)
+        {
+            if (!IsSpawned || !IsHost)
+            {
+                return;
+            }
+
+            IIndoorMapHazard possibleHazard = other.transform.root.GetComponentInChildren<IIndoorMapHazard>(includeInactive: true);
+            if (possibleHazard is NetworkBehaviour hazardBehaviour && hazardBehaviour.IsSpawned)
+            {
+                RegionEnteredRpc(hazardBehaviour);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="other"></param>
+        protected override void OnTriggerExit(Collider other)
+        {
+            if (!IsSpawned || !IsHost)
+            {
+                return;
+            }
+
+            IIndoorMapHazard possibleHazard = other.transform.root.GetComponentInChildren<IIndoorMapHazard>(includeInactive: true);
+            if (possibleHazard is NetworkBehaviour hazardBehaviour && hazardBehaviour.IsSpawned)
+            {
+                RegionEnteredRpc(hazardBehaviour, exiting: true);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="hazardReference"></param>
         [Rpc(SendTo.ClientsAndHost)]
-        private void FoundHazardsEachRpc(NetworkObjectReference hazardReference)
+        private void FoundHazardsEachRpc(NetworkBehaviourReference hazardReference)
         {
-            if (hazardReference.TryGet(out NetworkObject hazardNetworkObject))
+            if (hazardReference.TryGet(out NetworkBehaviour hazardBehaviour))
             {
-                onObjectsEach.Invoke(hazardNetworkObject.gameObject);
+                onObjectsEach.Invoke(hazardBehaviour);
             }
         }
 
@@ -93,12 +129,38 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <param name="hazardReference"></param>
+        /// <param name="exiting"></param>
+        [Rpc(SendTo.ClientsAndHost)]
+        private void RegionEnteredRpc(NetworkBehaviourReference hazardReference, bool exiting = false)
+        {
+            if (hazardReference.TryGet(out EnemyAI hazardBehaviour))
+            {
+                OnRegionEnter(hazardBehaviour, exiting);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="hazardToDespawn"></param>
         public void DespawnHazard(GameObject hazardToDespawn)
         {
+            if (hazardToDespawn != null && hazardToDespawn.transform.root.TryGetComponent(out NetworkObject hazardNetworkObject))
+            {
+                DespawnHazard(hazardNetworkObject);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="hazardToDespawn"></param>
+        public void DespawnHazard(NetworkObject hazardToDespawn)
+        {
             if (IsHost && hazardToDespawn != null && hazardToDespawn.transform.root.TryGetComponent(out NetworkObject hazardNetworkObject))
             {
-                hazardNetworkObject.Despawn(true);
+                hazardNetworkObject.Despawn(destroy: true);
             }
         }
 
@@ -108,9 +170,21 @@ namespace itolib.Behaviours.Detectors
         /// <param name="hazardToDeactivate"></param>
         public void DeactivateHazard(GameObject hazardToDeactivate)
         {
-            if (IsHost && hazardToDeactivate != null && hazardToDeactivate.transform.root.TryGetComponent(out NetworkObject hazardNetworkObject))
+            if (hazardToDeactivate != null && hazardToDeactivate.transform.root.TryGetComponent(out NetworkObject hazardNetworkObject))
             {
-                TerminalAccessibleObject? terminalCode = hazardNetworkObject.GetComponentInChildren<TerminalAccessibleObject>();
+                DeactivateHazard(hazardNetworkObject);
+            }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="hazardToDeactivate"></param>
+        public void DeactivateHazard(NetworkObject hazardToDeactivate)
+        {
+            if (IsHost && hazardToDeactivate != null)
+            {
+                TerminalAccessibleObject? terminalCode = hazardToDeactivate.GetComponentInChildren<TerminalAccessibleObject>();
 
                 if (terminalCode != null)
                 {

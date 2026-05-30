@@ -10,7 +10,7 @@ namespace itolib.Behaviours.Effects
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class ExplodeEffect : DetectRegion<GameObject>
+    public class ExplodeEffect : DetectRegion<NetworkBehaviour>
     {
         /// <summary>
         ///     TODO.
