@@ -4,76 +4,82 @@ using UnityEngine;
 namespace itolib.Behaviours.Animations
 {
     /// <summary>
-    /// 	TODO.
+    ///     Targets a specific <c>Animator</c> parameter of any type (which <i>can</i> be switched) to allow setting its value from an event call, while syncing it across clients.
     /// </summary>
     public class AnimationParamSetter : NetworkBehaviour
     {
         /// <summary>
-        ///     TODO.
+        ///     <c>Animator</c> with a parameter of any type to target and set.
         /// </summary>
         [Header("Animation Param Setter")]
-        [Tooltip("")]
-        [SerializeField] private Animator animator;
+        [Tooltip("Animator with a parameter of any type to target and set.")]
+        [SerializeField] private Animator animator = null!;
 
         /// <summary>
-        ///     TODO.
+        ///     Name of the <c>Animator</c> parameter to target and set by default.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Name of the Animator parameter to target and set by default.")]
         [SerializeField] private string defaultParameterName = string.Empty;
 
         /// <summary>
-        ///     TODO.
+        ///     Hash of the <c>Animator</c> parameter to target and set.
         /// </summary>
         private int targetedParamID;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether there is currently a valid <c>Animator</c> parameter target or not.
         /// </summary>
-        private void Awake()
-        {
-            targetedParamID = Animator.StringToHash(defaultParameterName);
-        }
+        private bool hasValidParameter;
 
         /// <summary>
-        ///     TODO.
+        ///     Make sure there is an <c>Animator</c> component to target, and hash the default target <c>Animator</c> parameter.
         /// </summary>
         private void OnEnable()
         {
             if (animator == null && !TryGetComponent(out animator))
             {
                 Plugin.StaticLogger.LogWarning($"Could not find Animator for AnimationParamSetter component in GameObject '{gameObject.name}'.");
+                hasValidParameter = false;
                 enabled = false;
+
+                return;
+            }
+
+            if (!hasValidParameter)
+            {
+                SwitchParamLocal(defaultParameterName);
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Switch targeted <c>Animator</c> parameter.
         /// </summary>
-        /// <param name="paramName"></param>
+        /// <param name="paramName">Name of the <c>Animator</c> parameter to target.</param>
         public void SwitchParam(string paramName)
         {
             int paramID = Animator.StringToHash(paramName);
 
-            for (int i = 0; i < animator.parameters.Length; i++)
+            SwitchParam(paramID);
+        }
+
+        /// <summary>
+        ///     Switch targeted <c>Animator</c> parameter.
+        /// </summary>
+        /// <param name="paramID">Hash of the <c>Animator</c> parameter to target.</param>
+        private void SwitchParam(int paramID)
+        {
+            SwitchParamLocal(paramID);
+
+            if (hasValidParameter && IsSpawned)
             {
-                if (animator.parameters[i].nameHash == paramID)
-                {
-                    SwitchParamLocal(paramID);
-
-                    if (IsSpawned)
-                    {
-                        SwitchParamRpc(paramID);
-                    }
-
-                    break;
-                }
+                SwitchParamRpc(paramID);
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Switch targeted <c>Animator</c> parameter for all other clients.
         /// </summary>
-        /// <param name="paramID"></param>
+        /// <param name="paramID">Hash of the <c>Animator</c> parameter to target.</param>
         [Rpc(SendTo.NotMe, RequireOwnership = false)]
         private void SwitchParamRpc(int paramID)
         {
@@ -81,153 +87,331 @@ namespace itolib.Behaviours.Animations
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Switch targeted <c>Animator</c> parameter for the local client.
         /// </summary>
-        /// <param name="paramID"></param>
-        public void SwitchParamLocal(int paramID)
+        /// <param name="paramName">Name of the <c>Animator</c> parameter to target.</param>
+        public void SwitchParamLocal(string paramName)
         {
-            targetedParamID = paramID;
+            int paramID = Animator.StringToHash(paramName);
+
+            SwitchParamLocal(paramID);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Switch targeted <c>Animator</c> parameter for the local client.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="paramID">Hash of the <c>Animator</c> parameter to target.</param>
+        private void SwitchParamLocal(int paramID)
+        {
+            if (hasValidParameter && paramID == targetedParamID)
+            {
+                return;
+            }
+
+            for (int i = 0; i < animator.parameters.Length; i++)
+            {
+                if (animator.parameters[i].nameHash == paramID)
+                {
+                    targetedParamID = paramID;
+                    hasValidParameter = true;
+
+                    return;
+                }
+            }
+
+            Plugin.StaticLogger.LogWarning($"Could not find Animator parameter with hash '{paramID}' for AnimationParamSetter component in GameObject '{gameObject.name}'.");
+        }
+
+        /// <summary>
+        ///     Set value for the targeted <c>Bool</c> <c>Animator</c> parameter.
+        /// </summary>
+        /// <param name="value">Value to set the targeted <c>Bool</c> <c>Animator</c> parameter to.</param>
         public void SetBool(bool value)
         {
-            if (targetedParamID != 0 && animator.GetBool(targetedParamID) != value)
+            if (hasValidParameter && animator.GetBool(targetedParamID) != value)
             {
-                SetBoolLocal(value);
+                animator.SetBool(targetedParamID, value);
 
                 if (IsSpawned)
                 {
-                    SetBoolRpc(value);
+                    SetBoolRpc(targetedParamID, value);
                 }
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set value for the given <c>Bool</c> <c>Animator</c> parameter for all other clients.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="paramID">Hash of the <c>Bool</c> <c>Animator</c> parameter to target.</param>
+        /// <param name="value">Value to set the targeted <c>Bool</c> <c>Animator</c> parameter to.</param>
         [Rpc(SendTo.NotMe, RequireOwnership = false)]
-        private void SetBoolRpc(bool value)
+        private void SetBoolRpc(int paramID, bool value)
         {
+            if (paramID != targetedParamID)
+            {
+                SwitchParamLocal(paramID);
+            }
+
             SetBoolLocal(value);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set value for the targeted <c>Bool</c> <c>Animator</c> parameter for the local client.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">Value to set the targeted <c>Bool</c> <c>Animator</c> parameter to.</param>
         public void SetBoolLocal(bool value)
         {
-            animator.SetBool(targetedParamID, value);
+            if (hasValidParameter && animator.GetBool(targetedParamID) != value)
+            {
+                animator.SetBool(targetedParamID, value);
+            }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Toggle value for the targeted <c>Bool</c> <c>Animator</c> parameter.
         /// </summary>
-        /// <param name="value"></param>
+        public void ToggleBool()
+        {
+            if (hasValidParameter)
+            {
+                SetBool(!animator.GetBool(targetedParamID));
+            }
+        }
+
+        /// <summary>
+        ///     Toggle value for the targeted <c>Bool</c> <c>Animator</c> parameter for the local client.
+        /// </summary>
+        public void ToggleBoolLocal()
+        {
+            if (hasValidParameter)
+            {
+                SetBoolLocal(!animator.GetBool(targetedParamID));
+            }
+        }
+
+        /// <summary>
+        ///     Set value for the given <c>Float</c> <c>Animator</c> parameter.
+        /// </summary>
+        /// <param name="value">Value to set the targeted <c>Float</c> <c>Animator</c> parameter to.</param>
         public void SetFloat(float value)
         {
-            if (targetedParamID != 0 && animator.GetFloat(targetedParamID) != value)
+            if (hasValidParameter && animator.GetFloat(targetedParamID) != value)
             {
-                SetFloatLocal(value);
+                animator.SetFloat(targetedParamID, value);
 
                 if (IsSpawned)
                 {
-                    SetFloatRpc(value);
+                    SetFloatRpc(targetedParamID, value);
                 }
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set value for the given <c>Float</c> <c>Animator</c> parameter for all other clients.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="paramID">Hash of the <c>Float</c> <c>Animator</c> parameter to target.</param>
+        /// <param name="value">Value to set the targeted <c>Float</c> <c>Animator</c> parameter to.</param>
         [Rpc(SendTo.NotMe, RequireOwnership = false)]
-        private void SetFloatRpc(float value)
+        private void SetFloatRpc(int paramID, float value)
         {
+            if (paramID != targetedParamID)
+            {
+                SwitchParamLocal(paramID);
+            }
+
             SetFloatLocal(value);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set value for the targeted <c>Float</c> <c>Animator</c> parameter for the local client.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">Value to set the targeted <c>Float</c> <c>Animator</c> parameter to.</param>
         public void SetFloatLocal(float value)
         {
-            animator.SetFloat(targetedParamID, value);
+            if (hasValidParameter && animator.GetFloat(targetedParamID) != value)
+            {
+                animator.SetFloat(targetedParamID, value);
+            }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Increment value of the targeted <c>Float</c> <c>Animator</c> parameter.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">Value to increment the targeted <c>Float</c> <c>Animator</c> parameter by.</param>
+        public void IncrementFloat(float value)
+        {
+            if (hasValidParameter)
+            {
+                SetFloat(animator.GetFloat(targetedParamID) + value);
+            }
+        }
+
+        /// <summary>
+        ///     Increment value of the targeted <c>Float</c> <c>Animator</c> parameter for the local client.
+        /// </summary>
+        /// <param name="value">Value to increment the targeted <c>Float</c> <c>Animator</c> parameter by.</param>
+        public void IncrementFloatLocal(float value)
+        {
+            if (hasValidParameter)
+            {
+                SetFloatLocal(animator.GetFloat(targetedParamID) + value);
+            }
+        }
+
+        /// <summary>
+        ///     Multiply value of the targeted <c>Float</c> <c>Animator</c> parameter.
+        /// </summary>
+        /// <param name="value">Value to multiply the targeted <c>Float</c> <c>Animator</c> parameter by.</param>
+        public void MultiplyFloat(float value)
+        {
+            if (hasValidParameter)
+            {
+                SetFloat(animator.GetFloat(targetedParamID) * value);
+            }
+        }
+
+        /// <summary>
+        ///     Multiply value of the targeted <c>Float</c> <c>Animator</c> parameter for the local client.
+        /// </summary>
+        /// <param name="value">Value to multiply the targeted <c>Float</c> <c>Animator</c> parameter by.</param>
+        public void MultiplyFloatLocal(float value)
+        {
+            if (hasValidParameter)
+            {
+                SetFloatLocal(animator.GetFloat(targetedParamID) * value);
+            }
+        }
+
+        /// <summary>
+        ///     Set value for the given <c>Integer</c> <c>Animator</c> parameter.
+        /// </summary>
+        /// <param name="value">Value to set the targeted <c>Integer</c> <c>Animator</c> parameter to.</param>
         public void SetInt(int value)
         {
-            if (targetedParamID != 0 && animator.GetInteger(targetedParamID) != value)
+            if (hasValidParameter && animator.GetInteger(targetedParamID) != value)
             {
-                SetIntLocal(value);
+                animator.SetInteger(targetedParamID, value);
 
                 if (IsSpawned)
                 {
-                    SetIntRpc(value);
+                    SetIntRpc(targetedParamID, value);
                 }
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set value for the given <c>Integer</c> <c>Animator</c> parameter for all other clients.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="paramID">Hash of the <c>Integer</c> <c>Animator</c> parameter to target.</param>
+        /// <param name="value">Value to set the targeted <c>Integer</c> <c>Animator</c> parameter to.</param>
         [Rpc(SendTo.NotMe, RequireOwnership = false)]
-        private void SetIntRpc(int value)
+        private void SetIntRpc(int paramID, int value)
         {
+            if (paramID != targetedParamID)
+            {
+                SwitchParamLocal(paramID);
+            }
+
             SetIntLocal(value);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set value for the targeted <c>Integer</c> <c>Animator</c> parameter for the local client.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">Value to set the targeted <c>Integer</c> <c>Animator</c> parameter to.</param>
         public void SetIntLocal(int value)
         {
-            animator.SetInteger(targetedParamID, value);
+            if (hasValidParameter && animator.GetInteger(targetedParamID) != value)
+            {
+                animator.SetInteger(targetedParamID, value);
+            }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Increment value of the targeted <c>Integer</c> <c>Animator</c> parameter.
         /// </summary>
-        /// <param name="reset"></param>
+        /// <param name="value">Value to increment the targeted <c>Integer</c> <c>Animator</c> parameter by.</param>
+        public void IncrementInt(int value)
+        {
+            if (hasValidParameter)
+            {
+                SetInt(animator.GetInteger(targetedParamID) + value);
+            }
+        }
+
+        /// <summary>
+        ///     Increment value of the targeted <c>Integer</c> <c>Animator</c> parameter for the local client.
+        /// </summary>
+        /// <param name="value">Value to increment the targeted <c>Integer</c> <c>Animator</c> parameter by.</param>
+        public void IncrementIntLocal(int value)
+        {
+            if (hasValidParameter)
+            {
+                SetInt(animator.GetInteger(targetedParamID) + value);
+            }
+        }
+
+        /// <summary>
+        ///     Multiply value of the targeted <c>Integer</c> <c>Animator</c> parameter.
+        /// </summary>
+        /// <param name="value">Value to multiply the targeted <c>Integer</c> <c>Animator</c> parameter by.</param>
+        public void MultiplyInt(float value)
+        {
+            if (hasValidParameter)
+            {
+                SetInt((int)(animator.GetInteger(targetedParamID) * value));
+            }
+        }
+
+        /// <summary>
+        ///     Multiply value of the targeted <c>Integer</c> <c>Animator</c> parameter for the local client.
+        /// </summary>
+        /// <param name="value">Value to multiply the targeted <c>Integer</c> <c>Animator</c> parameter by.</param>
+        public void MultiplyIntLocal(float value)
+        {
+            if (hasValidParameter)
+            {
+                SetInt((int)(animator.GetInteger(targetedParamID) * value));
+            }
+        }
+
+        /// <summary>
+        ///     Set or reset the targeted <c>Trigger</c> <c>Animator</c> parameter.
+        /// </summary>
+        /// <param name="reset">Whether to reset the targeted <c>Trigger</c> <c>Animator</c> parameter or not.</param>
         public void SetTrigger(bool reset)
         {
-            if (targetedParamID != 0)
+            if (hasValidParameter)
             {
                 SetTriggerLocal(reset);
 
                 if (IsSpawned)
                 {
-                    SetTriggerRpc(reset);
+                    SetTriggerRpc(targetedParamID, reset);
                 }
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set or reset the targeted <c>Trigger</c> <c>Animator</c> parameter for all other clients.
         /// </summary>
-        /// <param name="reset"></param>
+        /// <param name="paramID">Hash of the <c>Trigger</c> <c>Animator</c> parameter to target.</param>
+        /// <param name="reset">Whether to reset the targeted <c>Trigger</c> <c>Animator</c> parameter or not.</param>
         [Rpc(SendTo.NotMe, RequireOwnership = false)]
-        private void SetTriggerRpc(bool reset)
+        private void SetTriggerRpc(int paramID, bool reset)
         {
+            if (paramID != targetedParamID)
+            {
+                SwitchParamLocal(paramID);
+            }
+
             SetTriggerLocal(reset);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Set or reset the targeted <c>Trigger</c> <c>Animator</c> parameter for the local client.
         /// </summary>
-        /// <param name="reset"></param>
+        /// <param name="reset">Whether to reset the targeted <c>Trigger</c> <c>Animator</c> parameter or not.</param>
         public void SetTriggerLocal(bool reset)
         {
             if (!reset)
