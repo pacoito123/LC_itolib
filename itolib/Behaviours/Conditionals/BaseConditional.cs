@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Conditionals
     ///     Represents an override to perform based on a specified string.
     /// </summary>
     [Serializable]
-    public struct ConditionalOverride
+    public struct ConditionalOverride()
     {
         /// <summary>
         ///     Name to be matched in order to apply this override.
@@ -57,11 +57,6 @@ namespace itolib.Behaviours.Conditionals
         /// </summary>
         [Tooltip("Callback invoked when no match was found for this override.")]
         public UnityEvent onConditionalFail = new();
-
-        /// <summary>
-        ///     Constructor for the struct type (needed to allow default parameter values).
-        /// </summary>
-        public ConditionalOverride() { }
 
         /// <summary>
         ///     Apply (or undo) this conditional override.

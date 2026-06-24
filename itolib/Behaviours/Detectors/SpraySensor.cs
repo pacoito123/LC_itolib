@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Detectors
     ///     Represents a threshold for a certain number of sprays required to trigger something.
     /// </summary>
     [Serializable]
-    public struct SprayThreshold
+    public struct SprayThreshold()
     {
         /// <summary>
         ///     Number of sprays required to trigger this threshold.
@@ -45,11 +45,6 @@ namespace itolib.Behaviours.Detectors
         /// <remarks><b>NOTE:</b> Makes <c>onAboveThreshold</c> event not be called.</remarks>
         [Tooltip("Whether the threshold should only trigger once or not. NOTE: Makes 'onAboveThreshold' event not be called.")]
         public bool triggerOnce = false;
-
-        /// <summary>
-        ///     Constructor for the struct type (needed to allow default parameter values).
-        /// </summary>
-        public SprayThreshold() { }
     }
 
     /// <summary>

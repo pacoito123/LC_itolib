@@ -7,36 +7,22 @@ namespace itolib.Structs
     /// <summary>
     ///     TODO.
     /// </summary>
+    /// <param name="transform"></param>
     [Serializable]
-    public struct TransformInfo : INetworkSerializable, IEquatable<TransformInfo>
+    public struct TransformInfo(Transform transform) : INetworkSerializable, IEquatable<TransformInfo>
     {
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Transform Info")]
         [Tooltip("")]
-        public Vector3 position = Vector3.zero;
+        public Vector3 position = transform.position;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        public Quaternion rotation = Quaternion.identity;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public TransformInfo() { }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="transform"></param>
-        public TransformInfo(Transform transform)
-        {
-            position = transform.position;
-            rotation = transform.rotation;
-        }
+        public Quaternion rotation = transform.rotation;
 
         /// <summary>
         ///     TODO.

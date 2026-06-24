@@ -15,7 +15,7 @@ namespace itolib.Behaviours.Events
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct WeightedEventEntry : IWeightedEntry
+    public struct WeightedEventEntry() : IWeightedEntry
     {
         /// <summary>
         ///     TODO.
@@ -36,11 +36,6 @@ namespace itolib.Behaviours.Events
         /// </summary>
         [field: Tooltip("")]
         [field: SerializeField] public bool SingleUse { get; set; }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public WeightedEventEntry() { }
     }
 
     /// <summary>

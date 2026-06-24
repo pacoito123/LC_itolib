@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Notifications
     ///     Represents a single signal message entry to display to alerted players.
     /// </summary>
     [Serializable]
-    public struct SignalEntry : IAlertEntry
+    public struct SignalEntry() : IAlertEntry
     {
         /// <summary>
         ///     Text to transmit on the signal message.
@@ -89,11 +89,6 @@ namespace itolib.Behaviours.Notifications
         [field: Header(header: "Other")]
         [field: Tooltip("Whether this signal message entry should only be displayed once or not.")]
         [field: SerializeField] public bool SingleUse { get; set; }
-
-        /// <summary>
-        ///     Constructor for the struct type (needed to allow default parameter values).
-        /// </summary>
-        public SignalEntry() { }
     }
 
     /// <summary>

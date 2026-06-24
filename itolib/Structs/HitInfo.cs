@@ -9,7 +9,7 @@ namespace itolib.Structs
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct HitInfo : INetworkSerializable
+    public struct HitInfo() : INetworkSerializable
     {
         /// <summary>
         ///     TODO.
@@ -41,11 +41,6 @@ namespace itolib.Structs
         /// </summary>
         [HideInInspector]
         public NetworkBehaviourReference playerReference = default;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public HitInfo() { }
 
         /// <summary>
         ///     TODO.

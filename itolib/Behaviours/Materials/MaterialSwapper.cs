@@ -10,7 +10,7 @@ namespace itolib.Behaviours.Materials
     ///     Represents a material swap to perform on activation.
     /// </summary>
     [Serializable]
-    public struct MaterialSwap
+    public struct MaterialSwap()
     {
         /// <summary>
         ///     TODO.
@@ -35,11 +35,6 @@ namespace itolib.Behaviours.Materials
         /// </summary>
         [Tooltip("")]
         public bool affectChildren = true;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public MaterialSwap() { }
     }
 
     /// <summary>

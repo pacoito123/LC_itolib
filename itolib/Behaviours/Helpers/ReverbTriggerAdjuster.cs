@@ -9,7 +9,7 @@ namespace itolib.Behaviours.Helpers
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct ReverbTriggerAdjustment
+    public struct ReverbTriggerAdjustment()
     {
         /// <summary>
         ///     TODO.
@@ -59,11 +59,6 @@ namespace itolib.Behaviours.Helpers
         /// </summary>
         [Tooltip("")]
         public bool ignoreAudioChanges;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public ReverbTriggerAdjustment() { }
     }
 
     /// <summary>

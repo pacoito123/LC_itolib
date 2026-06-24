@@ -171,8 +171,6 @@ namespace itolib.Behaviours.Animations
             {
                 Plugin.StaticLogger.LogWarning($"Could not find Animator for AnimationVelocity component in GameObject '{gameObject.name}'.");
                 enabled = false;
-
-                return;
             }
         }
 

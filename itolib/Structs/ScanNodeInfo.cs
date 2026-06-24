@@ -8,7 +8,7 @@ namespace itolib.Structs
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct ScanNodeInfo : INetworkSerializable
+    public struct ScanNodeInfo() : INetworkSerializable
     {
         /// <summary>
         ///     TODO.
@@ -56,11 +56,6 @@ namespace itolib.Structs
         /// </summary>
         [Tooltip("")]
         public bool requiresLineOfSight = true;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public ScanNodeInfo() { }
 
         /// <summary>
         ///     TODO.

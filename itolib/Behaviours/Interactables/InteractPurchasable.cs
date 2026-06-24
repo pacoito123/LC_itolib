@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Interactables
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct Notification
+    public struct Notification()
     {
         /// <summary>
         ///     TODO.
@@ -36,11 +36,6 @@ namespace itolib.Behaviours.Interactables
         /// </summary>
         [HideInInspector]
         public bool alreadySeen;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public Notification() { }
 
         /// <summary>
         ///     TODO.

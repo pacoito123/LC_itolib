@@ -8,7 +8,7 @@ namespace itolib.Behaviours.Networking
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct SyncedAudioProperties : INetworkSerializable
+    public struct SyncedAudioProperties() : INetworkSerializable
     {
         /// <summary>
         ///     TODO.
@@ -34,11 +34,6 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         [Tooltip("")]
         public float walkieVolume = 1.0f;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public SyncedAudioProperties() { }
 
         /// <summary>
         ///     TODO.

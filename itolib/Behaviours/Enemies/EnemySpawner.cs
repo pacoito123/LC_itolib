@@ -10,22 +10,23 @@ namespace itolib.Behaviours.Enemies
     /// <summary>
     ///     TODO.
     /// </summary>
+    /// <param name="enemyWithRarity"></param>
     [Serializable]
-    public struct EnemyWeightEntry : IWeightedEntry
+    public struct EnemyWeightEntry(SpawnableEnemyWithRarity enemyWithRarity) : IWeightedEntry
     {
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Enemy Weight Entry")]
         [Tooltip("")]
-        public string enemyName = string.Empty;
+        public string enemyName = (enemyWithRarity.enemyType != null) ? enemyWithRarity.enemyType.enemyName : string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [field: Tooltip("")]
         [field: Min(0)]
-        [field: SerializeField] public int Weight { get; set; } = 1;
+        [field: SerializeField] public int Weight { get; set; } = enemyWithRarity.rarity;
 
         /// <summary>
         ///     TODO.
@@ -39,23 +40,7 @@ namespace itolib.Behaviours.Enemies
         [Space(5.0f)]
         [Header("== DEPRECATED ==")]
         [Tooltip("(Deprecated) Replace with the desired enemy's 'enemyName' field.")]
-        public EnemyType? enemyToSpawn = null;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public EnemyWeightEntry() { }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="enemyWithRarity"></param>
-        public EnemyWeightEntry(SpawnableEnemyWithRarity enemyWithRarity)
-        {
-            // enemyName = (enemyWithRarity.enemyType != null) ? enemyWithRarity.enemyType.enemyName : string.Empty;
-            enemyToSpawn = enemyWithRarity.enemyType;
-            Weight = enemyWithRarity.rarity;
-        }
+        public EnemyType? enemyToSpawn = enemyWithRarity.enemyType;
     }
 
     /// <summary>

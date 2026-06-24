@@ -9,7 +9,7 @@ namespace itolib.Behaviours.Animations
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct EventEntry
+    public struct EventEntry()
     {
         /// <summary>
         ///     TODO.
@@ -23,11 +23,6 @@ namespace itolib.Behaviours.Animations
         /// </summary>
         [Tooltip("")]
         public UnityEvent onEventCalled = new();
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public EventEntry() { }
     }
 
     /// <summary>

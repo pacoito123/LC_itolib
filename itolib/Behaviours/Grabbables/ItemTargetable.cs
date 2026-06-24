@@ -10,7 +10,7 @@ namespace itolib.Behaviours.Grabbables
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct DestinationInfo : INetworkSerializable
+    public struct DestinationInfo() : INetworkSerializable
     {
         /// <summary>
         ///     TODO.
@@ -60,11 +60,6 @@ namespace itolib.Behaviours.Grabbables
         /// </summary>
         [Tooltip("")]
         public NetworkBehaviourReference enemyReference = default;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public DestinationInfo() { }
 
         /// <summary>
         ///     TODO.

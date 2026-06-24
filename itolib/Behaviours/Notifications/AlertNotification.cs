@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Notifications
     ///     Represents a single notification entry to display to alerted players.
     /// </summary>
     [Serializable]
-    public struct NotificationEntry : IAlertEntry
+    public struct NotificationEntry() : IAlertEntry
     {
         /// <summary>
         ///     Type of notification to display. Affects notification color, animation, and default opening sound effect.
@@ -68,11 +68,6 @@ namespace itolib.Behaviours.Notifications
         [field: Header(header: "Other")]
         [field: Tooltip("Whether this notification entry should only be displayed once or not.")]
         [field: SerializeField] public bool SingleUse { get; set; }
-
-        /// <summary>
-        ///     Constructor for the struct type (needed to allow default parameter values).
-        /// </summary>
-        public NotificationEntry() { }
     }
 
     /// <summary>

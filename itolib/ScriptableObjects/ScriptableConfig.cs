@@ -11,7 +11,7 @@ namespace itolib.ScriptableObjects
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct BoolEntry : IScriptableConfigEntry<bool>
+    public struct BoolEntry() : IScriptableConfigEntry<bool>
     {
         /// <summary>
         ///     TODO.
@@ -32,11 +32,6 @@ namespace itolib.ScriptableObjects
         ///     TODO.
         /// </summary>
         [field: SerializeField] public bool DefaultValue { get; set; } = false;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public BoolEntry() { }
     }
 
     /// <summary>

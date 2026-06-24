@@ -12,7 +12,7 @@ namespace itolib.Behaviours.Kinematics
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct HealthCondition
+    public struct HealthCondition()
     {
         /// <summary>
         ///     TODO.
@@ -44,11 +44,6 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         [Tooltip("")]
         public bool runOnce = true;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public HealthCondition() { }
     }
 
     /// <summary>

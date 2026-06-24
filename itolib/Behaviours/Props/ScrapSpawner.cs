@@ -15,22 +15,23 @@ namespace itolib.Behaviours.Props
     /// <summary>
     ///     TODO.
     /// </summary>
+    /// <param name="itemWithRarity"></param>
     [Serializable]
-    public struct ScrapWeightEntry : IWeightedEntry
+    public struct ScrapWeightEntry(SpawnableItemWithRarity itemWithRarity) : IWeightedEntry
     {
         /// <summary>
         ///     TODO.
         /// </summary>
         [Header("Scrap Weight Entry")]
         [Tooltip("")]
-        public string itemName = string.Empty;
+        public string itemName = (itemWithRarity.spawnableItem != null) ? itemWithRarity.spawnableItem.itemName : string.Empty;
 
         /// <summary>
         ///     TODO.
         /// </summary>
         [field: Tooltip("")]
         [field: Min(0)]
-        [field: SerializeField] public int Weight { get; set; } = 1;
+        [field: SerializeField] public int Weight { get; set; } = itemWithRarity.rarity;
 
         /// <summary>
         ///     TODO.
@@ -44,23 +45,7 @@ namespace itolib.Behaviours.Props
         [Space(5.0f)]
         [Header("== DEPRECATED ==")]
         [Tooltip("(Deprecated) Replace with the desired item's 'itemName' field.")]
-        public Item? itemToSpawn;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public ScrapWeightEntry() { }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="itemWithRarity"></param>
-        public ScrapWeightEntry(SpawnableItemWithRarity itemWithRarity)
-        {
-            // itemName = (itemWithRarity.spawnableItem != null) ? itemWithRarity.spawnableItem.itemName : string.Empty;
-            itemToSpawn = itemWithRarity.spawnableItem;
-            Weight = itemWithRarity.rarity;
-        }
+        public Item? itemToSpawn = itemWithRarity.spawnableItem;
     }
 
     /// <summary>

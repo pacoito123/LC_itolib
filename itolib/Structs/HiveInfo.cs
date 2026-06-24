@@ -8,7 +8,7 @@ namespace itolib.Structs
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct HiveInfo : INetworkSerializable, IEquatable<HiveInfo>
+    public struct HiveInfo() : INetworkSerializable, IEquatable<HiveInfo>
     {
         /// <summary>
         ///     TODO.
@@ -36,11 +36,6 @@ namespace itolib.Structs
         /// </summary>
         [Tooltip("")]
         public NetworkBehaviourReference hiveReference;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public HiveInfo() { }
 
         /// <summary>
         ///     TODO.

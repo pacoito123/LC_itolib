@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Props
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct HazardReplacement
+    public struct HazardReplacement()
     {
         /// <summary>
         ///     TODO.
@@ -25,11 +25,6 @@ namespace itolib.Behaviours.Props
         /// </summary>
         [Tooltip("")]
         public string replacingHazard = string.Empty;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public HazardReplacement() { }
     }
 
     /// <summary>

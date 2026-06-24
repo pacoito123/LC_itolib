@@ -8,7 +8,7 @@ namespace itolib.Structs
     ///     Represents a rotation to apply to a specific <c>Transform</c> towards a target over time.
     /// </summary>
     [Serializable]
-    public struct RotationPivot
+    public struct RotationPivot()
     {
         /// <summary>
         ///     Pivot <c>Transform</c> to apply the rotation to.
@@ -54,11 +54,6 @@ namespace itolib.Structs
         /// </summary>
         [Tooltip("Whether to freeze rotation for the Z-axis or not.")]
         public bool freezeZ;
-
-        /// <summary>
-        ///     Constructor for the struct type (needed to allow default parameter values).
-        /// </summary>
-        public RotationPivot() { }
 
         /// <summary>
         ///     Apply rotation to the current pivot.

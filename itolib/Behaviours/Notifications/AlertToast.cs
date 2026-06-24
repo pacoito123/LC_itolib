@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Notifications
     ///     Represents a single toast entry to display to alerted players.
     /// </summary>
     [Serializable]
-    public struct ToastEntry : IAlertEntry
+    public struct ToastEntry() : IAlertEntry
     {
         /// <summary>
         ///     Type of toast to display. Affects toast color, animation, and default opening sound effect.
@@ -74,11 +74,6 @@ namespace itolib.Behaviours.Notifications
         [field: Header(header: "Other")]
         [field: Tooltip("Whether this toast entry should only be displayed once or not.")]
         [field: SerializeField] public bool SingleUse { get; set; }
-
-        /// <summary>
-        ///     Constructor for the struct type (needed to allow default parameter values).
-        /// </summary>
-        public ToastEntry() { }
     }
 
     /// <summary>

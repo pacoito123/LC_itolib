@@ -13,7 +13,7 @@ namespace itolib.Behaviours.Detectors
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct EnemyFilter
+    public struct EnemyFilter()
     {
         /// <summary>
         ///     TODO.
@@ -82,11 +82,6 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         [Tooltip("")]
         public bool isBlacklist = false;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public EnemyFilter() { }
     }
 
     /// <summary>

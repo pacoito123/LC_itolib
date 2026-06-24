@@ -10,7 +10,7 @@ namespace itolib.Behaviours.Kinematics
     ///     Represents a force to be applied to the player, towards a specified direction.
     /// </summary>
     [Serializable]
-    public struct LaunchParameters
+    public struct LaunchParameters()
     {
         /// <summary>
         ///     Magnitude of the force to apply to the player.
@@ -29,11 +29,6 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         [Tooltip("Additional rotation source to consider when multiplying by the specified direction.")]
         public RotationSource considerRotationFrom = RotationSource.Absolute;
-
-        /// <summary>
-        ///     Constructor for the struct type (needed to allow default parameter values).
-        /// </summary>
-        public LaunchParameters() { }
     }
 
     /// <summary>

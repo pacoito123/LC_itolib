@@ -10,7 +10,7 @@ namespace itolib.Behaviours.Notifications
     ///     Represents a single dialogue entry to display to alerted players.
     /// </summary>
     [Serializable]
-    public struct DialogueEntry : IAlertEntry
+    public struct DialogueEntry() : IAlertEntry
     {
         /// <summary>
         ///     Header text to display on the dialogue box.
@@ -73,11 +73,6 @@ namespace itolib.Behaviours.Notifications
         [field: Header(header: "Other")]
         [field: Tooltip("Whether this dialogue box entry should only be displayed once or not.")]
         [field: SerializeField] public bool SingleUse { get; set; }
-
-        /// <summary>
-        ///     Constructor for the struct type (needed to allow default parameter values).
-        /// </summary>
-        public DialogueEntry() { }
     }
 
     /// <summary>

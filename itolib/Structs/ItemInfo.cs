@@ -8,7 +8,7 @@ namespace itolib.Structs
     ///     TODO.
     /// </summary>
     [Serializable]
-    public struct ItemInfo : INetworkSerializable, IEquatable<ItemInfo>
+    public struct ItemInfo() : INetworkSerializable, IEquatable<ItemInfo>
     {
         /// <summary>
         ///     TODO.
@@ -43,11 +43,6 @@ namespace itolib.Structs
         [Tooltip("")]
         [Min(-1)]
         public int materialVariant = -1;
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        public ItemInfo() { }
 
         /// <summary>
         ///     TODO.
