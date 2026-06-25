@@ -170,13 +170,15 @@ namespace itolib.Behaviours.Enemies
 
             if (hiveMinValue != -1 && hiveMaxValue != -1)
             {
-                scrapValue = isSeededRandom ? SeededSelf.GetSeededRandom().Next(hiveMinValue, hiveMaxValue)
-                    : Random.RandomRangeInt(hiveMinValue, hiveMaxValue);
+                scrapValue = (hiveMinValue >= hiveMaxValue) ? hiveMinValue
+                    : (isSeededRandom ? SeededSelf.GetSeededRandom().Next(hiveMinValue, hiveMaxValue)
+                    : Random.RandomRangeInt(hiveMinValue, hiveMaxValue));
             }
             else if (overrideHive != null && overrideHive.spawnPrefab != null)
             {
-                scrapValue = isSeededRandom ? SeededSelf.GetSeededRandom().Next(overrideHive.minValue, overrideHive.maxValue)
-                        : Random.RandomRangeInt(overrideHive.minValue, overrideHive.maxValue);
+                scrapValue = (overrideHive.minValue >= overrideHive.maxValue) ? overrideHive.minValue
+                    : (isSeededRandom ? SeededSelf.GetSeededRandom().Next(overrideHive.minValue, overrideHive.maxValue)
+                    : Random.RandomRangeInt(overrideHive.minValue, overrideHive.maxValue));
             }
 
             if (scrapValue != -1)

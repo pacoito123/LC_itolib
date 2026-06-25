@@ -198,8 +198,9 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            int itemsToTeleport = seededRandom ? SeededSelf.GetSeededRandom().Next(minAmount, maxAmount + 1)
-                : Random.Range(minAmount, maxAmount + 1);
+            int itemsToTeleport = (minAmount >= maxAmount) ? minAmount
+                : (seededRandom ? SeededSelf.GetSeededRandom().Next(minAmount, maxAmount + 1)
+                : Random.Range(minAmount, maxAmount + 1));
 
             for (int i = 0; i < itemsToTeleport; i++)
             {

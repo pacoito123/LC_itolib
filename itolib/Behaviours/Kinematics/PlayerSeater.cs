@@ -358,7 +358,7 @@ namespace itolib.Behaviours.Kinematics
                 if (player.playerBodyAnimator.GetCurrentAnimatorStateInfo(5).tagHash != notInSpecialAnimTag)
                 {
                     // Reset the unseating player's animations.
-                    player.playerBodyAnimator.SetTrigger(stopAnimationID);
+                    player.playerBodyAnimator.ResetTrigger(stopAnimationID);
                 }
 
                 // Invoke unseating event.

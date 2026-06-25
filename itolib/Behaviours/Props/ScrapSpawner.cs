@@ -227,8 +227,9 @@ namespace itolib.Behaviours.Props
                 // TODO: Apply single item day values.
             } */
 
-            int scrapValue = isSeededRandom ? SeededSelf.GetSeededRandom().Next(minValue, maxValue)
-                : UnityEngine.Random.RandomRangeInt(minValue, maxValue);
+            int scrapValue = (minValue >= maxValue) ? minValue
+                : (isSeededRandom ? SeededSelf.GetSeededRandom().Next(minValue, maxValue)
+                : UnityEngine.Random.RandomRangeInt(minValue, maxValue));
 
             if (RoundManager.Instance != null)
             {

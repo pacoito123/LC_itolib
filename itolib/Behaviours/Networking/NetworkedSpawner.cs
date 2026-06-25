@@ -173,8 +173,9 @@ namespace itolib.Behaviours.Networking
                 return;
             }
 
-            int spawnAmount = isSeededRandom ? SeededSelf.GetSeededRandom().Next(minSpawns, maxSpawns + 1)
-                : Random.RandomRangeInt(minSpawns, maxSpawns + 1);
+            int spawnAmount = (minSpawns >= maxSpawns) ? minSpawns
+                : (isSeededRandom ? SeededSelf.GetSeededRandom().Next(minSpawns, maxSpawns + 1)
+                : Random.RandomRangeInt(minSpawns, maxSpawns + 1));
 
             if (spawnAmount == 0)
             {

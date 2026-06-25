@@ -184,8 +184,9 @@ namespace itolib.Behaviours.Props
         /// </summary>
         public void SummonFish()
         {
-            int spawnAmount = isSeededRandom ? SeededSelf.GetSeededRandom().Next(minFish, maxFish + 1)
-                : Random.RandomRangeInt(minFish, maxFish + 1);
+            int spawnAmount = (minFish >= maxFish) ? minFish
+                : (isSeededRandom ? SeededSelf.GetSeededRandom().Next(minFish, maxFish + 1)
+                : Random.RandomRangeInt(minFish, maxFish + 1));
 
             if (spawnAmount == 0)
             {
