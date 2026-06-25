@@ -151,7 +151,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     Whether single item days should be respected when spawning scrap items or not.
         /// </summary>
-                [Tooltip("Whether single item days should be respected when spawning scrap items or not.")]
+        [Tooltip("Whether single item days should be respected when spawning scrap items or not.")]
         [SerializeField] private bool respectSingleItemDay;
 
         /// <summary>
@@ -418,9 +418,9 @@ namespace itolib.Behaviours.Props
         /// </summary>
         /// <param name="item">Item that has just spawned.</param>
         /// <param name="spawnLocation">Position and rotation to apply to the item.</param>
-                private IEnumerator WaitForItemFall(GrabbableObject item, TransformInfo spawnLocation)
+        private IEnumerator WaitForItemFall(GrabbableObject item, TransformInfo spawnLocation)
         {
-            yield return Yielders.WaitForEndOfFrame;
+            yield return null;
             yield return Yielders.WaitForEndOfFrame;
 
             item.fallTime = 1.0f;
@@ -437,15 +437,23 @@ namespace itolib.Behaviours.Props
                 item.FallToGround(randomizePosition, true);
             }
 
-            yield return Yielders.WaitForEndOfFrame;
+            yield return null;
 
             if (muteSpawnedScrap)
             {
-                AudioSource[] sources = item.GetComponentsInChildren<AudioSource>();
+                AudioSource[] sources = item.GetComponentsInChildren<AudioSource>(includeInactive: true);
 
                 for (int i = 0; i < sources.Length; i++)
                 {
-                    sources[i].Stop();
+                    AudioSource source = sources[i];
+
+                    if (source.playOnAwake)
+                    {
+                        // Disable playing on awake in case sources start disabled.
+                        source.playOnAwake = false;
+                    }
+
+                    source.Stop();
                 }
             }
 
