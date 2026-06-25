@@ -3,6 +3,7 @@ using GameNetcodeStuff;
 using itolib.Enums;
 using itolib.Extensions;
 using itolib.Interfaces;
+using itolib.Structs;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Unity.Netcode;
@@ -12,103 +13,85 @@ using UnityEngine.Events;
 namespace itolib.Behaviours.Events
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a single entry with weights to be used for weighted event selection.
     /// </summary>
     [Serializable]
     public struct WeightedEventEntry() : IWeightedEntry
     {
         /// <summary>
-        ///     TODO.
+        ///     Event invoked whenever this specific entry is used.
         /// </summary>
         [Header("Weighted Event Entry")]
-        [Tooltip("")]
+        [Tooltip("Event invoked whenever this specific entry is used.")]
         public UnityEvent onEvent = new();
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [field: Tooltip("")]
+        /// <inheritdoc/>
+        [field: Tooltip("Weight value for this specific entry.")]
         [field: Min(0)]
         [field: SerializeField] public int Weight { get; set; }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        [field: Tooltip("")]
+        /// <inheritdoc/>
+        [field: Tooltip("Weight modifiers to apply whenever this specific entry is used.")]
+        [field: SerializeField] public WeightedModifier[]? WeightedModifiers { get; set; }
+
+        /// <inheritdoc/>
+        [field: Tooltip("Whether this specific entry can be used more than once or not.")]
         [field: SerializeField] public bool SingleUse { get; set; }
     }
 
     /// <summary>
-    ///     TODO.
+    ///     Represents an event with weighted selection capabilities.
     /// </summary>
     public class WeightedEvent : NetworkBehaviour, IActivationScript, ISeededScript<WeightedEvent>, IWeightedScript<WeightedEventEntry>
     {
-        /// <summary>
-        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>IActivationScript</c>, to avoid having to cast.
-        /// </summary>
+        /// <inheritdoc/>
         public IActivationScript ActivationSelf { get; }
 
-        /// <summary>
-        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>ISeededScript</c>, to avoid having to cast.
-        /// </summary>
+        /// <inheritdoc/>
         public ISeededScript<WeightedEvent> SeededSelf { get; }
 
-        /// <summary>
-        ///     Cached instance of the current <c>WeightedEvent</c> as an <c>IWeightedScript</c>, to avoid having to cast.
-        /// </summary>
+        /// <inheritdoc/>
         public IWeightedScript<WeightedEventEntry> WeightedSelf { get; }
 
-        /// <summary>
-        ///    TODO.
-        /// </summary>
-        public int[]? CumulativeWeights { get; set; }
+        /// <inheritdoc/>
+        public int[]? CurrentWeights { get; set; }
 
-        /// <summary>
-        ///    TODO.
-        /// </summary>
+        /// <inheritdoc/>
         public int TotalWeight { get; set; }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
+        /// <inheritdoc/>
         public bool InitializedWeights { get; set; }
 
-        /// <summary>
-        ///     Whether activation has already been performed or not.
-        /// </summary>
+        /// <inheritdoc/>
         public bool PerformedActivation { get; set; }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
+        /// <inheritdoc/>
         [field: Header("Weighted Event")]
-        [field: Tooltip("")]
+        [field: Tooltip("List of weighted entries of type WeightedEventEntry.")]
         [field: SerializeField] public WeightedEventEntry[]? WeightedEntries { get; set; }
 
-        /// <summary>
-        ///     Desired <c>ActivationTime</c> for the initial weighted roll.
-        /// </summary>
+        /// <inheritdoc/>
         [field: Tooltip("Desired activation time for the initial weighted roll.")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.Manual;
 
         /// <summary>
-        ///     TODO.
+        ///     Minimum number of rolls to perform per call.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Minimum number of rolls to perform per call.")]
         [Min(0)]
         [SerializeField] private int minRolls = 1;
 
         /// <summary>
-        ///     TODO.
+        ///     Maximum number of rolls to perform per call.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Maximum number of rolls to perform per call.")]
         [Min(0)]
         [SerializeField] private int maxRolls = 1;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether the random weighted event rolling should be seeded or not.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Whether the random weighted event rolling should be seeded or not.")]
         [SerializeField] private bool seededRandom;
 
         /// <summary>
@@ -132,7 +115,7 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     Initialize weights for every <c>WeightedEventEntry</c>.
+        ///     Initialize weights for every defined <c>WeightedEventEntry</c>.
         /// </summary>
         private void Awake()
         {
@@ -140,7 +123,7 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Subscribe to events for automatic activation.
         /// </summary>
         public override void OnNetworkSpawn()
         {
@@ -155,7 +138,7 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Unsubscribe from any events that may have been subscribed to.
         /// </summary>
         public override void OnDestroy()
         {
@@ -165,9 +148,9 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Add a single weighted entry of type <c>WeightedEventEntry</c>.
         /// </summary>
-        /// <param name="entry"></param>
+        /// <param name="entry">Entry of type <c>WeightedEventEntry</c> to add.</param>
         public void AddWeightEntry(WeightedEventEntry entry)
         {
             if (!WeightedSelf.InitializedWeights)
@@ -179,9 +162,9 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Add multiple weighted entries of type <c>WeightedEventEntry></c>.
         /// </summary>
-        /// <param name="entries"></param>
+        /// <param name="entries">Entries of type <c>WeightedEventEntry</c> to add.</param>
         public void AddWeightEntries(WeightedEventEntry[] entries)
         {
             if (!WeightedSelf.InitializedWeights)
@@ -193,9 +176,10 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Remove weights for the weighted entry of type <c>WeightedEventEntry</c> at the specified index.
         /// </summary>
-        /// <param name="index"></param>
+        /// <remarks>Sets weights to <c>0</c> instead of actually removing them.</remarks>
+        /// <param name="index">Index of the entry of type <c>WeightedEventEntry</c> to remove.</param>
         public void RemoveWeightEntry(int index)
         {
             if (!WeightedSelf.InitializedWeights)
@@ -207,8 +191,9 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Perform weighted roll on the server.
         /// </summary>
+        /// <remarks><b>NOTE:</b> Can only be successfully called from the host.</remarks>
         public void RollFromServer()
         {
             if (!NetworkManager.Singleton.IsHost)
@@ -220,8 +205,9 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Perform weighted roll on a specific client.
         /// </summary>
+        /// <param name="player">Player calling the weighted roll.</param>
         public void RollFromClient(PlayerControllerB player)
         {
             if (!player.IsLocalClient())
@@ -239,7 +225,7 @@ namespace itolib.Behaviours.Events
 
             for (int i = 0; i < rollsToPerform; i++)
             {
-                if (WeightedSelf.TryObtainRandomEntryIndex(out int weightIndex, seededRandom
+                if (WeightedSelf.TryObtainRandomEntry(out WeightedEventEntry _, out int weightIndex, seededRandom
                     ? SeededSelf.GetSeededRandom() : null))
                 {
                     InvokeEventLocal(weightIndex);
@@ -262,9 +248,9 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Invoke weighted entry of type <c>WeightedEventEntry</c> at the specified index for all other clients.
         /// </summary>
-        /// <param name="weightIndex"></param>
+        /// <param name="weightIndex">Index of the entry of type <c>WeightedEventEntry</c> to invoke.</param>
         [Rpc(SendTo.NotMe, RequireOwnership = false)]
         public void InvokeEventRpc(int weightIndex)
         {
@@ -272,9 +258,9 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Invoke weighted entry of type <c>WeightedEventEntry</c> at the specified index for the local client.
         /// </summary>
-        /// <param name="weightIndex"></param>
+        /// <param name="weightIndex">Index of the entry of type <c>WeightedEventEntry</c> to invoke.</param>
         private void InvokeEventLocal(int weightIndex)
         {
             if (WeightedSelf.TryObtainEntry(out WeightedEventEntry entry, weightIndex))

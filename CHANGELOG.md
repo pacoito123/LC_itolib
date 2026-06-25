@@ -7,6 +7,11 @@ WIP
 - Made `PlayerLauncher` dropping items no longer use `PlayerControllerB.DropAllHeldItemsAndSyncNonexact()`, in favor of the exact one.
 - Added `ShotgunSensor` compatibility for [BeanieLib](https://thunderstore.io/c/lethal-company/p/Beaniebe/Beanie_Lib)'s `CustomShotgun` script.
 - Added methods to `AnimationParamSetter` for toggling, incrementing, and multiplying parameter values.
+- Added 'weight modifiers' to all `IWeightedScript`-inheriting scripts:
+  - Weight modifiers allow changing weight values whenever an entry with modifiers defined is selected.
+  - Modifiers can target its own weights or the weights of other entries, and multiple different operations can be done at a time.
+  - Allows for more dynamic weighted rolls (e.g. halving the weights of the entry that was selected and adding a flat value to another).
+  - Also revised internal logic for `IWeightedScript` in general, should be a bit more reliable.
 
 ## [v0.9.3]
 

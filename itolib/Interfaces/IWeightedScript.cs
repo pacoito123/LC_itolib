@@ -1,9 +1,11 @@
+using itolib.Enums;
+using itolib.Structs;
 using System;
 
 namespace itolib.Interfaces
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a single entry with weights to be used for weighted selection.
     /// </summary>
     public interface IWeightedEntry
     {
@@ -11,6 +13,11 @@ namespace itolib.Interfaces
         ///     Weight value for this specific entry.
         /// </summary>
         int Weight { get; set; }
+
+        /// <summary>
+        ///     Weight modifiers to apply whenever this specific entry is used.
+        /// </summary>
+        WeightedModifier[]? WeightedModifiers { get; set; }
 
         /// <summary>
         ///     Whether this specific entry can be used more than once or not.
@@ -21,9 +28,8 @@ namespace itolib.Interfaces
     /// <summary>
     ///     Adds weighted selection capabilities to any implementing class.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <remarks></remarks>
-    public interface IWeightedScript<T> where T : IWeightedEntry
+    /// <typeparam name="T">A struct type that implements <c>IWeightedEntry</c>.</typeparam>
+    public interface IWeightedScript<T> where T : struct, IWeightedEntry
     {
         /// <summary>
         ///     Cached instance of the implementing script as an <c>IWeightedScript</c>, to avoid having to cast.
@@ -31,211 +37,201 @@ namespace itolib.Interfaces
         IWeightedScript<T> WeightedSelf { get; }
 
         /// <summary>
-        ///     TODO.
+        ///     List of weighted entries of type <c><typeparamref name="T"/></c>.
         /// </summary>
+        /// <remarks>Not intended to be modified outside of adding new entries.</remarks>
         T[]? WeightedEntries { get; set; }
 
         /// <summary>
-        ///     TODO.
+        ///     List of actual weights for each entry index. 
         /// </summary>
-        int[]? CumulativeWeights { get; set; }
+        int[]? CurrentWeights { get; set; }
 
         /// <summary>
-        ///     TODO.
+        ///     Total sum of all weighted entries.
         /// </summary>
         int TotalWeight { get; set; }
 
         /// <summary>
-        ///     TODO.
+        ///     Whether weighted entries have been initialized or not.
         /// </summary>
         bool InitializedWeights { get; set; }
 
         /// <summary>
-        ///     TODO.
+        ///     Initialize weighted entries (if not done already).
         /// </summary>
         void InitializeWeights()
         {
-            if (InitializedWeights)
+            if (!InitializedWeights)
             {
-                return;
+                AddWeights(WeightedEntries);
             }
-
-            if (WeightedEntries?.Length > 0)
-            {
-                int[] cumulativeWeights = new int[WeightedEntries.Length];
-
-                for (int i = 0; i < WeightedEntries.Length; i++)
-                {
-                    TotalWeight += WeightedEntries[i].Weight;
-                    cumulativeWeights[i] = TotalWeight;
-                }
-
-                CumulativeWeights = cumulativeWeights;
-            }
-
-            InitializedWeights = true;
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Add a single weighted entry of type <c><typeparamref name="T"/></c>.
         /// </summary>
-        /// <param name="entry"></param>
+        /// <param name="entry">Entry of type <c><typeparamref name="T"/></c> to add.</param>
         void AddWeight(T entry)
         {
             TotalWeight += entry.Weight;
 
             WeightedEntries = (WeightedEntries?.Length > 0) ? [.. WeightedEntries, entry] : [entry];
-            CumulativeWeights = (CumulativeWeights?.Length > 0) ? [.. CumulativeWeights, TotalWeight] : [TotalWeight];
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="entries"></param>
-        void AddWeights(T[]? entries)
-        {
-            if (entries == null || entries.Length == 0)
-            {
-                // TODO: Log warning.
-                return;
-            }
-
-            int[] cumulativeWeights = new int[entries.Length];
-
-            for (int i = 0; i < entries.Length; i++)
-            {
-                TotalWeight += entries[i].Weight;
-                cumulativeWeights[i] = TotalWeight;
-            }
-
-            WeightedEntries = (WeightedEntries?.Length > 0) ? [.. WeightedEntries, .. entries] : entries;
-            CumulativeWeights = (CumulativeWeights?.Length > 0) ? [.. CumulativeWeights, .. cumulativeWeights] : cumulativeWeights;
+            CurrentWeights = (CurrentWeights?.Length > 0) ? [.. CurrentWeights, entry.Weight] : [entry.Weight];
 
             InitializedWeights = true;
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Add multiple weighted entries of type <c><typeparamref name="T"/></c>.
         /// </summary>
-        /// <param name="index"></param>
+        /// <param name="entries">Entries of type <c><typeparamref name="T"/></c> to add.</param>
+        void AddWeights(T[]? entries)
+        {
+            if (entries == null || entries.Length == 0)
+            {
+                Plugin.StaticLogger.LogWarning($"Tried to add empty or null weights array to IWeightedScript '{GetType()}'!");
+
+                return;
+            }
+
+            int[] currentWeights = new int[entries.Length];
+
+            for (int i = 0; i < entries.Length; i++)
+            {
+                TotalWeight += entries[i].Weight;
+
+                currentWeights[i] = entries[i].Weight;
+            }
+
+            WeightedEntries = (WeightedEntries?.Length > 0) ? [.. WeightedEntries, .. entries] : entries;
+            CurrentWeights = (CurrentWeights?.Length > 0) ? [.. CurrentWeights, .. currentWeights] : currentWeights;
+
+            InitializedWeights = true;
+        }
+
+        /// <summary>
+        ///     Remove weights for the weighted entry of type <c><typeparamref name="T"/></c> at the specified index.
+        /// </summary>
+        /// <remarks>Sets weights to <c>0</c> instead of actually removing them.</remarks>
+        /// <param name="index">Index of the entry of type <c><typeparamref name="T"/></c> to remove.</param>
         void RemoveWeight(int index)
         {
-            if (CumulativeWeights == null || index < 0 || index > CumulativeWeights.Length)
+            if (index >= 0 && index < CurrentWeights?.Length)
             {
-                return;
-            }
-
-            if (index > 0)
-            {
-                int difference = CumulativeWeights[index] - CumulativeWeights[index - 1];
-
-                if (difference > 0)
-                {
-                    ModifyWeight(index, -difference);
-                }
-            }
-            else if (CumulativeWeights[index] > 0)
-            {
-                ModifyWeight(index, -CumulativeWeights[index]);
+                ModifyWeight(index, 0);
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Modify weights for the weighted entry of type <c><typeparamref name="T"/></c> at the specified index.
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="weight"></param>
+        /// <param name="index">Index of the entry of type <c><typeparamref name="T"/></c> to set.</param>
+        /// <param name="weight">Weight value to set for the entry of type <c><typeparamref name="T"/></c> at the specified index.</param>
         void ModifyWeight(int index, int weight)
         {
-            if (weight == 0 || index < 0 || CumulativeWeights == null || index >= CumulativeWeights.Length)
+            if (index >= 0 && index < CurrentWeights?.Length)
             {
-                return;
-            }
-
-            if (CumulativeWeights[index] + weight < 0)
-            {
-                weight = -CumulativeWeights[index];
-            }
-
-            TotalWeight += weight;
-
-            for (int i = index; i < CumulativeWeights.Length; i++)
-            {
-                CumulativeWeights[i] += weight;
-            }
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="entry"></param>
-        /// <param name="weightIndex"></param>
-        /// <returns></returns>
-        bool TryObtainEntry(out T entry, int weightIndex)
-        {
-            entry = default!;
-
-            if (weightIndex >= 0 && weightIndex < WeightedEntries?.Length)
-            {
-                entry = WeightedEntries[weightIndex];
-
-                if (entry.SingleUse)
+                if (weight < 0) // Minimum weight for entries is zero.
                 {
-                    RemoveWeight(weightIndex);
+                    weight = 0;
                 }
 
-                return true;
-            }
+                int difference = weight - CurrentWeights[index];
 
-            return false;
+                CurrentWeights[index] += difference;
+                TotalWeight += difference;
+            }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Attempt to obtain a weighted entry of type <c><typeparamref name="T"/></c> at the specified index.
         /// </summary>
-        /// <param name="entry"></param>
-        /// <param name="random"></param>
-        /// <returns></returns>
-        bool TryObtainRandomEntry(out T entry, Random? random = null)
+        /// <param name="weightEntry">Weighted entry of type <c><typeparamref name="T"/></c> at the specified index, as an out parameter.</param>
+        /// <param name="weightIndex">Index of the entry of type <c><typeparamref name="T"/></c> to obtain.</param>
+        /// <returns>Whether an entry of type <c><typeparamref name="T"/></c> was successfully obtained or not.</returns>
+        bool TryObtainEntry(out T weightEntry, int weightIndex)
         {
-            entry = default!;
+            weightEntry = default;
 
-            if (!TryObtainRandomEntryIndex(out int weightIndex, random))
+            if (WeightedEntries == null || weightIndex < 0 || weightIndex >= WeightedEntries.Length)
             {
+                Plugin.StaticLogger.LogWarning($"No weights defined for IWeightedScript '{GetType()}'!");
+
                 return false;
             }
 
-            entry = WeightedEntries![weightIndex];
+            weightEntry = WeightedEntries[weightIndex];
 
-            if (entry.SingleUse)
+            if (weightEntry.SingleUse)
             {
                 RemoveWeight(weightIndex);
+            }
+
+            for (int i = 0; i < weightEntry.WeightedModifiers?.Length; i++) // Apply weighted modifiers.
+            {
+                WeightedModifier modifier = weightEntry.WeightedModifiers[i];
+
+                if (modifier.modifierIndex >= 0 && modifier.modifierIndex < CurrentWeights?.Length)
+                {
+                    float weight = CurrentWeights[i];
+
+                    if (WeightedEntries[modifier.modifierIndex].SingleUse && weight == 0.0f)
+                    {
+                        continue;
+                    }
+
+                    weight = modifier.modifierType switch
+                    {
+                        ModifierType.Additive => weight + modifier.modifierValue,
+                        ModifierType.Multiplicative => weight * Math.Abs(modifier.modifierValue),
+                        _ => 0.0f,
+                    };
+
+                    ModifyWeight(modifier.modifierIndex, (int)weight);
+                }
             }
 
             return true;
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Attempt to obtain a random weighted entry of type <c><typeparamref name="T"/></c>.
         /// </summary>
-        /// <param name="weightIndex"></param>
-        /// <param name="random"></param>
-        /// <returns></returns>
-        bool TryObtainRandomEntryIndex(out int weightIndex, Random? random = null)
+        /// <param name="weightEntry">Weighted entry of type <c><typeparamref name="T"/></c> obtained, as an out parameter.</param>
+        /// <param name="weightIndex">Index of the entry of type <c><typeparamref name="T"/></c> obtained, as an out parameter.</param>
+        /// <param name="random">Optional seeded <c>Random</c> instance to use.</param>
+        /// <returns>Whether a random entry of type <c><typeparamref name="T"/></c> was successfully obtained or not.</returns>
+        bool TryObtainRandomEntry(out T weightEntry, out int weightIndex, Random? random = null)
         {
             weightIndex = -1;
+            weightEntry = default;
 
-            if (CumulativeWeights == null || CumulativeWeights.Length == 0)
+            if (CurrentWeights == null || CurrentWeights.Length == 0 || TotalWeight <= 0)
             {
+                Plugin.StaticLogger.LogWarning($"No weights defined for IWeightedScript '{GetType()}'!");
+
                 return false;
             }
 
             int randomWeight = (random != null) ? random.Next(0, TotalWeight + 1)
                 : UnityEngine.Random.RandomRangeInt(0, TotalWeight + 1);
 
-            weightIndex = Array.FindIndex(CumulativeWeights, weight => randomWeight <= weight);
+            for (int i = 0; i < CurrentWeights.Length; i++)
+            {
+                int weight = CurrentWeights[i];
 
-            return weightIndex >= 0 && weightIndex < CumulativeWeights.Length;
+                if (randomWeight < weight)
+                {
+                    weightIndex = i;
+
+                    break;
+                }
+
+                randomWeight -= weight;
+            }
+
+            return TryObtainEntry(out weightEntry, weightIndex);
         }
     }
 }
