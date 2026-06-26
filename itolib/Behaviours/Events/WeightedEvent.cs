@@ -226,10 +226,10 @@ namespace itolib.Behaviours.Events
 
             for (int i = 0; i < rollsToPerform; i++)
             {
-                if (WeightedSelf.TryObtainRandomEntry(out WeightedEventEntry _, out int weightIndex, seededRandom
+                if (WeightedSelf.TryObtainRandomEntry(out WeightedEventEntry entry, out int weightIndex, seededRandom
                     ? SeededSelf.GetSeededRandom() : null))
                 {
-                    InvokeEventLocal(weightIndex);
+                    entry.onEvent.Invoke();
 
                     if (IsSpawned)
                     {
