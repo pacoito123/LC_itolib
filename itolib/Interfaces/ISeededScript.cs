@@ -1,7 +1,7 @@
-using LethalLevelLoader;
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using UnityEngine.SceneManagement;
 
 namespace itolib.Interfaces
 {
@@ -30,7 +30,7 @@ namespace itolib.Interfaces
                     field = new(StartOfRound.Instance.randomMapSeed + SeedOffset);
 
                     // Schedule seeded Random instance to be reset upon starting a new round.
-                    LevelManager.GlobalLevelEvents.onLevelLoaded.AddListener(ResetRandom);
+                    SceneManager.sceneUnloaded += ResetRandom;
                 }
 
                 return (field) ?? new(); // Use a time-dependent seed as fallback, though this should never be the case.
@@ -68,10 +68,10 @@ namespace itolib.Interfaces
         /// <summary>
         ///     Clear the implementing class' seeded <c>Random</c> instance, to generate a new one.
         /// </summary>
-        private static void ResetRandom()
+        private static void ResetRandom(Scene _)
         {
             // Immediately unsubscribe from event.
-            LevelManager.GlobalLevelEvents.onLevelLoaded.RemoveListener(ResetRandom);
+            SceneManager.sceneUnloaded -= ResetRandom;
 
             // Set Random instance back to null.
             SeededRandom = null!;

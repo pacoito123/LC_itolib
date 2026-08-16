@@ -8,10 +8,7 @@ namespace itolib.Behaviours.Conditionals
     /// </summary>
     public class DungeonConditional : BaseConditional<DungeonFlow>
     {
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="undo"></param>
+        /// <inheritdoc/>
         public override void ApplyConditional(bool undo)
         {
             if (RoundManager.Instance != null && RoundManager.Instance.dungeonGenerator != null && RoundManager.Instance.dungeonGenerator.Generator != null
@@ -21,11 +18,7 @@ namespace itolib.Behaviours.Conditionals
             }
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="objectToCheck"></param>
-        /// <param name="undo"></param>
+        /// <inheritdoc/>
         public override void ApplyConditional(DungeonFlow objectToCheck, bool undo)
         {
             string dungeonName = objectToCheck.name;

@@ -3,7 +3,6 @@ using DunGen.Graph;
 using HarmonyLib;
 using itolib.Behaviours.Helpers;
 using itolib.Enums;
-using LethalLevelLoader;
 using System.Reflection;
 
 namespace itolib.Patches
@@ -11,7 +10,6 @@ namespace itolib.Patches
     /// <summary>
     ///     Patch for <c>SpecificDoorway</c>'s functionality.
     /// </summary>
-    [HarmonyPatch]
     internal static class DoorwayPatch
     {
         /// <summary>
@@ -25,7 +23,7 @@ namespace itolib.Patches
             if (original == null)
             {
                 // Reset SpecificDoorway state immediately before generation starts.
-                DungeonManager.GlobalDungeonEvents.onBeforeDungeonGenerate.AddListener(() => specificDoorwayActive = null);
+                DungeonGenerator.OnAnyDungeonGenerationStarted += static _ => specificDoorwayActive = null;
             }
         }
 

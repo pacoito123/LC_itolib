@@ -3,10 +3,6 @@ using itolib.Compatibility;
 
 namespace itolib.Patches
 {
-    /// <summary>
-    ///     TODO.
-    /// </summary>
-    [HarmonyPatch]
     internal static class LoadPatch
     {
         private static bool firstLoad = true;

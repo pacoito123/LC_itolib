@@ -3,7 +3,6 @@ using System;
 
 namespace itolib.Patches
 {
-    [HarmonyPatch]
     internal static class ApparatusPatches
     {
         internal static event Action? OnRadiationWarningHUD;

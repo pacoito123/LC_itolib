@@ -18,20 +18,13 @@ namespace itolib.Behaviours.Conditionals
         [Tooltip("")]
         [SerializeField] private ContentCategoryType contentToSearch = ContentCategoryType.None;
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="undo"></param>
+        /// <inheritdoc/>
         public override void ApplyConditional(bool undo)
         {
             ApplyConditional(contentToSearch);
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="contentType"></param>
-        /// <param name="undo"></param>
+        /// <inheritdoc/>
         public override void ApplyConditional(ContentCategoryType contentType, bool undo)
         {
             switch (contentType)

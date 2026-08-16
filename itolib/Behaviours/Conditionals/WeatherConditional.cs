@@ -13,9 +13,7 @@ namespace itolib.Behaviours.Conditionals
         /// </summary>
         public LevelWeatherType LastWeather { get; private set; }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
+        /// <inheritdoc/>
         protected override void Awake()
         {
             if (CrowdControlCompatibility.Enabled && TimeOfDay.Instance != null && TimeOfDay.Instance.currentLevel != null)
@@ -32,9 +30,7 @@ namespace itolib.Behaviours.Conditionals
             base.Awake();
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
+        /// <inheritdoc/>
         protected override void OnDestroy()
         {
             if (WeatherRegistryCompatibility.Enabled)
@@ -50,10 +46,7 @@ namespace itolib.Behaviours.Conditionals
             base.OnDestroy();
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="undo"></param>
+        /// <inheritdoc/>
         public override void ApplyConditional(bool undo)
         {
             if (TimeOfDay.Instance != null)
@@ -62,11 +55,7 @@ namespace itolib.Behaviours.Conditionals
             }
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="objectToCheck"></param>
-        /// <param name="undo"></param>
+        /// <inheritdoc/>
         public override void ApplyConditional(LevelWeatherType objectToCheck, bool undo)
         {
             if (!undo)
