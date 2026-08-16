@@ -178,11 +178,13 @@ namespace itolib.Behaviours.Materials
         /// <param name="replacementMaterial"></param>
         private static void PerformSwap(Renderer renderer, string searchKeyword, Material replacementMaterial)
         {
-            Material[] materials = renderer.sharedMaterials;
+            Material[]? materials = renderer.sharedMaterials;
 
-            for (int i = 0; i < materials.Length; i++)
+            for (int i = 0; i < materials?.Length; i++)
             {
-                if (materials[i].name.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase))
+                Material? material = materials[i];
+
+                if (material != null && materials[i].name.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase))
                 {
                     materials[i] = replacementMaterial;
                 }
