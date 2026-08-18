@@ -3,8 +3,8 @@ using itolib.Behaviours.Helpers;
 using itolib.Compatibility;
 using itolib.Extensions;
 using itolib.Interfaces;
+using itolib.Patches;
 using itolib.Util;
-using LethalLevelLoader;
 using System;
 using System.Collections;
 using Unity.Netcode;
@@ -659,7 +659,9 @@ namespace itolib.Behaviours.Grabbables
 
                 disconnectAnimation = StartCoroutine(HandleDisconnect());
 
-                // Invoke LLL Apparatus pull events.
+                ApparatusPatches.InvokeApparatusPullEvent(this);
+
+                /* // Invoke LLL Apparatus pull events. TODO: Soft compat.
                 if (DungeonManager.CurrentExtendedDungeonFlow != null)
                 {
                     DungeonManager.CurrentExtendedDungeonFlow.DungeonEvents.onApparatusTaken.Invoke(this);
@@ -669,7 +671,7 @@ namespace itolib.Behaviours.Grabbables
                 {
                     LevelManager.CurrentExtendedLevel.LevelEvents.onApparatusTaken.Invoke(this);
                     LevelManager.GlobalLevelEvents.onApparatusTaken.Invoke(this);
-                }
+                } */
             }
 
             OnEquipEarly.Invoke();

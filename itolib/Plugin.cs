@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using itolib.Compatibility.Moons;
 using itolib.Patches;
 using itolib.Structs;
 using System;
@@ -12,7 +11,6 @@ namespace itolib
     /// <summary>
     ///     Wondrous gizmos and gadgets for the restless mind.
     /// </summary>
-    [BepInDependency(LethalLevelLoader.Plugin.ModGUID, "1.7.0")]
     [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, VERSION)]
     public class Plugin : BaseUnityPlugin
     {
@@ -43,11 +41,14 @@ namespace itolib
                 // Apply all patches.
                 Harmony.PatchAll(typeof(ApparatusPatches));
                 Harmony.PatchAll(typeof(DoorwayPatch));
+                Harmony.PatchAll(typeof(EntranceTeleportPatch));
+                Harmony.PatchAll(typeof(GameNetworkManagerPatch));
                 Harmony.PatchAll(typeof(LoadPatch));
+                Harmony.PatchAll(typeof(RoundManagerPatches));
                 // ...
 
                 // Special moon compatibilities:
-                BerunahCompatibility.RegisterCompat();
+                // BerunahCompatibility.RegisterCompat();
                 // ...
 
                 StaticLogger.LogInfo($"{PLUGIN_NAME} v{VERSION} loaded!");

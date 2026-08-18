@@ -1,5 +1,5 @@
 using itolib.Extensions;
-using LethalLevelLoader;
+using itolib.Patches;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -12,33 +12,33 @@ namespace itolib.ScriptableObjects
     [CreateAssetMenu(fileName = "ScriptableNetworkPrefab", menuName = "itolib/Networking/ScriptableNetworkPrefab")]
     public sealed class ScriptableNetworkPrefab : ScriptableObject
     {
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        private static Dictionary<string, NetworkObject> RegisteredPrefabs { get; } = [];
+        internal static Dictionary<string, NetworkObject> RegisteredPrefabs { get; } = [];
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [SerializeField] private NetworkObject[]? prefabsToRegister;
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         private void Awake()
         {
+            if (GameNetworkManagerPatch.networkStarted)
+            {
+                Plugin.StaticLogger.LogError($"ScriptableNetworkPrefab '{name}' initializing after network has already started. Prefabs won't be registered!");
+
+                return;
+            }
+
             for (int i = 0; i < prefabsToRegister?.Length; i++)
             {
                 NetworkObject? prefabToRegister = prefabsToRegister[i];
 
-                if (prefabToRegister != null)
+                if (prefabToRegister == null)
                 {
-                    LethalLevelLoaderNetworkManager.RegisterNetworkPrefab(prefabToRegister.gameObject);
+                    Plugin.StaticLogger.LogWarning($"ScriptableNetworkPrefab '{name}' attempts to register a missing prefab.");
 
-                    if (!RegisteredPrefabs.TryAdd(prefabToRegister.name, prefabToRegister))
-                    {
-                        // TODO: Log warning.
-                    }
+                    continue;
+                }
+
+                if (!RegisteredPrefabs.TryAdd(prefabToRegister.name, prefabToRegister))
+                {
+                    Plugin.StaticLogger.LogWarning($"ScriptableNetworkPrefab could not register duplicate prefab '{name}'.");
                 }
             }
         }

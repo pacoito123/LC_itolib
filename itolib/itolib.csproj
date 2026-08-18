@@ -48,8 +48,8 @@
         <PackageReference Include="LethalCompany.GameLibs.Steam" Version="81.0.5-ngd.0" PrivateAssets="all" Publicize="true" />
         <!-- <PackageReference Include="IAmBatby.LethalLevelLoader" Version="1.4.*" PrivateAssets="all" Publicize="true" /> -->
 
-        <PackageReference Include="Evaisa.LethalLib" Version="1.1.*" PrivateAssets="all" />
-        <PackageReference Include="TeamXiaolan.DawnLib" Version="0.9.*" PrivateAssets="all" />
+        <!-- <PackageReference Include="Evaisa.LethalLib" Version="1.1.*" PrivateAssets="all" /> -->
+        <!-- <PackageReference Include="TeamXiaolan.DawnLib" Version="0.9.*" PrivateAssets="all" /> -->
         <PackageReference Include="mrov.WeatherRegistry" Version="0.8.*" PrivateAssets="all" />
         <PackageReference Include="mrov-WeatherTweaks" Version="1.1.*" PrivateAssets="all" />
         <PackageReference Include="Beaniebe-Beanie_Lib" Version="1.0.*" PrivateAssets="all" />
@@ -59,11 +59,11 @@
         <PackageReference Include="BGN-PizzaTowerEscapeMusic" Version="2.4.*" PrivateAssets="all" Publicize="true" />
         <PackageReference Include="Rattenbonkers-TVLoader" Version="1.1.*" PrivateAssets="all" Publicize="true" />
 
-        <Reference Include="LethalLevelLoader">
+        <!-- <Reference Include="LethalLevelLoader">
             <PrivateAssets>all</PrivateAssets>
             <Publicize>true</Publicize>
             <HintPath>managed\LethalLevelLoader.dll</HintPath>
-        </Reference>
+        </Reference> -->
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">

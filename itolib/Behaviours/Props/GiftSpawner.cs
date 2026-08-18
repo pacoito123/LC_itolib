@@ -1,6 +1,6 @@
 using itolib.Interfaces;
 using itolib.Structs;
-using LethalLevelLoader;
+using itolib.Util;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -20,7 +20,7 @@ namespace itolib.Behaviours.Props
             {
                 if (field == null)
                 {
-                    field = OriginalContent.Items.Find(item => item.itemId == 152767);
+                    _ = SearchContent.TryFindItem(out field, "GiftBox");
                 }
 
                 return field;

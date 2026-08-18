@@ -1,6 +1,5 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
-using LethalLevelLoader;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -32,7 +31,7 @@ namespace itolib.Behaviours.Props
         [Tooltip("")]
         [SerializeField] private UnityEvent<int> onLogAlreadyUnlocked = new();
 
-        /// <summary>
+        /* /// <summary>
         ///     TODO.
         /// </summary>
         public new void Start()
@@ -94,7 +93,7 @@ namespace itolib.Behaviours.Props
                 onLogAlreadyUnlocked.Invoke(storyLogID);
                 RemoveLogCollectible();
             }
-        }
+        } */
 
         /// <summary>
         ///     TODO.

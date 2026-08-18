@@ -1,6 +1,6 @@
 using GameNetcodeStuff;
 using itolib.Extensions;
-using LethalLevelLoader;
+using itolib.Patches;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -70,8 +70,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         private void OnEnable()
         {
-            DungeonManager.GlobalDungeonEvents.onPlayerEnterDungeon.AddListener(HideSun);
-            DungeonManager.GlobalDungeonEvents.onPlayerExitDungeon.AddListener(RevealSun);
+            EntranceTeleportPatch.OnEntranceTeleportUsed += HideSun;
 
             if (StartOfRound.Instance != null)
             {
@@ -84,8 +83,7 @@ namespace itolib.Behaviours.Effects
         /// </summary>
         private void OnDisable()
         {
-            DungeonManager.GlobalDungeonEvents.onPlayerEnterDungeon.RemoveListener(HideSun);
-            DungeonManager.GlobalDungeonEvents.onPlayerExitDungeon.RemoveListener(RevealSun);
+            EntranceTeleportPatch.OnEntranceTeleportUsed -= HideSun;
 
             if (StartOfRound.Instance != null)
             {
@@ -119,24 +117,6 @@ namespace itolib.Behaviours.Effects
                 onDungeonExited.Invoke(foundSun);
             }
 
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="pair"></param>
-        private void HideSun((EntranceTeleport, PlayerControllerB) pair)
-        {
-            HideSun(pair.Item2, reveal: false);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="pair"></param>
-        private void RevealSun((EntranceTeleport, PlayerControllerB) pair)
-        {
-            HideSun(pair.Item2, reveal: true);
         }
 
         /// <summary>

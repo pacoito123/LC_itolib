@@ -2,8 +2,8 @@ using DunGen;
 using itolib.Enums;
 using itolib.Extensions;
 using itolib.Interfaces;
+using itolib.Patches;
 using itolib.Structs;
-using LethalLevelLoader;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -353,7 +353,7 @@ namespace itolib.Behaviours.Networking
 
             if (includeInsideAINodes || includeOutsideAINodes)
             {
-                DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(AddAINodes);
+                RoundManagerPatches.OnSpawnScrapInLevel += AddAINodes;
             }
 
             ActivationSelf.Initialize();
@@ -366,7 +366,7 @@ namespace itolib.Behaviours.Networking
         {
             ActivationSelf.UnsubscribeFromEvents();
 
-            DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(AddAINodes);
+            RoundManagerPatches.OnSpawnScrapInLevel -= AddAINodes;
 
             base.OnDestroy();
         }
@@ -376,7 +376,7 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         private void AddAINodes()
         {
-            DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(AddAINodes);
+            RoundManagerPatches.OnSpawnScrapInLevel -= AddAINodes;
 
             if (RoundManager.Instance != null)
             {

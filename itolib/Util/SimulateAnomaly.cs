@@ -1,30 +1,33 @@
 using itolib.Interfaces;
-using LethalLevelLoader;
 using System;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 namespace itolib.Util
 {
     /// <summary>
-    ///     TODO.
+    ///     Simulates the current round's seeded <c>Random</c> instance to determine if any <c>Anomaly</c> (e.g. single-item day) is active.
     /// </summary>
-    internal sealed class SimulateAnomaly : ISeededScript<SimulateAnomaly>
+    public sealed class SimulateAnomaly : ISeededScript<SimulateAnomaly>
     {
         /// <summary>
-        ///     TODO.
+        ///     Obtain item used for the current round's single-item day, if there is one.
         /// </summary>
         public static Item? SingleItem
         {
             get
             {
-                if (_isSingleItemDay == null)
+                if (_isSingleItemDay == null && StartOfRound.Instance != null && StartOfRound.Instance.currentLevel != null && RoundManager.Instance != null)
                 {
                     ISeededScript<SimulateAnomaly>.SeedOffset = 5;
 
-                    SelectableLevel currentLevel = LevelManager.CurrentExtendedLevel.SelectableLevel;
+                    SelectableLevel currentLevel = StartOfRound.Instance.currentLevel;
                     Random anomalyRandom = ISeededScript<SimulateAnomaly>.SeededRandom;
 
-                    SimulateChallengeFile(ref anomalyRandom, currentLevel);
+                    if (StartOfRound.Instance.isChallengeFile)
+                    {
+                        SimulateChallengeFile(ref anomalyRandom, currentLevel);
+                    }
                     int singleItemIndex = SimulateSpawnScrap(ref anomalyRandom, currentLevel);
 
                     field = (singleItemIndex != -1 && currentLevel.spawnableScrap?[singleItemIndex] != null)
@@ -32,7 +35,7 @@ namespace itolib.Util
 
                     _isSingleItemDay = field != null;
 
-                    LevelManager.GlobalLevelEvents.onLevelLoaded.AddListener(ResetItem);
+                    SceneManager.sceneLoaded += ResetItem;
                 }
 
                 return field;
@@ -41,60 +44,45 @@ namespace itolib.Util
         }
         private static bool? _isSingleItemDay;
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="anomalyRandom"></param>
-        /// <param name="currentLevel"></param>
         private static void SimulateChallengeFile(ref Random anomalyRandom, SelectableLevel currentLevel)
         {
-            if (StartOfRound.Instance.isChallengeFile)
+            int[] challengeIndices = new int[5];
+
+            for (int i = 0; i < challengeIndices.Length; i++)
             {
-                int[] challengeIndices = new int[5];
+                challengeIndices[i] = anomalyRandom.Next(0, 100);
+            }
 
-                for (int i = 0; i < challengeIndices.Length; i++)
-                {
-                    challengeIndices[i] = anomalyRandom.Next(0, 100);
-                }
+            if (challengeIndices[0] < 45)
+            {
+                _ = anomalyRandom.Next(0, currentLevel.Enemies.Count);
 
-                if (challengeIndices[0] < 45)
+                if (currentLevel.Enemies[RoundManager.Instance.increasedInsideEnemySpawnRateIndex].enemyType.spawningDisabled)
                 {
                     _ = anomalyRandom.Next(0, currentLevel.Enemies.Count);
-
-                    if (currentLevel.Enemies[RoundManager.Instance.increasedInsideEnemySpawnRateIndex].enemyType.spawningDisabled)
-                    {
-                        _ = anomalyRandom.Next(0, currentLevel.Enemies.Count);
-                    }
                 }
-                if (challengeIndices[1] < 45)
-                {
-                    _ = anomalyRandom.Next(0, currentLevel.OutsideEnemies.Count);
-                }
-                if (challengeIndices[2] < 45)
-                {
-                    _ = anomalyRandom.Next(0, currentLevel.indoorMapHazards.Length);
-                }
-                if (challengeIndices[3] < 45)
-                {
-                    _ = anomalyRandom.Next(0, currentLevel.spawnableOutsideObjects.Length);
-                }
-                if (challengeIndices[4] < 45)
-                {
-                    _ = anomalyRandom.Next(0, currentLevel.spawnableScrap.Count);
-                }
+            }
+            if (challengeIndices[1] < 45)
+            {
+                _ = anomalyRandom.Next(0, currentLevel.OutsideEnemies.Count);
+            }
+            if (challengeIndices[2] < 45)
+            {
+                _ = anomalyRandom.Next(0, currentLevel.indoorMapHazards.Length);
+            }
+            if (challengeIndices[3] < 45)
+            {
+                _ = anomalyRandom.Next(0, currentLevel.spawnableOutsideObjects.Length);
+            }
+            if (challengeIndices[4] < 45)
+            {
+                _ = anomalyRandom.Next(0, currentLevel.spawnableScrap.Count);
             }
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="anomalyRandom"></param>
-        /// <param name="currentLevel"></param>
-        /// <returns></returns>
         private static int SimulateSpawnScrap(ref Random anomalyRandom, SelectableLevel currentLevel)
         {
-            _ = (int)(anomalyRandom.Next(currentLevel.minScrap, currentLevel.maxScrap)
-                * RoundManager.Instance.scrapAmountMultiplier);
+            _ = (int)(anomalyRandom.Next(currentLevel.minScrap, currentLevel.maxScrap) * RoundManager.Instance.scrapAmountMultiplier);
 
             if (StartOfRound.Instance.isChallengeFile)
             {
@@ -128,14 +116,15 @@ namespace itolib.Util
             return singleItemIndex;
         }
 
-        private static void ResetItem()
+        private static void ResetItem(Scene scene, LoadSceneMode _)
         {
-            LevelManager.GlobalLevelEvents.onLevelLoaded.RemoveListener(ResetItem);
+            SceneManager.sceneLoaded -= ResetItem;
 
             SingleItem = null;
             _isSingleItemDay = null;
         }
 
+        /// <inheritdoc/>
         public ISeededScript<SimulateAnomaly> SeededSelf => throw new InvalidOperationException("SimulateAnomaly should have no instance.");
     }
 }

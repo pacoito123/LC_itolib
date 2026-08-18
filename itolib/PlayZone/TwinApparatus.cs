@@ -1,7 +1,7 @@
 using itolib.Behaviours.Grabbables;
 using itolib.Compatibility;
+using itolib.Patches;
 using itolib.Util;
-using LethalLevelLoader;
 using System.Collections;
 using UnityEngine;
 
@@ -154,7 +154,12 @@ namespace itolib.PlayZone
                 bothPulled = LongLostTwin != null && !LongLostTwin.isLungDocked && !LongLostTwin.isLungPowered;
                 disconnectAnimation = StartCoroutine(HandleDisconnect());
 
-                if (bothPulled) // Invoke LLL Apparatus pull events only when both are pulled.
+                if (bothPulled)
+                {
+                    ApparatusPatches.InvokeApparatusPullEvent(this);
+                }
+
+                /* if (bothPulled) // Invoke LLL Apparatus pull events only when both are pulled. TODO: Soft compat.
                 {
                     if (DungeonManager.CurrentExtendedDungeonFlow != null)
                     {
@@ -166,7 +171,7 @@ namespace itolib.PlayZone
                         LevelManager.CurrentExtendedLevel.LevelEvents.onApparatusTaken.Invoke(this);
                         LevelManager.GlobalLevelEvents.onApparatusTaken.Invoke(this);
                     }
-                }
+                } */
             }
 
             base.EquipItem();

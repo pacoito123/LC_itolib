@@ -1,175 +1,229 @@
 using DunGen.Graph;
-using itolib.Compatibility;
 using itolib.Extensions;
-using LethalLevelLoader;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace itolib.Util
 {
     /// <summary>
-    ///     TODO.
+    ///     Helper methods for retrieving references to some registered content types.
     /// </summary>
     public static class SearchContent
     {
         /// <summary>
-        ///     TODO.
+        ///     <c>Regex</c> pattern for skipping to the first letter in a given string.
         /// </summary>
-        /// <param name="item"></param>
-        /// <param name="itemName"></param>
-        /// <param name="checkObjectName"></param>
-        /// <returns></returns>
+        /// <example>
+        ///     ("823 Bozoros") -> ("Bozoros").
+        /// </example>
+        public static readonly Regex skipToLetterRegex = new(@"^[^\p{L}]+", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        internal static QuickMenuManager QuickMenuManager
+        {
+            get
+            {
+                if (field == null)
+                {
+                    field = Object.FindFirstObjectByType<QuickMenuManager>(FindObjectsInactive.Exclude);
+                }
+
+                return field;
+            }
+        }
+
+        private static HashSet<EnemyType>? FoundEnemies
+        {
+            get
+            {
+                if (field == null || field.Count == 0)
+                {
+                    if (QuickMenuManager != null && QuickMenuManager.testAllEnemiesLevel != null)
+                    {
+                        static void AddEnemiesToList(List<SpawnableEnemyWithRarity> spawnableEnemies)
+                        {
+                            field ??= [];
+
+                            if (spawnableEnemies == null || spawnableEnemies.Count == 0)
+                            {
+                                return;
+                            }
+
+                            foreach (SpawnableEnemyWithRarity spawnableEnemy in spawnableEnemies)
+                            {
+                                if (spawnableEnemy == null || spawnableEnemy.enemyType == null || spawnableEnemy.enemyType.enemyPrefab == null)
+                                {
+                                    continue;
+                                }
+
+                                if (!field.Add(spawnableEnemy.enemyType))
+                                {
+                                    continue;
+                                }
+
+                                if (spawnableEnemy.enemyType.enemyPrefab.TryGetComponent(out ButlerEnemyAI butlerEnemy))
+                                {
+                                    _ = field.Add(butlerEnemy.butlerBeesEnemyType);
+                                }
+
+                                if (spawnableEnemy.enemyType.enemyPrefab.TryGetComponent(out CadaverGrowthAI cadaverEnemy))
+                                {
+                                    _ = field.Add(cadaverEnemy.bloomEnemyType);
+                                }
+                            }
+                        }
+
+                        AddEnemiesToList(QuickMenuManager.testAllEnemiesLevel.Enemies);
+                        AddEnemiesToList(QuickMenuManager.testAllEnemiesLevel.OutsideEnemies);
+                        AddEnemiesToList(QuickMenuManager.testAllEnemiesLevel.DaytimeEnemies);
+
+                        if (RoundManager.Instance != null)
+                        {
+                            AddEnemiesToList(RoundManager.Instance.WeedEnemies);
+                        }
+                    }
+                }
+
+                return field;
+            }
+        }
+
+        /// <summary>
+        ///     Try search and obtain a registered <c>Item</c> type.
+        /// </summary>
+        /// <param name="item"><c>Item</c> obtained from the search, as an out parameter.</param>
+        /// <param name="itemName">Name of the <c>Item</c> to search.</param>
+        /// <param name="checkObjectName">Whether the <c>ScriptableObject</c> name should be checked or not.</param>
+        /// <returns>Whether a registered <c>Item</c> was successfully obtained or not.</returns>
         public static bool TryFindItem(out Item item, string itemName, bool checkObjectName = false)
         {
             item = null!;
+
+            if (StartOfRound.Instance == null || StartOfRound.Instance.allItemsList == null || StartOfRound.Instance.allItemsList.itemsList == null)
+            {
+                return false;
+            }
 
             if (itemName.IsNullOrEmpty())
             {
                 return false;
             }
 
-            ExtendedItem? extendedItem = PatchedContent.ExtendedItems.Find(extendedItem => !checkObjectName
-                ? extendedItem.Item.itemName.CompareOrdinal(itemName) : extendedItem.Item.name.CompareOrdinal(itemName));
+            item = StartOfRound.Instance.allItemsList.itemsList.Find(item => checkObjectName
+                ? (item.spawnPrefab != null && item.spawnPrefab.name.CompareOrdinal(itemName))
+                : (item != null && item.itemName.CompareOrdinal(itemName)));
 
-            if (extendedItem != null)
-            {
-                item = extendedItem.Item;
-
-                return true;
-            }
-
-            if (LethalLibCompatibility.Enabled)
-            {
-                Item? lethalLibItem = LethalLibCompatibility.GetLethalLibItem(itemName, checkObjectName);
-
-                if (lethalLibItem != null)
-                {
-                    item = lethalLibItem;
-
-                    return true;
-                }
-            }
-
-            if (DawnLibCompatibility.Enabled)
-            {
-                Item? dawnItem = DawnLibCompatibility.GetDawnItem(itemName, checkObjectName);
-
-                if (dawnItem != null)
-                {
-                    item = dawnItem;
-
-                    return true;
-                }
-            }
-
-            return false;
+            return item != null;
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Try search and obtain a registered <c>EnemyType</c> type.
         /// </summary>
-        /// <param name="enemy"></param>
-        /// <param name="enemyName"></param>
-        /// <param name="checkObjectName"></param>
-        /// <returns></returns>
+        /// <param name="enemy"><c>EnemyType</c> obtained from the search, as an out parameter.</param>
+        /// <param name="enemyName">Name of the <c>EnemyType</c> to search.</param>
+        /// <param name="checkObjectName">Whether the <c>ScriptableObject</c> name should be checked or not.</param>
+        /// <returns>Whether a registered <c>EnemyType</c> was successfully obtained or not.</returns>
         public static bool TryFindEnemy(out EnemyType enemy, string enemyName, bool checkObjectName = false)
         {
             enemy = null!;
+
+            if (RoundManager.Instance == null || FoundEnemies == null)
+            {
+                return false;
+            }
 
             if (enemyName.IsNullOrEmpty())
             {
                 return false;
             }
 
-            ExtendedEnemyType? extendedEnemy = PatchedContent.ExtendedEnemyTypes.Find(extendedEnemy => !checkObjectName
-                ? extendedEnemy.EnemyType.enemyName.CompareOrdinal(enemyName) : extendedEnemy.EnemyType.name.CompareOrdinal(enemyName));
-
-            if (extendedEnemy != null)
+            foreach (EnemyType enemyType in FoundEnemies)
             {
-                enemy = extendedEnemy.EnemyType;
-
-                return true;
-            }
-
-            if (LethalLibCompatibility.Enabled)
-            {
-                EnemyType? lethalLibEnemy = LethalLibCompatibility.GetLethalLibEnemyType(enemyName, checkObjectName);
-
-                if (lethalLibEnemy != null)
+                if (enemyType == null)
                 {
-                    enemy = lethalLibEnemy;
+                    continue;
+                }
 
-                    return true;
+                if ((checkObjectName && enemyType.name.CompareOrdinal(enemyName))
+                    || (!checkObjectName && enemyType.enemyName.CompareOrdinal(enemyName)))
+                {
+                    enemy = enemyType;
+
+                    break;
                 }
             }
 
-            if (DawnLibCompatibility.Enabled)
-            {
-                EnemyType? dawnEnemy = DawnLibCompatibility.GetDawnEnemyType(enemyName, checkObjectName);
-
-                if (dawnEnemy != null)
-                {
-                    enemy = dawnEnemy;
-
-                    return true;
-                }
-            }
-
-            return false;
+            return enemy != null;
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Try search and obtain a registered <c>SelectableLevel</c> type.
         /// </summary>
-        /// <param name="level"></param>
-        /// <param name="levelName"></param>
-        /// <returns></returns>
+        /// <param name="level"><c>SelectableLevel</c> obtained from the search, as an out parameter.</param>
+        /// <param name="levelName">Name of the <c>SelectableLevel</c> to search, numberless.</param>
+        /// <returns>Whether a registered <c>SelectableLevel</c> was successfully obtained or not.</returns>
         public static bool TryFindLevel(out SelectableLevel level, string levelName)
         {
             level = null!;
+
+            if (StartOfRound.Instance == null)
+            {
+                return false;
+            }
 
             if (levelName.IsNullOrEmpty())
             {
                 return false;
             }
 
-            ExtendedLevel? extendedLevel = PatchedContent.ExtendedLevels.Find(extendedLevel =>
-                extendedLevel.SelectableLevel.GetNumberlessPlanetName().CompareOrdinal(levelName));
-
-            if (extendedLevel != null)
+            for (int i = 0; i < StartOfRound.Instance.levels?.Length; i++)
             {
-                level = extendedLevel.SelectableLevel;
+                SelectableLevel? selectableLevel = StartOfRound.Instance.levels[i];
 
-                return true;
+                if (selectableLevel != null && skipToLetterRegex.Replace(selectableLevel.PlanetName, string.Empty).CompareOrdinal(levelName))
+                {
+                    level = selectableLevel;
+
+                    break;
+                }
             }
 
-            return false;
+            return level != null;
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Try search and obtain a registered <c>DungeonFlow</c> type.
         /// </summary>
-        /// <param name="dungeon"></param>
-        /// <param name="dungeonName"></param>
-        /// <returns></returns>
+        /// <param name="dungeon"><c>DungeonFlow</c> obtained from the search, as an out parameter.</param>
+        /// <param name="dungeonName">Name of the <c>DungeonFlow</c> to search.</param>
+        /// <returns>Whether a registered <c>DungeonFlow</c> was successfully obtained or not.</returns>
         public static bool TryFindDungeon(out DungeonFlow dungeon, string dungeonName)
         {
             dungeon = null!;
+
+            if (RoundManager.Instance == null)
+            {
+                return false;
+            }
 
             if (dungeonName.IsNullOrEmpty())
             {
                 return false;
             }
 
-            ExtendedDungeonFlow? extendedDungeon = PatchedContent.ExtendedDungeonFlows.Find(extendedDungeon =>
-                extendedDungeon.DungeonFlow.name.CompareOrdinal(dungeonName));
-
-            if (extendedDungeon != null)
+            for (int i = 0; i < RoundManager.Instance.dungeonFlowTypes?.Length; i++)
             {
-                dungeon = extendedDungeon.DungeonFlow;
+                IndoorMapType? indoorMapType = RoundManager.Instance.dungeonFlowTypes[i];
 
-                return true;
+                if (indoorMapType != null && indoorMapType.dungeonFlow != null && indoorMapType.dungeonFlow.name.CompareOrdinal(dungeonName))
+                {
+                    dungeon = indoorMapType.dungeonFlow;
+
+                    break;
+                }
             }
 
-            return false;
+            return dungeon != null;
         }
     }
 }

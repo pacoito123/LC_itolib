@@ -1,7 +1,5 @@
-using itolib.Extensions;
 using itolib.Structs;
 using itolib.Util;
-using LethalLevelLoader;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -23,7 +21,7 @@ namespace itolib.Behaviours.Enemies
             {
                 if (field == null)
                 {
-                    field = OriginalContent.Enemies.Find(enemy => enemy.enemyName.CompareOrdinal("Red Locust Bees"));
+                    _ = SearchContent.TryFindEnemy(out field, "Red Locust Bees");
                 }
 
                 return field;
@@ -287,15 +285,9 @@ namespace itolib.Behaviours.Enemies
 
             if (NetworkManager.Singleton.IsHost)
             {
-                if (overrideHive != null && overrideHive.spawnPrefab == null)
+                if (overrideHive != null && overrideHive.spawnPrefab == null && !SearchContent.TryFindItem(out overrideHive, overrideHive.name, true))
                 {
-                    ExtendedItem? extendedHive = PatchedContent.ExtendedItems.Find(extendedItem =>
-                        extendedItem.Item.name.CompareOrdinal(overrideHive.name));
-
-                    if (extendedHive != null)
-                    {
-                        overrideHive = extendedHive.Item;
-                    }
+                    Plugin.StaticLogger.LogWarning($"Could not find hive override '{overrideHive.name}' for HiveSpawner '{name}'!");
                 }
             }
 
@@ -332,12 +324,9 @@ namespace itolib.Behaviours.Enemies
             {
                 overrideHive = hiveReplacement;
             }
-            else
+            else if (!SearchContent.TryFindItem(out overrideHive, hiveReplacement.name, true))
             {
-                ExtendedItem? extendedHive = PatchedContent.ExtendedItems.Find(extendedItem =>
-                    extendedItem.Item.name.CompareOrdinal(hiveReplacement.name));
-
-                overrideHive = extendedHive != null ? extendedHive.Item : null;
+                Plugin.StaticLogger.LogWarning($"Could not find hive replacement '{hiveReplacement.name}' for HiveSpawner '{name}'!");
             }
         }
 

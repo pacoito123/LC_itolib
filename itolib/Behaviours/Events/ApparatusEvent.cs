@@ -1,6 +1,5 @@
 using itolib.Compatibility;
 using itolib.Patches;
-using LethalLevelLoader;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -56,7 +55,7 @@ namespace itolib.Behaviours.Events
         /// </summary>
         private void OnEnable()
         {
-            LevelManager.GlobalLevelEvents.onApparatusTaken.AddListener(OnApparatusPull);
+            ApparatusPatches.OnApparatusPulled += OnApparatusPull;
             ApparatusPatches.OnRadiationWarningHUD += OnRadiationWarning;
 
             if (FacilityMeltdownCompatibility.Enabled)
@@ -72,7 +71,7 @@ namespace itolib.Behaviours.Events
         /// </summary>
         private void OnDisable()
         {
-            LevelManager.GlobalLevelEvents.onApparatusTaken.RemoveListener(OnApparatusPull);
+            ApparatusPatches.OnApparatusPulled -= OnApparatusPull;
             ApparatusPatches.OnRadiationWarningHUD -= OnRadiationWarning;
 
             if (FacilityMeltdownCompatibility.Enabled)
@@ -93,7 +92,7 @@ namespace itolib.Behaviours.Events
 
             if (runOnce)
             {
-                LevelManager.GlobalLevelEvents.onApparatusTaken.RemoveListener(OnApparatusPull);
+                ApparatusPatches.OnApparatusPulled -= OnApparatusPull;
             }
         }
 

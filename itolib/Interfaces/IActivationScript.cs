@@ -1,6 +1,6 @@
 using DunGen;
 using itolib.Enums;
-using LethalLevelLoader;
+using itolib.Patches;
 
 namespace itolib.Interfaces
 {
@@ -42,13 +42,13 @@ namespace itolib.Interfaces
                     PerformActivation();
                     break;
                 case ActivationTime.SyncedSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedSyncedObjects.AddListener(PerformActivation);
+                    RoundManagerPatches.OnSpawnSyncedProps += PerformActivation;
                     break;
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.AddListener(PerformActivation);
+                    RoundManagerPatches.OnSpawnScrapInLevel += PerformActivation;
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.AddListener(PerformActivation);
+                    RoundManagerPatches.OnSpawnMapObjects += PerformActivation;
                     break;
                 case ActivationTime.StartOfRound:
                     if (StartOfRound.Instance != null)
@@ -99,13 +99,13 @@ namespace itolib.Interfaces
             switch (ActivationTime)
             {
                 case ActivationTime.SyncedSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedSyncedObjects.RemoveListener(PerformActivation);
+                    RoundManagerPatches.OnSpawnSyncedProps -= PerformActivation;
                     break;
                 case ActivationTime.ScrapSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedScrapObjects.RemoveListener(PerformActivation);
+                    RoundManagerPatches.OnSpawnScrapInLevel -= PerformActivation;
                     break;
                 case ActivationTime.HazardSpawn:
-                    DungeonManager.GlobalDungeonEvents.onSpawnedMapObjects.RemoveListener(PerformActivation);
+                    RoundManagerPatches.OnSpawnMapObjects -= PerformActivation;
                     break;
                 case ActivationTime.StartOfRound:
                     if (StartOfRound.Instance != null)

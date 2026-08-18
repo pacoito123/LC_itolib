@@ -1,4 +1,4 @@
-using itolib.Extensions;
+/* using itolib.Extensions;
 using LethalLib.Modules;
 using System.Runtime.CompilerServices;
 
@@ -57,4 +57,4 @@ namespace itolib.Compatibility
             return null;
         }
     }
-}
+} */
