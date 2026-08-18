@@ -1,7 +1,7 @@
 using DunGen.Graph;
 using itolib.Extensions;
+using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace itolib.Util
@@ -11,21 +11,13 @@ namespace itolib.Util
     /// </summary>
     public static class SearchContent
     {
-        /// <summary>
-        ///     <c>Regex</c> pattern for skipping to the first letter in a given string.
-        /// </summary>
-        /// <example>
-        ///     ("823 Bozoros") -> ("Bozoros").
-        /// </example>
-        public static readonly Regex skipToLetterRegex = new(@"^[^\p{L}]+", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
         internal static QuickMenuManager QuickMenuManager
         {
             get
             {
                 if (field == null)
                 {
-                    field = Object.FindFirstObjectByType<QuickMenuManager>(FindObjectsInactive.Exclude);
+                    field = UnityEngine.Object.FindFirstObjectByType<QuickMenuManager>(FindObjectsInactive.Exclude);
                 }
 
                 return field;
@@ -104,14 +96,14 @@ namespace itolib.Util
                 return false;
             }
 
-            if (itemName.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(itemName))
             {
                 return false;
             }
 
             item = StartOfRound.Instance.allItemsList.itemsList.Find(item => checkObjectName
-                ? (item.spawnPrefab != null && item.spawnPrefab.name.CompareOrdinal(itemName))
-                : (item != null && item.itemName.CompareOrdinal(itemName)));
+                ? (item.spawnPrefab != null && string.Equals(item.spawnPrefab.name, itemName, StringComparison.OrdinalIgnoreCase))
+                : (item != null && string.Equals(item.itemName, itemName, StringComparison.OrdinalIgnoreCase)));
 
             return item != null;
         }
@@ -132,7 +124,7 @@ namespace itolib.Util
                 return false;
             }
 
-            if (enemyName.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(enemyName))
             {
                 return false;
             }
@@ -144,8 +136,8 @@ namespace itolib.Util
                     continue;
                 }
 
-                if ((checkObjectName && enemyType.name.CompareOrdinal(enemyName))
-                    || (!checkObjectName && enemyType.enemyName.CompareOrdinal(enemyName)))
+                if ((checkObjectName && string.Equals(enemyType.name, enemyName, StringComparison.OrdinalIgnoreCase))
+                    || (!checkObjectName && string.Equals(enemyType.enemyName, enemyName, StringComparison.OrdinalIgnoreCase)))
                 {
                     enemy = enemyType;
 
@@ -171,7 +163,7 @@ namespace itolib.Util
                 return false;
             }
 
-            if (levelName.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(levelName))
             {
                 return false;
             }
@@ -180,7 +172,8 @@ namespace itolib.Util
             {
                 SelectableLevel? selectableLevel = StartOfRound.Instance.levels[i];
 
-                if (selectableLevel != null && skipToLetterRegex.Replace(selectableLevel.PlanetName, string.Empty).CompareOrdinal(levelName))
+                if (selectableLevel != null && !string.IsNullOrEmpty(selectableLevel.PlanetName)
+                    && string.Equals(selectableLevel.PlanetName.SkipToLetters(), levelName.SkipToLetters(), StringComparison.OrdinalIgnoreCase))
                 {
                     level = selectableLevel;
 
@@ -206,7 +199,7 @@ namespace itolib.Util
                 return false;
             }
 
-            if (dungeonName.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(dungeonName))
             {
                 return false;
             }
@@ -215,7 +208,8 @@ namespace itolib.Util
             {
                 IndoorMapType? indoorMapType = RoundManager.Instance.dungeonFlowTypes[i];
 
-                if (indoorMapType != null && indoorMapType.dungeonFlow != null && indoorMapType.dungeonFlow.name.CompareOrdinal(dungeonName))
+                if (indoorMapType != null && indoorMapType.dungeonFlow != null
+                    && string.Equals(indoorMapType.dungeonFlow.name, dungeonName, StringComparison.OrdinalIgnoreCase))
                 {
                     dungeon = indoorMapType.dungeonFlow;
 

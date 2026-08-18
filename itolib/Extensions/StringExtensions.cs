@@ -1,62 +1,63 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace itolib.Extensions
 {
     /// <summary>
-    ///     TODO.
+    ///     Extensions for the <c>string</c> class.
     /// </summary>
     public static class StringExtensions
     {
         /// <summary>
-        ///     TODO.
+        ///     <c>Regex</c> pattern for skipping to the first letter in a given string.
         /// </summary>
-        /// <param name="strA"></param>
-        /// <param name="strB"></param>
-        /// <returns></returns>
+        /// <example>
+        ///     ("823 Bozoros") -> ("Bozoros").
+        /// </example>
+        public static readonly Regex skipToLetterRegex = new(@"^[^\p{L}]+", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        /// <summary>
+        ///     Skip to the first letter of a given string.
+        /// </summary>
+        /// <param name="value">Value to be trimmed.</param>
+        /// <returns>The given string, trimmed up until the first letter.</returns>
+        public static string SkipToLetters(this string value)
+        {
+            return skipToLetterRegex.Replace(value, string.Empty);
+        }
+
+        /// <summary>
+        ///     Compare two strings using Ordinal (binary) sort rules.
+        /// </summary>
+        /// <remarks>Deprecated. Kept here for some backwards compatibility.</remarks>
+        /// <param name="strA">First string to compare.</param>
+        /// <param name="strB">Second string to compare.</param>
+        /// <returns>Whether both strings are equal or not.</returns>
+        [Obsolete("Will be removed in a future update.")]
         public static bool CompareOrdinal(this string strA, string strB)
         {
             return string.Equals(strA, strB, StringComparison.Ordinal);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Try generate and obtain a <c>Guid</c> hash from a given string.
         /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        public static bool IsNullOrEmpty(this string str)
-        {
-            return string.IsNullOrEmpty(str);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        public static bool IsNullOrWhiteSpace(this string str)
-        {
-            return string.IsNullOrWhiteSpace(str);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
+        /// <param name="value">Value to be hashed.</param>
+        /// <param name="result">Generated <c>Guid</c> hash, as an out parameter.</param>
+        /// <returns>Whether the string was successfully hashed or not.</returns>
         public static bool TryComputeGUID(this string value, out Guid result)
         {
             result = Guid.Empty;
 
-            if (value.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(value))
             {
                 return false;
             }
 
             byte[] hash = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(value));
-            result = new Guid(hash[..16]);
+            result = new(hash[..16]);
 
             return true;
         }

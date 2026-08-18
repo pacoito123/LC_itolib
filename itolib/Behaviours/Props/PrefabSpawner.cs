@@ -1,8 +1,8 @@
 using itolib.Behaviours.Networking;
 using itolib.Enums;
-using itolib.Extensions;
 using itolib.ScriptableObjects;
 using itolib.Structs;
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -71,7 +71,7 @@ namespace itolib.Behaviours.Props
 
             for (int i = 0; i < networkPrefabsAmount; i++)
             {
-                if (networkPrefabs[i].Prefab.name.CompareOrdinal(networkPrefabName))
+                if (string.Equals(networkPrefabs[i].Prefab.name, networkPrefabName, StringComparison.Ordinal))
                 {
                     NetworkObject foundPrefab = networkPrefabs[i].Prefab.GetComponent<NetworkObject>();
                     _ = CachedPrefabs.TryAdd(networkPrefabName, foundPrefab);

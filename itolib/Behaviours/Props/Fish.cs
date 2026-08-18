@@ -2,6 +2,7 @@ using DunGen;
 using itolib.Enums;
 using itolib.Extensions;
 using itolib.Interfaces;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,10 +20,10 @@ namespace itolib.Behaviours.Props
         {
             get
             {
-                if (field == null && StartOfRound.Instance != null)
+                if (field == null && StartOfRound.Instance != null && StartOfRound.Instance.unlockablesList != null)
                 {
-                    field = StartOfRound.Instance.unlockablesList.unlockables.Find(unlockable =>
-                        unlockable.unlockableName.CompareOrdinal("Goldfish"));
+                    field = StartOfRound.Instance.unlockablesList.unlockables?.Find(static unlockable =>
+                        string.Equals(unlockable.unlockableName, "Goldfish", StringComparison.Ordinal));
                 }
 
                 return field;
@@ -186,7 +187,7 @@ namespace itolib.Behaviours.Props
         {
             int spawnAmount = (minFish >= maxFish) ? minFish
                 : (isSeededRandom ? SeededSelf.GetSeededRandom().Next(minFish, maxFish + 1)
-                : Random.RandomRangeInt(minFish, maxFish + 1));
+                : UnityEngine.Random.RandomRangeInt(minFish, maxFish + 1));
 
             if (spawnAmount == 0)
             {
@@ -206,7 +207,7 @@ namespace itolib.Behaviours.Props
                 for (int i = 0; i < spawnAmount && spawnLocations.Count > 0; i++)
                 {
                     int locationIndex = isSeededRandom ? SeededSelf.GetSeededRandom().Next(0, spawnLocations.Count)
-                        : Random.RandomRangeInt(0, spawnLocations.Count);
+                        : UnityEngine.Random.RandomRangeInt(0, spawnLocations.Count);
 
                     SummonFish(spawnLocations[locationIndex]!);
 
@@ -226,7 +227,7 @@ namespace itolib.Behaviours.Props
                 for (int i = 0; i < spawnAmount && spawnAreas.Count > 0; i++)
                 {
                     int areaIndex = isSeededRandom ? SeededSelf.GetSeededRandom().Next(0, spawnAreas.Count)
-                        : Random.RandomRangeInt(0, spawnAreas.Count);
+                        : UnityEngine.Random.RandomRangeInt(0, spawnAreas.Count);
 
                     SummonFish(spawnAreas[areaIndex]!);
 
@@ -294,7 +295,7 @@ namespace itolib.Behaviours.Props
                 if (randomizeAnimationStart && fishBowl.TryGetComponent(out Animator fishAnimator))
                 {
                     float animationStart = isSeededRandom ? (float)SeededSelf.GetSeededRandom().NextDouble()
-                        : Random.Range(0.0f, 1.0f);
+                        : UnityEngine.Random.Range(0.0f, 1.0f);
 
                     fishAnimator.Play(fishAnimationID, 0, animationStart);
                 }
@@ -308,7 +309,7 @@ namespace itolib.Behaviours.Props
                 if (minSize != 1.0f || maxSize != 1.0f)
                 {
                     float fishScale = (minSize == maxSize) ? minSize : (isSeededRandom ? SeededSelf.GetSeededRandom().Next(minSize, maxSize)
-                            : Random.Range(minSize, maxSize));
+                            : UnityEngine.Random.Range(minSize, maxSize));
 
                     fishContainer.localScale = new(fishScale, fishScale, fishScale);
                 }
@@ -322,7 +323,7 @@ namespace itolib.Behaviours.Props
                 if (meshReplacements?.Length > 0 && fish.TryGetComponent(out MeshFilter fishMesh))
                 {
                     int mesh = isSeededRandom ? SeededSelf.GetSeededRandom().Next(0, meshReplacements.Length)
-                        : Random.RandomRangeInt(0, meshReplacements.Length);
+                        : UnityEngine.Random.RandomRangeInt(0, meshReplacements.Length);
 
                     fishMesh.sharedMesh = meshReplacements[mesh];
                 }
@@ -330,7 +331,7 @@ namespace itolib.Behaviours.Props
                 if (materialReplacements?.Length > 0 && fish.TryGetComponent(out MeshRenderer fishRenderer))
                 {
                     int material = isSeededRandom ? SeededSelf.GetSeededRandom().Next(0, materialReplacements.Length)
-                        : Random.RandomRangeInt(0, materialReplacements.Length);
+                        : UnityEngine.Random.RandomRangeInt(0, materialReplacements.Length);
 
                     fishRenderer.sharedMaterial = materialReplacements[material];
                 }

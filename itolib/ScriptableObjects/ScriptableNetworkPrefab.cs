@@ -1,4 +1,3 @@
-using itolib.Extensions;
 using itolib.Patches;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -53,7 +52,7 @@ namespace itolib.ScriptableObjects
         {
             prefab = null!;
 
-            return !name.IsNullOrEmpty() && RegisteredPrefabs.TryGetValue(name, out prefab);
+            return !string.IsNullOrEmpty(name) && RegisteredPrefabs.TryGetValue(name, out prefab);
         }
     }
 }

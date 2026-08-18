@@ -1,5 +1,5 @@
 using itolib.Compatibility;
-using itolib.Extensions;
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Video;
@@ -18,10 +18,10 @@ namespace itolib.Behaviours.Props
         {
             get
             {
-                if (field == null && StartOfRound.Instance != null)
+                if (field == null && StartOfRound.Instance != null && StartOfRound.Instance.unlockablesList != null)
                 {
-                    field = StartOfRound.Instance.unlockablesList.unlockables.Find(unlockable =>
-                        unlockable.unlockableName.CompareOrdinal("Television"));
+                    field = StartOfRound.Instance.unlockablesList.unlockables?.Find(static unlockable =>
+                        string.Equals(unlockable.unlockableName, "Television", StringComparison.Ordinal));
                 }
 
                 return field;

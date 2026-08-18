@@ -1,5 +1,4 @@
 using DunGen.Graph;
-using itolib.Extensions;
 
 namespace itolib.Behaviours.Conditionals
 {
@@ -27,7 +26,7 @@ namespace itolib.Behaviours.Conditionals
             {
                 ConditionalOverride overrideEntry = conditionalOverrides[i];
 
-                if (dungeonName.CompareOrdinal(overrideEntry.nameToSearch))
+                if (string.Equals(overrideEntry.nameToSearch, dungeonName, System.StringComparison.OrdinalIgnoreCase))
                 {
                     overrideEntry.Apply(undo);
 
@@ -37,7 +36,7 @@ namespace itolib.Behaviours.Conditionals
                 {
                     for (int j = 0; j < overrideEntry.alsoAppliesTo.Length; j++)
                     {
-                        if (dungeonName.CompareOrdinal(overrideEntry.alsoAppliesTo[j]))
+                        if (string.Equals(overrideEntry.alsoAppliesTo[j], dungeonName, System.StringComparison.OrdinalIgnoreCase))
                         {
                             overrideEntry.Apply(undo);
 

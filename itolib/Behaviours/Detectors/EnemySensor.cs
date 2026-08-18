@@ -357,7 +357,7 @@ namespace itolib.Behaviours.Detectors
                 matchedBlacklist = false;
 
                 if (filterName.Length == 0 || (filter.fuzzySearch && enemyName.Contains(filterName, StringComparison.OrdinalIgnoreCase))
-                    || enemyName.CompareOrdinal(filterName) || filterName.CompareOrdinal("Any"))
+                    || string.Equals(filterName, enemyName, StringComparison.OrdinalIgnoreCase) || string.Equals(filterName, "Any", StringComparison.OrdinalIgnoreCase))
                 {
                     if (filter.isBlacklist)
                     {

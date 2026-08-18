@@ -378,9 +378,10 @@ namespace itolib.Behaviours.Grabbables
                     {
                         weaponHit = true;
 
+                        // TODO: Soft compat with custom footstep 'tags'.
                         for (int j = 0; j < StartOfRound.Instance.footstepSurfaces.Length; j++)
                         {
-                            if (objectHit.tag.CompareOrdinal(StartOfRound.Instance.footstepSurfaces[j].surfaceTag))
+                            if (objectHit.CompareTag(StartOfRound.Instance.footstepSurfaces[j].surfaceTag))
                             {
                                 surfaceIndex = j;
 

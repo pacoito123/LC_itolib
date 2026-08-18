@@ -1,5 +1,4 @@
 using itolib.Behaviours.Networking;
-using itolib.Extensions;
 using itolib.Util;
 using System;
 using System.Collections;
@@ -103,10 +102,10 @@ namespace itolib.Behaviours.Notifications
         {
             get
             {
-                if (field == null && StartOfRound.Instance != null)
+                if (field == null && StartOfRound.Instance != null && StartOfRound.Instance.unlockablesList != null)
                 {
-                    field = StartOfRound.Instance.unlockablesList.unlockables.Find(unlockable =>
-                        unlockable.unlockableName.CompareOrdinal("Signal translator"));
+                    field = StartOfRound.Instance.unlockablesList.unlockables?.Find(static unlockable =>
+                        string.Equals(unlockable.unlockableName, "Signal translator", StringComparison.Ordinal));
                 }
 
                 return field;

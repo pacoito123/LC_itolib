@@ -1,4 +1,3 @@
-using itolib.Extensions;
 using itolib.Interfaces;
 using itolib.Structs;
 using itolib.Util;
@@ -80,7 +79,7 @@ namespace itolib.Behaviours.Enemies
         public override NetworkObject? GetPrefabToSpawn()
         {
             // Spawn enemy specified in the 'enemyToSpawn' field, if one is set.
-            if (!enemyToSpawn.IsNullOrEmpty() && SearchContent.TryFindEnemy(out EnemyType enemy, enemyToSpawn)
+            if (SearchContent.TryFindEnemy(out EnemyType enemy, enemyToSpawn)
                 && TryGetNetworkObject(out NetworkObject enemyNetworkObject, enemy))
             {
                 return enemyNetworkObject;

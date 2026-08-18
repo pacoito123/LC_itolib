@@ -34,7 +34,7 @@ namespace itolib.ScriptableObjects
             get
             {
                 // Use object name as fallback, if field is empty.
-                if (field.IsNullOrEmpty())
+                if (string.IsNullOrEmpty(field))
                 {
                     field = name;
                 }

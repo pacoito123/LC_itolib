@@ -25,7 +25,7 @@ namespace itolib.Behaviours.Conditionals
             {
                 ConditionalOverride overrideEntry = conditionalOverrides[i];
 
-                if (planetName.CompareOrdinal(overrideEntry.nameToSearch))
+                if (string.Equals(overrideEntry.nameToSearch, planetName, System.StringComparison.OrdinalIgnoreCase))
                 {
                     overrideEntry.Apply(undo);
 
@@ -35,7 +35,7 @@ namespace itolib.Behaviours.Conditionals
                 {
                     for (int j = 0; j < overrideEntry.alsoAppliesTo.Length; j++)
                     {
-                        if (planetName.CompareOrdinal(overrideEntry.alsoAppliesTo[j]))
+                        if (string.Equals(overrideEntry.alsoAppliesTo[j], planetName, System.StringComparison.OrdinalIgnoreCase))
                         {
                             overrideEntry.Apply(undo);
 

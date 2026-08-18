@@ -1,4 +1,3 @@
-using itolib.Extensions;
 using System;
 using UnityEngine;
 using UnityEngine.Events;
@@ -57,7 +56,7 @@ namespace itolib.Behaviours.Animations
         {
             for (int i = 0; i < eventEntries?.Length; i++)
             {
-                if (eventEntries[i].eventName.CompareOrdinal(eventName))
+                if (string.Equals(eventEntries[i].eventName, eventName, StringComparison.OrdinalIgnoreCase))
                 {
                     CallEvent(i);
 

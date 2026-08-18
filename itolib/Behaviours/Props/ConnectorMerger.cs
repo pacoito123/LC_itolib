@@ -1,5 +1,5 @@
 using itolib.Behaviours.Detectors;
-using itolib.Extensions;
+using System;
 using UnityEngine;
 
 namespace itolib.Behaviours.Props
@@ -79,7 +79,7 @@ namespace itolib.Behaviours.Props
 
                 if (connectorCollider.TryGetComponent(out ConnectorMerger otherConnector))
                 {
-                    if (otherConnector == this || (nameFilter.Length > 0 && nameFilter.CompareOrdinal(otherConnector.nameFilter)))
+                    if (otherConnector == this || (nameFilter.Length > 0 && string.Equals(otherConnector.nameFilter, nameFilter, StringComparison.OrdinalIgnoreCase)))
                     {
                         continue;
                     }
