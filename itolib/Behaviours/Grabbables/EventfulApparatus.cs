@@ -480,7 +480,7 @@ namespace itolib.Behaviours.Grabbables
         {
             if ((SaveMeshVariant || SaveMaterialVariant) && mainObjectRenderer == null)
             {
-                Plugin.StaticLogger.LogWarning($"Main object renderer not set for item '{name}', its variant will not be saved!");
+                Plugin.Logger.LogWarning($"Main object renderer not set for item '{name}', its variant will not be saved!");
                 return -1;
             }
 

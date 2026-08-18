@@ -19,7 +19,7 @@ namespace itolib.Patches
             }
             catch (Exception e)
             {
-                Plugin.StaticLogger.LogError($"Exception during 'SyncedSpawn' ActivationTime: {e}");
+                Plugin.Logger.LogError($"Exception during 'SyncedSpawn' ActivationTime: {e}");
             }
         }
 
@@ -33,7 +33,7 @@ namespace itolib.Patches
             }
             catch (Exception e)
             {
-                Plugin.StaticLogger.LogError($"Exception during 'ScrapSpawn' ActivationTime: {e}");
+                Plugin.Logger.LogError($"Exception during 'ScrapSpawn' ActivationTime: {e}");
             }
         }
 
@@ -47,7 +47,7 @@ namespace itolib.Patches
             }
             catch (Exception e)
             {
-                Plugin.StaticLogger.LogError($"Exception during 'HazardSpawn' ActivationTime: {e}");
+                Plugin.Logger.LogError($"Exception during 'HazardSpawn' ActivationTime: {e}");
             }
         }
     }

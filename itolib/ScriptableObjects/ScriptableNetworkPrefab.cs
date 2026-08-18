@@ -19,7 +19,7 @@ namespace itolib.ScriptableObjects
         {
             if (GameNetworkManagerPatch.networkStarted)
             {
-                Plugin.StaticLogger.LogError($"ScriptableNetworkPrefab '{name}' initializing after network has already started. Prefabs won't be registered!");
+                Plugin.Logger.LogError($"ScriptableNetworkPrefab '{name}' initializing after network has already started. Prefabs won't be registered!");
 
                 return;
             }
@@ -30,14 +30,14 @@ namespace itolib.ScriptableObjects
 
                 if (prefabToRegister == null)
                 {
-                    Plugin.StaticLogger.LogWarning($"ScriptableNetworkPrefab '{name}' attempts to register a missing prefab.");
+                    Plugin.Logger.LogWarning($"ScriptableNetworkPrefab '{name}' attempts to register a missing prefab.");
 
                     continue;
                 }
 
                 if (!RegisteredPrefabs.TryAdd(prefabToRegister.name, prefabToRegister))
                 {
-                    Plugin.StaticLogger.LogWarning($"ScriptableNetworkPrefab could not register duplicate prefab '{name}'.");
+                    Plugin.Logger.LogWarning($"ScriptableNetworkPrefab could not register duplicate prefab '{name}'.");
                 }
             }
         }

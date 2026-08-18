@@ -65,7 +65,7 @@ namespace itolib.Behaviours.Events
             // Check if the specified event exists and can be targeted.
             if (!key.TryComputeGUID(out Guid eventGUID) || !ScriptableEvent.AllEvents.TryGetValue(eventGUID, out targetedEvent))
             {
-                Plugin.StaticLogger.LogWarning($"Could not find event '{eventSource}:{eventName}' targeted by ScriptableEventListener component in '{name}'!");
+                Plugin.Logger.LogWarning($"Could not find event '{eventSource}:{eventName}' targeted by ScriptableEventListener component in '{name}'!");
             }
         }
 

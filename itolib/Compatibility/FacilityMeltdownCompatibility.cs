@@ -77,7 +77,7 @@ namespace itolib.Compatibility
             FieldInfo? meltdownLoggerInfo = typeof(MeltdownPlugin).GetField("logger", BindingFlags.Static | BindingFlags.NonPublic);
             if (meltdownLoggerInfo == null)
             {
-                Plugin.StaticLogger.LogError("Failed to find logger field in 'FacilityMeltdown.MeltdownPlugin'!");
+                Plugin.Logger.LogError("Failed to find logger field in 'FacilityMeltdown.MeltdownPlugin'!");
                 return instructions;
             }
 
@@ -89,7 +89,7 @@ namespace itolib.Compatibility
 
             if (codeMatcher.Advance(1).IsInvalid)
             {
-                Plugin.StaticLogger.LogError("Failed to match lights switching on code in 'MeltdownEffects.EmergencyLights'!");
+                Plugin.Logger.LogError("Failed to match lights switching on code in 'MeltdownEffects.EmergencyLights'!");
                 return instructions;
             }
 
@@ -104,7 +104,7 @@ namespace itolib.Compatibility
 
             if (codeMatcher.Advance(1).IsInvalid)
             {
-                Plugin.StaticLogger.LogError("Failed to match lights switching off code in 'MeltdownEffects.EmergencyLights'!");
+                Plugin.Logger.LogError("Failed to match lights switching off code in 'MeltdownEffects.EmergencyLights'!");
                 return instructions;
             }
 

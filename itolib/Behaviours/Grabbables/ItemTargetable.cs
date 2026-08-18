@@ -193,7 +193,7 @@ namespace itolib.Behaviours.Grabbables
             {
                 itemTransform = transform;
 
-                Plugin.StaticLogger.LogWarning($"Could not find IEventfulItem for ItemTargetable component in GameObject '{gameObject.name}'.");
+                Plugin.Logger.LogWarning($"Could not find IEventfulItem for ItemTargetable component in GameObject '{gameObject.name}'.");
                 enabled = false;
 
                 return;

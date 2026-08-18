@@ -287,7 +287,7 @@ namespace itolib.Behaviours.Enemies
             {
                 if (overrideHive != null && overrideHive.spawnPrefab == null && !SearchContent.TryFindItem(out overrideHive, overrideHive.name, true))
                 {
-                    Plugin.StaticLogger.LogWarning($"Could not find hive override '{overrideHive.name}' for HiveSpawner '{name}'!");
+                    Plugin.Logger.LogWarning($"Could not find hive override '{overrideHive.name}' for HiveSpawner '{name}'!");
                 }
             }
 
@@ -326,7 +326,7 @@ namespace itolib.Behaviours.Enemies
             }
             else if (!SearchContent.TryFindItem(out overrideHive, hiveReplacement.name, true))
             {
-                Plugin.StaticLogger.LogWarning($"Could not find hive replacement '{hiveReplacement.name}' for HiveSpawner '{name}'!");
+                Plugin.Logger.LogWarning($"Could not find hive replacement '{hiveReplacement.name}' for HiveSpawner '{name}'!");
             }
         }
 

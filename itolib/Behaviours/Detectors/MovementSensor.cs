@@ -85,7 +85,7 @@ namespace itolib.Behaviours.Detectors
             if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null
                 || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToTrigger))
             {
-                Plugin.StaticLogger.LogWarning($"Could not find movement action '{actionToTrigger}' defined for MovementSensor component in '{name}'!");
+                Plugin.Logger.LogWarning($"Could not find movement action '{actionToTrigger}' defined for MovementSensor component in '{name}'!");
             }
 
             base.Start();
@@ -100,7 +100,7 @@ namespace itolib.Behaviours.Detectors
             if (playerAction == null && (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null
                 || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToTrigger)))
             {
-                Plugin.StaticLogger.LogWarning($"Could not find movement action '{actionToTrigger}' defined for MovementSensor component in '{name}'!");
+                Plugin.Logger.LogWarning($"Could not find movement action '{actionToTrigger}' defined for MovementSensor component in '{name}'!");
 
                 // Disable script if the player action was not found.
                 enabled = false;

@@ -220,7 +220,7 @@ namespace itolib.Behaviours.Grabbables
         {
             if (item == null || !TryGetComponent(out item) || item is not IEventfulItem eventfulItem)
             {
-                Plugin.StaticLogger.LogWarning($"Could not find IEventfulItem for Itemwhackable component in GameObject '{gameObject.name}'.");
+                Plugin.Logger.LogWarning($"Could not find IEventfulItem for Itemwhackable component in GameObject '{gameObject.name}'.");
                 enabled = false;
 
                 return;

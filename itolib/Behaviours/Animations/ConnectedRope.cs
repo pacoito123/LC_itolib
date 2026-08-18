@@ -59,7 +59,7 @@ namespace itolib.Behaviours.Animations
             if (lineRenderer == null || !TryGetComponent(out lineRenderer)
                 || connectedPoints == null || connectedPoints.Length == 0 || connectedPoints.Length > lineRenderer.positionCount)
             {
-                Plugin.StaticLogger.LogWarning($"Could not find LineRenderer for ConnectedRope component in GameObject '{gameObject.name}'.");
+                Plugin.Logger.LogWarning($"Could not find LineRenderer for ConnectedRope component in GameObject '{gameObject.name}'.");
                 enabled = false;
             }
         }

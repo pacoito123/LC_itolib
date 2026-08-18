@@ -106,7 +106,7 @@ namespace itolib.Behaviours.Grabbables
             // Make sure the item field is not blank.
             if (item == null && !TryGetComponent(out item))
             {
-                Plugin.StaticLogger.LogWarning($"Could not find GrabbableObject for ItemDiscardable component in GameObject '{gameObject.name}'.");
+                Plugin.Logger.LogWarning($"Could not find GrabbableObject for ItemDiscardable component in GameObject '{gameObject.name}'.");
                 enabled = false;
 
                 return;

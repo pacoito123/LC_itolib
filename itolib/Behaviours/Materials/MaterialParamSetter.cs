@@ -40,7 +40,7 @@ namespace itolib.Behaviours.Materials
         {
             if (material == null)
             {
-                Plugin.StaticLogger.LogWarning($"Could not find Material for MaterialParamSetter component in GameObject '{gameObject.name}'.");
+                Plugin.Logger.LogWarning($"Could not find Material for MaterialParamSetter component in GameObject '{gameObject.name}'.");
                 enabled = false;
 
                 return;
@@ -48,7 +48,7 @@ namespace itolib.Behaviours.Materials
 
             if (targetedParamID != 0 && !material.HasProperty(defaultParameterName))
             {
-                Plugin.StaticLogger.LogWarning($"Could not find Material parameter '{defaultParameterName}' for Material '{material.name}' in MaterialParamSetter component in GameObject '{gameObject.name}'.");
+                Plugin.Logger.LogWarning($"Could not find Material parameter '{defaultParameterName}' for Material '{material.name}' in MaterialParamSetter component in GameObject '{gameObject.name}'.");
                 targetedParamID = 0;
             }
         }
@@ -68,7 +68,7 @@ namespace itolib.Behaviours.Materials
                 return;
             }
 
-            Plugin.StaticLogger.LogWarning($"Could not find Material parameter '{paramName}' for Material '{material.name}' in MaterialParamSetter component in GameObject '{gameObject.name}'.");
+            Plugin.Logger.LogWarning($"Could not find Material parameter '{paramName}' for Material '{material.name}' in MaterialParamSetter component in GameObject '{gameObject.name}'.");
             targetedParamID = 0;
         }
 

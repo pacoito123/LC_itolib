@@ -15,27 +15,16 @@ namespace itolib
     public class Plugin : BaseUnityPlugin
     {
         /// <summary>
-        ///     TODO.
+        ///     BepInEx Plugin information.
         /// </summary>
         public const string PLUGIN_GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.9.3";
-        internal static ManualLogSource StaticLogger { get; private set; } = null!;
-
-        /// <summary>
-        ///     Harmony instance for patching.
-        /// </summary>
-        internal static Harmony Harmony { get; private set; } = null!;
+        internal static new ManualLogSource Logger => field ??= BepInEx.Logging.Logger.CreateLogSource(PLUGIN_NAME);
+        internal static Harmony Harmony => field ??= new(PLUGIN_GUID);
 
         private void Awake()
         {
-            StaticLogger = Logger;
-
             try
             {
-                // Initialize 'Config' and 'Harmony' instances.
-                // Settings = new(Config);
-                Harmony = new(PLUGIN_GUID);
-                // ...
-
                 SerializeNetworkVariables();
 
                 // Apply all patches.
@@ -51,11 +40,11 @@ namespace itolib
                 // BerunahCompatibility.RegisterCompat();
                 // ...
 
-                StaticLogger.LogInfo($"{PLUGIN_NAME} v{VERSION} loaded!");
+                Logger.LogInfo($"{PLUGIN_NAME} v{VERSION} loaded!");
             }
             catch (Exception e)
             {
-                StaticLogger.LogError($"Error while initializing '{PLUGIN_NAME}': {e}");
+                Logger.LogError($"Error while initializing '{PLUGIN_NAME}': {e}");
             }
         }
 

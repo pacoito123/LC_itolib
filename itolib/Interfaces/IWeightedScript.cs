@@ -90,7 +90,7 @@ namespace itolib.Interfaces
         {
             if (entries == null || entries.Length == 0)
             {
-                Plugin.StaticLogger.LogWarning($"Tried to add empty or null weights array to IWeightedScript '{GetType()}'!");
+                Plugin.Logger.LogWarning($"Tried to add empty or null weights array to IWeightedScript '{GetType()}'!");
 
                 return;
             }
@@ -156,7 +156,7 @@ namespace itolib.Interfaces
 
             if (WeightedEntries == null || weightIndex < 0 || weightIndex >= WeightedEntries.Length)
             {
-                Plugin.StaticLogger.LogWarning($"No weights defined for IWeightedScript '{GetType()}'!");
+                Plugin.Logger.LogWarning($"No weights defined for IWeightedScript '{GetType()}'!");
 
                 return false;
             }
@@ -209,7 +209,7 @@ namespace itolib.Interfaces
 
             if (CurrentWeights == null || CurrentWeights.Length == 0 || TotalWeight <= 0)
             {
-                Plugin.StaticLogger.LogWarning($"No weights defined for IWeightedScript '{GetType()}'!");
+                Plugin.Logger.LogWarning($"No weights defined for IWeightedScript '{GetType()}'!");
 
                 return false;
             }

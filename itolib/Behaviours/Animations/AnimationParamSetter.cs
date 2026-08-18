@@ -38,7 +38,7 @@ namespace itolib.Behaviours.Animations
         {
             if (animator == null && !TryGetComponent(out animator))
             {
-                Plugin.StaticLogger.LogWarning($"Could not find Animator for AnimationParamSetter component in GameObject '{gameObject.name}'.");
+                Plugin.Logger.LogWarning($"Could not find Animator for AnimationParamSetter component in GameObject '{gameObject.name}'.");
                 hasValidParameter = false;
                 enabled = false;
 
@@ -119,7 +119,7 @@ namespace itolib.Behaviours.Animations
                 }
             }
 
-            Plugin.StaticLogger.LogWarning($"Could not find Animator parameter with hash '{paramID}' for AnimationParamSetter component in GameObject '{gameObject.name}'.");
+            Plugin.Logger.LogWarning($"Could not find Animator parameter with hash '{paramID}' for AnimationParamSetter component in GameObject '{gameObject.name}'.");
         }
 
         /// <summary>

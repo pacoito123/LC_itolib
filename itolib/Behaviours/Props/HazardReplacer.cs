@@ -94,7 +94,7 @@ namespace itolib.Behaviours.Props
 
                 if (originalHazard == null)
                 {
-                    Plugin.StaticLogger.LogWarning($"Could not find hazard '{hazardReplacements[i].originalHazard}' in the moon's "
+                    Plugin.Logger.LogWarning($"Could not find hazard '{hazardReplacements[i].originalHazard}' in the moon's "
                         + "SpawnableMapObject list; its spawn rates will not be modified.");
 
                     continue;
@@ -114,7 +114,7 @@ namespace itolib.Behaviours.Props
 
                 if (replacingHazard == null)
                 {
-                    Plugin.StaticLogger.LogWarning($"Could not find hazard '{hazardReplacements[i].replacingHazard}' in the dungeon's "
+                    Plugin.Logger.LogWarning($"Could not find hazard '{hazardReplacements[i].replacingHazard}' in the dungeon's "
                         + "SpawnableMapObject list; its spawn rates will not be modified.");
 
                     continue;

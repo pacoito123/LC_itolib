@@ -112,7 +112,7 @@ namespace itolib.Behaviours.Materials
         {
             if (materialSwaps == null || materialSwaps.Length == 0)
             {
-                Plugin.StaticLogger.LogWarning($"Could not perform material swapping, as there are no swaps defined for MaterialSwapper component in "
+                Plugin.Logger.LogWarning($"Could not perform material swapping, as there are no swaps defined for MaterialSwapper component in "
                     + "GameObject '{gameObject.name}'.");
 
                 return;

@@ -329,7 +329,7 @@ namespace itolib.Behaviours.Detectors
             }
             else
             {
-                Plugin.StaticLogger.LogWarning($"Unsupported Collider shape used for DetectRegion '{gameObject.name}'! It must be either a "
+                Plugin.Logger.LogWarning($"Unsupported Collider shape used for DetectRegion '{gameObject.name}'! It must be either a "
                     + "BoxCollider, SphereCollider, or CapsuleCollider to perform the query.");
                 return;
             }
