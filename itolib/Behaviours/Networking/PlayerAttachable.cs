@@ -180,7 +180,7 @@ namespace itolib.Behaviours.Networking
             }
 
             // Detach player that exited the attach region.
-            if (collider.TryGetComponent(out PlayerControllerB _))
+            if (collider.TryGetComponent(out PlayerControllerB player) && player.IsLocalClient())
             {
                 DetachPlayer();
             }
