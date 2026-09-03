@@ -77,25 +77,25 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         /// <remarks><b>NOTE:</b> Fall damage will apply if detached before landing.</remarks>
         [Tooltip("Whether the attached player should take fall damage or not, as long as they're attached. NOTE: Fall damage will apply if detached before landing.")]
-        public bool negateFallDamage;
+        [SerializeField] private bool negateFallDamage;
 
         /// <summary>
         ///     Whether the attached player should be allowed to move while being launched or not.
         /// </summary>
         [Tooltip("Whether the attached player should be allowed to move while being launched or not.")]
-        public bool disableMovement;
+        [SerializeField] private bool disableMovement;
 
         /// <summary>
         ///     Whether the attached player should be allowed to move their camera while being launched or not.
         /// </summary>
         [Tooltip("Whether the attached player should be allowed to move their camera while being launched or not.")]
-        public bool lockCamera;
+        [SerializeField] private bool lockCamera;
 
         /// <summary>
         ///     Whether crouching should prevent the player from attaching or not.
         /// </summary>
         [Tooltip("Whether crouching should prevent the player from attaching or not.")]
-        public bool crouchingPreventsLaunch;
+        [SerializeField] private bool crouchingPreventsLaunch;
 
         /// <summary>
         ///     Whether the player should be able to perform a 'rocket jump', if jumping immediately before attaching.
@@ -103,58 +103,58 @@ namespace itolib.Behaviours.Kinematics
         /// <remarks><b>NOTE:</b> Enabled by default as a joke, but should probably be disabled in most cases.</remarks>
         [Tooltip("Whether the player should be able to perform a 'rocket jump', if jumping immediately before attaching. NOTE: Enabled by default as a joke, but "
             + "should probably be disabled in most cases.")]
-        public bool rocketJump = true;
+        [SerializeField] private bool rocketJump = true;
 
         /// <summary>
         ///     Whether players should drop all their items immediately upon attaching or not.
         /// </summary>
         [Header("Item Dropping")]
         [Tooltip("Whether players should drop all their items immediately upon attaching or not.")]
-        public bool dropPlayerItemsAtStart;
+        [SerializeField] private bool dropPlayerItemsAtStart;
 
         /// <summary>
         ///     Whether players should drop all their items immediately upon detaching or not.
         /// </summary>
         [Tooltip("Whether players should drop all their items immediately upon detaching or not.")]
-        public bool dropPlayerItemsAtEnd;
+        [SerializeField] private bool dropPlayerItemsAtEnd;
 
         /// <summary>
         ///     Whether players should drop their held item immediately upon attaching or not.
         /// </summary>
         [Tooltip("Whether players should drop their held item immediately upon attaching or not.")]
-        public bool dropHeldItemAtStart;
+        [SerializeField] private bool dropHeldItemAtStart;
 
         /// <summary>
         ///     Whether players should drop their held item immediately upon detaching or not.
         /// </summary>
         [Tooltip("Whether players should drop their held item immediately upon detaching or not.")]
-        public bool dropHeldItemAtEnd;
+        [SerializeField] private bool dropHeldItemAtEnd;
 
         /// <summary>
         ///     Whether to rotate the player model towards the specified <c>targetAngle</c> or not.
         /// </summary>
         [Header("Player Rotation")]
         [Tooltip("Whether to rotate the player model towards the specified target angle or not.")]
-        public bool rotateCamera;
+        [SerializeField] private bool rotateCamera;
 
         /// <summary>
         ///     Ramping speed for the player model rotation towards the specified <c>targetAngle</c>.
         /// </summary>
         [Tooltip("Ramping speed for the player model rotation towards the specified target angle.")]
-        public float rotationSpeed = 1.0f;
+        [SerializeField] private float rotationSpeed = 1.0f;
 
         /// <summary>
         ///     Target rotation for the player model, in degrees.
         /// </summary>
         [Tooltip("Target rotation for the player model, in degrees.")]
-        public Vector3 targetAngle;
+        [SerializeField] private Vector3 targetAngle;
 
         /// <summary>
         ///     Whether the shortest path towards the <c>targetAngle</c> should be prioritized or not.
         /// </summary>
         /// <remarks>Disabling clamping allows for <c>&gt;360°</c> rotation (full spins).</remarks>
         [Tooltip("Whether the shortest path towards the target angle should be prioritized or not. Disabling clamping allows for >360° rotation (full spins).")]
-        public bool clampAngle = true;
+        [SerializeField] private bool clampAngle = true;
 
         /// <summary>
         ///     Cached <c>Transform</c> of the currently attached player's model.
@@ -362,6 +362,42 @@ namespace itolib.Behaviours.Kinematics
             }
 
             base.DetachPlayerLocal();
+        }
+
+        /// <summary>
+        ///     Set if players should drop all their items immediately upon attaching. 
+        /// </summary>
+        /// <param name="state">Whether to enable or disable the <c>dropPlayerItemsAtStart</c> field.</param>
+        public void SetDropPlayerItemsAtStart(bool state)
+        {
+            dropPlayerItemsAtStart = state;
+        }
+
+        /// <summary>
+        ///     Set if players should drop all their items immediately upon detaching. 
+        /// </summary>
+        /// <param name="state">Whether to enable or disable the <c>dropPlayerItemsAtEnd</c> field.</param>
+        public void SetDropPlayerItemsAtEnd(bool state)
+        {
+            dropPlayerItemsAtEnd = state;
+        }
+
+        /// <summary>
+        ///     Set if players should drop their held item immediately upon attaching. 
+        /// </summary>
+        /// <param name="state">Whether to enable or disable the <c>dropHeldItemAtStart</c> field.</param>
+        public void SetDropHeldItemAtStart(bool state)
+        {
+            dropHeldItemAtStart = state;
+        }
+
+        /// <summary>
+        ///     Set if players should drop their held item immediately upon detaching. 
+        /// </summary>
+        /// <param name="state">Whether to enable or disable the <c>dropHeldItemAtEnd</c> field.</param>
+        public void SetDropHeldItemAtEnd(bool state)
+        {
+            dropHeldItemAtEnd = state;
         }
     }
 }
