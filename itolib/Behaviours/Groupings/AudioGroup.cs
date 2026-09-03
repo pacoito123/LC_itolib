@@ -12,7 +12,7 @@ namespace itolib.Behaviours.Groupings
         /// <summary>
         ///     TODO.
         /// </summary>
-        private enum AudioActions
+        private enum AudioActions : byte
         {
             Play,
             Pause,

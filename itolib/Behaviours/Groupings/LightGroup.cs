@@ -12,7 +12,7 @@ namespace itolib.Behaviours.Groupings
         /// <summary>
         ///     TODO.
         /// </summary>
-        private enum LightActions // TODO: Fade Distance, Volumetrics, Shadows
+        private enum LightActions : byte // TODO: Fade Distance, Volumetrics, Shadows
         {
             SetIntensity,
             IncrementIntensity,

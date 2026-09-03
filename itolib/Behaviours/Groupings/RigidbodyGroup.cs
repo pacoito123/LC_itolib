@@ -11,7 +11,7 @@ namespace itolib.Behaviours.Groupings
         /// <summary>
         ///     TODO.
         /// </summary>
-        private enum RigidbodyActions
+        private enum RigidbodyActions : byte
         {
             ApplyAcceleration,
             ApplyAccelerationRelative,

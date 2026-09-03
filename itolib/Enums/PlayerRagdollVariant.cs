@@ -5,7 +5,7 @@ namespace itolib.Enums
     /// <summary>
     ///     Variants for the player's body to spawn after dying.
     /// </summary>
-    public enum PlayerRagdollVariant
+    public enum PlayerRagdollVariant : byte
     {
         /// <summary>
         ///     Normal player body ragdoll.

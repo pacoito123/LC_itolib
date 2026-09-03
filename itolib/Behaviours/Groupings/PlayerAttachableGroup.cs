@@ -12,7 +12,7 @@ namespace itolib.Behaviours.Groupings
         /// <summary>
         ///     TODO.
         /// </summary>
-        private enum AttachableActions
+        private enum AttachableActions : byte
         {
             AttachPlayer,
             DetachPlayer,

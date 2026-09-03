@@ -80,7 +80,7 @@ namespace itolib.Behaviours.Networking
             {
                 damage = force,
                 direction = hitDirection,
-                hitID = Enum.IsDefined(typeof(WeaponHitID), hitID) ? (WeaponHitID)hitID : WeaponHitID.None,
+                hitID = Enum.IsDefined(typeof(WeaponHitID), (sbyte)hitID) ? (WeaponHitID)hitID : WeaponHitID.None,
                 hitByPlayer = playerWhoHit != null
             };
 

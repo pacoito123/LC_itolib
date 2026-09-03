@@ -5,7 +5,7 @@ namespace itolib.Enums
     /// <summary>
     ///     Types of <c>Doorway</c> that can be set for a <c>SpecificDoorway</c> component.
     /// </summary>
-    public enum DoorwayType
+    public enum DoorwayType : sbyte
     {
         /// <summary>
         ///     No specified type for this <c>SpecificDoorway</c>, meaning it can be chosen as an entrance, exit, or neither (branch path).

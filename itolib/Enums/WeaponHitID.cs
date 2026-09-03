@@ -5,7 +5,7 @@ namespace itolib.Enums
     /// <summary>
     ///     Weapon identifier value for an <c>IHittable</c> hit.
     /// </summary>
-    public enum WeaponHitID
+    public enum WeaponHitID : sbyte
     {
         /// <summary>
         ///     ID for a hit dealt by a <c>Shovel</c>.

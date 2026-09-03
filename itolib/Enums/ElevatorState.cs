@@ -5,13 +5,13 @@ namespace itolib.Enums
     /// <summary>
     ///     TODO.
     /// </summary>
-    public enum ElevatorState
+    public enum ElevatorState : byte
     {
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        IdleUp = 0,
+        IdleUp,
         /// <summary>
         ///     TODO.
         /// </summary>

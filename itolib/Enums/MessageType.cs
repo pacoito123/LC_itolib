@@ -5,7 +5,7 @@ namespace itolib.Enums
     /// <summary>
     ///     Types of messages displayed to players.
     /// </summary>
-    public enum MessageType
+    public enum MessageType : byte
     {
         /// <summary>
         ///     Tip alert message (yellow).

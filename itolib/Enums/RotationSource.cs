@@ -5,13 +5,13 @@ namespace itolib.Enums
     /// <summary>
     ///     TODO.
     /// </summary>
-    public enum RotationSource
+    public enum RotationSource : byte
     {
         /// <summary>
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        Player = 0,
+        Player,
         /// <summary>
         ///     TODO.
         /// </summary>

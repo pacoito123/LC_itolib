@@ -5,7 +5,7 @@ namespace itolib.Enums
     /// <summary>
     /// 	Valid places to attach a player wearable to.
     /// </summary>
-    public enum WearablePosition
+    public enum WearablePosition : sbyte
     {
         /// <summary>
         ///     Attach to a specific bone, or none at all.

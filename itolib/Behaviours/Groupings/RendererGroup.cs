@@ -12,7 +12,7 @@ namespace itolib.Behaviours.Groupings
         /// <summary>
         ///     TODO.
         /// </summary>
-        private enum RendererActions
+        private enum RendererActions : byte
         {
             ReceiveShadows,
             SetShadowCastingMode
@@ -62,7 +62,7 @@ namespace itolib.Behaviours.Groupings
         /// <param name="mode"></param>
         public void SetShadowCastingModeAll(int mode)
         {
-            if (Enum.IsDefined(typeof(ShadowCastingMode), mode))
+            if (Enum.IsDefined(typeof(ShadowCastingMode), (sbyte)mode))
             {
                 PerformGroupAction(RendererActions.SetShadowCastingMode, mode);
             }

@@ -5,7 +5,7 @@ namespace itolib.Enums
     /// <summary>
     ///     TODO.
     /// </summary>
-    public enum ContentCategoryType
+    public enum ContentCategoryType : sbyte
     {
         /// <summary>
         ///     TODO.

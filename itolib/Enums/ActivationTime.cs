@@ -5,7 +5,7 @@ namespace itolib.Enums
     /// <summary>
     ///     Valid activation times for a class implementing `IActivationScript`.
     /// </summary>
-    public enum ActivationTime
+    public enum ActivationTime : sbyte
     {
         /// <summary>
         ///     Activate immediately, as soon as possible.
