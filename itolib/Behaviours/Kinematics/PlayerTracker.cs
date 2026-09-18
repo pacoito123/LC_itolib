@@ -90,7 +90,7 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         protected override void Start()
         {
-            // Cache tracker transform.
+            // Cache tracker Transform.
             trackerTransform = transform;
 
             if (pivotsToRotate?.Length > 0)

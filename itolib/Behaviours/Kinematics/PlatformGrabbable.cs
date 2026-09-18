@@ -101,7 +101,7 @@ namespace itolib.Behaviours.Kinematics
         /// </summary>
         protected override void Start()
         {
-            // Cache platform transform.
+            // Cache platform Transform.
             platformTransform = transform;
 
             // Try obtain player action required to be held.

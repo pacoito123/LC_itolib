@@ -4,39 +4,40 @@ using UnityEngine;
 namespace itolib.Behaviours.Animations
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a sequence of points connected by a <c>LineRenderer</c>.
     /// </summary>
     [RequireComponent(typeof(LineRenderer))]
     public class ConnectedRope : MonoBehaviour
     {
         /// <summary>
-        ///     TODO.
+        ///     <c>LineRenderer</c> to update the positions of.
         /// </summary>
         [Header("Connected Rope")]
-        [Tooltip("")]
+        [Tooltip("LineRenderer to update the positions of.")]
         [SerializeField] private LineRenderer lineRenderer;
 
         /// <summary>
-        ///     TODO.
+        ///     List of <c>Transform</c> points to connect together.
         /// </summary>
-        [Tooltip("")]
+        /// <remarks><b>NOTE:</b> Number of <c>Transform</c> points must match the number of positions in the <c>LineRenderer</c>.</remarks>
+        [Tooltip("List of Transform points to connect together. NOTE: Number of Transform points must match the number of positions in the LineRenderer.")]
         [SerializeField] private Transform?[]? connectedPoints;
 
         /// <summary>
-        ///     TODO.
+        ///     Whether positions should update only when the <c>LineRenderer</c> is visible or not.
         /// </summary>
         [Space(5.0f)]
         [Header("Other")]
-        [Tooltip("")]
+        [Tooltip("Whether positions should update only when the LineRenderer is visible or not.")]
         [SerializeField] private bool disableWhenCulled = true;
 
         /// <summary>
-        ///     TODO.
+        ///     Current positions for each connected <c>LineRenderer</c> point.
         /// </summary>
         private Vector3[]? positions;
 
         /// <summary>
-        ///     TODO.
+        ///     Assign <c>LineRenderer</c> field when creating or resetting the component.
         /// </summary>
         private void Reset()
         {
@@ -44,7 +45,7 @@ namespace itolib.Behaviours.Animations
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Initialize array with current positions.
         /// </summary>
         private void Awake()
         {
@@ -52,20 +53,20 @@ namespace itolib.Behaviours.Animations
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Make sure there is a <c>LineRenderer</c> component to target, with a valid number of points.
         /// </summary>
         private void OnEnable()
         {
             if (lineRenderer == null || !TryGetComponent(out lineRenderer)
                 || connectedPoints == null || connectedPoints.Length == 0 || connectedPoints.Length > lineRenderer.positionCount)
             {
-                Plugin.Logger.LogWarning($"Could not find LineRenderer for ConnectedRope component in GameObject '{gameObject.name}'.");
+                Plugin.Logger.LogWarning($"Could not find a LineRenderer with a valid amount of points for ConnectedRope component in GameObject '{gameObject.name}'.");
                 enabled = false;
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Update positions for all connected <c>Transform</c> points.
         /// </summary>
         private void LateUpdate()
         {
@@ -73,6 +74,7 @@ namespace itolib.Behaviours.Animations
             {
                 Transform? point = connectedPoints?[i];
 
+                // Use local position if LineRenderer is not set to use world space.
                 positions[i] = (point != null) ? (lineRenderer.useWorldSpace ? point.position : point.localPosition) : lineRenderer.GetPosition(i);
             }
 
@@ -108,42 +110,42 @@ namespace itolib.Behaviours.Animations
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Attach a given <c>Transform</c> to the start of the <c>ConnectedRope</c>.
         /// </summary>
-        /// <param name="attachTo"></param>
-        public void AttachStart(Transform attachTo)
+        /// <param name="point"><c>Transform</c> point to connect.</param>
+        public void AttachStart(Transform point)
         {
             if (connectedPoints?.Length > 0)
             {
-                connectedPoints[0] = attachTo;
+                connectedPoints[0] = point;
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Attach a given <c>Transform</c> to the end of the <c>ConnectedRope</c>.
         /// </summary>
-        /// <param name="attachTo"></param>
-        public void AttachEnd(Transform attachTo)
+        /// <param name="point"><c>Transform</c> point to connect.</param>
+        public void AttachEnd(Transform point)
         {
             if (connectedPoints?.Length > 0)
             {
-                connectedPoints[^1] = attachTo;
+                connectedPoints[^1] = point;
             }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Attach a given player to the start of the <c>ConnectedRope</c>.
         /// </summary>
-        /// <param name="player"></param>
+        /// <param name="player">Player to connect.</param>
         public void AttachPlayerStart(PlayerControllerB player)
         {
             AttachStart(player.transform);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Attach a given player to the end of the <c>ConnectedRope</c>.
         /// </summary>
-        /// <param name="player"></param>
+        /// <param name="player">Player to connect.</param>
         public void AttachPlayerEnd(PlayerControllerB player)
         {
             AttachEnd(player.transform);

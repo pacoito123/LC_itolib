@@ -107,8 +107,8 @@ namespace itolib.Patches
         private static bool ModifyWeights(SpecificDoorway doorway, bool next, ref float weight)
         {
             // Check if Doorway should be allowed to generate a path, based on its configuration.
-            if ((doorway.DoorwayType == DoorwayType.Neither) || (next && doorway.DoorwayType == DoorwayType.Exit && !doorway.AllowSwap)
-                || (!next && doorway.DoorwayType == DoorwayType.Entrance))
+            if ((doorway.DoorwayType is DoorwayType.Neither) || (next && doorway.DoorwayType is DoorwayType.Exit && !doorway.AllowSwap)
+                || (!next && doorway.DoorwayType is DoorwayType.Entrance))
             {
                 weight = 0.0f;
 

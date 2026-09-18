@@ -193,7 +193,7 @@ namespace itolib.Behaviours.Kinematics
         }
 
         /// <summary>
-        ///     Ramp up towards the target force, smoothly rotate player model transform, and/or continually set the player as no longer taking fall damage.
+        ///     Ramp up towards the target force, smoothly rotate player model <c>Transform</c>, and/or continually set the player as no longer taking fall damage.
         /// </summary>
         protected override void Update()
         {

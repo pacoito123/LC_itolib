@@ -5,41 +5,41 @@ using UnityEngine.Events;
 namespace itolib.Behaviours.Animations
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a single event to be called, with a given name for identification purposes.
     /// </summary>
     [Serializable]
     public struct EventEntry()
     {
         /// <summary>
-        ///     TODO.
+        ///     Name of this event entry, for identification purposes.
         /// </summary>
         [Header("Event Entry")]
-        [Tooltip("")]
+        [Tooltip("Name of this event entry, for identification purposes.")]
         public string eventName = string.Empty;
 
         /// <summary>
-        ///     TODO.
+        ///     Event callback to be invoked.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("Event callback to be invoked.")]
         public UnityEvent onEventCalled = new();
     }
 
     /// <summary>
-    ///     TODO.
+    ///     Represents one or several events invoked from an <c>AnimationEvent</c> by an <c>Animator</c>.
     /// </summary>
     public class MultiAnimationEvent : MonoBehaviour
     {
         /// <summary>
-        ///     TODO.
+        ///     List of event entries that can be invoked.
         /// </summary>
         [Header("Multi Animation Event")]
-        [Tooltip("")]
+        [Tooltip("List of event entries that can be invoked.")]
         [SerializeField] private EventEntry[]? eventEntries;
 
         /// <summary>
-        ///     TODO.
+        ///     Call an event entry at the given index.
         /// </summary>
-        /// <param name="eventIndex"></param>
+        /// <param name="eventIndex">Index of the entry to invoke.</param>
         public void CallEvent(int eventIndex)
         {
             if (eventIndex < eventEntries?.Length)
@@ -49,9 +49,9 @@ namespace itolib.Behaviours.Animations
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Call an event entry with the given name.
         /// </summary>
-        /// <param name="eventName"></param>
+        /// <param name="eventName">Name of the entry to invoke.</param>
         public void CallEvent(string eventName)
         {
             for (int i = 0; i < eventEntries?.Length; i++)
