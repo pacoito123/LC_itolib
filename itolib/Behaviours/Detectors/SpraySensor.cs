@@ -88,11 +88,11 @@ namespace itolib.Behaviours.Detectors
         [SerializeField] private float sprayRange = 2.0f;
 
         /// <summary>
-        ///     Maximum proximity range for a spray to be detected, regardless of where the player is looking at. Can be set to <c>-1</c> to disable.
+        ///     Maximum proximity range for a spray to be detected, regardless of where the player is looking at. Can be set to <c>0</c> to disable.
         /// </summary>
-        [Tooltip("Maximum proximity range for a spray to be detected, regardless of where the player is looking at. Can be set to '-1' to disable.")]
+        [Tooltip("Maximum proximity range for a spray to be detected, regardless of where the player is looking at. Can be set to '0' to disable.")]
         [Min(0.0f)]
-        [SerializeField] private float proximityRange = -1.0f;
+        [SerializeField] private float proximityRange = 0.0f;
 
         /// <summary>
         ///     <c>LayerMask</c> for all layers that should block spray detection.
@@ -109,7 +109,6 @@ namespace itolib.Behaviours.Detectors
         [Space(5.0f)]
         [Header("== DEPRECATED ==")]
         [Tooltip("(Deprecated) Minimum angle required for the spray to be considered within line of sight, in degrees.")]
-        [Range(0.0f, 180.0f)]
         [SerializeField] private float sprayAngle = -1.0f;
 
         /// <summary>
@@ -177,11 +176,13 @@ namespace itolib.Behaviours.Detectors
             Vector3 pos = transform.position;
             float sqrRange = sprayRange * sprayRange,
                 sqrDistance = (attachedPlayerTransform.position - pos).sqrMagnitude,
-                sqrProximityRange = (proximityRange > 0.0f) ? proximityRange * proximityRange : -1.0f,
-                sprayAngle = (this.sprayAngle < 0.0f) ? Mathf.Clamp(angleCurve.Evaluate(Mathf.Sqrt(sqrDistance / sqrRange)), 0.0f, 180.0f) : this.sprayAngle;
+                sqrProximityRange = (proximityRange > 0.0f) ? (proximityRange * proximityRange) : -1.0f;
+
+            // Obtain spray detection angle from defined curve, at the current distance.
+            float sprayAngle = (this.sprayAngle < 0.0f) ? Math.Clamp(angleCurve.Evaluate(Mathf.Sqrt(sqrDistance / sqrRange)), 0.0f, 180.0f) : this.sprayAngle;
 
             // Check if the player is within range and has unobstructed line of sight with the sensor.
-            if (!player.HasLineOfSightToPosition(pos, sprayAngle, sprayRange, sqrProximityRange, layerMask))
+            if (!player.HasLineOfSightToPosition(pos, attachedPlayerCameraTransform.position, sqrDistance, sprayAngle, sqrRange, sqrProximityRange, layerMask))
             {
                 return;
             }

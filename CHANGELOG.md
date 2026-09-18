@@ -4,8 +4,12 @@
 
 WIP
 
+- Added `SightSensor`, for detecting a player's line of sight towards an object.
+- Added `AttentionGrabber`, for forcing a player's camera to stare at an object.
 - Made `PlayerLauncher` dropping items no longer use `PlayerControllerB.DropAllHeldItemsAndSyncNonexact()`, in favor of the exact one.
 - Added `ShotgunSensor` compatibility for [BeanieLib](https://thunderstore.io/c/lethal-company/p/Beaniebe/Beanie_Lib)'s `CustomShotgun` script.
+- Added curve field to `FearInducer` to scale angle tolerance required to trigger it depending on distance away from it.
+- Added methods to `FearInducer` for manually setting a player's fear level, regardless of line of sight.
 - Added methods to `AnimationParamSetter` for toggling, incrementing, and multiplying parameter values.
 - Added 'weight modifiers' to all `IWeightedScript`-inheriting scripts:
   - Weight modifiers allow changing weight values whenever an entry with modifiers defined is selected.

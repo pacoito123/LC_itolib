@@ -34,6 +34,8 @@ A proper write-up and documentation for all components and their intended usage 
   * **MovementSensor:** Checks if the attached player performs a specific movement action (e.g. `Jump`, `Move`, `Crouch`), and invokes an event callback if so. A cooldown can be applied so as to not trigger continuously, which can even be used for things like fake custom footstep sound effects. Used for PlayZone's ball pit movement effects.
     * **ShotgunSensor:** 'Detects' a shotgun being fired by an attached player towards the target, and invokes an event callback if it meets the (configurable) parameters for both range and precision.
     * **SpraySensor:** 'Detects' spray paint being used by an attached player towards the target. Has various thresholds for number of sprays required before invoking an event. Also works with weed killer!
+  * **SightSensor:** Detects an attached player's unobstructed line of sight towards the target, with various customizable parameters.
+  * **AttentionGrabber:** Forces an attached player's camera to stare at the target, with various customizable parameters.
 * **DetectRegion:**  An abstract region within which to detect or perform (non-allocating) searches for overlapping `Collider` instances belonging to objects of a certain type.
   * **EnemySensor:** Detects any enemies inside, entering, and/or exiting the region, with some additional filtering for whitelisting specific enemies, as well as requiring a certain amount of them before triggering events.
   * **HazardSensor:** Detects any objects in the `MapHazards` layer inside the region, with an additional function to despawn found hazards.

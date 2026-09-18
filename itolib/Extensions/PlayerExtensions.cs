@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 namespace itolib.Extensions
 {
     /// <summary>
-    ///     TODO.
+    ///     Extensions for the <c>PlayerControllerB</c> class.
     /// </summary>
     public static class PlayerExtensions
     {
@@ -33,44 +33,59 @@ namespace itolib.Extensions
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Check if player has unobstructed line of sight towards a specified position.
         /// </summary>
-        /// <param name="player"></param>
-        /// <param name="pos"></param>
-        /// <param name="width"></param>
-        /// <param name="range"></param>
-        /// <param name="proximityAwareness"></param>
-        /// <param name="layerMask"></param>
-        /// <returns></returns>
-        public static bool HasLineOfSightToPosition(this PlayerControllerB player, Vector3 pos, float width = 45f, float range = 60,
-            float proximityAwareness = -1f, LayerMask layerMask = default)
+        /// <param name="player">Player whose line of sight will be checked.</param>
+        /// <param name="pos">Target position to check line of sight with.</param>
+        /// <param name="width">Maximum angle from the target position to be considered within line of sight.</param>
+        /// <param name="range">Maximum distance from the target position to be considered within line of sight.</param>
+        /// <param name="proximityAwareness">Maximum distance from the target position to be considered within line of sight, regardless of where the player is looking at.</param>
+        /// <param name="layerMask"><c>LayerMask</c> for all layers that should block line of sight.</param>
+        /// <returns>Whether the player has unobstructed line of sight with the target position or not.</returns>
+        public static bool HasLineOfSightToPosition(this PlayerControllerB player, Vector3 pos, float width = 45.0f, float range = 60.0f,
+            float proximityAwareness = -1.0f, LayerMask layerMask = default)
         {
-            Transform playerEye = player.playerEye.transform;
-            float sqrDistance = (player.transform.position - pos).sqrMagnitude;
+            float sqrRange = range * range,
+                sqrDistance = (player.transform.position - pos).sqrMagnitude,
+                sqrProximityAwareness = (proximityAwareness > 0.0f) ? proximityAwareness * proximityAwareness : -1.0f;
 
-            return sqrDistance < (range * range) && ((proximityAwareness > 0 && sqrDistance < (proximityAwareness * proximityAwareness))
-                || Vector3.Angle(playerEye.forward, pos - player.gameplayCamera.transform.position) < width)
-                && !Physics.Linecast(playerEye.position, pos, out player.hit, layerMask, QueryTriggerInteraction.Ignore);
+            return HasLineOfSightToPosition(player, pos, player.gameplayCamera.transform.position, sqrDistance, width, sqrRange, sqrProximityAwareness, layerMask);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Check if player has unobstructed line of sight towards a specified position.
         /// </summary>
-        /// <param name="player"></param>
-        /// <param name="pos"></param>
-        /// <param name="distance"></param>
-        /// <param name="width"></param>
-        /// <param name="range"></param>
-        /// <param name="proximityAwareness"></param>
-        /// <param name="layerMask"></param>
-        /// <returns></returns>
-        public static bool HasLineOfSightToPosition(this PlayerControllerB player, Vector3 pos, float distance, float width = 45f, float range = 60,
-            float proximityAwareness = -1f, LayerMask layerMask = default)
+        /// <param name="player">Player whose line of sight will be checked.</param>
+        /// <param name="pos">Target position to check line of sight with.</param>
+        /// <param name="distance">Distance between the player camera and the target position.</param>
+        /// <param name="width">Maximum angle from the target position to be considered within line of sight.</param>
+        /// <param name="range">Maximum distance from the target position to be considered within line of sight.</param>
+        /// <param name="proximityAwareness">Maximum distance from the target position to be considered within line of sight, regardless of where the player is looking at.</param>
+        /// <param name="layerMask"><c>LayerMask</c> for all layers that should block line of sight.</param>
+        /// <returns>Whether the player has unobstructed line of sight with the target position or not.</returns>
+        public static bool HasLineOfSightToPosition(this PlayerControllerB player, Vector3 pos, float distance, float width = 45.0f, float range = 60.0f,
+            float proximityAwareness = -1.0f, LayerMask layerMask = default)
         {
-            Transform playerEye = player.playerEye.transform;
+            return HasLineOfSightToPosition(player, pos, player.gameplayCamera.transform.position, distance, width, range, proximityAwareness, layerMask);
+        }
 
-            return distance < range && (distance < proximityAwareness || Vector3.Angle(playerEye.forward, pos - player.gameplayCamera.transform.position) < width)
-                && !Physics.Linecast(playerEye.position, pos, out player.hit, layerMask, QueryTriggerInteraction.Ignore);
+        /// <summary>
+        ///     Check if player has unobstructed line of sight towards a specified position.
+        /// </summary>
+        /// <param name="player">Player whose line of sight will be checked.</param>
+        /// <param name="pos">Target position to check line of sight with.</param>
+        /// <param name="cameraPos">Position of the player camera.</param>
+        /// <param name="distance">Distance between the player camera and the target position.</param>
+        /// <param name="width">Maximum angle from the target position to be considered within line of sight.</param>
+        /// <param name="range">Maximum distance from the target position to be considered within line of sight.</param>
+        /// <param name="proximityAwareness">Maximum distance from the target position to be considered within line of sight, regardless of where the player is looking at.</param>
+        /// <param name="layerMask"><c>LayerMask</c> for all layers that should block line of sight.</param>
+        /// <returns>Whether the player has unobstructed line of sight with the target position or not.</returns>
+        public static bool HasLineOfSightToPosition(this PlayerControllerB player, Vector3 pos, Vector3 cameraPos, float distance, float width = 45.0f, float range = 60.0f,
+            float proximityAwareness = -1.0f, LayerMask layerMask = default)
+        {
+            return distance < range && (distance < proximityAwareness || Vector3.Angle(player.playerEye.forward, pos - cameraPos) < width)
+                && !Physics.Linecast(player.playerEye.position, pos, out player.hit, layerMask, QueryTriggerInteraction.Ignore);
         }
 
         /// <summary>

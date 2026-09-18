@@ -29,11 +29,11 @@ namespace itolib.Behaviours.Detectors
         [SerializeField] private float shootRange = 30.0f;
 
         /// <summary>
-        ///     Maximum proximity range for a shot to be detected, regardless of where the player is looking at. Can be set to <c>-1</c> to disable.
+        ///     Maximum proximity range for a shot to be detected, regardless of where the player is looking at. Can be set to <c>0</c> to disable.
         /// </summary>
-        [Tooltip("Maximum proximity range for a shot to be detected, regardless of where the player is looking at. Can be set to '-1' to disable.")]
+        [Tooltip("Maximum proximity range for a shot to be detected, regardless of where the player is looking at. Can be set to '0' to disable.")]
         [Min(0.0f)]
-        [SerializeField] private float proximityRange = -1.0f;
+        [SerializeField] private float proximityRange = 0.0f;
 
         /// <summary>
         ///     <c>LayerMask</c> for all layers that should block shot detection.
@@ -101,11 +101,13 @@ namespace itolib.Behaviours.Detectors
             Vector3 pos = transform.position;
             float sqrRange = shootRange * shootRange,
                 sqrDistance = (attachedPlayerTransform.position - pos).sqrMagnitude,
-                sqrProximityRange = (proximityRange > 0.0f) ? (proximityRange * proximityRange) : -1.0f,
-                shootAngle = (this.shootAngle < 0.0f) ? Math.Clamp(angleCurve.Evaluate(Mathf.Sqrt(sqrDistance / sqrRange)), 0.0f, 180.0f) : this.shootAngle;
+                sqrProximityRange = (proximityRange > 0.0f) ? (proximityRange * proximityRange) : -1.0f;
+
+            // Obtain shoot detection angle from defined curve, at the current distance.
+            float shootAngle = (this.shootAngle < 0.0f) ? Math.Clamp(angleCurve.Evaluate(Mathf.Sqrt(sqrDistance / sqrRange)), 0.0f, 180.0f) : this.shootAngle;
 
             // Check if the player is within range and has unobstructed line of sight with the sensor.
-            if (!player.HasLineOfSightToPosition(pos, sqrDistance, shootAngle, sqrRange, sqrProximityRange, layerMask))
+            if (!player.HasLineOfSightToPosition(pos, attachedPlayerCameraTransform.position, sqrDistance, shootAngle, sqrRange, sqrProximityRange, layerMask))
             {
                 return;
             }
