@@ -83,11 +83,54 @@ namespace itolib.Behaviours.Effects
         [SerializeField] private bool drownPlayer;
 
         /// <summary>
-        ///     Whether to display the underwater overlay or not.
+        ///     Whether to display the underwater <c>Volume</c> overlay or not.
         /// </summary>
-        /// <remarks><b>NOTE:</b> Not currently implemented.</remarks>
-        [Tooltip("Whether to display the underwater overlay or not. NOTE: Not currently implemented.")]
-        [SerializeField] private bool waterOverlay;
+        [Tooltip("Whether to display the underwater Volume overlay or not.")]
+        [SerializeField] private bool setUnderwaterVolumeFilter = true;
+
+        /// <summary>
+        ///     Whether to apply underwater audio occlusion or not.
+        /// </summary>
+        [Tooltip("Whether to apply underwater audio occlusion or not.")]
+        [SerializeField] private bool setUnderwaterOcclusionFilter = true;
+
+        /// <summary>
+        ///     Minimum fall length required to play the small water splash particle effect. Can be set to <c>0</c> to disable it.
+        /// </summary>
+        [Tooltip("Minimum fall length required to play the small water splash particle effect. Can be set to '0' to disable it.")]
+        [Range(0.0f, 150.0f)]
+        [SerializeField] private float waterSplashSmallFallValue = 4.0f;
+
+        /// <summary>
+        ///     Small water splash particle effect to play when jumping into the hinderance region.
+        /// </summary>
+        [Tooltip("Small water splash particle effect to play when jumping into the hinderance region.")]
+        [SerializeField] private ParticleSystem? waterSplashSmallOverride;
+
+        /// <summary>
+        ///     Small water splash sound effects to play when jumping into the hinderance region.
+        /// </summary>
+        [Tooltip("Small water splash sound effects to play when jumping into the hinderance region.")]
+        [SerializeField] private AudioClip[]? waterSplashSmallSFXOverride;
+
+        /// <summary>
+        ///     Minimum fall length required to play the big water splash particle effect. Can be set to <c>0</c> to disable it.
+        /// </summary>
+        [Tooltip("Minimum fall length required to play the big water splash particle effect. Can be set to '0' to disable it.")]
+        [Range(0.0f, 150.0f)]
+        [SerializeField] private float waterSplashBigFallValue = 17.0f;
+
+        /// <summary>
+        ///     Big water splash particle effect to play when jumping into the hinderance region.
+        /// </summary>
+        [Tooltip("Big water splash particle effect to play when jumping into the hinderance region.")]
+        [SerializeField] private ParticleSystem? waterSplashBigOverride;
+
+        /// <summary>
+        ///     Big water splash sound effects to play when jumping into the hinderance region.
+        /// </summary>
+        [Tooltip("Big water splash sound effects to play when jumping into the hinderance region.")]
+        [SerializeField] private AudioClip[]? waterSplashBigSFXOverride;
 
         /// <summary>
         ///     Whether the player should become drunk while hindered or not.
@@ -139,7 +182,17 @@ namespace itolib.Behaviours.Effects
         /// <summary>
         ///     Vanilla player sinking <c>AnimationCurve</c>.
         /// </summary>
-        private AnimationCurve? defaultPlayerSinkingCurve;
+        private static AnimationCurve? defaultPlayerSinkingCurve;
+
+        /// <summary>
+        ///     Vanilla water splashing <c>ParticleSystem</c> instances.
+        /// </summary>
+        private static ParticleSystem? defaultWaterSplashSmall, defaultWaterSplashBig;
+
+        /// <summary>
+        ///     Vanilla water splashing <c>AudioClip</c> lists.
+        /// </summary>
+        private static AudioClip[]? defaultWaterSplashSmallSFX, defaultWaterSplashBigSFX;
 
         /// <summary>
         ///     Set player sinking <c>AnimationCurve</c> to (approximately) the vanilla default.
@@ -180,11 +233,28 @@ namespace itolib.Behaviours.Effects
         }
 
         /// <summary>
-        ///     Obtain vanilla player sinking <c>AnimationCurve</c>.
+        ///     Obtain default vanilla values for resetting overrides.
         /// </summary>
         protected override void Start()
         {
             defaultPlayerSinkingCurve = StartOfRound.Instance != null ? StartOfRound.Instance.playerSinkingCurve : null;
+
+            if (TimeOfDay.Instance != null)
+            {
+                defaultWaterSplashSmall = TimeOfDay.Instance.waterSplashParticleSmall;
+                defaultWaterSplashBig = TimeOfDay.Instance.waterSplashParticle;
+            }
+
+            if (SoundManager.Instance != null)
+            {
+                defaultWaterSplashSmallSFX = SoundManager.Instance.waterSplashSFXSmall;
+                defaultWaterSplashBigSFX = SoundManager.Instance.waterSplashSFX;
+            }
+
+            if (waterSplashSmallFallValue > waterSplashBigFallValue && waterSplashBigFallValue != 0.0f)
+            {
+                waterSplashSmallFallValue = waterSplashBigFallValue;
+            }
 
             base.Start();
         }
@@ -227,16 +297,46 @@ namespace itolib.Behaviours.Effects
                     attachedPlayer.sprintMeter = Mathf.Clamp(attachedPlayer.sprintMeter - drainAmount, 0.0f, 1.0f);
                 }
 
-                /* if (drownPlayer)
+                if (!drownPlayer && attachedPlayer.isUnderwater && StartOfRound.Instance != null)
                 {
-                    if (hindererCollider?.bounds.Contains(AttachedPlayer.gameplayCamera.transform.position) == true)
-                    {
+                    // Reset drowning timer, if set to NOT drown the player.
+                    StartOfRound.Instance.drowningTimer = 1.0f;
 
+                    if (muteAudio)
+                    {
+                        // Mute audio effects for this frame.
+                        StartOfRound.Instance.playedDrowningSFX = true;
                     }
-                } */
+                }
             }
 
             base.Update();
+        }
+
+        /// <summary>
+        ///     Handle some underwater overrides.
+        /// </summary>
+        private void LateUpdate()
+        {
+            if (localPlayerAttached && attachedPlayer != null)
+            {
+                if (HUDManager.Instance != null && HUDManager.Instance.setUnderwaterFilter)
+                {
+                    if (!setUnderwaterVolumeFilter)
+                    {
+                        // Disable underwater screen filter.
+                        HUDManager.Instance.setUnderwaterFilter = false;
+                        HUDManager.Instance.underwaterScreenFilter.weight = 0.0f;
+                    }
+
+                    if (!setUnderwaterOcclusionFilter)
+                    {
+                        // Disable underwater audio occlusion.
+                        HUDManager.Instance.audioListenerLowPass.enabled = false;
+                        HUDManager.Instance.audioListenerLowPass.cutoffFrequency = 20000.0f;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -326,8 +426,19 @@ namespace itolib.Behaviours.Effects
                     player.hinderedMultiplier *= hinderedMultiplier;
                 }
 
-                // Enable or disable player status effect audio.
-                player.statusEffectAudio.enabled = !muteAudio;
+                // Check if hinderer audio effects should be muted.
+                if (muteAudio)
+                {
+                    if (player.statusEffectAudio != null)
+                    {
+                        player.statusEffectAudio.enabled = false;
+                    }
+
+                    if (player.IsLocalClient() && HUDManager.Instance != null && HUDManager.Instance.breathingUnderwaterAudio != null)
+                    {
+                        HUDManager.Instance.breathingUnderwaterAudio.enabled = false;
+                    }
+                }
 
                 // Check if player should be able to sink.
                 if (sinkPlayer)
@@ -338,27 +449,30 @@ namespace itolib.Behaviours.Effects
                         StartOfRound.Instance.playerSinkingCurve = playerSinkingCurveOverride;
                     }
 
+                    // Set quicksand status effect audio.
+                    player.statusEffectAudioIndex = 0;
+
                     // Add sinking source and apply sinking speed multiplier.
                     player.sourcesCausingSinking++;
                     player.sinkingSpeedMultiplier = sinkingSpeedMultiplier;
                 }
                 else if (drownPlayer || (hinderPlayer && allowJumping))
                 {
+                    // Set water status effect audio.
+                    player.statusEffectAudioIndex = 1;
+
                     // Set player as being underwater.
                     player.isUnderwater = true; // Also needed to allow the player to jump while hindered.
 
-                    // Check if player should be able to drown.
-                    if (drownPlayer)
-                    {
-                        // Set player underwater collider to the specified collider.
-                        player.underwaterCollider = hindererCollider;
+                    // Set player underwater collider to the specified collider.
+                    player.underwaterCollider = hindererCollider;
+                }
 
-                        // Check if water overlay should be displayed.
-                        if (waterOverlay)
-                        {
-
-                        }
-                    }
+                if (hindererCollider != null && (player.isFallingFromJump || player.isFallingNoJump)
+                    && ((waterSplashSmallFallValue != 0.0f && player.fallValue < -waterSplashSmallFallValue)
+                    || (waterSplashBigFallValue != 0.0f && player.fallValue < -waterSplashBigFallValue)))
+                {
+                    PlayWaterSplash(player, waterSplashBigFallValue == 0.0f || player.fallValue >= -waterSplashBigFallValue);
                 }
 
                 // Invoke hinder begin event.
@@ -374,8 +488,19 @@ namespace itolib.Behaviours.Effects
                     player.hinderedMultiplier /= hinderedMultiplier;
                 }
 
-                // Reenable player status effect audio.
-                player.statusEffectAudio.enabled = true;
+                // Reenable hinderer audio effects.
+                if (muteAudio)
+                {
+                    if (player.statusEffectAudio != null)
+                    {
+                        player.statusEffectAudio.enabled = true;
+                    }
+
+                    if (player.IsLocalClient() && HUDManager.Instance != null && HUDManager.Instance.breathingUnderwaterAudio != null)
+                    {
+                        HUDManager.Instance.breathingUnderwaterAudio.enabled = true;
+                    }
+                }
 
                 if (sinkPlayer)
                 {
@@ -394,15 +519,101 @@ namespace itolib.Behaviours.Effects
                     // Set player as no longer underwater.
                     player.isUnderwater = false;
 
-                    if (drownPlayer)
-                    {
-                        // Remove player underwater collider.
-                        player.underwaterCollider = null;
-                    }
+                    // Remove player underwater collider.
+                    player.underwaterCollider = null;
                 }
 
                 // Invoke hinder stop event.
                 onHinderStop.Invoke(player);
+            }
+        }
+
+        /// <summary>
+        ///     Play water splash effect at a player's location.
+        /// </summary>
+        /// <param name="player">Player doing the splashing.</param>
+        /// <param name="smallSplash">Whether the splash is small or big.</param>
+        private void PlayWaterSplash(PlayerControllerB player, bool smallSplash)
+        {
+            // Play water splash effect for the local client.
+            PlayWaterSplashLocal(player, smallSplash);
+
+            if (IsSpawned) // TODO: Separate local field?
+            {
+                // Play water splash effect for all other clients.
+                PlayWaterSplashRpc(player, smallSplash);
+            }
+        }
+
+        /// <summary>
+        ///     Play water splash effect at a player's location on all other clients.
+        /// </summary>
+        /// <param name="playerReference">Network reference of the player doing the splashing.</param>
+        /// <param name="smallSplash">Whether the splash is small or big.</param>
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void PlayWaterSplashRpc(NetworkBehaviourReference playerReference, bool smallSplash)
+        {
+            if (playerReference.TryGet(out PlayerControllerB player))
+            {
+                // Play water splash effect for the local client.
+                PlayWaterSplashLocal(player, smallSplash);
+            }
+        }
+
+        /// <summary>
+        ///     Play water splash effect at a player's location for the local client.
+        /// </summary>
+        /// <param name="player">Player doing the splashing.</param>
+        /// <param name="smallSplash">Whether the splash is small or big.</param>
+        private void PlayWaterSplashLocal(PlayerControllerB player, bool smallSplash)
+        {
+            // Apply any water effect overrides before splashing.
+            ApplyWaterParticleOverrides();
+
+            if (TimeOfDay.Instance != null)
+            {
+                // Splash!
+                TimeOfDay.Instance.WaterSplashEffect(player.transform.position, smallSplash);
+            }
+
+            // Reset any water effect overrides after splashing.
+            ApplyWaterParticleOverrides(undo: true);
+        }
+
+        /// <summary>
+        ///     Apply water splashing effect overrides, or reset them.
+        /// </summary>
+        /// <param name="undo">Whether water splashing effect overrides should be reset or not.</param>
+        private void ApplyWaterParticleOverrides(bool undo = false)
+        {
+            if (TimeOfDay.Instance != null)
+            {
+                if (waterSplashSmallOverride != null)
+                {
+                    // Override small splash particle effect.
+                    TimeOfDay.Instance.waterSplashParticleSmall = (!undo) ? waterSplashSmallOverride : defaultWaterSplashSmall;
+                }
+
+                if (waterSplashBigOverride != null)
+                {
+                    // Override big splash particle effect.
+                    TimeOfDay.Instance.waterSplashParticle = (!undo) ? waterSplashBigOverride : defaultWaterSplashBig;
+                }
+            }
+
+            if (SoundManager.Instance != null)
+            {
+                if (waterSplashSmallSFXOverride?.Length > 0)
+                {
+                    // Override small splash sound effects.
+                    SoundManager.Instance.waterSplashSFXSmall = (!undo) ? waterSplashSmallSFXOverride : defaultWaterSplashSmallSFX;
+                }
+
+                if (waterSplashBigSFXOverride?.Length > 0)
+                {
+                    // Override big splash sound effects.
+                    SoundManager.Instance.waterSplashSFX = (!undo) ? waterSplashBigSFXOverride : defaultWaterSplashBigSFX;
+                }
             }
         }
 
