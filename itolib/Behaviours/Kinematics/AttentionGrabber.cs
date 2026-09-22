@@ -109,11 +109,20 @@ namespace itolib.Behaviours.Kinematics
                 if (grabTimeHorizontal >= 0.0f)
                 {
                     Quaternion targetRotation = Quaternion.LookRotation(grabberTransform.position - attachedPlayerTransform.position
-                        + (grabberTransform.rotation * targetOffset), attachedPlayerTransform.up);
+                        + (grabberTransform.rotation * targetOffset), Vector3.up);
+
+                    if (attachedPlayer.physicsParent != null)
+                    {
+                        // Inverse rotation from physics parent.
+                        targetRotation *= Quaternion.Inverse(attachedPlayer.physicsParent.rotation);
+                    }
+
+                    // Obtain angle on the y-axis to rotate to.
+                    float lookAngle = Mathf.SmoothDampAngle(attachedPlayerTransform.localEulerAngles.y, targetRotation.eulerAngles.y,
+                        ref cameraVelocityHorizontal, grabTimeHorizontal);
 
                     // Rotate player on the y-axis towards the target rotation.
-                    attachedPlayerTransform.rotation = Quaternion.Euler(Vector3.up * Mathf.SmoothDampAngle(attachedPlayerTransform.eulerAngles.y,
-                        targetRotation.eulerAngles.y, ref cameraVelocityHorizontal, grabTimeHorizontal));
+                    attachedPlayerTransform.localRotation = Quaternion.Euler(Vector3.up * lookAngle);
 
                     // Set left or right camera pulling bool parameter, depending on velocity direction.
                     attachedPlayer.playerBodyAnimator.SetBool(pullingCameraLeftID, cameraVelocityHorizontal < -5.0f);
@@ -124,10 +133,10 @@ namespace itolib.Behaviours.Kinematics
                 if (grabTimeVertical >= 0.0f)
                 {
                     Quaternion targetRotation = Quaternion.LookRotation(grabberTransform.position - attachedPlayerCameraTransform.position
-                        + (grabberTransform.rotation * targetOffset), attachedPlayerCameraTransform.right);
+                        + (grabberTransform.rotation * targetOffset), Vector3.right);
 
                     // Obtain angle on the x-axis to rotate to.
-                    float lookAngle = Mathf.SmoothDampAngle(attachedPlayerCameraTransform.eulerAngles.x, targetRotation.eulerAngles.x,
+                    float lookAngle = Mathf.SmoothDampAngle(attachedPlayerCameraTransform.localEulerAngles.x, targetRotation.eulerAngles.x,
                         ref cameraVelocityVertical, grabTimeVertical);
 
                     // Rotate camera on the x-axis towards the target rotation and set 'cameraUp' value accordingly.
