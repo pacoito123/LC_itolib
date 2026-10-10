@@ -35,21 +35,13 @@ namespace itolib.Structs
             serializer.SerializeValue(ref rotation);
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public readonly bool Equals(TransformInfo other)
         {
             return position == other.position && rotation == other.rotation;
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override readonly bool Equals(object obj)
         {
             return obj is TransformInfo info && Equals(info);
@@ -77,10 +69,7 @@ namespace itolib.Structs
             return !(left == right);
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override readonly int GetHashCode()
         {
             return HashCode.Combine(position, rotation);

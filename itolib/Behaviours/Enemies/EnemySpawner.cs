@@ -2,6 +2,7 @@ using itolib.Interfaces;
 using itolib.Structs;
 using itolib.Util;
 using System;
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -50,6 +51,11 @@ namespace itolib.Behaviours.Enemies
     /// </summary>
     public class EnemySpawner : EnemySpawnerBase<EnemyAI>, IWeightedScript<EnemyWeightEntry>
     {
+        /// <summary>
+        ///     List of spawned <c>EnemyAINestSpawnObject</c> instances to sync with clients.
+        /// </summary>
+        public NetworkList<NestInfo> SyncedNests { get; private set; }
+
         /// <inheritdoc/>
         public IWeightedScript<EnemyWeightEntry> WeightedSelf { get; }
 
@@ -111,6 +117,8 @@ namespace itolib.Behaviours.Enemies
         protected EnemySpawner() : base()
         {
             WeightedSelf = this;
+
+            SyncedNests = null!;
         }
 
         /// <summary>
@@ -118,12 +126,31 @@ namespace itolib.Behaviours.Enemies
         /// </summary>
         protected override void Awake()
         {
+            SyncedNests = new();
+
             if (!WeightedSelf.InitializedWeights)
             {
                 WeightedSelf.InitializeWeights();
             }
 
             base.Awake();
+        }
+
+        /// <summary>
+        ///     Set relevant <c>EnemyAINestSpawnObject</c> values to be synced when spawned.
+        /// </summary>
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            SyncedNests.OnListChanged += changeEvent =>
+            {
+                if (changeEvent.Type is NetworkListEvent<NestInfo>.EventType.Add && changeEvent.Value.nestReference.TryGet(out NetworkObject nestNetworkObject)
+                    && nestNetworkObject.TryGetComponent(out EnemyAINestSpawnObject enemyNest))
+                {
+                    SyncNestValues(enemyNest, changeEvent.Value);
+                }
+            };
         }
 
         /// <summary>
@@ -177,6 +204,96 @@ namespace itolib.Behaviours.Enemies
         public void SwitchEnemyToSpawn(string enemyName)
         {
             enemyToSpawn = enemyName;
+        }
+
+        /// <inheritdoc/>
+        protected override void PerformSpawn(NetworkObject prefabToSpawn, Vector3 spawnPosition, Quaternion spawnRotation)
+        {
+            // Check if enemy requires a nest, to delay spawning for a frame (after an appropriate nest is spawned).
+            if (prefabToSpawn.TryGetComponent(out EnemyAI enemy) && enemy.enemyType != null && enemy.enemyType.nestSpawnPrefab != null
+                && enemy.enemyType.requireNestObjectsToSpawn)
+            {
+                // Instantiate enemy nest at the specified position.
+                GameObject nestContainer = Instantiate(enemy.enemyType.nestSpawnPrefab, spawnPosition, spawnRotation, GetParentOverride());
+
+                if (nestContainer.TryGetComponent(out NetworkObject nestNetworkObject))
+                {
+                    // Spawn enemy nest for all clients.
+                    nestNetworkObject.Spawn(destroyWithScene);
+
+                    // Serialize relevant nest values to sync.
+                    NestInfo serializedNest = new()
+                    {
+                        transformInfo = new()
+                        {
+                            position = spawnPosition,
+                            rotation = spawnRotation
+                        },
+                        nestReference = nestNetworkObject
+                    };
+
+                    // Add spawned nest to NetworkList.
+                    SyncedNests.Add(serializedNest);
+
+                    return; // Delay enemy spawning until nest is actually spawned.
+                }
+            }
+
+            base.PerformSpawn(prefabToSpawn, spawnPosition, spawnRotation);
+        }
+
+        /// <summary>
+        ///     Apply synced nest values upon being spawned.
+        /// </summary>
+        /// <param name="enemyNest">Nest to be synced.</param>
+        /// <param name="nestInfo">Relevant nest values to sync.</param>
+        private void SyncNestValues(EnemyAINestSpawnObject enemyNest, NestInfo nestInfo)
+        {
+            TransformInfo transformInfo = nestInfo.transformInfo;
+            enemyNest.transform.SetPositionAndRotation(transformInfo.position, transformInfo.rotation);
+
+            if (RoundManager.Instance != null)
+            {
+                RoundManager.Instance.enemyNestSpawnObjects ??= [];
+                RoundManager.Instance.enemyNestSpawnObjects.Insert(0, enemyNest); // Insert at start to make sure the correct nest is selected.
+            }
+
+            if (enemyNest.enemyType == null || enemyNest.enemyType.enemyPrefab == null)
+            {
+                return;
+            }
+
+            enemyNest.enemyType.nestsSpawned++;
+
+            if (NetworkManager.Singleton.IsHost)
+            {
+                _ = StartCoroutine(WaitForNestSpawn(enemyNest.enemyType.enemyPrefab, transformInfo, GetParentOverride()));
+            }
+        }
+
+        /// <summary>
+        ///     <c>Coroutine</c> to wait an extra frame before spawning an enemy that requires a nest.
+        /// </summary>
+        /// <param name="enemyPrefab">Enemy prefab to spawn.</param>
+        /// <param name="transformInfo">Position and rotation to set for the enemy.</param>
+        /// <param name="parent">Parent to instantiate the enemy to.</param>
+        private IEnumerator WaitForNestSpawn(GameObject enemyPrefab, TransformInfo transformInfo, Transform? parent)
+        {
+            yield return null;
+
+            GameObject enemyContainer = Instantiate(enemyPrefab, transformInfo.position, transformInfo.rotation, parent);
+
+            if (enemyContainer.TryGetComponent(out EnemyAI enemy))
+            {
+                PrefabInstances.Add(enemy);
+
+                if (enemyContainer.TryGetComponent(out NetworkObject enemyNetworkObject))
+                {
+                    enemyNetworkObject.Spawn(destroyWithScene);
+                }
+
+                SpawnPerformed(enemy, transformInfo);
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ namespace itolib.Behaviours.Enemies
     ///     Represents an abstract enemy spawner.
     /// </summary>
     /// <typeparam name="T">Enemy of type <c>EnemyAI</c> to be spawned.</typeparam>
-    public abstract class EnemySpawnerBase<T> : NetworkedSpawner<T> where T : EnemyAI
+    public abstract class EnemySpawnerBase<T> : NetworkedSpawner<T> where T : Behaviour
     {
         /// <summary>
         ///     Whether spawned enemies should increase or decrease enemy power levels for the current round or not.
@@ -24,17 +24,17 @@ namespace itolib.Behaviours.Enemies
         /// <inheritdoc/>
         protected override void SpawnPerformed(T? spawnedPrefab, TransformInfo spawnLocation)
         {
-            if (spawnedPrefab == null || !spawnedPrefab.IsSpawned)
+            if (spawnedPrefab == null)
             {
                 return;
             }
 
-            if (RoundManager.Instance != null)
+            if (RoundManager.Instance != null && spawnedPrefab is EnemyAI spawnedEnemy)
             {
                 // Apply enemy power level changes.
                 if (influencePowerLevels)
                 {
-                    EnemyType? enemyType = spawnedPrefab.enemyType;
+                    EnemyType? enemyType = spawnedEnemy.enemyType;
 
                     if (enemyType != null)
                     {
@@ -55,10 +55,10 @@ namespace itolib.Behaviours.Enemies
                 else
                 {
                     // Set power level as removed to not decrease it when the enemy dies.
-                    spawnedPrefab.removedPowerLevel = true;
+                    spawnedEnemy.removedPowerLevel = true;
                 }
 
-                RoundManager.Instance.SpawnedEnemies.Add(spawnedPrefab);
+                RoundManager.Instance.SpawnedEnemies.Add(spawnedEnemy);
             }
 
             base.SpawnPerformed(spawnedPrefab, spawnLocation);

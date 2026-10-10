@@ -115,7 +115,7 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         [Tooltip("")]
-        [SerializeField] private bool destroyWithScene = true;
+        [SerializeField] protected bool destroyWithScene = true;
 
         /// <summary>
         ///     TODO.
@@ -374,7 +374,7 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        private void AddAINodes()
+        public void AddAINodes()
         {
             RoundManagerPatches.OnSpawnScrapInLevel -= AddAINodes;
 

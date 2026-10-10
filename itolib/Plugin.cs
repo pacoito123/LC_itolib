@@ -56,6 +56,9 @@ namespace itolib
             NetworkVariableSerializationTypes.InitializeSerializer_UnmanagedByMemcpy<HiveInfo>();
             NetworkVariableSerializationTypes.InitializeEqualityChecker_UnmanagedIEquatable<HiveInfo>();
 
+            NetworkVariableSerializationTypes.InitializeSerializer_UnmanagedByMemcpy<NestInfo>();
+            NetworkVariableSerializationTypes.InitializeEqualityChecker_UnmanagedIEquatable<NestInfo>();
+
             NetworkVariableSerializationTypes.InitializeSerializer_UnmanagedByMemcpy<NetworkObjectReference>();
             NetworkVariableSerializationTypes.InitializeEqualityChecker_UnmanagedIEquatable<NetworkObjectReference>();
         }

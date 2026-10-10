@@ -59,22 +59,14 @@ namespace itolib.Structs
             serializer.SerializeValue(ref materialVariant);
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public readonly bool Equals(ItemInfo other)
         {
             return transformInfo == other.transformInfo && itemReference.Equals(other.itemReference)
                 && scrapValue == other.scrapValue && meshVariant == other.meshVariant && materialVariant == other.materialVariant;
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override readonly bool Equals(object obj)
         {
             return obj is ItemInfo info && Equals(info);
@@ -102,10 +94,7 @@ namespace itolib.Structs
             return !(left == right);
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override readonly int GetHashCode()
         {
             return HashCode.Combine(transformInfo, itemReference, scrapValue, meshVariant, materialVariant);

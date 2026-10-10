@@ -55,22 +55,14 @@ namespace itolib.Structs
             }
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public readonly bool Equals(HiveInfo other)
         {
             return itemInfo == other.itemInfo && beesReference.Equals(other.beesReference)
                 && overrideHive == other.overrideHive && hiveReference.Equals(other.hiveReference);
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override readonly bool Equals(object obj)
         {
             return obj is HiveInfo info && Equals(info);
@@ -98,10 +90,7 @@ namespace itolib.Structs
             return !(left == right);
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public override readonly int GetHashCode()
         {
             return HashCode.Combine(itemInfo, beesReference, overrideHive, hiveReference);

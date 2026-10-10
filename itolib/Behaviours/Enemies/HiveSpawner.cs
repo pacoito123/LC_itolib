@@ -38,7 +38,7 @@ namespace itolib.Behaviours.Enemies
         /// </summary>
         [Header("Hive Spawner")]
         [Tooltip("")]
-        [SerializeField] private Item? overrideHive;
+        [SerializeField] private string overrideHiveItem = string.Empty;
 
         /// <summary>
         ///     TODO.
@@ -113,7 +113,12 @@ namespace itolib.Behaviours.Enemies
         [Space(5.0f)]
         [Header("Events")]
         [Tooltip("")]
-        [SerializeField] private UnityEvent<GrabbableObject> onHiveSpawned;
+        [SerializeField] private UnityEvent<GrabbableObject> onHiveSpawned = new();
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private Item? overrideHive;
 
         /// <summary>
         ///     TODO.
@@ -283,13 +288,7 @@ namespace itolib.Behaviours.Enemies
         {
             SyncedHives = new();
 
-            if (NetworkManager.Singleton.IsHost)
-            {
-                if (overrideHive != null && overrideHive.spawnPrefab == null && !SearchContent.TryFindItem(out overrideHive, overrideHive.name, true))
-                {
-                    Plugin.Logger.LogWarning($"Could not find hive override '{overrideHive.name}' for HiveSpawner '{name}'!");
-                }
-            }
+            SwitchHiveOverride(overrideHiveItem);
 
             base.Awake();
         }
@@ -316,17 +315,18 @@ namespace itolib.Behaviours.Enemies
         /// <param name="hiveReplacement"></param>
         public void SwitchHiveOverride(Item? hiveReplacement)
         {
-            if (hiveReplacement == null)
+            SwitchHiveOverride((hiveReplacement != null) ? hiveReplacement.itemName : string.Empty);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="hiveReplacement"></param>
+        public void SwitchHiveOverride(string hiveReplacement)
+        {
+            if (!SearchContent.TryFindItem(out overrideHive, hiveReplacement, true))
             {
-                overrideHive = null;
-            }
-            else if (hiveReplacement.spawnPrefab != null)
-            {
-                overrideHive = hiveReplacement;
-            }
-            else if (!SearchContent.TryFindItem(out overrideHive, hiveReplacement.name, true))
-            {
-                Plugin.Logger.LogWarning($"Could not find hive replacement '{hiveReplacement.name}' for HiveSpawner '{name}'!");
+                Plugin.Logger.LogWarning($"Could not find hive replacement '{hiveReplacement}' for HiveSpawner '{name}'!");
             }
         }
 
