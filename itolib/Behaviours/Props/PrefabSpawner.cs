@@ -61,7 +61,7 @@ namespace itolib.Behaviours.Props
                 return registeredPrefab;
             }
 
-            if (CachedPrefabs.TryGetValue(networkPrefabName, out NetworkObject cachedPrefab))
+            if (CachedPrefabs.TryGetValue(networkPrefabName, out NetworkObject cachedPrefab) && cachedPrefab != null)
             {
                 return cachedPrefab;
             }
@@ -74,7 +74,7 @@ namespace itolib.Behaviours.Props
                 if (string.Equals(networkPrefabs[i].Prefab.name, networkPrefabName, StringComparison.Ordinal))
                 {
                     NetworkObject foundPrefab = networkPrefabs[i].Prefab.GetComponent<NetworkObject>();
-                    _ = CachedPrefabs.TryAdd(networkPrefabName, foundPrefab);
+                    CachedPrefabs[networkPrefabName] = foundPrefab;
 
                     return foundPrefab;
                 }
