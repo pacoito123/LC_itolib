@@ -96,7 +96,7 @@ namespace itolib.editor.Reserialize
                 return;
             }
 
-            List<string> validPaths = new(files.Length);
+            List<string> validPaths = [with(files.Length)];
 
             for (int i = 0; i < files.Length; i++)
             {

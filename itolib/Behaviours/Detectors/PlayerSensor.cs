@@ -83,7 +83,7 @@ namespace itolib.Behaviours.Detectors
 
             base.CheckObjectsInRegion(); // TODO: Do AABB checks on all players instead of overlap stuff.
 
-            List<ulong> playersFound = new(StartOfRound.Instance.allPlayerScripts.Length);
+            List<ulong> playersFound = [with(StartOfRound.Instance.allPlayerScripts.Length)];
             int playersFoundAlive = 0;
 
             for (int i = 0; i < objectsFound; i++)

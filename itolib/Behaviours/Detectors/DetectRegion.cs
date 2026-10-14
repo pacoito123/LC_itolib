@@ -151,8 +151,8 @@ namespace itolib.Behaviours.Detectors
                 overlapBuffer = new Collider[maxObjects];
             }
 
-            objectsInside = new(maxObjects);
-            objectsRemoved = new(maxObjects);
+            objectsInside = [with(maxObjects)];
+            objectsRemoved = [with(maxObjects)];
         }
 
         /// <summary>

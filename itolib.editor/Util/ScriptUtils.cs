@@ -32,7 +32,7 @@ namespace itolib.editor.Util
                 string scriptPath = AssetDatabase.GUIDToAssetPath(possibleScripts[i]);
 
                 UnityEngine.Object[] scriptObjects = AssetDatabase.LoadAllAssetsAtPath(scriptPath);
-                HashSet<MonoScript> uniqueMonoScripts = new(scriptObjects.Length);
+                HashSet<MonoScript> uniqueMonoScripts = [with(scriptObjects.Length)];
 
                 for (int j = 0; j < scriptObjects.Length; j++)
                 {

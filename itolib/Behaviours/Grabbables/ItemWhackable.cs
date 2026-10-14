@@ -238,7 +238,7 @@ namespace itolib.Behaviours.Grabbables
         private void Start()
         {
             hitBuffer = new RaycastHit[maxObjectHits];
-            hitEnemies = new(maxObjectHits);
+            hitEnemies = [with(maxObjectHits)];
 
             waitUntilReelingStop = new WaitUntil(() => !isHoldingButton || item == null || !item.isHeld);
         }
