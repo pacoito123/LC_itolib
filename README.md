@@ -88,6 +88,8 @@ A proper write-up and documentation for all components and their intended usage 
   * **AlertNotification:** Displays one or several notification alerts to players (e.g. 'new creature data' alert).
   * **AlertSignal:** Displays one or several Signal Translator message to players, which _can_ go over the vanilla letter limit.
   * **AlertToast:** Displays one or several toast alerts to players (e.g. 'dropship items missed' alert).
+* **NetworkedLinecast:** TODO.
+  * **LinecastPlacer:** TODO.
 * **BaseConditional:** An abstract list of overrides that depend on a specific condition to be applied.
   * **ContentConditional:** Performs searches of a specific type of content (e.g. an item, enemy, or even a plugin), and invokes an event if they exist and are loaded.
   * **DungeonConditional:** Performs a search of the current dungeon's name in a list of override entries to apply, and invokes the events of any that match.

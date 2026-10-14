@@ -5,30 +5,52 @@ using UnityEngine;
 namespace itolib.Structs
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a serialized position and rotation.
     /// </summary>
-    /// <param name="transform"></param>
     [Serializable]
-    public struct TransformInfo(Transform transform) : INetworkSerializable, IEquatable<TransformInfo>
+    public struct TransformInfo : INetworkSerializable, IEquatable<TransformInfo>
     {
         /// <summary>
-        ///     TODO.
+        ///     Serialized position value.
         /// </summary>
         [Header("Transform Info")]
-        [Tooltip("")]
-        public Vector3 position = transform.position;
+        [Tooltip("Serialized position value.")]
+        public Vector3 position = Vector3.zero;
 
         /// <summary>
-        ///     TODO.
+        ///     Serialized rotation value.
         /// </summary>
-        [Tooltip("")]
-        public Quaternion rotation = transform.rotation;
+        [Tooltip("Serialized rotation value.")]
+        public Quaternion rotation = Quaternion.identity;
 
         /// <summary>
-        ///     TODO.
+        ///     Create <c>TransformInfo</c> with a given <c>Transform</c>.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="serializer"></param>
+        /// <param name="transform"><c>Transform</c> to copy the position and rotation of.</param>
+        public TransformInfo(Transform transform)
+        {
+            if (transform != null)
+            {
+                transform.GetPositionAndRotation(out position, out rotation);
+            }
+        }
+
+        /// <summary>
+        ///     Create <c>TransformInfo</c> with a given position and rotation.
+        /// </summary>
+        /// <param name="position">Position to use.</param>
+        /// <param name="rotation">Rotation to use.</param>
+        public TransformInfo(Vector3 position = default, Quaternion rotation = default)
+        {
+            this.position = position;
+            this.rotation = rotation;
+        }
+
+        /// <summary>
+        ///     Provides bi-directional serialization to read and write the desired data to serialize this type.
+        /// </summary>
+        /// <typeparam name="T">Either <c>BufferSerializerReader</c> or <c>BufferSerializerWriter</c>, depending whether the serializer is in read mode or write mode.</typeparam>
+        /// <param name="serializer">The serializer to use to read and write the data.</param>
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             serializer.SerializeValue(ref position);
@@ -48,22 +70,22 @@ namespace itolib.Structs
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Overload equality operator (<c>==</c>).
         /// </summary>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
-        /// <returns></returns>
+        /// <param name="left">Left side <c>TransformInfo</c> to compare.</param>
+        /// <param name="right">Right side <c>TransformInfo</c> to compare.</param>
+        /// <returns>Whether the two sides are equal or not.</returns>
         public static bool operator ==(TransformInfo left, TransformInfo right)
         {
             return left.Equals(right);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Overload inequality operator (<c>!=</c>).
         /// </summary>
-        /// <param name="left"></param>
-        /// <param name="right"></param>
-        /// <returns></returns>
+        /// <param name="left">Left side <c>TransformInfo</c> to compare.</param>
+        /// <param name="right">Right side <c>TransformInfo</c> to compare.</param>
+        /// <returns>Whether the two sides are <i>not</i> equal or not.</returns>
         public static bool operator !=(TransformInfo left, TransformInfo right)
         {
             return !(left == right);
