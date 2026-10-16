@@ -18,6 +18,7 @@ WIP
   - Modifiers can target its own weights or the weights of other entries, and multiple different operations can be done at a time.
   - Allows for more dynamic weighted rolls (e.g. halving the weights of the entry that was selected and adding a flat value to another).
   - Also revised internal logic for `IWeightedScript` in general, should be a bit more reliable.
+- Added player drunkness state syncing to `PlayerHinderer`, if spawned.
 - Fixed `PlayerSeater` not resetting player animation state after sitting down (actually this time).
 
 ## [v0.9.3]

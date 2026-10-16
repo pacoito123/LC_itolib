@@ -195,6 +195,11 @@ namespace itolib.Behaviours.Effects
         private static AudioClip[]? defaultWaterSplashSmallSFX, defaultWaterSplashBigSFX;
 
         /// <summary>
+        ///     Time passed since the last player drunk state sync.
+        /// </summary>
+        private float syncDrunkStateTimer;
+
+        /// <summary>
         ///     Set player sinking <c>AnimationCurve</c> to (approximately) the vanilla default.
         /// </summary>
         protected override void Reset()
@@ -279,6 +284,20 @@ namespace itolib.Behaviours.Effects
                     // Increase player drunkness inertia.
                     attachedPlayer.drunknessInertia = Mathf.Clamp(attachedPlayer.drunknessInertia + (Time.deltaTime / 1.75f * drunknessSpeed), 0.1f, 3.0f);
                     attachedPlayer.increasingDrunknessThisFrame = true;
+
+                    if (IsSpawned)
+                    {
+                        // Sync drunk state every 0.5 seconds (arbitrary).
+                        if (syncDrunkStateTimer >= 0.5f)
+                        {
+                            SyncPlayerDrunknessRpc(attachedPlayer, attachedPlayer.drunkness, attachedPlayer.drunknessInertia, attachedPlayer.drunknessSpeed);
+                            syncDrunkStateTimer = 0.0f;
+                        }
+                        else
+                        {
+                            syncDrunkStateTimer += Time.deltaTime;
+                        }
+                    }
                 }
 
                 // Check if player should have their stamina drained.
@@ -631,6 +650,24 @@ namespace itolib.Behaviours.Effects
 
             // Subtract drain amount from the player's stamina.
             attachedPlayer.sprintMeter = Mathf.Clamp(attachedPlayer.sprintMeter - drainAmount, 0.0f, 1.0f);
+        }
+
+        /// <summary>
+        ///     Sync a player's drunk state with all other clients.
+        /// </summary>
+        /// <param name="playerReference">Network reference of the drunk player.</param>
+        /// <param name="drunkness">Drunkness value to sync.</param>
+        /// <param name="drunknessInertia">Drunkness inertia value to sync.</param>
+        /// <param name="drunknessSpeed">Drunkness speed value to sync.</param>
+        [Rpc(SendTo.NotMe, RequireOwnership = false)]
+        private void SyncPlayerDrunknessRpc(NetworkBehaviourReference playerReference, float drunkness, float drunknessInertia, float drunknessSpeed)
+        {
+            if (playerReference.TryGet(out PlayerControllerB player) && inebriatePlayer)
+            {
+                player.drunkness = drunkness;
+                player.drunknessInertia = drunknessInertia;
+                player.drunknessSpeed = drunknessSpeed;
+            }
         }
     }
 }
