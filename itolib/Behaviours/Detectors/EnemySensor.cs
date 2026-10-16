@@ -115,6 +115,8 @@ namespace itolib.Behaviours.Detectors
                 collider.excludeLayers = (collider.excludeLayers == 0) ? ~layerMask : (collider.excludeLayers & ~layerMask);
             } */
 
+            enemyFilters = [new() { enemyName = "Any", fuzzySearch = false, subtractOnExit = false }];
+
             base.Reset();
         }
 
@@ -319,7 +321,7 @@ namespace itolib.Behaviours.Detectors
         /// <param name="matchedBlacklist"></param>
         /// <param name="subtract"></param>
         /// <returns></returns>
-        private static bool CheckFilter(EnemyFilter filter, string enemyName, ref int enemyAmount, out bool matchedBlacklist, bool subtract = false)
+        internal static bool CheckFilter(EnemyFilter filter, string enemyName, ref int enemyAmount, out bool matchedBlacklist, bool subtract = false)
         {
             matchedBlacklist = false;
 

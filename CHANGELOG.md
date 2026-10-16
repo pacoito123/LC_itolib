@@ -11,6 +11,8 @@ WIP
 - Added curve field to `FearInducer` to scale angle tolerance required to trigger it depending on distance away from it.
 - Added methods to `FearInducer` for manually setting a player's fear level, regardless of line of sight.
 - Added methods to `AnimationParamSetter` for toggling, incrementing, and multiplying parameter values.
+- Added enemy filtering to `ExplodeEffect` for excluding certain enemies from being damaged by the explosion.
+  - Also improved reliability of targeting objects inside the damage region.
 - Added 'weight modifiers' to all `IWeightedScript`-inheriting scripts:
   - Weight modifiers allow changing weight values whenever an entry with modifiers defined is selected.
   - Modifiers can target its own weights or the weights of other entries, and multiple different operations can be done at a time.

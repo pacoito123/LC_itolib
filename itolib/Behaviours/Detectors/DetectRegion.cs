@@ -288,7 +288,7 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public virtual void CheckObjectsInRegion()
         {
-            if (regionCollider == null || overlapBuffer == null)
+            if (regionCollider == null || !regionCollider.enabled || overlapBuffer == null)
             {
                 return;
             }
