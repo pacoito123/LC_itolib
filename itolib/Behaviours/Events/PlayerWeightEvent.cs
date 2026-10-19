@@ -114,12 +114,10 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     Handle additional initialization.
         /// </summary>
-        protected override void Start()
+        private void Awake()
         {
             // Set initial trigger chance to base amount.
             addedChance = baseWeightChance;
-
-            base.Start();
         }
 
         /// <summary>

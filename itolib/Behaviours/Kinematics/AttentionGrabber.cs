@@ -90,12 +90,10 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     Handle additional initialization.
         /// </summary>
-        protected override void Start()
+        private void Awake()
         {
             // Cache grabber Transform.
             grabberTransform = transform;
-
-            base.Start();
         }
 
         /// <summary>

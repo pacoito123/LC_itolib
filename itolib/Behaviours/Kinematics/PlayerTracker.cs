@@ -88,7 +88,7 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     Handle additional initialization.
         /// </summary>
-        protected override void Start()
+        private void Awake()
         {
             // Cache tracker Transform.
             trackerTransform = transform;
@@ -97,8 +97,6 @@ namespace itolib.Behaviours.Kinematics
             {
                 pivotVelocities = new Quaternion[pivotsToRotate.Length];
             }
-
-            base.Start();
         }
 
         /// <summary>

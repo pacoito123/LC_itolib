@@ -79,7 +79,7 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     Handle additional initialization.
         /// </summary>
-        protected override void Start()
+        private void Awake()
         {
             // Try obtain player action that triggers this sensor.
             if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null
@@ -87,8 +87,6 @@ namespace itolib.Behaviours.Detectors
             {
                 Plugin.Logger.LogWarning($"Could not find movement action '{actionToTrigger}' defined for MovementSensor component in '{name}'!");
             }
-
-            base.Start();
         }
 
         /// <summary>

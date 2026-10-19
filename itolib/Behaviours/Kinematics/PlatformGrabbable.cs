@@ -99,7 +99,7 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     Handle additional initialization.
         /// </summary>
-        protected override void Start()
+        private void Awake()
         {
             // Cache platform Transform.
             platformTransform = transform;
@@ -109,8 +109,6 @@ namespace itolib.Behaviours.Kinematics
             {
                 Plugin.Logger.LogWarning($"Could not find movement action '{actionToHold}' defined for PlatformGrabbable component in '{name}'!");
             }
-
-            base.Start();
         }
 
         /// <summary>

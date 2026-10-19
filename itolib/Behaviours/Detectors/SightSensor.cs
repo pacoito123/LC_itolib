@@ -118,12 +118,10 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     Handle additional initialization.
         /// </summary>
-        protected override void Start()
+        private void Awake()
         {
             // Cache sensor Transform.
             sensorTransform = transform;
-
-            base.Start();
         }
 
         /// <summary>

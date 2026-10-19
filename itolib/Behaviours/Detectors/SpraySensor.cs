@@ -138,7 +138,7 @@ namespace itolib.Behaviours.Detectors
         }
 
         /// <summary>
-        ///     Handle additional initialization.
+        ///     Sort defined spray thresholds.
         /// </summary>
         protected override void Start()
         {
