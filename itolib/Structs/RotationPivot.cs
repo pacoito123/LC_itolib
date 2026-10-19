@@ -60,7 +60,7 @@ namespace itolib.Structs
         /// </summary>
         /// <param name="targetPosition">Position for the pivot to turn and look towards.</param>
         /// <param name="pivotVelocity">Current velocity for this pivot's rotation.</param>
-        public readonly void Apply(Vector3 targetPosition, ref Vector3 pivotVelocity)
+        public readonly void Apply(Vector3 targetPosition, ref Quaternion pivotVelocity)
         {
             if (pivot != null)
             {
