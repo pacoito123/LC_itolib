@@ -81,9 +81,14 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         private void Awake()
         {
+            // Check if local player exists.
+            if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null)
+            {
+                return;
+            }
+
             // Try obtain player action that triggers this sensor.
-            if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null
-                || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToTrigger))
+            if (string.IsNullOrEmpty(actionToTrigger) || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToTrigger))
             {
                 Plugin.Logger.LogWarning($"Could not find movement action '{actionToTrigger}' defined for MovementSensor component in '{name}'!");
             }
@@ -94,20 +99,23 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         private void OnEnable()
         {
+            // Set cooldown timer to detect movement immediately after being enabled. TODO: Maybe add field for this?
+            timer = triggerInterval;
+
+            // Check if local player exists.
+            if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null)
+            {
+                return;
+            }
+
             // Try obtain player action that triggers this sensor, if it happens to be missing.
-            if (playerAction == null && (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null
-                || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToTrigger)))
+            if (string.IsNullOrEmpty(actionToTrigger) || playerAction == null || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToTrigger))
             {
                 Plugin.Logger.LogWarning($"Could not find movement action '{actionToTrigger}' defined for MovementSensor component in '{name}'!");
 
                 // Disable script if the player action was not found.
                 enabled = false;
-
-                return;
             }
-
-            // Set cooldown timer to detect movement immediately after being enabled. TODO: Maybe add field for this?
-            timer = triggerInterval;
         }
 
         /// <summary>

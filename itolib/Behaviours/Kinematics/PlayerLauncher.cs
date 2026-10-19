@@ -157,11 +157,6 @@ namespace itolib.Behaviours.Kinematics
         [SerializeField] private bool clampAngle = true;
 
         /// <summary>
-        ///     Cached <c>Transform</c> of the currently attached player's model.
-        /// </summary>
-        private Transform playerModelTransform = null!;
-
-        /// <summary>
         ///     Time passed since the player was launched.
         /// </summary>
         private float launchTimer;
@@ -200,7 +195,7 @@ namespace itolib.Behaviours.Kinematics
             if (attachedPlayer != null)
             {
                 // Increment launch timer.
-                launchTimer += Time.deltaTime;
+                launchTimer += Time.smoothDeltaTime;
 
                 if (launchSpeed > 0.0f)
                 {
@@ -213,12 +208,12 @@ namespace itolib.Behaviours.Kinematics
                     if (clampAngle)
                     {
                         // Rotate player model towards the target angle, following the shortest path to get there (target angle values >360° wrap around).
-                        playerModelTransform.localRotation = Quaternion.Lerp(Quaternion.identity, Quaternion.Euler(targetAngle), launchTimer * rotationSpeed);
+                        attachedPlayer.meshContainer.localRotation = Quaternion.Lerp(Quaternion.identity, Quaternion.Euler(targetAngle), launchTimer * rotationSpeed);
                     }
                     else
                     {
                         // Rotate player model towards the target angle, following the full path to get there (target angle values >360° perform full spins).
-                        playerModelTransform.localEulerAngles = Vector3.Lerp(Vector3.zero, targetAngle, launchTimer * rotationSpeed);
+                        attachedPlayer.meshContainer.localEulerAngles = Vector3.Lerp(Vector3.zero, targetAngle, launchTimer * rotationSpeed);
                     }
                 }
 
@@ -246,9 +241,6 @@ namespace itolib.Behaviours.Kinematics
                 return;
             }
 
-            // Cache reference to the attaching player's model's transform.
-            playerModelTransform = player.meshContainer.transform;
-
             // Reset current player force, before all forces are applied. TODO: Add field for this.
             // player.externalForceAutoFade = Vector3.zero;
 
@@ -263,7 +255,7 @@ namespace itolib.Behaviours.Kinematics
                 // Add the current force to the cumulative target force, multiplied by the rotation of its specified source.
                 targetForce += launch.forceToApply * (launch.considerRotationFrom switch
                 {
-                    RotationSource.Player => playerModelTransform.rotation * launch.forceDirection,
+                    RotationSource.Player => attachedPlayer.meshContainer.rotation * launch.forceDirection,
                     RotationSource.Launcher => transform.rotation * launch.forceDirection,
                     RotationSource.Absolute or _ => launch.forceDirection
                 });
@@ -333,11 +325,8 @@ namespace itolib.Behaviours.Kinematics
                 // Reset launch timer.
                 launchTimer = 0.0f;
 
-                if (playerModelTransform != null)
-                {
-                    // Reset player model rotation.
-                    playerModelTransform.localRotation = Quaternion.identity;
-                }
+                // Reset player model rotation.
+                attachedPlayer.meshContainer.localRotation = Quaternion.identity;
 
                 // Enable player movement and camera.
                 attachedPlayer.disableMoveInput = false;

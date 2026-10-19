@@ -80,7 +80,7 @@ namespace itolib.Behaviours.Interactables
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Handle additional initialization.
         /// </summary>
         private void Awake()
         {
@@ -91,19 +91,40 @@ namespace itolib.Behaviours.Interactables
                     SetPlayerOnSeatRpc(player);
                 }
             });
+
+            // Check if local player exists.
+            if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null)
+            {
+                return;
+            }
+
+            // Try obtain player action required for the player to get back up.
+            if (string.IsNullOrEmpty(actionToExit) || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToExit))
+            {
+                Plugin.Logger.LogWarning($"Could not find movement action '{actionToExit}' defined for InteractSeatable component in '{name}'!");
+            }
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Attempt to find player action every time the script is enabled (if missing).
         /// </summary>
-        public new void Start()
+        private new void OnEnable()
         {
-            base.Start();
+            base.OnEnable();
 
-            // Try obtain player action required for the player to get back up.
-            if (!GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToExit))
+            // Check if local player exists.
+            if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null)
             {
-                Plugin.Logger.LogWarning($"Could not find movement action '{actionToExit}' defined for PlayerSeater component in '{name}'!");
+                return;
+            }
+
+            // Try obtain player action required for the player to get back up, if it happens to be missing.
+            if (string.IsNullOrEmpty(actionToExit) || playerAction == null || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToExit))
+            {
+                Plugin.Logger.LogWarning($"Could not find movement action '{actionToExit}' defined for InteractSeatable component in '{name}'!");
+
+                // Disable script if the player action was not found.
+                enabled = false;
             }
         }
 

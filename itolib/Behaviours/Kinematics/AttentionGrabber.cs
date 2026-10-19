@@ -106,14 +106,17 @@ namespace itolib.Behaviours.Kinematics
                 // Check if horizontal camera movement should be applied.
                 if (grabTimeHorizontal >= 0.0f)
                 {
-                    Quaternion targetRotation = Quaternion.LookRotation(grabberTransform.position - attachedPlayerTransform.position
-                        + (grabberTransform.rotation * targetOffset), Vector3.up);
+                    // Obtain forward direction between player and the grabber, with offset applied.
+                    Vector3 forward = grabberTransform.position - attachedPlayerTransform.position + (grabberTransform.rotation * targetOffset);
 
                     if (attachedPlayer.physicsParent != null)
                     {
-                        // Inverse rotation from physics parent.
-                        targetRotation *= Quaternion.Inverse(attachedPlayer.physicsParent.rotation);
+                        // Apply physics parent direction, if there is one.
+                        forward = attachedPlayer.physicsParent.InverseTransformDirection(forward);
                     }
+
+                    // Obtain target horizontal rotation.
+                    Quaternion targetRotation = Quaternion.LookRotation(forward, attachedPlayerTransform.up);
 
                     // Obtain angle on the y-axis to rotate to.
                     float lookAngle = Mathf.SmoothDampAngle(attachedPlayerTransform.localEulerAngles.y, targetRotation.eulerAngles.y,
@@ -130,8 +133,17 @@ namespace itolib.Behaviours.Kinematics
                 // Check if vertical camera movement should be applied.
                 if (grabTimeVertical >= 0.0f)
                 {
-                    Quaternion targetRotation = Quaternion.LookRotation(grabberTransform.position - attachedPlayerCameraTransform.position
-                        + (grabberTransform.rotation * targetOffset), Vector3.right);
+                    // Obtain forward direction between player camera and the grabber, with offset applied.
+                    Vector3 forward = grabberTransform.position - attachedPlayerCameraTransform.position + (grabberTransform.rotation * targetOffset);
+
+                    if (attachedPlayer.physicsParent != null)
+                    {
+                        // Apply physics parent direction, if there is one.
+                        forward = attachedPlayer.physicsParent.InverseTransformDirection(forward);
+                    }
+
+                    // Obtain target vertical rotation.
+                    Quaternion targetRotation = Quaternion.LookRotation(forward, attachedPlayerTransform.right);
 
                     // Obtain angle on the x-axis to rotate to.
                     float lookAngle = Mathf.SmoothDampAngle(attachedPlayerCameraTransform.localEulerAngles.x, targetRotation.eulerAngles.x,

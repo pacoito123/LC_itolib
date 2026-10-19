@@ -81,7 +81,7 @@ namespace itolib.Behaviours.Kinematics
         protected override bool AttachCondition(PlayerControllerB player)
         {
             return !player.isPlayerDead && (allowTwoHanded || !player.twoHanded)
-                && (actionToHold.Length == 0 || (playerAction != null && playerAction.IsPressed()));
+                && (string.IsNullOrEmpty(actionToHold) || (playerAction != null && playerAction.IsPressed()));
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace itolib.Behaviours.Kinematics
         protected override bool DetachCondition(PlayerControllerB player)
         {
             return player.isPlayerDead || (detachOnEnemyCollision && player.inAnimationWithEnemy) || (detachOnSpecialAnimation
-                && player.inSpecialInteractAnimation) || (actionToHold.Length > 0 && (playerAction == null || !playerAction.IsPressed()));
+                && player.inSpecialInteractAnimation) || (!string.IsNullOrEmpty(actionToHold) && (playerAction == null || !playerAction.IsPressed()));
         }
 
         /// <summary>
@@ -104,10 +104,43 @@ namespace itolib.Behaviours.Kinematics
             // Cache platform Transform.
             platformTransform = transform;
 
+            // Check if local player exists.
+            if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null)
+            {
+                return;
+            }
+
             // Try obtain player action required to be held.
-            if (actionToHold.Length > 0 && !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToHold))
+            if (!string.IsNullOrEmpty(actionToHold) && !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToHold))
             {
                 Plugin.Logger.LogWarning($"Could not find movement action '{actionToHold}' defined for PlatformGrabbable component in '{name}'!");
+            }
+        }
+
+        /// <summary>
+        ///     Attempt to find player action every time the script is enabled (if missing).
+        /// </summary>
+        private void OnEnable()
+        {
+            // Check if local player exists.
+            if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null)
+            {
+                return;
+            }
+
+            // Check if a player action is required to be held.
+            if (string.IsNullOrEmpty(actionToHold))
+            {
+                return;
+            }
+
+            // Try obtain player action required to be held, if it happens to be missing.
+            if (playerAction == null || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToHold))
+            {
+                Plugin.Logger.LogWarning($"Could not find movement action '{actionToHold}' defined for PlatformGrabbable component in '{name}'!");
+
+                // Disable script if the player action was not found.
+                enabled = false;
             }
         }
 
@@ -121,7 +154,7 @@ namespace itolib.Behaviours.Kinematics
             {
                 // Move attached player to the platform's position, with the configured offset applied.
                 attachedPlayerTransform.position = grabSpeed == 0.0f ? platformTransform.position + playerOffset
-                    : Vector3.Lerp(attachedPlayerTransform.position, platformTransform.position + playerOffset, Time.deltaTime * grabSpeed);
+                    : Vector3.Lerp(attachedPlayerTransform.position, platformTransform.position + playerOffset, Time.smoothDeltaTime * grabSpeed);
 
                 // Reset attached player's fall time to avoid instant death upon colliding with another (solid) object.
                 attachedPlayer.ResetFallGravity();
