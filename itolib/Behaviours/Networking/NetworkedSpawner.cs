@@ -168,7 +168,7 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         public virtual void PerformSpawn()
         {
-            if (!NetworkManager.Singleton.IsHost)
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsHost)
             {
                 return;
             }
@@ -319,7 +319,7 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         protected virtual void Awake()
         {
-            if (!NetworkManager.Singleton.IsHost)
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsHost)
             {
                 return;
             }
