@@ -1,4 +1,3 @@
-using itolib.Interfaces;
 using itolib.Structs;
 using itolib.Util;
 using Unity.Netcode;
@@ -9,7 +8,7 @@ namespace itolib.Behaviours.Props
     /// <summary>
     ///     TODO.
     /// </summary>
-    public class GiftSpawner : ScrapSpawner, IWeightedScript<ScrapWeightEntry>
+    public class GiftSpawner : ScrapSpawner
     {
         /// <summary>
         ///     TODO.

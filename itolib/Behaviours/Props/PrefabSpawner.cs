@@ -89,9 +89,8 @@ namespace itolib.Behaviours.Props
         /// <returns></returns>
         protected override Transform? GetParentOverride()
         {
-            return parentTransform != null ? parentTransform
-                : (RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null
-                    ? RoundManager.Instance.mapPropsContainer.transform : null);
+            return (parentTransform != null) ? parentTransform
+                : ((RoundManager.Instance != null && RoundManager.Instance.mapPropsContainer != null) ? RoundManager.Instance.mapPropsContainer.transform : null);
         }
 
         /// <summary>
@@ -159,9 +158,10 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnNetworkSpawn()
+        /// <param name="networkManager"></param>
+        public override void OnNetworkPreSpawn(ref NetworkManager networkManager)
         {
-            base.OnNetworkSpawn();
+            base.OnNetworkPreSpawn(ref networkManager);
 
             SyncedPrefabs.OnListChanged += changeEvent =>
             {

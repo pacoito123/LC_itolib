@@ -64,7 +64,12 @@ namespace itolib.Interfaces
         {
             if (!InitializedWeights)
             {
-                AddWeights(WeightedEntries);
+                T[]? entries = WeightedEntries; // Little bit goofy...
+                WeightedEntries = null;
+
+                AddWeights(entries);
+
+                InitializedWeights = true;
             }
         }
 
@@ -78,8 +83,6 @@ namespace itolib.Interfaces
 
             WeightedEntries = (WeightedEntries?.Length > 0) ? [.. WeightedEntries, entry] : [entry];
             CurrentWeights = (CurrentWeights?.Length > 0) ? [.. CurrentWeights, entry.Weight] : [entry.Weight];
-
-            InitializedWeights = true;
         }
 
         /// <summary>
@@ -106,8 +109,6 @@ namespace itolib.Interfaces
 
             WeightedEntries = (WeightedEntries?.Length > 0) ? [.. WeightedEntries, .. entries] : entries;
             CurrentWeights = (CurrentWeights?.Length > 0) ? [.. CurrentWeights, .. currentWeights] : currentWeights;
-
-            InitializedWeights = true;
         }
 
         /// <summary>
@@ -154,9 +155,16 @@ namespace itolib.Interfaces
         {
             weightEntry = default;
 
-            if (WeightedEntries == null || weightIndex < 0 || weightIndex >= WeightedEntries.Length)
+            if (WeightedEntries == null || WeightedEntries.Length == 0)
             {
                 Plugin.Logger.LogWarning($"No weights defined for IWeightedScript '{GetType()}'!");
+
+                return false;
+            }
+
+            if (weightIndex < 0 || weightIndex >= WeightedEntries.Length)
+            {
+                Plugin.Logger.LogWarning($"Index '{weightIndex}' out of bounds for IWeightedScript '{GetType()}'!");
 
                 return false;
             }
@@ -207,21 +215,26 @@ namespace itolib.Interfaces
             weightIndex = -1;
             weightEntry = default;
 
-            if (CurrentWeights == null || CurrentWeights.Length == 0 || TotalWeight <= 0)
+            if (CurrentWeights == null || CurrentWeights.Length == 0)
             {
                 Plugin.Logger.LogWarning($"No weights defined for IWeightedScript '{GetType()}'!");
 
                 return false;
             }
 
-            int randomWeight = (random != null) ? random.Next(0, TotalWeight + 1)
-                : UnityEngine.Random.RandomRangeInt(0, TotalWeight + 1);
+            if (TotalWeight <= 0)
+            {
+                return false;
+            }
+
+            int randomWeight = (random != null) ? random.Next(1, TotalWeight + 1)
+                : UnityEngine.Random.RandomRangeInt(1, TotalWeight + 1);
 
             for (int i = 0; i < CurrentWeights.Length; i++)
             {
                 int weight = CurrentWeights[i];
 
-                if (randomWeight < weight)
+                if (randomWeight <= weight)
                 {
                     weightIndex = i;
 

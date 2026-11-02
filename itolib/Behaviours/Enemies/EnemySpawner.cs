@@ -139,9 +139,10 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     Set relevant <c>EnemyAINestSpawnObject</c> values to be synced when spawned.
         /// </summary>
-        public override void OnNetworkSpawn()
+        /// <param name="networkManager"></param>
+        public override void OnNetworkPreSpawn(ref NetworkManager networkManager)
         {
-            base.OnNetworkSpawn();
+            base.OnNetworkPreSpawn(ref networkManager);
 
             SyncedNests.OnListChanged += changeEvent =>
             {

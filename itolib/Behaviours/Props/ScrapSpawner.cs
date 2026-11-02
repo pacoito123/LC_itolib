@@ -208,7 +208,7 @@ namespace itolib.Behaviours.Props
         /// <inheritdoc/>
         protected override Transform? GetParentOverride()
         {
-            return RoundManager.Instance != null ? RoundManager.Instance.spawnedScrapContainer : null;
+            return (RoundManager.Instance != null) ? RoundManager.Instance.spawnedScrapContainer : null;
         }
 
         /// <inheritdoc/>
@@ -326,9 +326,10 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     Set relevant item values to be synced when spawned.
         /// </summary>
-        public override void OnNetworkSpawn()
+        /// <param name="networkManager"></param>
+        public override void OnNetworkPreSpawn(ref NetworkManager networkManager)
         {
-            base.OnNetworkSpawn();
+            base.OnNetworkPreSpawn(ref networkManager);
 
             SyncedItems.OnListChanged += changeEvent =>
             {

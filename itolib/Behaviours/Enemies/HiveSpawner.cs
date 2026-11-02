@@ -296,9 +296,10 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
-        public override void OnNetworkSpawn()
+        /// <param name="networkManager"></param>
+        public override void OnNetworkPreSpawn(ref NetworkManager networkManager)
         {
-            base.OnNetworkSpawn();
+            base.OnNetworkPreSpawn(ref networkManager);
 
             SyncedHives.OnListChanged += changeEvent =>
             {

@@ -366,7 +366,10 @@ namespace itolib.Behaviours.Networking
         {
             ActivationSelf.UnsubscribeFromEvents();
 
-            RoundManagerPatches.OnSpawnScrapInLevel -= AddAINodes;
+            if (includeInsideAINodes || includeOutsideAINodes)
+            {
+                RoundManagerPatches.OnSpawnScrapInLevel -= AddAINodes;
+            }
 
             base.OnDestroy();
         }
@@ -378,33 +381,30 @@ namespace itolib.Behaviours.Networking
         {
             RoundManagerPatches.OnSpawnScrapInLevel -= AddAINodes;
 
-            if (RoundManager.Instance != null)
+            if (includeInsideAINodes)
             {
-                if (includeInsideAINodes)
-                {
-                    GameObject[]? insideAINodes = RoundManager.Instance.insideAINodes;
+                GameObject[]? insideAINodes = (RoundManager.Instance != null) ? RoundManager.Instance.insideAINodes : null;
 
-                    for (int i = 0; i < insideAINodes?.Length; i++)
+                for (int i = 0; i < insideAINodes?.Length; i++)
+                {
+                    if (insideAINodes[i] != null)
                     {
-                        if (insideAINodes[i] != null)
-                        {
-                            spawnLocations ??= [];
-                            spawnLocations.Add(insideAINodes[i].transform);
-                        }
+                        spawnLocations ??= [];
+                        spawnLocations.Add(insideAINodes[i].transform);
                     }
                 }
+            }
 
-                if (includeOutsideAINodes)
+            if (includeOutsideAINodes)
+            {
+                GameObject[]? outsideAINodes = (RoundManager.Instance != null) ? RoundManager.Instance.outsideAINodes : null;
+
+                for (int i = 0; i < outsideAINodes?.Length; i++)
                 {
-                    GameObject[]? outsideAINodes = RoundManager.Instance.outsideAINodes;
-
-                    for (int i = 0; i < outsideAINodes?.Length; i++)
+                    if (outsideAINodes[i] != null)
                     {
-                        if (outsideAINodes[i] != null)
-                        {
-                            spawnLocations ??= [];
-                            spawnLocations.Add(outsideAINodes[i].transform);
-                        }
+                        spawnLocations ??= [];
+                        spawnLocations.Add(outsideAINodes[i].transform);
                     }
                 }
             }
