@@ -22,12 +22,26 @@ namespace itolib.Patches
         [HarmonyPrefix]
         private static void RadiationWarningHUDPre()
         {
-            OnRadiationWarningHUD?.Invoke();
+            try
+            {
+                OnRadiationWarningHUD?.Invoke();
+            }
+            catch (Exception e)
+            {
+                Plugin.Logger.LogError($"Exception during 'RadiationWarningHUD' event: {e}");
+            }
         }
 
         internal static void InvokeApparatusPullEvent(LungProp apparatus)
         {
-            OnApparatusPulled?.Invoke(apparatus);
+            try
+            {
+                OnApparatusPulled?.Invoke(apparatus);
+            }
+            catch (Exception e)
+            {
+                Plugin.Logger.LogError($"Exception during 'ApparatusPulled' event: {e}");
+            }
         }
     }
 }

@@ -8,7 +8,7 @@ namespace itolib.Compatibility
     /// <summary>
     ///     Compatibility for PizzaTowerEscapeMusic.
     /// </summary>
-    internal sealed class PizzaTowerEscapeMusicCompatibility
+    internal static class PizzaTowerEscapeMusicCompatibility
     {
         /// <summary>
         ///     Whether PizzaTowerEscapeMusic is present in the BepInEx Chainloader or not.

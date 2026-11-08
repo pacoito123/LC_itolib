@@ -72,6 +72,16 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
+        ///     Unsubscribe from any events that may have been subscribed to.
+        /// </summary>
+        public override void OnDestroy()
+        {
+            ActivationSelf.UnsubscribeFromEvents();
+
+            base.OnDestroy();
+        }
+
+        /// <summary>
         ///     TODO.
         /// </summary>
         public void ToggleFromServer()

@@ -1,4 +1,4 @@
-using BepInEx;
+/* using BepInEx;
 using BepInEx.Configuration;
 using itolib.Interfaces;
 using System;
@@ -97,4 +97,4 @@ namespace itolib.ScriptableObjects
             Config.Save();
         }
     }
-}
+} */

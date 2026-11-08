@@ -112,6 +112,15 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     TODO.
         /// </summary>
+        /// <returns></returns>
+        public int GetHealth()
+        {
+            return health;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="health"></param>
         public void IncrementHealth(int health)
         {

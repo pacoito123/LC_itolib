@@ -7,7 +7,7 @@ namespace itolib.Compatibility
     /// <summary>
     ///     Compatibility between WeatherConditional and WeatherTweaks.
     /// </summary>
-    internal sealed class WeatherTweaksCompatibility
+    internal static class WeatherTweaksCompatibility
     {
         /// <summary>
         ///     Whether WeatherTweaks is present in the BepInEx Chainloader or not.

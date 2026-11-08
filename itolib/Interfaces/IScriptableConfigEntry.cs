@@ -1,4 +1,4 @@
-namespace itolib.Interfaces
+/* namespace itolib.Interfaces
 {
     /// <summary>
     ///     TODO.
@@ -26,4 +26,4 @@ namespace itolib.Interfaces
         /// </summary>
         string Description { get; set; }
     }
-}
+} */

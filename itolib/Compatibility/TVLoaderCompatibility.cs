@@ -1,4 +1,3 @@
-using HarmonyLib;
 using System.Runtime.CompilerServices;
 using TVLoader.Patches;
 using TVLoader.Utils;
@@ -9,8 +8,7 @@ namespace itolib.Compatibility
     /// <summary>
     ///     Compatibility between DungeonTelevision and TVLoader.
     /// </summary>
-    [HarmonyPatch]
-    internal sealed class TVLoaderCompatibility
+    internal static class TVLoaderCompatibility
     {
         /// <summary>
         ///     Whether TVLoader is present in the BepInEx Chainloader or not.

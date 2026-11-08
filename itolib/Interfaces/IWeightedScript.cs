@@ -93,8 +93,6 @@ namespace itolib.Interfaces
         {
             if (entries == null || entries.Length == 0)
             {
-                Plugin.Logger.LogWarning($"Tried to add empty or null weights array to IWeightedScript '{GetType()}'!");
-
                 return;
             }
 

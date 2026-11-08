@@ -8,6 +8,7 @@ namespace itolib.Patches
         private static bool firstLoad = true;
 
         [HarmonyPatch(typeof(MenuManager), nameof(MenuManager.Start))]
+        [HarmonyWrapSafe]
         [HarmonyPrefix]
         private static void MenuManagerStartPre()
         {

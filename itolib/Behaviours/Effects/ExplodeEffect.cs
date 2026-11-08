@@ -149,7 +149,7 @@ namespace itolib.Behaviours.Effects
         /// <inheritdoc/>
 		public override void CheckObjectsInRegion()
         {
-            if (regionCollider == null)
+            if (regionCollider == null || !regionCollider.enabled || !regionCollider.gameObject.activeInHierarchy)
             {
                 return;
             }

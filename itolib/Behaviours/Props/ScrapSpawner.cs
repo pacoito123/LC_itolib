@@ -299,11 +299,6 @@ namespace itolib.Behaviours.Props
         {
             SyncedItems = new();
 
-            if (!WeightedSelf.InitializedWeights)
-            {
-                WeightedSelf.InitializeWeights();
-            }
-
 #pragma warning disable CS0618 // Type or member is obsolete.
             if (useMoonScrapSpawns || addMoonScrapSpawns)
 #pragma warning restore CS0618 // Type or member is obsolete.
@@ -315,9 +310,17 @@ namespace itolib.Behaviours.Props
                     if (spawnableScrap?.Count > 0)
                     {
                         ScrapWeightEntry[] scrapEntries = [.. spawnableScrap.ConvertAll(static itemWithRarity => new ScrapWeightEntry(itemWithRarity))];
-                        WeightedSelf.AddWeights(scrapEntries);
+                        AddWeightEntries(scrapEntries);
                     }
                 }
+            }
+            else if (WeightedEntries?.Length > 0)
+            {
+                WeightedSelf.InitializeWeights();
+            }
+            else
+            {
+                Plugin.Logger.LogWarning($"No weights defined for ScrapSpawner '{name}'!");
             }
 
             base.Awake();

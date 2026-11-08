@@ -119,7 +119,14 @@ namespace itolib.Behaviours.Events
         /// </summary>
         private void Awake()
         {
-            WeightedSelf.InitializeWeights();
+            if (WeightedEntries?.Length > 0)
+            {
+                WeightedSelf.InitializeWeights();
+            }
+            else
+            {
+                Plugin.Logger.LogWarning($"No weights defined for WeightedEvent '{name}'!");
+            }
         }
 
         /// <summary>

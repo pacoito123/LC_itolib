@@ -128,9 +128,16 @@ namespace itolib.Behaviours.Enemies
         {
             SyncedNests = new();
 
-            if (!WeightedSelf.InitializedWeights)
+            if (string.IsNullOrEmpty(enemyToSpawn))
             {
-                WeightedSelf.InitializeWeights();
+                if (WeightedEntries?.Length > 0)
+                {
+                    WeightedSelf.InitializeWeights();
+                }
+                else
+                {
+                    Plugin.Logger.LogWarning($"No weights defined for EnemySpawner '{name}'!");
+                }
             }
 
             base.Awake();

@@ -8,8 +8,7 @@ namespace itolib.Compatibility
     /// <summary>
     ///     Compatibility between <c>WeatherConditional</c> and <c>CrowdControl</c>.
     /// </summary>
-    [HarmonyPatch]
-    internal sealed class CrowdControlCompatibility
+    internal static class CrowdControlCompatibility
     {
         /// <summary>
         ///     Whether <c>CrowdControl</c> is present in the BepInEx Chainloader or not.
@@ -36,7 +35,15 @@ namespace itolib.Compatibility
         {
             if (TimeOfDay.Instance != null && TimeOfDay.Instance.currentLevel != null && TimeOfDay.Instance.currentLevel.currentWeather != CurrentWeather)
             {
-                OnCCWeatherChanged?.Invoke(CurrentWeather, TimeOfDay.Instance.currentLevel.currentWeather);
+                try
+                {
+                    OnCCWeatherChanged?.Invoke(CurrentWeather, TimeOfDay.Instance.currentLevel.currentWeather);
+                }
+                catch (Exception e)
+                {
+                    Plugin.Logger.LogError($"Exception during 'CCWeatherChanged' event: {e}");
+                }
+
                 CurrentWeather = TimeOfDay.Instance.currentLevel.currentWeather;
             }
         }

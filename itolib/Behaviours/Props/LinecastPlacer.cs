@@ -14,9 +14,8 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     Whether to move this object to the point intersecting with the <c>Linecast</c> or not, if there is one.
         /// </summary>
-        [Space(3.0f)]
         [Header("Linecast Placer")]
-        [Space(5.0f)]
+        [Space(3.0f)]
         [Header("Hit Position")]
         [Tooltip("Whether to move this object to the point intersecting with the Linecast or not, if there is one.")]
         [SerializeField] private bool moveToHit = true;
@@ -103,7 +102,7 @@ namespace itolib.Behaviours.Props
 
             // Obtain hit point position and hit normal rotation, with offsets applied.
             Vector3 hitPosition = moveToHit ? hit.point : previousInfo.position;
-            Quaternion hitRotation = alignToHit ? previousInfo.rotation * Quaternion.FromToRotation(placerTransform.up, hit.normal) : previousInfo.rotation;
+            Quaternion hitRotation = alignToHit ? Quaternion.FromToRotation(placerTransform.up, hit.normal) : previousInfo.rotation;
 
             // Apply position and rotation offsets.
             hitPosition += previousInfo.rotation * hitPositionOffset;

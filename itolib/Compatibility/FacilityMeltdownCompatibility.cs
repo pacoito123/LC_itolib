@@ -16,8 +16,7 @@ namespace itolib.Compatibility
     /// <summary>
     ///     Compatibility with <c>FacilityMeltdown</c> for <c>EventfulApparatus</c> and <c>ApparatusEvent</c>.
     /// </summary>
-    [HarmonyPatch]
-    internal sealed class FacilityMeltdownCompatibility
+    internal static class FacilityMeltdownCompatibility
     {
         /// <summary>
         ///     Whether <c>FacilityMeltdown</c> is present in the BepInEx Chainloader or not.
@@ -116,13 +115,20 @@ namespace itolib.Compatibility
 
         private static void OnMeltdownLightsSwitch(bool on)
         {
-            if (on)
+            try
             {
-                OnMeltdownLightsOn?.Invoke();
+                if (on)
+                {
+                    OnMeltdownLightsOn?.Invoke();
+                }
+                else
+                {
+                    OnMeltdownLightsOff?.Invoke();
+                }
             }
-            else
+            catch (Exception e)
             {
-                OnMeltdownLightsOff?.Invoke();
+                Plugin.Logger.LogError($"Exception during 'MeltdownLights{(on ? "On" : "Off")}' event: {e}");
             }
         }
     }

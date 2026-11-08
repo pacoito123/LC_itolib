@@ -9,8 +9,7 @@ namespace itolib.Compatibility
     /// <summary>
     ///     Compatibility between <c>WeatherConditional</c> and <c>WeatherRegistry</c>.
     /// </summary>
-    [HarmonyPatch]
-    internal sealed class WeatherRegistryCompatibility
+    internal static class WeatherRegistryCompatibility
     {
         /// <summary>
         ///     Whether <c>WeatherRegistry</c> is present in the BepInEx Chainloader or not.
@@ -33,7 +32,14 @@ namespace itolib.Compatibility
         [HarmonyPostfix]
         internal static void ApplyWeatherEffectsPost(LevelWeatherType[] weatherType)
         {
-            OnWeatherEffectsApply?.Invoke(weatherType);
+            try
+            {
+                OnWeatherEffectsApply?.Invoke(weatherType);
+            }
+            catch (Exception e)
+            {
+                Plugin.Logger.LogError($"Exception during 'WeatherEffectsApply' event: {e}");
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]

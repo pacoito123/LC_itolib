@@ -29,7 +29,14 @@ namespace itolib.Patches
                     return;
                 }
 
-                OnEntranceTeleportUsed?.Invoke(player, !__instance.isEntranceToBuilding);
+                try
+                {
+                    OnEntranceTeleportUsed?.Invoke(player, !__instance.isEntranceToBuilding);
+                }
+                catch (Exception e)
+                {
+                    Plugin.Logger.LogError($"Exception during 'EntranceTeleportUsed' event: {e}");
+                }
             }
         }
     }

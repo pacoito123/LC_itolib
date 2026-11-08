@@ -44,7 +44,14 @@ namespace itolib.Behaviours.Animations
         {
             if (eventIndex < eventEntries?.Length)
             {
-                eventEntries[eventIndex].onEventCalled.Invoke();
+                try
+                {
+                    eventEntries[eventIndex].onEventCalled.Invoke();
+                }
+                catch (Exception e)
+                {
+                    Plugin.Logger.LogError($"Exception during MultiAnimationEvent in '{name}': {e}");
+                }
             }
         }
 
