@@ -16,6 +16,11 @@ namespace itolib.Enums
         ///     Perform a multiplicative operation for this modifier.
         /// </summary>
         [Tooltip("Perform a multiplicative operation for this modifier.")]
-        Multiplicative
+        Multiplicative,
+        /// <summary>
+        ///     Perform a divisive operation for this modifier.
+        /// </summary>
+        [Tooltip("Perform a divisive operation for this modifier.")]
+        Divisive
     }
 }

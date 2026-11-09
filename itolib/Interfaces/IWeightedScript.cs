@@ -191,6 +191,7 @@ namespace itolib.Interfaces
                     {
                         ModifierType.Additive => weight + modifier.modifierValue,
                         ModifierType.Multiplicative => weight * Math.Abs(modifier.modifierValue),
+                        ModifierType.Divisive => weight / Math.Abs(modifier.modifierValue),
                         _ => 0.0f,
                     };
 

@@ -6,6 +6,7 @@ WIP
 
 - Added `SightSensor`, for detecting a player's line of sight towards an object.
 - Added `AttentionGrabber`, for forcing a player's camera to stare at an object.
+- Added `GlobalPropScaler`, for adjusting `GlobalProp` count range values using the current dungeon size multiplier.
 - Made `PlayerLauncher` dropping items no longer use `PlayerControllerB.DropAllHeldItemsAndSyncNonexact()`, in favor of the exact one.
 - Added `ShotgunSensor` compatibility for [BeanieLib](https://thunderstore.io/c/lethal-company/p/Beaniebe/Beanie_Lib)'s `CustomShotgun` script.
 - Added curve field to `FearInducer` to scale angle tolerance required to trigger it depending on distance away from it.
