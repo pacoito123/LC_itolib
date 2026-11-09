@@ -80,7 +80,8 @@ namespace itolib.Behaviours.Networking
             {
                 damage = force,
                 direction = hitDirection,
-                hitID = Enum.IsDefined(typeof(WeaponHitID), (sbyte)hitID) ? (WeaponHitID)hitID : WeaponHitID.None,
+                hitID = Enum.IsDefined(typeof(WeaponHitID), (sbyte)hitID) ? (WeaponHitID)hitID : WeaponHitID.Custom,
+                customHitID = hitID,
                 hitByPlayer = playerWhoHit != null
             };
 
@@ -154,7 +155,7 @@ namespace itolib.Behaviours.Networking
                         case WeaponHitID.Knife:
                             onKnifeHitLocal.Invoke(player);
                             break;
-                        case WeaponHitID.None:
+                        case WeaponHitID.Custom:
                         default:
                             break;
                     }
@@ -170,7 +171,7 @@ namespace itolib.Behaviours.Networking
                     case WeaponHitID.Knife:
                         onKnifeHit.Invoke(player);
                         break;
-                    case WeaponHitID.None:
+                    case WeaponHitID.Custom:
                     default:
                         break;
                 }

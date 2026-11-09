@@ -54,6 +54,13 @@ namespace itolib.Behaviours.Grabbables
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        [Min(-1)]
+        [SerializeField] private int customHitID = -1;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [Header("Audio")]
         [Tooltip("")]
         [SerializeField] private bool playHitSFX = true;
@@ -411,7 +418,9 @@ namespace itolib.Behaviours.Grabbables
                         playerHit = true;
                     }
 
-                    if (hittable.Hit(weaponDamage, gameplayCamera.forward, lastHeldBy, playHitSFX, (int)hitID)
+                    int hitID = (this.hitID is WeaponHitID.Custom) ? customHitID : (int)this.hitID;
+
+                    if (hittable.Hit(weaponDamage, gameplayCamera.forward, lastHeldBy, playHitSFX, hitID)
                         && enemyAICollision != null)
                     {
                         hitEnemies?.Add(enemyAICollision.mainScript);

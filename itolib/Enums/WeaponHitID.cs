@@ -18,9 +18,9 @@ namespace itolib.Enums
         [Tooltip("ID for a hit dealt by a Knife.")]
         Knife = 5,
         /// <summary>
-        ///     Invalid or missing ID.
+        ///     Custom hit ID, defined by another field.
         /// </summary>
-        [Tooltip("Invalid or missing ID.")]
-        None = -1,
+        [Tooltip("Custom hit ID, defined by another field.")]
+        Custom = -1
     }
 }

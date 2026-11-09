@@ -33,6 +33,13 @@ namespace itolib.Structs
         /// <summary>
         ///     TODO.
         /// </summary>
+        [Tooltip("")]
+        [Min(-1)]
+        public int customHitID = -1;
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         [HideInInspector]
         public bool hitByPlayer = false;
 
@@ -52,6 +59,12 @@ namespace itolib.Structs
             serializer.SerializeValue(ref damage);
             serializer.SerializeValue(ref direction);
             serializer.SerializeValue(ref hitID);
+
+            if (hitID is WeaponHitID.Custom)
+            {
+                serializer.SerializeValue(ref customHitID);
+            }
+
             serializer.SerializeValue(ref hitByPlayer);
 
             if (hitByPlayer)
