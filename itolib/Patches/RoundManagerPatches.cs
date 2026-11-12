@@ -1,13 +1,30 @@
 using HarmonyLib;
 using System;
+using UnityEngine;
 
 namespace itolib.Patches
 {
     internal static class RoundManagerPatches
     {
+        internal static event Action<GameObject[]>? OnGetOutsideAINodes;
+
         internal static event Action? OnSpawnSyncedProps;
         internal static event Action? OnSpawnScrapInLevel;
         internal static event Action? OnSpawnMapObjects;
+
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.GetOutsideAINodes))]
+        [HarmonyPostfix]
+        private static void RoundManagerGetOutsideAINodesPost(GameObject[] ___outsideAINodes)
+        {
+            try
+            {
+                OnGetOutsideAINodes?.Invoke(___outsideAINodes);
+            }
+            catch (Exception e)
+            {
+                Plugin.Logger.LogError($"Exception during 'GetOutsideAINodes': {e}");
+            }
+        }
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SpawnSyncedProps))]
         [HarmonyPrefix]
