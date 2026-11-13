@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 namespace itolib.Behaviours.Networking
 {
@@ -35,6 +36,16 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         public List<T?> PrefabInstances { get; private set; } = [];
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public bool HasInsideAINodes { get; private set; }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        public bool HasOutsideAINodes { get; private set; }
 
         /// <summary>
         ///     TODO.
@@ -184,6 +195,9 @@ namespace itolib.Behaviours.Networking
 
             _ = spawnLocations?.RemoveAll(spawnLocation => spawnLocation == null || (skipInactive && !spawnLocation.gameObject.activeInHierarchy));
             _ = spawnAreas?.RemoveAll(spawnArea => spawnArea == null || (skipInactive && !spawnArea.gameObject.activeInHierarchy));
+
+            AddOutsideAINodes();
+            AddInsideAINodes();
 
             if (spawnLocations?.Count > 0)
             {
@@ -351,9 +365,31 @@ namespace itolib.Behaviours.Networking
                 spawnLocations.AddRange(childLocations);
             }
 
-            if (includeInsideAINodes || includeOutsideAINodes)
+            if (RoundManager.Instance != null)
             {
-                RoundManagerPatches.OnSpawnScrapInLevel += AddAINodes;
+                if (includeInsideAINodes && !HasInsideAINodes)
+                {
+                    if (!RoundManager.Instance.dungeonCompletedGenerating)
+                    {
+                        RoundManager.Instance.OnFinishedGeneratingDungeon += AddInsideAINodes;
+                    }
+                    else
+                    {
+                        AddInsideAINodes();
+                    }
+                }
+
+                if (includeOutsideAINodes && !HasOutsideAINodes)
+                {
+                    if (RoundManager.Instance.outsideAINodes == null || RoundManager.Instance.outsideAINodes.Length == 0 || RoundManager.Instance.outsideAINodes[0] == null)
+                    {
+                        RoundManagerPatches.OnGetOutsideAINodes += AddOutsideAINodes;
+                    }
+                    else
+                    {
+                        AddOutsideAINodes();
+                    }
+                }
             }
 
             ActivationSelf.Initialize();
@@ -366,10 +402,12 @@ namespace itolib.Behaviours.Networking
         {
             ActivationSelf.UnsubscribeFromEvents();
 
-            if (includeInsideAINodes || includeOutsideAINodes)
+            if (RoundManager.Instance != null)
             {
-                RoundManagerPatches.OnSpawnScrapInLevel -= AddAINodes;
+                RoundManager.Instance.OnFinishedGeneratingDungeon -= AddInsideAINodes;
             }
+
+            RoundManagerPatches.OnGetOutsideAINodes -= AddOutsideAINodes;
 
             base.OnDestroy();
         }
@@ -377,13 +415,24 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
-        public void AddAINodes()
-        {
-            RoundManagerPatches.OnSpawnScrapInLevel -= AddAINodes;
+        [System.Obsolete("No longer needed.")]
+        internal void AddAINodes() { }
 
-            if (includeInsideAINodes)
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void AddInsideAINodes()
+        {
+            if (RoundManager.Instance == null)
             {
-                GameObject[]? insideAINodes = (RoundManager.Instance != null) ? RoundManager.Instance.insideAINodes : null;
+                return;
+            }
+
+            RoundManager.Instance.OnFinishedGeneratingDungeon -= AddInsideAINodes;
+
+            if (includeInsideAINodes && !HasInsideAINodes)
+            {
+                GameObject[]? insideAINodes = RoundManager.Instance.insideAINodes;
 
                 for (int i = 0; i < insideAINodes?.Length; i++)
                 {
@@ -393,12 +442,35 @@ namespace itolib.Behaviours.Networking
                         spawnLocations.Add(insideAINodes[i].transform);
                     }
                 }
+
+                SceneManager.sceneUnloaded -= ResetAINodes;
+                SceneManager.sceneUnloaded += ResetAINodes;
+
+                HasInsideAINodes = true;
             }
+        }
 
-            if (includeOutsideAINodes)
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void AddOutsideAINodes()
+        {
+            if (RoundManager.Instance != null)
             {
-                GameObject[]? outsideAINodes = (RoundManager.Instance != null) ? RoundManager.Instance.outsideAINodes : null;
+                AddOutsideAINodes(RoundManager.Instance.outsideAINodes);
+            }
+        }
 
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="outsideAINodes"></param>
+        private void AddOutsideAINodes(GameObject[]? outsideAINodes)
+        {
+            RoundManagerPatches.OnGetOutsideAINodes -= AddOutsideAINodes;
+
+            if (includeOutsideAINodes && !HasOutsideAINodes)
+            {
                 for (int i = 0; i < outsideAINodes?.Length; i++)
                 {
                     if (outsideAINodes[i] != null)
@@ -407,7 +479,25 @@ namespace itolib.Behaviours.Networking
                         spawnLocations.Add(outsideAINodes[i].transform);
                     }
                 }
+
+                SceneManager.sceneUnloaded -= ResetAINodes;
+                SceneManager.sceneUnloaded += ResetAINodes;
+
+                HasOutsideAINodes = true;
             }
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        private void ResetAINodes(Scene _)
+        {
+            // Immediately unsubscribe from event.
+            SceneManager.sceneUnloaded -= ResetAINodes;
+
+            // Reset flags.
+            HasInsideAINodes = false;
+            HasOutsideAINodes = false;
         }
 
         /// <summary>

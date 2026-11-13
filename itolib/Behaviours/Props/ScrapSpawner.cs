@@ -85,6 +85,20 @@ namespace itolib.Behaviours.Props
         [SerializeField] private bool addMoonScrapSpawns;
 
         /// <summary>
+        ///     Minimum scrap value required for items from the current moon's loot pool to be added to the scrap item spawns.
+        /// </summary>
+        [Tooltip("Minimum scrap value required for items from the current moon's loot pool to be added to the scrap item spawns.")]
+        [Min(-1)]
+        [SerializeField] private int minMoonScrapValue = -1;
+
+        /// <summary>
+        ///     Maximum scrap value required for items from the current moon's loot pool to be added to the scrap item spawns.
+        /// </summary>
+        [Tooltip("Maximum scrap value required for items from the current moon's loot pool to be added to the scrap item spawns.")]
+        [Min(-1)]
+        [SerializeField] private int maxMoonScrapValue = -1;
+
+        /// <summary>
         ///     Minimum value for spawned scrap items.
         /// </summary>
         /// <remarks>Can be left at <c>-1</c> to disable value overriding.</remarks>
@@ -303,15 +317,31 @@ namespace itolib.Behaviours.Props
             if (useMoonScrapSpawns || addMoonScrapSpawns)
 #pragma warning restore CS0618 // Type or member is obsolete.
             {
-                if (StartOfRound.Instance != null && StartOfRound.Instance.currentLevel != null)
+                if (StartOfRound.Instance != null && StartOfRound.Instance.currentLevel != null && StartOfRound.Instance.currentLevel.spawnableScrap != null)
                 {
                     List<SpawnableItemWithRarity> spawnableScrap = StartOfRound.Instance.currentLevel.spawnableScrap;
+                    List<ScrapWeightEntry> scrapEntries = [with(spawnableScrap.Count)];
 
-                    if (spawnableScrap?.Count > 0)
+                    foreach (SpawnableItemWithRarity scrapWithRarity in spawnableScrap)
                     {
-                        ScrapWeightEntry[] scrapEntries = [.. spawnableScrap.ConvertAll(static itemWithRarity => new ScrapWeightEntry(itemWithRarity))];
-                        AddWeightEntries(scrapEntries);
+                        if (scrapWithRarity == null || scrapWithRarity.spawnableItem == null)
+                        {
+                            continue;
+                        }
+
+                        int minValue = scrapWithRarity.spawnableItem.minValue,
+                            maxValue = scrapWithRarity.spawnableItem.maxValue;
+
+                        if ((minMoonScrapValue != -1 && minValue < minMoonScrapValue)
+                            || (maxMoonScrapValue != -1 && maxValue > maxMoonScrapValue))
+                        {
+                            continue;
+                        }
+
+                        scrapEntries.Add(new(scrapWithRarity));
                     }
+
+                    AddWeightEntries([.. scrapEntries]);
                 }
             }
             else if (WeightedEntries?.Length > 0)
