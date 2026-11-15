@@ -135,6 +135,12 @@ namespace itolib.Behaviours.Networking
             PerformCast();
         }
 
+        /// <inheritdoc/>
+        public void ResetActivation()
+        {
+            ActivationSelf.ResetActivation();
+        }
+
         /// <summary>
         ///     <c>DunGen</c> listener called when the Dungeon finishes generating.
         /// </summary>

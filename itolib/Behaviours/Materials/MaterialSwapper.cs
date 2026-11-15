@@ -162,15 +162,6 @@ namespace itolib.Behaviours.Materials
         }
 
         /// <summary>
-        ///     Perform script activation at the specified <c>ActivationTime</c>.
-        /// </summary>
-        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
-        public virtual void PerformActivation(ActivationTime activationTime)
-        {
-            SwapMaterials();
-        }
-
-        /// <summary>
         ///     TODO.
         /// </summary>
         /// <param name="renderer"></param>
@@ -191,6 +182,18 @@ namespace itolib.Behaviours.Materials
             }
 
             renderer.sharedMaterials = materials;
+        }
+
+        /// <inheritdoc/>
+        public virtual void PerformActivation(ActivationTime activationTime)
+        {
+            SwapMaterials();
+        }
+
+        /// <inheritdoc/>
+        public void ResetActivation()
+        {
+            ActivationSelf.ResetActivation();
         }
 
         /// <summary>

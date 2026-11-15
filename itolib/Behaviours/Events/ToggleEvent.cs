@@ -125,15 +125,6 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     Perform script activation at the specified <c>ActivationTime</c>.
-        /// </summary>
-        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
-        public virtual void PerformActivation(ActivationTime activationTime)
-        {
-            ToggleFromServer();
-        }
-
-        /// <summary>
         ///     TODO.
         /// </summary>
         /// <param name="state"></param>
@@ -159,6 +150,18 @@ namespace itolib.Behaviours.Events
             {
                 toggleOff.Invoke(false);
             }
+        }
+
+        /// <inheritdoc/>
+        public virtual void PerformActivation(ActivationTime activationTime)
+        {
+            ToggleFromServer();
+        }
+
+        /// <inheritdoc/>
+        public void ResetActivation()
+        {
+            ActivationSelf.ResetActivation();
         }
 
         /// <summary>

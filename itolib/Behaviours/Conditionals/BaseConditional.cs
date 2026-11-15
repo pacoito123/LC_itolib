@@ -189,13 +189,16 @@ namespace itolib.Behaviours.Conditionals
         /// <param name="undo">Whether the conditional override should be undone or not.</param>
         public abstract void ApplyConditional(T objectToCheck, bool undo);
 
-        /// <summary>
-        ///     Perform script activation at the specified <c>ActivationTime</c>.
-        /// </summary>
-        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
+        /// <inheritdoc/>
         public virtual void PerformActivation(ActivationTime activationTime)
         {
             ApplyConditional();
+        }
+
+        /// <inheritdoc/>
+        public void ResetActivation()
+        {
+            ActivationSelf.ResetActivation();
         }
 
         /// <summary>

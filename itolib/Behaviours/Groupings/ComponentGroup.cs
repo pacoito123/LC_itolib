@@ -100,15 +100,6 @@ namespace itolib.Behaviours.Groupings
         }
 
         /// <summary>
-        ///     Perform script activation at the specified <c>ActivationTime</c>.
-        /// </summary>
-        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
-        public virtual void PerformActivation(ActivationTime activationTime)
-        {
-            FindComponentsInObjects();
-        }
-
-        /// <summary>
         ///     TODO.
         /// </summary>
         /// <param name="actionID"></param>
@@ -204,6 +195,18 @@ namespace itolib.Behaviours.Groupings
         /// </summary>
         /// <param name="component"></param>
         protected abstract void ToggleSingleComponent(T component);
+
+        /// <inheritdoc/>
+        public virtual void PerformActivation(ActivationTime activationTime)
+        {
+            FindComponentsInObjects();
+        }
+
+        /// <inheritdoc/>
+        public void ResetActivation()
+        {
+            ActivationSelf.ResetActivation();
+        }
 
         /// <summary>
         ///     <c>DunGen</c> listener called when the Dungeon finishes generating.

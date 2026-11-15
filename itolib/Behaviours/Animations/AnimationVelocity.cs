@@ -413,16 +413,19 @@ namespace itolib.Behaviours.Animations
             }
         }
 
-        /// <summary>
-        ///     Perform script activation at the specified <c>ActivationTime</c>.
-        /// </summary>
-        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
+        /// <inheritdoc/>
         public void PerformActivation(ActivationTime activationTime)
         {
             float startingSpeed = (minStartingSpeed >= maxStartingSpeed) ? minStartingSpeed : (isSeededRandom
                 ? SeededSelf.GetSeededRandom().Next(minStartingSpeed, maxStartingSpeed)
                 : Random.Range(minStartingSpeed, maxStartingSpeed));
             SyncSpeed(startingSpeed);
+        }
+
+        /// <inheritdoc/>
+        public void ResetActivation()
+        {
+            ActivationSelf.ResetActivation();
         }
 
         /// <summary>

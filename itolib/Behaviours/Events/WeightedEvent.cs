@@ -247,15 +247,6 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     Perform script activation at the specified <c>ActivationTime</c>.
-        /// </summary>
-        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
-        public virtual void PerformActivation(ActivationTime activationTime)
-        {
-            RollFromServer();
-        }
-
-        /// <summary>
         ///     Invoke weighted entry of type <c>WeightedEventEntry</c> at the specified index for all other clients.
         /// </summary>
         /// <param name="weightIndex">Index of the entry of type <c>WeightedEventEntry</c> to invoke.</param>
@@ -275,6 +266,18 @@ namespace itolib.Behaviours.Events
             {
                 entry.onEvent.Invoke();
             }
+        }
+
+        /// <inheritdoc/>
+        public virtual void PerformActivation(ActivationTime activationTime)
+        {
+            RollFromServer();
+        }
+
+        /// <inheritdoc/>
+        public void ResetActivation()
+        {
+            ActivationSelf.ResetActivation();
         }
 
         /// <summary>

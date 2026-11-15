@@ -339,13 +339,16 @@ namespace itolib.Behaviours.Detectors
             onRegionChecked.Invoke(objectsFound);
         }
 
-        /// <summary>
-        ///     Perform script activation at the specified <c>ActivationTime</c>.
-        /// </summary>
-        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
+        /// <inheritdoc/>
         public virtual void PerformActivation(ActivationTime activationTime)
         {
             CheckObjectsInRegion();
+        }
+
+        /// <inheritdoc/>
+        public void ResetActivation()
+        {
+            ActivationSelf.ResetActivation();
         }
 
         /// <summary>

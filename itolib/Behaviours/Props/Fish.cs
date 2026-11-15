@@ -339,15 +339,6 @@ namespace itolib.Behaviours.Props
         }
 
         /// <summary>
-        ///     Perform script activation at the specified <c>ActivationTime</c>.
-        /// </summary>
-        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
-        public void PerformActivation(ActivationTime activationTime)
-        {
-            SummonFish();
-        }
-
-        /// <summary>
         ///     Cache already-cast <c>IActivationScript</c> and <c>ISeededScript</c> instances.
         /// </summary>
         private Fish()
@@ -397,6 +388,18 @@ namespace itolib.Behaviours.Props
         private void OnDestroy()
         {
             ActivationSelf.UnsubscribeFromEvents();
+        }
+
+        /// <inheritdoc/>
+        public void PerformActivation(ActivationTime activationTime)
+        {
+            SummonFish();
+        }
+
+        /// <inheritdoc/>
+        public void ResetActivation()
+        {
+            ActivationSelf.ResetActivation();
         }
 
         /// <summary>

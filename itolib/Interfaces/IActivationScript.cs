@@ -91,6 +91,27 @@ namespace itolib.Interfaces
         }
 
         /// <summary>
+        ///     Reset activation status and resubscribe to events.
+        /// </summary>
+        void ResetActivation()
+        {
+            // Check if activation has not yet been performed, or the script is set to be manually activated.
+            if (!PerformedActivation || ActivationTime is ActivationTime.Manual)
+            {
+                return;
+            }
+
+            // Unsubscribe from any events that may have been subscribed to.
+            UnsubscribeFromEvents();
+
+            // Set activation as not performed.
+            PerformedActivation = false;
+
+            // Re-schedule activation for the script, or perform activation immediately.
+            Initialize();
+        }
+
+        /// <summary>
         ///     Unsubscribe from any events that may have been subscribed to.
         /// </summary>
         void UnsubscribeFromEvents()

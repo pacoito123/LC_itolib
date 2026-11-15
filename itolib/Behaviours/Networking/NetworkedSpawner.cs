@@ -311,15 +311,6 @@ namespace itolib.Behaviours.Networking
         }
 
         /// <summary>
-        ///     Perform script activation at the specified <c>ActivationTime</c>.
-        /// </summary>
-        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
-        public virtual void PerformActivation(ActivationTime activationTime)
-        {
-            PerformSpawn();
-        }
-
-        /// <summary>
         ///     Cache already-cast <c>IActivationScript</c> and <c>ISeededScript</c> instances.
         /// </summary>
         protected NetworkedSpawner()
@@ -506,6 +497,18 @@ namespace itolib.Behaviours.Networking
         public virtual void ClearDestroyed()
         {
             _ = PrefabInstances.RemoveAll(spawnedObject => spawnedObject == null);
+        }
+
+        /// <inheritdoc/>
+        public virtual void PerformActivation(ActivationTime activationTime)
+        {
+            PerformSpawn();
+        }
+
+        /// <inheritdoc/>
+        public void ResetActivation()
+        {
+            ActivationSelf.ResetActivation();
         }
 
         /// <summary>
