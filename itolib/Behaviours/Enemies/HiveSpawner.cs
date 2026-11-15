@@ -256,8 +256,10 @@ namespace itolib.Behaviours.Enemies
         /// <summary>
         ///     TODO.
         /// </summary>
-        private void Reset()
+        protected override void Reset()
         {
+            base.Reset();
+
             beesScanNode = new()
             {
                 headerText = "Circuit bees",

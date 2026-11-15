@@ -90,17 +90,17 @@ namespace itolib.Behaviours.Materials
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Perform component search immediately or subscribe to a specific event upon being enabled, depending on the set <c>ActivationTime</c>.
         /// </summary>
-        private void Awake()
+        private void OnEnable()
         {
             ActivationSelf.Initialize();
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Unsubscribe from any events that may have been subscribed to.
         /// </summary>
-        private void OnDestroy()
+        private void OnDisable()
         {
             ActivationSelf.UnsubscribeFromEvents();
         }

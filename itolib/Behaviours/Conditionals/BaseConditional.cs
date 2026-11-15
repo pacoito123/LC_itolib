@@ -144,17 +144,17 @@ namespace itolib.Behaviours.Conditionals
         }
 
         /// <summary>
-        ///     Subscribe to events for automatic activation.
+        ///     Apply conditional overrides immediately or subscribe to a specific event, depending on the set <c>ActivationTime</c>.
         /// </summary>
-        protected virtual void Awake()
+        protected virtual void OnEnable()
         {
             ActivationSelf.Initialize();
         }
 
         /// <summary>
-        ///     Unsubscribe from events for automatic activation.
+        ///     Unsubscribe from any events that may have been subscribed to.
         /// </summary>
-        protected virtual void OnDestroy()
+        protected virtual void OnDisable()
         {
             ActivationSelf.UnsubscribeFromEvents();
         }

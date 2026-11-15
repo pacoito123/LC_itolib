@@ -378,14 +378,20 @@ namespace itolib.Behaviours.Props
 
                 spawnLocations.AddRange(childLocations);
             }
+        }
 
+        /// <summary>
+        ///     Fish.
+        /// </summary>
+        private void OnEnable()
+        {
             ActivationSelf.Initialize();
         }
 
         /// <summary>
         ///     Fish.
         /// </summary>
-        private void OnDestroy()
+        private void OnDisable()
         {
             ActivationSelf.UnsubscribeFromEvents();
         }

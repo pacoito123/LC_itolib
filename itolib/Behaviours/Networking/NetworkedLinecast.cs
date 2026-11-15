@@ -80,7 +80,20 @@ namespace itolib.Behaviours.Networking
         }
 
         /// <summary>
-        ///     Subscribe to events for automatic activation.
+        ///     Perform <c>Linecast</c> immediately or subscribe to a specific event upon being enabled, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        private void OnEnable()
+        {
+            if (!IsSpawned || !IsHost)
+            {
+                return;
+            }
+
+            ActivationSelf.Initialize();
+        }
+
+        /// <summary>
+        ///     Perform <c>Linecast</c> immediately or subscribe to a specific event upon being spawned, depending on the set <c>ActivationTime</c>.
         /// </summary>
         public override void OnNetworkSpawn()
         {
@@ -97,11 +110,9 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     Unsubscribe from any events that may have been subscribed to.
         /// </summary>
-        public override void OnDestroy()
+        private void OnDisable()
         {
             ActivationSelf.UnsubscribeFromEvents();
-
-            base.OnDestroy();
         }
 
         /// <summary>

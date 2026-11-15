@@ -155,15 +155,7 @@ namespace itolib.Behaviours.Animations
         }
 
         /// <summary>
-        ///     Roll initial value for the <c>Animator</c>'s <i>speed</i> parameter.
-        /// </summary>
-        private void Start()
-        {
-            ActivationSelf.Initialize();
-        }
-
-        /// <summary>
-        ///     Make sure there is an <c>Animator</c> component to target.
+        ///     Make sure there is an <c>Animator</c> component to target, and roll initial value for the <c>Animator</c>'s <i>speed</i> parameter.
         /// </summary>
         private void OnEnable()
         {
@@ -171,7 +163,11 @@ namespace itolib.Behaviours.Animations
             {
                 Plugin.Logger.LogWarning($"Could not find Animator for AnimationVelocity component in GameObject '{gameObject.name}'.");
                 enabled = false;
+
+                return;
             }
+
+            ActivationSelf.Initialize();
         }
 
         /// <summary>
@@ -201,11 +197,9 @@ namespace itolib.Behaviours.Animations
         /// <summary>
         ///     Unsubscribe from any events that may have been subscribed to.
         /// </summary>
-        public override void OnDestroy()
+        private void OnDisable()
         {
             ActivationSelf.UnsubscribeFromEvents();
-
-            base.OnDestroy();
         }
 
         /// <summary>

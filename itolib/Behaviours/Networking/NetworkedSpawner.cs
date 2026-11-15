@@ -322,6 +322,14 @@ namespace itolib.Behaviours.Networking
         /// <summary>
         ///     TODO.
         /// </summary>
+        protected virtual void Reset()
+        {
+            spawnLocations ??= [transform];
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         protected virtual void Awake()
         {
             if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsHost)
@@ -355,6 +363,17 @@ namespace itolib.Behaviours.Networking
 
                 spawnLocations.AddRange(childLocations);
             }
+        }
+
+        /// <summary>
+        ///     Perform spawn immediately or subscribe to a specific event upon being enabled, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        private void OnEnable()
+        {
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsHost)
+            {
+                return;
+            }
 
             if (RoundManager.Instance != null)
             {
@@ -387,9 +406,9 @@ namespace itolib.Behaviours.Networking
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Unsubscribe from any events that may have been subscribed to.
         /// </summary>
-        public override void OnDestroy()
+        private void OnDisable()
         {
             ActivationSelf.UnsubscribeFromEvents();
 
@@ -399,13 +418,8 @@ namespace itolib.Behaviours.Networking
             }
 
             RoundManagerPatches.OnGetOutsideAINodes -= AddOutsideAINodes;
-
-            base.OnDestroy();
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
         [System.Obsolete("No longer needed.")]
         internal void AddAINodes() { }
 

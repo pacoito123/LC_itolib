@@ -135,8 +135,10 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     TODO.
         /// </summary>
-        private void Reset()
+        protected override void Reset()
         {
+            base.Reset();
+
             if (TryGetComponent(out SpawnSyncedObject syncedObject) && syncedObject.spawnPrefab != null)
             {
                 networkPrefabName = syncedObject.spawnPrefab.name;

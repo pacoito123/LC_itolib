@@ -57,7 +57,20 @@ namespace itolib.Behaviours.Events
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Perform event immediately or subscribe to a specific event upon being enabled, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        private void OnEnable()
+        {
+            if (!IsSpawned || !IsHost)
+            {
+                return;
+            }
+
+            ActivationSelf.Initialize();
+        }
+
+        /// <summary>
+        ///     Perform event immediately or subscribe to a specific event upon being spawned, depending on the set <c>ActivationTime</c>.
         /// </summary>
         public override void OnNetworkSpawn()
         {
@@ -74,11 +87,9 @@ namespace itolib.Behaviours.Events
         /// <summary>
         ///     Unsubscribe from any events that may have been subscribed to.
         /// </summary>
-        public override void OnDestroy()
+        private void OnDisable()
         {
             ActivationSelf.UnsubscribeFromEvents();
-
-            base.OnDestroy();
         }
 
         /// <summary>

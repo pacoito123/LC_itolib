@@ -25,7 +25,7 @@ namespace itolib.Interfaces
         bool PerformedActivation { get; set; }
 
         /// <summary>
-        ///     Schedule activation for the script, or perform activation immediately depending on the set <c>ActivationTime</c>.
+        ///     Schedule activation for the script or perform activation immediately, depending on the set <c>ActivationTime</c>.
         /// </summary>
         void Initialize()
         {

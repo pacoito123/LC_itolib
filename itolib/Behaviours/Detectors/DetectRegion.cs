@@ -141,6 +141,34 @@ namespace itolib.Behaviours.Detectors
         protected abstract void Awake();
 
         /// <summary>
+        ///     Perform search immediately or subscribe to a specific event upon being enabled, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        public virtual void OnEnable()
+        {
+            if (!IsSpawned || !IsHost)
+            {
+                return;
+            }
+
+            ActivationSelf.Initialize();
+        }
+
+        /// <summary>
+        ///     Perform search immediately or subscribe to a specific event upon being spawned, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            if (!IsHost)
+            {
+                return;
+            }
+
+            ActivationSelf.Initialize();
+        }
+
+        /// <summary>
         ///     Initialize collections used by this <c>DetectRegion</c>.
         /// </summary>
         protected virtual void Start()
@@ -153,21 +181,6 @@ namespace itolib.Behaviours.Detectors
 
             objectsInside = [with(maxObjects)];
             objectsRemoved = [with(maxObjects)];
-        }
-
-        /// <summary>
-        ///      Perform search or subscribe to a specific event, depending on the set <c>ActivationTime</c>.
-        /// </summary>
-        public override void OnNetworkSpawn()
-        {
-            base.OnNetworkSpawn();
-
-            if (!IsHost)
-            {
-                return;
-            }
-
-            ActivationSelf.Initialize();
         }
 
         /// <summary>
@@ -211,7 +224,7 @@ namespace itolib.Behaviours.Detectors
         }
 
         /// <summary>
-        ///     Call exit events upon disabling the current region with objects inside.
+        ///     Call exit events upon disabling the current region with objects inside, and unsubscribe from any events that may have been subscribed to.
         /// </summary>
         protected virtual void OnDisable()
         {
@@ -224,16 +237,9 @@ namespace itolib.Behaviours.Detectors
 
                 objectsInside.Clear();
             }
-        }
 
-        /// <summary>
-        ///     Unsubscribe from events for automatic activation.
-        /// </summary>
-        public override void OnDestroy()
-        {
+            // Unsubscribe from events for automatic activation.
             ActivationSelf.UnsubscribeFromEvents();
-
-            base.OnDestroy();
         }
 
         /// <summary>

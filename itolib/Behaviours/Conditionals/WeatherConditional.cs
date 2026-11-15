@@ -13,7 +13,7 @@ namespace itolib.Behaviours.Conditionals
         public LevelWeatherType LastWeather { get; private set; }
 
         /// <inheritdoc/>
-        protected override void Awake()
+        protected override void OnEnable()
         {
             if (CrowdControlCompatibility.Enabled && TimeOfDay.Instance != null && TimeOfDay.Instance.currentLevel != null)
             {
@@ -26,11 +26,11 @@ namespace itolib.Behaviours.Conditionals
                 return;
             }
 
-            base.Awake();
+            base.OnEnable();
         }
 
         /// <inheritdoc/>
-        protected override void OnDestroy()
+        protected override void OnDisable()
         {
             if (WeatherRegistryCompatibility.Enabled)
             {
@@ -42,7 +42,7 @@ namespace itolib.Behaviours.Conditionals
                 CrowdControlCompatibility.OnCCWeatherChanged -= ApplyConditional;
             }
 
-            base.OnDestroy();
+            base.OnDisable();
         }
 
         /// <inheritdoc/>
