@@ -179,44 +179,37 @@ namespace itolib.Behaviours.Props
         [SerializeField] private bool useMoonScrapSpawns;
 
         /// <inheritdoc/>
-        public override NetworkObject? GetPrefabToSpawn()
+        public override GameObject? GetPrefabToSpawn()
         {
             // Use single item day scrap item spawns instead of weighted selection, if set to respect it.
-            if (respectSingleItemDay && TryGetNetworkObject(out NetworkObject itemNetworkObject, SimulateAnomaly.SingleItem))
+            if (respectSingleItemDay && SimulateAnomaly.SingleItem != null)
             {
-                return itemNetworkObject;
+                return SimulateAnomaly.SingleItem.spawnPrefab;
             }
 
             if (WeightedEntries?.Length > 0 && WeightedSelf.TryObtainRandomEntry(out ScrapWeightEntry entry, out int _, isSeededRandom
                 ? SeededSelf.GetSeededRandom() : null))
             {
-                if (SearchContent.TryFindItem(out Item item, entry.itemName) && TryGetNetworkObject(out itemNetworkObject, item))
+                if (SearchContent.TryFindItem(out Item item, entry.itemName))
                 {
-                    return itemNetworkObject;
+                    return item.spawnPrefab;
                 }
 #pragma warning disable CS0618 // Type or member is obsolete.
-                else if (entry.itemToSpawn != null && (TryGetNetworkObject(out itemNetworkObject, entry.itemToSpawn) || (SearchContent.TryFindItem(out item,
-                    entry.itemToSpawn.name, checkObjectName: true) && TryGetNetworkObject(out itemNetworkObject, item))))
-#pragma warning restore CS0618 // Type or member is obsolete.
+                else if (entry.itemToSpawn != null)
                 {
-                    return itemNetworkObject;
+                    if (entry.itemToSpawn.spawnPrefab != null)
+                    {
+                        return entry.itemToSpawn.spawnPrefab;
+                    }
+                    else if (SearchContent.TryFindItem(out item, entry.itemToSpawn.name, checkObjectName: true))
+                    {
+                        return item.spawnPrefab;
+                    }
                 }
+#pragma warning restore CS0618 // Type or member is obsolete.
             }
 
             return null;
-        }
-
-        /// <summary>
-        ///     Attempt to obtain the <c>NetworkObject</c> to spawn from a given <c>Item</c>.
-        /// </summary>
-        /// <param name="itemNetworkObject"><c>NetworkObject</c> of the scrap item to spawn, as an out parameter.</param>
-        /// <param name="item">Item to obtain the <c>NetworkObject</c> off of.</param>
-        /// <returns>Whether a <c>NetworkObject</c> was successfully obtained or not.</returns>
-        private static bool TryGetNetworkObject(out NetworkObject itemNetworkObject, Item? item)
-        {
-            itemNetworkObject = null!;
-
-            return item != null && item.spawnPrefab != null && item.spawnPrefab.TryGetComponent(out itemNetworkObject);
         }
 
         /// <inheritdoc/>

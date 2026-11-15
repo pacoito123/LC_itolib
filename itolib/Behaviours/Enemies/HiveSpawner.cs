@@ -124,10 +124,9 @@ namespace itolib.Behaviours.Enemies
         ///     TODO.
         /// </summary>
         /// <returns></returns>
-        public override NetworkObject? GetPrefabToSpawn()
+        public override GameObject? GetPrefabToSpawn()
         {
-            return (CircuitBeesEnemyType != null && CircuitBeesEnemyType.enemyPrefab != null)
-                ? CircuitBeesEnemyType.enemyPrefab.GetComponent<NetworkObject>() : null;
+            return (CircuitBeesEnemyType != null) ? CircuitBeesEnemyType.enemyPrefab : null;
         }
 
         /// <summary>

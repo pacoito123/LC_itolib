@@ -49,21 +49,21 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         /// <returns></returns>
-        public override NetworkObject? GetPrefabToSpawn()
+        public override GameObject? GetPrefabToSpawn()
         {
             if (prefabToSpawn != null)
             {
-                return prefabToSpawn;
+                return prefabToSpawn.gameObject;
             }
 
-            if (ScriptableNetworkPrefab.TryGetPrefab(out NetworkObject? registeredPrefab, networkPrefabName))
+            if (ScriptableNetworkPrefab.TryGetPrefab(out NetworkObject? registeredPrefab, networkPrefabName) && registeredPrefab != null)
             {
-                return registeredPrefab;
+                return registeredPrefab.gameObject;
             }
 
             if (CachedPrefabs.TryGetValue(networkPrefabName, out NetworkObject cachedPrefab) && cachedPrefab != null)
             {
-                return cachedPrefab;
+                return cachedPrefab.gameObject;
             }
 
             IReadOnlyList<NetworkPrefab> networkPrefabs = NetworkManager.Singleton.NetworkConfig.Prefabs.Prefabs;
@@ -76,7 +76,7 @@ namespace itolib.Behaviours.Props
                     NetworkObject foundPrefab = networkPrefabs[i].Prefab.GetComponent<NetworkObject>();
                     CachedPrefabs[networkPrefabName] = foundPrefab;
 
-                    return foundPrefab;
+                    return foundPrefab.gameObject;
                 }
             }
 

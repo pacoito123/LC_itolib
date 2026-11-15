@@ -150,7 +150,7 @@ namespace itolib.Behaviours.Networking
         ///     TODO.
         /// </summary>
         /// <returns></returns>
-        public abstract NetworkObject? GetPrefabToSpawn();
+        public abstract GameObject? GetPrefabToSpawn();
 
         /// <summary>
         ///     TODO.
@@ -247,13 +247,18 @@ namespace itolib.Behaviours.Networking
             for (int i = 0; i < PrefabInstances.Count; i++)
             {
                 T? prefabInstance = PrefabInstances[i];
-                if (prefabInstance != null && prefabInstance.TryGetComponent(out NetworkObject prefabNetworkObject)
-                    && !prefabNetworkObject.IsSpawned)
+
+                if (prefabInstance == null)
+                {
+                    continue;
+                }
+
+                if (prefabInstance.TryGetComponent(out NetworkObject prefabNetworkObject) && !prefabNetworkObject.IsSpawned)
                 {
                     prefabNetworkObject.Spawn(destroyWithScene);
-
-                    SpawnPerformed(prefabInstance, new(prefabInstance.transform));
                 }
+
+                SpawnPerformed(prefabInstance, new(prefabInstance.transform));
             }
 
             OnSpawningFinish.Invoke(PrefabInstances.Count);
@@ -265,7 +270,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="spawnLocation"></param>
         private void PerformSpawn(Transform spawnLocation)
         {
-            NetworkObject? prefabToSpawn = GetPrefabToSpawn();
+            GameObject? prefabToSpawn = GetPrefabToSpawn();
 
             if (prefabToSpawn != null)
             {
@@ -280,7 +285,7 @@ namespace itolib.Behaviours.Networking
         /// <param name="spawnArea"></param>
         private void PerformSpawn(BoxCollider spawnArea)
         {
-            NetworkObject? prefabToSpawn = GetPrefabToSpawn();
+            GameObject? prefabToSpawn = GetPrefabToSpawn();
 
             if (prefabToSpawn != null)
             {
@@ -300,9 +305,9 @@ namespace itolib.Behaviours.Networking
         /// <param name="prefabToSpawn"></param>
         /// <param name="spawnPosition"></param>
         /// <param name="spawnRotation"></param>
-        protected virtual void PerformSpawn(NetworkObject prefabToSpawn, Vector3 spawnPosition, Quaternion spawnRotation)
+        protected virtual void PerformSpawn(GameObject prefabToSpawn, Vector3 spawnPosition, Quaternion spawnRotation)
         {
-            GameObject prefabObj = Instantiate(prefabToSpawn.gameObject, spawnPosition, spawnRotation, GetParentOverride());
+            GameObject prefabObj = Instantiate(prefabToSpawn, spawnPosition, spawnRotation, GetParentOverride());
 
             if (prefabObj.TryGetComponent(out T prefab))
             {

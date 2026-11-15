@@ -82,30 +82,35 @@ namespace itolib.Behaviours.Enemies
         [field: SerializeField] public EnemyWeightEntry[]? WeightedEntries { get; set; }
 
         /// <inheritdoc/>
-        public override NetworkObject? GetPrefabToSpawn()
+        public override GameObject? GetPrefabToSpawn()
         {
             // Spawn enemy specified in the 'enemyToSpawn' field, if one is set.
-            if (SearchContent.TryFindEnemy(out EnemyType enemy, enemyToSpawn)
-                && TryGetNetworkObject(out NetworkObject enemyNetworkObject, enemy))
+            if (SearchContent.TryFindEnemy(out EnemyType enemy, enemyToSpawn))
             {
-                return enemyNetworkObject;
+                return enemy.enemyPrefab;
             }
 
             // Spawn enemy using weighted selection.
             if (WeightedEntries?.Length > 0 && WeightedSelf.TryObtainRandomEntry(out EnemyWeightEntry entry, out int _, isSeededRandom
                 ? SeededSelf.GetSeededRandom() : null))
             {
-                if (SearchContent.TryFindEnemy(out enemy, entry.enemyName) && TryGetNetworkObject(out enemyNetworkObject, enemy))
+                if (SearchContent.TryFindEnemy(out enemy, entry.enemyName))
                 {
-                    return enemyNetworkObject;
+                    return enemy.enemyPrefab;
                 }
 #pragma warning disable CS0618 // Type or member is obsolete.
-                else if (entry.enemyToSpawn != null && (TryGetNetworkObject(out enemyNetworkObject, entry.enemyToSpawn) || (SearchContent.TryFindEnemy(out enemy,
-                    entry.enemyToSpawn.name, checkObjectName: true) && TryGetNetworkObject(out enemyNetworkObject, enemy))))
-#pragma warning restore CS0618 // Type or member is obsolete.
+                else if (entry.enemyToSpawn != null)
                 {
-                    return enemyNetworkObject;
+                    if (entry.enemyToSpawn.enemyPrefab != null)
+                    {
+                        return entry.enemyToSpawn.enemyPrefab;
+                    }
+                    else if (SearchContent.TryFindEnemy(out enemy, entry.enemyToSpawn.name, checkObjectName: true))
+                    {
+                        return enemy.enemyPrefab;
+                    }
                 }
+#pragma warning restore CS0618 // Type or member is obsolete.
             }
 
             return null;
@@ -215,7 +220,7 @@ namespace itolib.Behaviours.Enemies
         }
 
         /// <inheritdoc/>
-        protected override void PerformSpawn(NetworkObject prefabToSpawn, Vector3 spawnPosition, Quaternion spawnRotation)
+        protected override void PerformSpawn(GameObject prefabToSpawn, Vector3 spawnPosition, Quaternion spawnRotation)
         {
             // Check if enemy requires a nest, to delay spawning for a frame (after an appropriate nest is spawned).
             if (prefabToSpawn.TryGetComponent(out EnemyAI enemy) && enemy.enemyType != null && enemy.enemyType.nestSpawnPrefab != null

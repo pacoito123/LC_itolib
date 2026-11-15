@@ -1,6 +1,5 @@
 using itolib.Structs;
 using itolib.Util;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace itolib.Behaviours.Props
@@ -103,9 +102,9 @@ namespace itolib.Behaviours.Props
                 return;
             }
 
-            NetworkObject? giftContentsNetworkObject = base.GetPrefabToSpawn();
+            GameObject? giftContentsPrefab = base.GetPrefabToSpawn();
 
-            if (giftContentsNetworkObject == null || !giftContentsNetworkObject.TryGetComponent(out GrabbableObject giftContents)
+            if (giftContentsPrefab == null || !giftContentsPrefab.TryGetComponent(out GrabbableObject giftContents)
                 || giftContents.itemProperties == null)
             {
                 return;
@@ -190,10 +189,9 @@ namespace itolib.Behaviours.Props
         ///     TODO.
         /// </summary>
         /// <returns></returns>
-        public override NetworkObject? GetPrefabToSpawn()
+        public override GameObject? GetPrefabToSpawn()
         {
-            return (VanillaGiftbox != null && VanillaGiftbox.spawnPrefab != null)
-                ? VanillaGiftbox.spawnPrefab.GetComponent<NetworkObject>() : null;
+            return (VanillaGiftbox != null) ? VanillaGiftbox.spawnPrefab : null;
         }
     }
 }

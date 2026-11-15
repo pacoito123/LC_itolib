@@ -1,6 +1,5 @@
 using itolib.Behaviours.Networking;
 using itolib.Structs;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace itolib.Behaviours.Enemies
@@ -62,19 +61,6 @@ namespace itolib.Behaviours.Enemies
             }
 
             base.SpawnPerformed(spawnedPrefab, spawnLocation);
-        }
-
-        /// <summary>
-        ///     Attempt to obtain the <c>NetworkObject</c> to spawn from a given <c>EnemyType</c>.
-        /// </summary>
-        /// <param name="enemyNetworkObject"><c>NetworkObject</c> of the enemy to spawn, as an out parameter.</param>
-        /// <param name="enemy">Enemy to obtain the <c>NetworkObject</c> off of.</param>
-        /// <returns>Whether a <c>NetworkObject</c> was successfully obtained or not.</returns>
-        protected static bool TryGetNetworkObject(out NetworkObject enemyNetworkObject, EnemyType? enemy)
-        {
-            enemyNetworkObject = null!;
-
-            return enemy != null && enemy.enemyPrefab != null && enemy.enemyPrefab.TryGetComponent(out enemyNetworkObject);
         }
     }
 }
