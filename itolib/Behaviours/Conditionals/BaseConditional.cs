@@ -196,9 +196,9 @@ namespace itolib.Behaviours.Conditionals
         }
 
         /// <inheritdoc/>
-        public void ResetActivation()
+        public void ResetActivation(bool instant)
         {
-            ActivationSelf.ResetActivation();
+            ActivationSelf.Reinitialize(instant);
         }
 
         /// <summary>

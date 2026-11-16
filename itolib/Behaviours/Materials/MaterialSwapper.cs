@@ -191,9 +191,9 @@ namespace itolib.Behaviours.Materials
         }
 
         /// <inheritdoc/>
-        public void ResetActivation()
+        public void ResetActivation(bool instant)
         {
-            ActivationSelf.ResetActivation();
+            ActivationSelf.Reinitialize(instant);
         }
 
         /// <summary>

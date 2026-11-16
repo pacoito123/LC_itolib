@@ -64,6 +64,31 @@ namespace itolib.Interfaces
         }
 
         /// <summary>
+        ///     Unschedule, reset, and (optionally) reschedule activation for the script or perform activation immediately, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        /// <param name="instant">Whether to instantly reschedule activation or not.</param>
+        void Reinitialize(bool instant)
+        {
+            // Check if activation has not yet been performed, or the script is set to be manually activated.
+            if (!PerformedActivation || ActivationTime is ActivationTime.Manual)
+            {
+                return;
+            }
+
+            // Unsubscribe from any events that may have been subscribed to.
+            UnsubscribeFromEvents();
+
+            // Set activation as not performed.
+            PerformedActivation = false;
+
+            if (instant)
+            {
+                // Re-schedule activation for the script, or perform activation immediately.
+                Initialize();
+            }
+        }
+
+        /// <summary>
         ///     Perform script activation at the specified <c>ActivationTime</c>.
         /// </summary>
         /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
@@ -93,23 +118,8 @@ namespace itolib.Interfaces
         /// <summary>
         ///     Reset activation status and resubscribe to events.
         /// </summary>
-        void ResetActivation()
-        {
-            // Check if activation has not yet been performed, or the script is set to be manually activated.
-            if (!PerformedActivation || ActivationTime is ActivationTime.Manual)
-            {
-                return;
-            }
-
-            // Unsubscribe from any events that may have been subscribed to.
-            UnsubscribeFromEvents();
-
-            // Set activation as not performed.
-            PerformedActivation = false;
-
-            // Re-schedule activation for the script, or perform activation immediately.
-            Initialize();
-        }
+        /// <param name="instant">Whether to instantly reschedule activation or not.</param>
+        void ResetActivation(bool instant);
 
         /// <summary>
         ///     Unsubscribe from any events that may have been subscribed to.
