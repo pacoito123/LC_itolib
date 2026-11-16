@@ -289,9 +289,27 @@ namespace itolib.Behaviours.Enemies
         {
             SyncedHives = new();
 
-            SwitchHiveOverride(overrideHiveItem);
+            if (!string.IsNullOrEmpty(overrideHiveItem))
+            {
+                SwitchHiveOverride(overrideHiveItem);
+            }
 
             base.Awake();
+        }
+
+        /// <summary>
+        ///     Perform spawn immediately or subscribe to a specific event upon being enabled, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        protected override void OnEnable()
+        {
+            if (!IsSpawned || !IsHost)
+            {
+                return;
+            }
+
+            base.OnEnable();
+
+            ActivationSelf.Initialize();
         }
 
         /// <summary>
@@ -309,6 +327,21 @@ namespace itolib.Behaviours.Enemies
                     SyncHiveValues(changeEvent.Value);
                 }
             };
+        }
+
+        /// <summary>
+        ///     Perform spawn immediately or subscribe to a specific event upon being spawned, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            if (!IsHost)
+            {
+                return;
+            }
+
+            ActivationSelf.Initialize();
         }
 
         /// <summary>
@@ -330,6 +363,20 @@ namespace itolib.Behaviours.Enemies
             {
                 Plugin.Logger.LogWarning($"Could not find hive replacement '{hiveReplacement}' for HiveSpawner '{name}'!");
             }
+        }
+
+        /// <inheritdoc/>
+        protected override void PerformSpawn(GameObject prefabToSpawn, Vector3 spawnPosition, Quaternion spawnRotation)
+        {
+            // Check if spawner is spawned, to properly sync spawned hives.
+            if (!IsSpawned)
+            {
+                Plugin.Logger.LogError($"HiveSpawner '{name}' itself needs to be spawned to properly sync spawned hives!");
+
+                return;
+            }
+
+            base.PerformSpawn(prefabToSpawn, spawnPosition, spawnRotation);
         }
 
         /// <summary>

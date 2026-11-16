@@ -244,23 +244,6 @@ namespace itolib.Behaviours.Networking
                 PerformSpawn(transform);
             }
 
-            for (int i = 0; i < PrefabInstances.Count; i++)
-            {
-                T? prefabInstance = PrefabInstances[i];
-
-                if (prefabInstance == null)
-                {
-                    continue;
-                }
-
-                if (prefabInstance.TryGetComponent(out NetworkObject prefabNetworkObject) && !prefabNetworkObject.IsSpawned)
-                {
-                    prefabNetworkObject.Spawn(destroyWithScene);
-                }
-
-                SpawnPerformed(prefabInstance, new(prefabInstance.transform));
-            }
-
             OnSpawningFinish.Invoke(PrefabInstances.Count);
         }
 
@@ -312,6 +295,13 @@ namespace itolib.Behaviours.Networking
             if (prefabObj.TryGetComponent(out T prefab))
             {
                 PrefabInstances.Add(prefab);
+
+                if (prefab.TryGetComponent(out NetworkObject prefabNetworkObject) && !prefabNetworkObject.IsSpawned)
+                {
+                    prefabNetworkObject.Spawn(destroyWithScene);
+                }
+
+                SpawnPerformed(prefab, new(prefab.transform));
             }
         }
 
@@ -371,43 +361,38 @@ namespace itolib.Behaviours.Networking
         }
 
         /// <summary>
-        ///     Perform spawn immediately or subscribe to a specific event upon being enabled, depending on the set <c>ActivationTime</c>.
+        ///     Schedule or immediately add inside and/or outside AI nodes upon being enabled, if set to include them.
         /// </summary>
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
-            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsHost)
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsHost || RoundManager.Instance == null)
             {
                 return;
             }
 
-            if (RoundManager.Instance != null)
+            if (includeInsideAINodes && !HasInsideAINodes)
             {
-                if (includeInsideAINodes && !HasInsideAINodes)
+                if (!RoundManager.Instance.dungeonCompletedGenerating)
                 {
-                    if (!RoundManager.Instance.dungeonCompletedGenerating)
-                    {
-                        RoundManager.Instance.OnFinishedGeneratingDungeon += AddInsideAINodes;
-                    }
-                    else
-                    {
-                        AddInsideAINodes();
-                    }
+                    RoundManager.Instance.OnFinishedGeneratingDungeon += AddInsideAINodes;
                 }
-
-                if (includeOutsideAINodes && !HasOutsideAINodes)
+                else
                 {
-                    if (RoundManager.Instance.outsideAINodes == null || RoundManager.Instance.outsideAINodes.Length == 0 || RoundManager.Instance.outsideAINodes[0] == null)
-                    {
-                        RoundManagerPatches.OnGetOutsideAINodes += AddOutsideAINodes;
-                    }
-                    else
-                    {
-                        AddOutsideAINodes();
-                    }
+                    AddInsideAINodes();
                 }
             }
 
-            ActivationSelf.Initialize();
+            if (includeOutsideAINodes && !HasOutsideAINodes)
+            {
+                if (RoundManager.Instance.outsideAINodes == null || RoundManager.Instance.outsideAINodes.Length == 0 || RoundManager.Instance.outsideAINodes[0] == null)
+                {
+                    RoundManagerPatches.OnGetOutsideAINodes += AddOutsideAINodes;
+                }
+                else
+                {
+                    AddOutsideAINodes();
+                }
+            }
         }
 
         /// <summary>
@@ -415,14 +400,22 @@ namespace itolib.Behaviours.Networking
         /// </summary>
         private void OnDisable()
         {
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsHost || RoundManager.Instance == null)
+            {
+                return;
+            }
+
             ActivationSelf.UnsubscribeFromEvents();
 
-            if (RoundManager.Instance != null)
+            if (includeInsideAINodes)
             {
                 RoundManager.Instance.OnFinishedGeneratingDungeon -= AddInsideAINodes;
             }
 
-            RoundManagerPatches.OnGetOutsideAINodes -= AddOutsideAINodes;
+            if (includeOutsideAINodes)
+            {
+                RoundManagerPatches.OnGetOutsideAINodes -= AddOutsideAINodes;
+            }
         }
 
         [System.Obsolete("No longer needed.")]

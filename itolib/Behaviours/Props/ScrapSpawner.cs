@@ -268,10 +268,6 @@ namespace itolib.Behaviours.Props
             {
                 SyncedItems.Add(serializedItem);
             }
-            else
-            {
-                base.SpawnPerformed(item, spawnLocation);
-            }
         }
 
         /// <inheritdoc/>
@@ -350,6 +346,21 @@ namespace itolib.Behaviours.Props
         }
 
         /// <summary>
+        ///     Perform spawn immediately or subscribe to a specific event upon being enabled, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        protected override void OnEnable()
+        {
+            if (!IsSpawned || !IsHost)
+            {
+                return;
+            }
+
+            base.OnEnable();
+
+            ActivationSelf.Initialize();
+        }
+
+        /// <summary>
         ///     Set relevant item values to be synced when spawned.
         /// </summary>
         /// <param name="networkManager"></param>
@@ -365,6 +376,21 @@ namespace itolib.Behaviours.Props
                     SyncItemValues(item, changeEvent.Value);
                 }
             };
+        }
+
+        /// <summary>
+        ///     Perform spawn immediately or subscribe to a specific event upon being spawned, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            if (!IsHost)
+            {
+                return;
+            }
+
+            ActivationSelf.Initialize();
         }
 
         /// <summary>
@@ -408,6 +434,20 @@ namespace itolib.Behaviours.Props
             }
 
             WeightedSelf.RemoveWeight(index);
+        }
+
+        /// <inheritdoc/>
+        protected override void PerformSpawn(GameObject prefabToSpawn, Vector3 spawnPosition, Quaternion spawnRotation)
+        {
+            // Check if spawner is spawned, to properly sync spawned scrap.
+            if (!IsSpawned)
+            {
+                Plugin.Logger.LogError($"ScrapSpawner '{name}' itself needs to be spawned to properly sync spawned scrap!");
+
+                return;
+            }
+
+            base.PerformSpawn(prefabToSpawn, spawnPosition, spawnRotation);
         }
 
         /// <summary>

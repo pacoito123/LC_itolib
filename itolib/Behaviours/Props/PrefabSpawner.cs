@@ -127,7 +127,11 @@ namespace itolib.Behaviours.Props
                 if (spawnedPrefab == null)
                 {
                     PrefabInstances.RemoveAt(i);
-                    SyncedPrefabs.RemoveAt(i);
+
+                    if (IsSpawned)
+                    {
+                        SyncedPrefabs.RemoveAt(i);
+                    }
                 }
             }
         }
@@ -155,6 +159,21 @@ namespace itolib.Behaviours.Props
             SyncedPrefabs = new();
 
             base.Awake();
+        }
+
+        /// <summary>
+        ///     Perform spawn immediately or subscribe to a specific event upon being enabled, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        protected override void OnEnable()
+        {
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsHost)
+            {
+                return;
+            }
+
+            base.OnEnable();
+
+            ActivationSelf.Initialize();
         }
 
         /// <summary>

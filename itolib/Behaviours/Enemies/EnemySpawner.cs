@@ -149,6 +149,21 @@ namespace itolib.Behaviours.Enemies
         }
 
         /// <summary>
+        ///     Perform spawn immediately or subscribe to a specific event upon being enabled, depending on the set <c>ActivationTime</c>.
+        /// </summary>
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsHost)
+            {
+                return;
+            }
+
+            ActivationSelf.Initialize();
+        }
+
+        /// <summary>
         ///     Set relevant <c>EnemyAINestSpawnObject</c> values to be synced when spawned.
         /// </summary>
         /// <param name="networkManager"></param>
@@ -226,6 +241,14 @@ namespace itolib.Behaviours.Enemies
             if (prefabToSpawn.TryGetComponent(out EnemyAI enemy) && enemy.enemyType != null && enemy.enemyType.nestSpawnPrefab != null
                 && enemy.enemyType.requireNestObjectsToSpawn)
             {
+                // Check if spawner is spawned, to properly sync nests.
+                if (!IsSpawned)
+                {
+                    Plugin.Logger.LogError($"EnemySpawner '{name}' needs to be spawned before spawning enemy with nest requirement: '{enemy.enemyType.enemyName}'!");
+
+                    return;
+                }
+
                 // Instantiate enemy nest at the specified position.
                 GameObject nestContainer = Instantiate(enemy.enemyType.nestSpawnPrefab, spawnPosition, spawnRotation, GetParentOverride());
 
