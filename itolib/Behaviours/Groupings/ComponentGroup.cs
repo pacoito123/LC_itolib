@@ -13,14 +13,10 @@ namespace itolib.Behaviours.Groupings
     /// <typeparam name="T"></typeparam>
     public abstract class ComponentGroup<T> : MonoBehaviour, IActivationScript where T : Component
     {
-        /// <summary>
-        ///     Cached instance of the current <c>ComponentGroup</c> as an <c>IActivationScript</c>, to avoid having to cast.
-        /// </summary>
+        /// <inheritdoc/>
         public IActivationScript ActivationSelf { get; }
 
-        /// <summary>
-        ///     Whether activation has already been performed or not.
-        /// </summary>
+        /// <inheritdoc/>
         public bool PerformedActivation { get; set; }
 
         /// <summary>

@@ -112,14 +112,10 @@ namespace itolib.Behaviours.Conditionals
     /// <typeparam name="T">Conditional type to perform the search for.</typeparam>
     public abstract class BaseConditional<T> : MonoBehaviour, IActivationScript
     {
-        /// <summary>
-        ///     Cached instance of the current <c>BaseConditional</c> as an <c>IActivationScript</c>, to avoid having to cast.
-        /// </summary>
+        /// <inheritdoc/>
         public IActivationScript ActivationSelf { get; }
 
-        /// <summary>
-        ///     Whether activation has already been performed or not.
-        /// </summary>
+        /// <inheritdoc/>
         public bool PerformedActivation { get; set; }
 
         /// <summary>

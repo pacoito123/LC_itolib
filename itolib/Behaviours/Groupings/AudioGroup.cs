@@ -30,10 +30,7 @@ namespace itolib.Behaviours.Groupings
         [Tooltip("")]
         [SerializeField] private bool autoInitialize;
 
-        /// <summary>
-        ///     Perform script activation at the specified <c>ActivationTime</c>.
-        /// </summary>
-        /// <param name="activationTime"><c>ActivationTime</c> set for the script.</param>
+        /// <inheritdoc/>
         public override void PerformActivation(ActivationTime activationTime)
         {
             base.PerformActivation(activationTime);

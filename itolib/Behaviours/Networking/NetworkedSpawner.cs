@@ -17,19 +17,13 @@ namespace itolib.Behaviours.Networking
     /// </summary>
     public abstract class NetworkedSpawner<T> : NetworkBehaviour, IActivationScript, ISeededScript<NetworkedSpawner<T>> where T : Behaviour
     {
-        /// <summary>
-        ///     Cached instance of the current <c>NetworkedSpawner</c> as an <c>IActivationScript</c>, to avoid having to cast.
-        /// </summary>
+        /// <inheritdoc/>
         public IActivationScript ActivationSelf { get; }
 
-        /// <summary>
-        ///     Cached instance of the current <c>NetworkedSpawner</c> as an <c>ISeededScript</c>, to avoid having to cast.
-        /// </summary>
+        /// <inheritdoc/>
         public ISeededScript<NetworkedSpawner<T>> SeededSelf { get; }
 
-        /// <summary>
-        ///     Whether activation has already been performed or not.
-        /// </summary>
+        /// <inheritdoc/>
         public bool PerformedActivation { get; set; }
 
         /// <summary>

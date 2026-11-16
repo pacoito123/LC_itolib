@@ -9,19 +9,13 @@ namespace itolib.Behaviours.Helpers
     /// <typeparam name="T"></typeparam>
     public abstract class PooledObject<T> : MonoBehaviour, IPooledObject<T> where T : Object
     {
-        /// <summary>
-        ///     Instance number for the <c>PooledObject</c>'s current pool. Intended for tracking and/or limiting the amount of created instances.
-        /// </summary>
+        /// <inheritdoc/>
         public int ObjectID { get; set; }
 
-        /// <summary>
-        ///     External <c><typeparamref name="T"/></c> that has taken 'ownership' of this <c>PooledObject</c> instance.
-        /// </summary>
+        /// <inheritdoc/>
         public T TakenBy { get; set; } = default!;
 
-        /// <summary>
-        ///     Next <c>PooledObject</c> instance in the pool.
-        /// </summary>
+        /// <inheritdoc/>
         public IPooledObject<T> NextPooledObject { get; set; } = null!;
 
         /// <summary>

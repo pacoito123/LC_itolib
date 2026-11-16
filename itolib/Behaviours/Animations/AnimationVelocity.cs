@@ -14,19 +14,13 @@ namespace itolib.Behaviours.Animations
     /// </summary>
     public sealed class AnimationVelocity : NetworkBehaviour, IActivationScript, ISeededScript<AnimationVelocity>
     {
-        /// <summary>
-        ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>IActivationScript</c>, to avoid having to cast.
-        /// </summary>
+        /// <inheritdoc/>
         public IActivationScript ActivationSelf { get; }
 
-        /// <summary>
-        ///     Cached instance of the current <c>AnimationVelocity</c> as an <c>ISeededScript</c>, to avoid having to cast.
-        /// </summary>
+        /// <inheritdoc/>
         public ISeededScript<AnimationVelocity> SeededSelf { get; }
 
-        /// <summary>
-        ///     Whether activation has already been performed or not.
-        /// </summary>
+        /// <inheritdoc/>
         public bool PerformedActivation { get; set; }
 
         /// <summary>

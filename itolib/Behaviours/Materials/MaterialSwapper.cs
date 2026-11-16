@@ -42,14 +42,10 @@ namespace itolib.Behaviours.Materials
     /// </summary>
     public class MaterialSwapper : MonoBehaviour, IActivationScript
     {
-        /// <summary>
-        ///     Cached instance of the current <c>MaterialSwapper</c> as an <c>IActivationScript</c>, to avoid having to cast.
-        /// </summary>
+        /// <inheritdoc/>
         public IActivationScript ActivationSelf { get; }
 
-        /// <summary>
-        ///     Whether activation has already been performed or not.
-        /// </summary>
+        /// <inheritdoc/>
         public bool PerformedActivation { get; set; }
 
         /// <summary>

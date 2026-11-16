@@ -14,14 +14,10 @@ namespace itolib.Behaviours.Events
     /// </summary>
     public class ToggleEvent : NetworkBehaviour, IActivationScript
     {
-        /// <summary>
-        ///     Cached instance of the current <c>ToggleEvent</c> as an <c>IActivationScript</c>, to avoid having to cast.
-        /// </summary>
+        /// <inheritdoc/>
         public IActivationScript ActivationSelf { get; }
 
-        /// <summary>
-        ///     Whether activation has already been performed or not.
-        /// </summary>
+        /// <inheritdoc/>
         public bool PerformedActivation { get; set; }
 
         /// <summary>

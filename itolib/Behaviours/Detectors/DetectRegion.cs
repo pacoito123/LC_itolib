@@ -17,14 +17,10 @@ namespace itolib.Behaviours.Detectors
     [RequireComponent(typeof(Collider))]
     public abstract class DetectRegion<T> : NetworkBehaviour, IActivationScript where T : Behaviour
     {
-        /// <summary>
-        ///     Cached instance of the current <c>DetectRegion</c> as an <c>IActivationScript</c>, to avoid having to cast.
-        /// </summary>
+        /// <inheritdoc/>
         public IActivationScript ActivationSelf { get; }
 
-        /// <summary>
-        ///     Whether activation has already been performed or not.
-        /// </summary>
+        /// <inheritdoc/>
         public bool PerformedActivation { get; set; }
 
         /// <summary>
