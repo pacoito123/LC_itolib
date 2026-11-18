@@ -56,22 +56,51 @@ namespace itolib.Structs
         public bool freezeZ;
 
         /// <summary>
-        ///     Apply rotation to the current pivot.
+        ///     Apply rotation to the current pivot towards a target position.
         /// </summary>
         /// <param name="targetPosition">Position for the pivot to turn and look towards.</param>
         /// <param name="pivotVelocity">Current velocity for this pivot's rotation.</param>
-        public readonly void Apply(Vector3 targetPosition, ref Quaternion pivotVelocity)
+        public readonly void ApplyPoint(Vector3 targetPosition, ref Vector4 pivotVelocity)
         {
             if (pivot != null)
             {
+                // Check if all axes are frozen and do nothing if so.
+                if (freezeX && freezeY && freezeZ)
+                {
+                    return;
+                }
+
                 // Obtain actual target for the pivot, taking frozen axes into account.
                 float targetPitch = freezeX ? pivot.position.x : targetPosition.x,
                     targetYaw = freezeY ? pivot.position.y : targetPosition.y,
                     targetRoll = freezeZ ? pivot.position.z : targetPosition.z;
+                Vector3 lookTarget = new(targetPitch, targetYaw, targetRoll);
 
                 // Obtain pivot rotation towards the target, with the additional offset applied.
-                Vector3 lookTarget = new(targetPitch, targetYaw, targetRoll);
                 Quaternion targetRotation = Quaternion.LookRotation(lookTarget - pivot.position, worldUp) * Quaternion.Euler(offset);
+
+                // Apply rotation to the pivot over time, or immediately if set to a value of zero.
+                pivot.rotation = (rotationTime == 0.0f) ? targetRotation
+                    : pivot.rotation.SmoothDamp(targetRotation, ref pivotVelocity, rotationTime);
+            }
+        }
+
+        /// <summary>
+        ///     Apply rotation to the current pivot towards a target rotation.
+        /// </summary>
+        /// <param name="targetEulerRotation">Target rotation for the pivot, in Euler angles.</param>
+        /// <param name="pivotVelocity">Current velocity for this pivot's rotation.</param>
+        public readonly void ApplyRotation(Vector3 targetEulerRotation, ref Vector4 pivotVelocity)
+        {
+            if (pivot != null)
+            {
+                // Obtain actual target for the pivot, taking frozen axes into account.
+                float targetPitch = freezeX ? pivot.eulerAngles.x : targetEulerRotation.x,
+                    targetYaw = freezeY ? pivot.eulerAngles.y : targetEulerRotation.y,
+                    targetRoll = freezeZ ? pivot.eulerAngles.z : targetEulerRotation.z;
+
+                // Obtain pivot rotation with the additional offset applied.
+                Quaternion targetRotation = Quaternion.Euler(targetPitch, targetYaw, targetRoll) * Quaternion.Euler(offset);
 
                 // Apply rotation to the pivot over time, or immediately if set to a value of zero.
                 pivot.rotation = (rotationTime == 0.0f) ? targetRotation

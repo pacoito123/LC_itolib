@@ -58,12 +58,12 @@ namespace itolib.Behaviours.Kinematics
         /// <summary>
         ///     Current or initial velocity for the rotation tracking.
         /// </summary>
-        private Quaternion trackingVelocityRot = Quaternion.identity;
+        private Vector4 trackingVelocityRot = Vector4.zero;
 
         /// <summary>
         ///     Current or initial velocities for every pivot's rotation.
         /// </summary>
-        private Quaternion[] pivotVelocities;
+        private Vector4[] pivotVelocities;
 
         /// <summary>
         ///     Attach if the player is alive and enabled.
@@ -95,7 +95,7 @@ namespace itolib.Behaviours.Kinematics
 
             if (pivotsToRotate?.Length > 0)
             {
-                pivotVelocities = new Quaternion[pivotsToRotate.Length];
+                pivotVelocities = new Vector4[pivotsToRotate.Length];
             }
         }
 
@@ -129,7 +129,7 @@ namespace itolib.Behaviours.Kinematics
                 // Apply rotations towards the tracker to each pivot.
                 for (int i = 0; i < pivotsToRotate?.Length; i++)
                 {
-                    pivotsToRotate[i].Apply(trackerTransform.position, ref pivotVelocities[i]);
+                    pivotsToRotate[i].ApplyPoint(trackerTransform.position, ref pivotVelocities[i]);
                 }
             }
         }

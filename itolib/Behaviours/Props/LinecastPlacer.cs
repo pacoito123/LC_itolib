@@ -82,7 +82,7 @@ namespace itolib.Behaviours.Props
         /// <summary>
         ///     Current or initial velocity for the alignment.
         /// </summary>
-        private Quaternion alignVelocityRot = Quaternion.identity;
+        private Vector4 alignVelocityRot = Vector4.zero;
 
         /// <summary>
         ///     Perform <c>Linecast</c> and set position and rotation accordingly.
