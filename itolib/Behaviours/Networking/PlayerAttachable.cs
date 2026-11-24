@@ -111,6 +111,11 @@ namespace itolib.Behaviours.Networking
         protected bool attachDisabled;
 
         /// <summary>
+        ///     <c>Coroutine</c> for despawning after detaching.
+        /// </summary>
+        private Coroutine? despawnCoroutine;
+
+        /// <summary>
         ///     Define any specific default values that should be applied for an inheriting script.
         /// </summary>
         protected virtual void Reset()
@@ -335,11 +340,11 @@ namespace itolib.Behaviours.Networking
                     DetachPlayerRpc();
                 }
 
-                // Check if detaching should despawn the object.
-                if (despawnOnDetach)
+                // Check if detaching should despawn the parent NetworkObject (if there is one).
+                if (despawnOnDetach && parentNetworkObject != null && parentNetworkObject.IsSpawned)
                 {
-                    // Despawn after the configured amount of time.
-                    _ = StartCoroutine(DespawnNetworkObjectDelayed());
+                    // Despawn parent NetworkObject on the server.
+                    DespawnNetworkObjectRpc();
                 }
             }
         }
@@ -444,14 +449,8 @@ namespace itolib.Behaviours.Networking
         [Rpc(SendTo.Server, RequireOwnership = false)]
         private void DespawnNetworkObjectRpc()
         {
-            // Invoke despawn event.
-            onDespawn.Invoke();
-
-            if (parentNetworkObject != null && parentNetworkObject.IsSpawned)
-            {
-                // Despawn and destroy parent NetworkObject.
-                parentNetworkObject.Despawn(true);
-            }
+            // Despawn after the configured amount of time.
+            despawnCoroutine ??= StartCoroutine(DespawnNetworkObjectDelayed());
         }
 
         /// <summary>
@@ -474,8 +473,17 @@ namespace itolib.Behaviours.Networking
             // Wait for despawn timer.
             yield return Yielders.WaitForSeconds(despawnTimer);
 
-            // Despawn parent NetworkObject on the server.
-            DespawnNetworkObjectRpc();
+            if (IsHost && parentNetworkObject != null && parentNetworkObject.IsSpawned)
+            {
+                // Invoke despawn event.
+                onDespawn.Invoke();
+
+                // Despawn and destroy parent NetworkObject.
+                parentNetworkObject.Despawn(true);
+            }
+
+            // Clear despawn Coroutine after triggering.
+            despawnCoroutine = null;
         }
 
         /// <summary>
