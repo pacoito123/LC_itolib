@@ -34,6 +34,7 @@ namespace itolib
                 Harmony.PatchAll(typeof(GameNetworkManagerPatch));
                 Harmony.PatchAll(typeof(LoadPatch));
                 Harmony.PatchAll(typeof(RoundManagerPatches));
+                Harmony.PatchAll(typeof(OutOfBoundsPatch));
                 // ...
 
                 // Special moon compatibilities:

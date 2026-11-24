@@ -1,4 +1,6 @@
 using DunGen;
+using itolib.Patches;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,26 +21,52 @@ namespace itolib.Behaviours.Helpers
         /// <summary>
         ///     TODO.
         /// </summary>
+        private void OnDestroy()
+        {
+            OutOfBoundsPatch.currentOutOfBoundsHeight = float.MaxValue;
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
         /// <param name="dungeon"></param>
         public void OnDungeonComplete(Dungeon dungeon)
         {
-            if (StartOfRound.Instance == null || StartOfRound.Instance.currentLevel == null)
+            Scene currentScene = SceneManager.GetSceneByName((StartOfRound.Instance != null && StartOfRound.Instance.currentLevel != null)
+                ? StartOfRound.Instance.currentLevel.sceneName : null);
+
+            if (!currentScene.IsValid())
             {
                 return;
             }
 
-            GameObject[]? rootObjects = SceneManager.GetSceneByName(StartOfRound.Instance.currentLevel.sceneName).GetRootGameObjects();
+            float lowestPoint = dungeon.Bounds.min.y;
 
-            for (int i = 0; i < rootObjects?.Length; i++)
+            HashSet<OutOfBoundsTrigger> allTriggers = [];
+            List<OutOfBoundsTrigger> tempTriggers = [];
+
+            foreach (GameObject rootObject in currentScene.GetRootGameObjects())
             {
-                OutOfBoundsTrigger? outOfBounds = rootObjects[i].GetComponentInChildren<OutOfBoundsTrigger>();
+                rootObject.GetComponentsInChildren(includeInactive: true, tempTriggers);
+                allTriggers.UnionWith(tempTriggers);
 
-                if (outOfBounds != null)
+                foreach (OutOfBoundsTrigger trigger in tempTriggers)
                 {
-                    outOfBounds.transform.position = new(dungeon.transform.position.x + offsetToApply.x, dungeon.transform.position.y
-                        + dungeon.Bounds.min.y + offsetToApply.y, dungeon.transform.position.z + offsetToApply.z);
+                    float currentY = trigger.transform.position.y;
+
+                    if (currentY < lowestPoint)
+                    {
+                        lowestPoint = currentY;
+                    }
                 }
             }
+
+            foreach (OutOfBoundsTrigger trigger in allTriggers)
+            {
+                trigger.transform.position = new Vector3(trigger.transform.position.x, lowestPoint, trigger.transform.position.z) + offsetToApply;
+            }
+
+            OutOfBoundsPatch.currentOutOfBoundsHeight = lowestPoint + offsetToApply.y - 225.0f;
         }
     }
 }
