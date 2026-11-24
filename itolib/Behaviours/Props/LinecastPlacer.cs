@@ -55,6 +55,14 @@ namespace itolib.Behaviours.Props
         [SerializeField] private Vector3 hitRotationOffset = Vector3.up;
 
         /// <summary>
+        ///     Whether to disable the script after placing or not.
+        /// </summary>
+        [Space(3.0f)]
+        [Header("Other")]
+        [Tooltip("Whether to disable the script after placing or not.")]
+        [SerializeField] private bool disableOnPlace = true;
+
+        /// <summary>
         ///     Position and rotation prior to performing the <c>Linecast</c>.
         /// </summary>
         private TransformInfo previousInfo;
@@ -126,9 +134,11 @@ namespace itolib.Behaviours.Props
         /// </summary>
         private void LateUpdate()
         {
-            // Check if neither moving or aligning smoothly.
+            // Check if neither moving nor aligning smoothly.
             if (moveTime <= 0.0f && alignTime <= 0.0f)
             {
+                enabled = false;
+
                 return;
             }
 
@@ -144,14 +154,28 @@ namespace itolib.Behaviours.Props
                 // Apply smooth position and rotation with the specified time.
                 placerTransform.SetPositionAndRotation(position, rotation);
 
+                // Check if should disable after placing, and that target position and rotation have both been reached.
+                if (disableOnPlace && moveVelocityPos == Vector3.zero && alignVelocityRot == Vector4.zero)
+                {
+                    enabled = false;
+                }
+
                 return;
             }
+
+            bool positionReached = false, rotationReached = false;
 
             // Check if moving smoothly.
             if (moveTime > 0.0f)
             {
                 // Apply smooth position with the specified time.
                 placerTransform.position = Vector3.SmoothDamp(position, moveTarget, ref moveVelocityPos, moveTime);
+
+                // Check if should disable after placing, and that target position has been reached.
+                if (disableOnPlace && moveVelocityPos == Vector3.zero)
+                {
+                    positionReached = true;
+                }
             }
 
             // Check if aligning smoothly.
@@ -159,6 +183,18 @@ namespace itolib.Behaviours.Props
             {
                 // Apply smooth rotation with the specified time.
                 placerTransform.rotation = rotation.SmoothDamp(alignTarget, ref alignVelocityRot, alignTime);
+
+                // Check if should disable after placing, and that target rotation has been reached.
+                if (disableOnPlace && alignVelocityRot == Vector4.zero)
+                {
+                    rotationReached = true;
+                }
+            }
+
+            // Disable if target position and rotation have both been reached.
+            if (positionReached && rotationReached)
+            {
+                enabled = false;
             }
         }
 

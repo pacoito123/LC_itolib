@@ -46,7 +46,7 @@ namespace itolib.Extensions
             if (currentVelocity.x < Quaternion.kEpsilon && currentVelocity.y < Quaternion.kEpsilon
                 && currentVelocity.z < Quaternion.kEpsilon && currentVelocity.w < Quaternion.kEpsilon)
             {
-                currentVelocity = default;
+                currentVelocity = Vector4.zero;
 
                 return target;
             }

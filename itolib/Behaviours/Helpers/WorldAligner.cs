@@ -25,7 +25,7 @@ namespace itolib.Behaviours.Helpers
         ///     Whether to disable the script after all pivots reach their target rotations or not.
         /// </summary>
         [Tooltip("Whether to disable the script after all pivots reach their target rotations or not.")]
-        [SerializeField] private bool disableAfterAlign = true;
+        [SerializeField] private bool disableOnAlign = true;
 
         /// <summary>
         ///     Current or initial velocities for every pivot's rotation.
@@ -64,13 +64,13 @@ namespace itolib.Behaviours.Helpers
 
                 pivotsToAlign[i].ApplyRotation(worldRotation, ref pivotVelocities[i]);
 
-                if (pivotVelocities[i].Equals(default))
+                if (pivotVelocities[i] == Vector4.zero)
                 {
                     aligned++;
                 }
             }
 
-            if (pivotsToAlign == null || (disableAfterAlign && aligned == pivotsToAlign.Length))
+            if (pivotsToAlign == null || (disableOnAlign && aligned == pivotsToAlign.Length))
             {
                 enabled = false;
             }
@@ -147,7 +147,7 @@ namespace itolib.Behaviours.Helpers
                 worldRotation[axis] += value;
             }
 
-            if (disableAfterAlign)
+            if (disableOnAlign)
             {
                 enabled = true;
             }

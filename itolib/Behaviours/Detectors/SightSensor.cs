@@ -224,5 +224,23 @@ namespace itolib.Behaviours.Detectors
                 timer = 0.0f;
             }
         }
+
+        /// <summary>
+        ///     Set maximum range for line of sight to be detected.
+        /// </summary>
+        /// <param name="lookRange">Value to set the range to.</param>
+        public void SetLookRange(float lookRange)
+        {
+            this.lookRange = (lookRange < 0.0f) ? 0.0f : lookRange;
+        }
+
+        /// <summary>
+        ///     Set maximum proximity range for line of sight to be detected, regardless of where the player is looking at.
+        /// </summary>
+        /// <param name="proximityRange">Value to set the proximity range to.</param>
+        public void SetProximityRange(float proximityRange)
+        {
+            this.proximityRange = (proximityRange < 0.0f) ? 0.0f : proximityRange;
+        }
     }
 }
