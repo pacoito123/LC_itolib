@@ -93,7 +93,7 @@ namespace itolib.Behaviours.Events
         /// </summary>
         public void ToggleFromServer()
         {
-            if (!NetworkManager.Singleton.IsHost)
+            if (!IsHost)
             {
                 return;
             }
@@ -106,6 +106,12 @@ namespace itolib.Behaviours.Events
         /// </summary>
         public void ToggleFromClient()
         {
+            // Check if local player exists.
+            if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null)
+            {
+                return;
+            }
+
             ToggleFromClient(GameNetworkManager.Instance.localPlayerController);
         }
 
@@ -162,7 +168,7 @@ namespace itolib.Behaviours.Events
         /// <inheritdoc/>
         public virtual void PerformActivation(ActivationTime activationTime)
         {
-            ToggleFromServer();
+            ToggleFromClient();
         }
 
         /// <inheritdoc/>

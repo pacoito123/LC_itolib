@@ -214,7 +214,21 @@ namespace itolib.Behaviours.Events
         /// <remarks><b>NOTE:</b> Can only be successfully called from the host.</remarks>
         public void RollFromServer()
         {
-            if (!NetworkManager.Singleton.IsHost)
+            if (!IsHost)
+            {
+                return;
+            }
+
+            RollFromClient(GameNetworkManager.Instance.localPlayerController);
+        }
+
+        /// <summary>
+        ///     Perform weighted roll on the local client.
+        /// </summary>
+        public void RollFromClient()
+        {
+            // Check if local player exists.
+            if (GameNetworkManager.Instance == null || GameNetworkManager.Instance.localPlayerController == null)
             {
                 return;
             }
@@ -282,7 +296,7 @@ namespace itolib.Behaviours.Events
         /// <inheritdoc/>
         public virtual void PerformActivation(ActivationTime activationTime)
         {
-            RollFromServer();
+            RollFromClient();
         }
 
         /// <inheritdoc/>
