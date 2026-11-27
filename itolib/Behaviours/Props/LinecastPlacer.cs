@@ -9,7 +9,7 @@ namespace itolib.Behaviours.Props
     /// <summary>
     ///     Represents an object that places itself onto an intersecting <c>Collider</c> by performing a <c>Linecast</c>.
     /// </summary>
-    public class LinecastPlacer : NetworkedLinecast
+    public class LinecastPlacer : NetworkedLinecast<GameObject>
     {
         /// <summary>
         ///     Whether to move this object to the point intersecting with the <c>Linecast</c> or not, if there is one.
@@ -92,17 +92,35 @@ namespace itolib.Behaviours.Props
         /// </summary>
         private Vector4 alignVelocityRot = Vector4.zero;
 
-        /// <summary>
-        ///     Perform <c>Linecast</c> and set position and rotation accordingly.
-        /// </summary>
-        public override void PerformCast()
+        /// <inheritdoc/>
+        protected override bool TryGetObject(out GameObject objectHit)
         {
-            base.PerformCast();
+            objectHit = null!;
 
-            // Check if Linecast successfully hit a Collider.
-            if (hit.collider == null)
+            if (hit.collider != null)
             {
-                return;
+                // Obtain object hit by the Linecast, if there is one.
+                objectHit = hit.collider.gameObject;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        protected override bool PerformCastLocal(Vector3 startPosition, Vector3 endPosition, bool receivedCall = false)
+        {
+            // Check if Linecast was successful between the two points.
+            if (!base.PerformCastLocal(startPosition, endPosition, receivedCall))
+            {
+                return false;
+            }
+
+            // Check if local client received the call from another client.
+            if (receivedCall)
+            {
+                return true;
             }
 
             // Save previous position and rotation.
@@ -118,6 +136,8 @@ namespace itolib.Behaviours.Props
 
             // Place object for all clients, unless not spawned.
             PlaceObject(hitPosition, hitRotation, previousInfo);
+
+            return true;
         }
 
         /// <summary>
