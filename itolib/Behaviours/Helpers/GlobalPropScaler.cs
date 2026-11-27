@@ -153,7 +153,7 @@ namespace itolib.Behaviours.Helpers
         }
 
         /// <summary>
-        ///     Apply all <c>GlobalProp</c> modifiers
+        ///     Apply all <c>GlobalProp</c> modifiers before the post-processing step.
         /// </summary>
         /// <param name="generator"><c>DungeonGenerator</c> currently generating the <c>Dungeon</c>.</param>
         /// <param name="status">Current <c>Dungeon</c> generation step.</param>

@@ -14,6 +14,7 @@ namespace itolib.Behaviours.Detectors
     ///     <c><typeparamref name="T"/></c>, which are then fed to various event callbacks.
     /// </summary>
     /// <remarks><b>NOTE:</b> Region needs to be either a <c>BoxCollider</c>, <c>SphereCollider</c>, or <c>CapsuleCollider</c> to perform searches.</remarks>
+    /// <typeparam name="T">Type of <c>Behaviour</c> objects to detect in the region.</typeparam>
     [RequireComponent(typeof(Collider))]
     public abstract class DetectRegion<T> : NetworkBehaviour, IActivationScript where T : Behaviour
     {

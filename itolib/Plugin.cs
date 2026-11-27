@@ -17,7 +17,7 @@ namespace itolib
         /// <summary>
         ///     BepInEx Plugin information.
         /// </summary>
-        public const string PLUGIN_GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.9.3";
+        public const string PLUGIN_GUID = "pacoito.itolib", PLUGIN_NAME = "itolib", VERSION = "0.10.0";
         internal static new ManualLogSource Logger => field ??= BepInEx.Logging.Logger.CreateLogSource(PLUGIN_NAME);
         internal static Harmony Harmony => field ??= new(PLUGIN_GUID);
 
@@ -35,10 +35,6 @@ namespace itolib
                 Harmony.PatchAll(typeof(LoadPatch));
                 Harmony.PatchAll(typeof(RoundManagerPatches));
                 Harmony.PatchAll(typeof(OutOfBoundsPatch));
-                // ...
-
-                // Special moon compatibilities:
-                // BerunahCompatibility.RegisterCompat();
                 // ...
 
                 Logger.LogInfo($"{PLUGIN_NAME} v{VERSION} loaded!");

@@ -87,8 +87,8 @@ A proper write-up and documentation for all components and their intended usage 
   * **AlertNotification:** Displays one or several notification alerts to players (e.g. 'new creature data' alert).
   * **AlertSignal:** Displays one or several Signal Translator message to players, which _can_ go over the vanilla letter limit.
   * **AlertToast:** Displays one or several toast alerts to players (e.g. 'dropship items missed' alert).
-* **NetworkedLinecast:** TODO.
-  * **LinecastPlacer:** TODO.
+* **NetworkedLinecast:** An abstract `Linecast` to be performed, with event callbacks for if a `Collider` is found or not.
+  * **LinecastPlacer:** Places an object at a point hit by the `Linecast` and aligns its rotation.
 * **BaseConditional:** An abstract list of overrides that depend on a specific condition to be applied.
   * **ContentConditional:** Performs searches of a specific type of content (e.g. an item, enemy, or even a plugin), and invokes an event if they exist and are loaded.
   * **DungeonConditional:** Performs a search of the current dungeon's name in a list of override entries to apply, and invokes the events of any that match.
@@ -107,7 +107,7 @@ A proper write-up and documentation for all components and their intended usage 
   * **MultiAnimationEvent:** Similar to the vanilla `PlayAudioAnimationEvent` script, except only its event callback (everything else it offers can be handled through other scripts instead), of which there can be multiple defined within the same component.
 * **Effects:**
   * **AttachedEffect:** _(Niche)_ A particle effect or sound `GameObject` with object pooling capabilities, instances of which can be assigned to specific objects to play effects simultaneously.
-  * **FearInducer:** _Inflicts fear upon a player's soul!_ Works like a player's `DeadBodyInfo` (triggers fear effect when looked at), but has various customizable parameters (e.g. cooldown, max distance, angle, and amount of fear relative to distance).
+  * **FearInducer:** _Inflicts fear upon a player's soul!_ Works like a player's `DeadBodyInfo` (triggers fear effect when looked at), but has various customizable parameters (e.g. max distance, angle, and amount of fear relative to distance).
   * **MaterialSwapper:** Can perform one or multiple material swaps for specified objects and their children, if a given keyword is found in the names of the materials of each `Renderer`.
   * **NetworkedSource:** An `AudioSource` but with networking capabilities, so all clients can hear it being played. Has a few additional configurable parameters, including whether sounds made by it should alert enemies or not.
   * **PlayerOuchie:** Deals damage to a player, with some customizable parameters.
@@ -120,7 +120,7 @@ A proper write-up and documentation for all components and their intended usage 
   * **GlobalPropScaler:** _(Niche)_ Adjusts `GlobalProp` count range values using the current dungeon size multiplier, with customizable parameters for fine tuning.
   * **MoldNodes:** Allows restricting Vain Shroud spawning to begin at one or several specific nodes, instead of a random one. Having a `MoldAttractionPoint` only actually controls where they spread _towards_, and even then at relatively marginal values.
   * **OutOfBoundsAdjuster:** _(Niche)_ Lowers the current moon's `OutOfBoundsTrigger` to the lowest point in the current dungeon generation, allowing for extremely vertical interiors without having to worry about intersecting it.
-    * **NOTE:** This functionality exists in `ExtendedDungeonFlow` since LethalLevelLoader `v1.6.0`, with the `EnableDynamicOutOfBoundsTrigger` field. This script is only kept here for backwards compatibility.
+    * **NOTE:** This functionality exists in `ExtendedDungeonFlow` since LethalLevelLoader `v1.6.0`, with the `IsDynamicOutOfBoundsTriggerEnabled` field. This script is only kept here for backwards compatibility.
   * **ReverbTriggerAdjuster:** _(Niche)_ Can adjust, replace, or disable any `AudioReverbTrigger` present in the ship scene (`SampleSceneRelay`), which would otherwise be inaccessible from the moon side of things.
     * **NOTE:** Should be careful with its use, since some of the triggers that can be replaced or disabled might be doing something important...
   * **SaneReverbTrigger:** An `AudioReverbTrigger` but with a customizable delay per activation, instead of running every frame. Also has an option to trigger only upon entering it.
@@ -134,6 +134,6 @@ A lot of these scripts can be quite niche, and may require further explanation t
 
 * The LC Modding Community — For support, ideas, encouragement, and just good vibes in general.
 * [LethalMatt](https://www.artstation.com/mattryszkowskiart) — For [Bozoros](https://thunderstore.io/c/lethal-company/p/LethalMatt/Bozoros), my all-time favorite moon (~~I am _not_ biased at all...~~), but also for coming up with wacky concepts for [PlayZone](https://thunderstore.io/c/lethal-company/p/LethalMatt/PlayZone) that necessitated additional scripting functionality, which was then added to this library.
-* [IAmBatby](https://github.com/IAmBatby) — For [LethalLevelLoader](https://thunderstore.io/c/lethal-company/p/IAmBatby/LethalLevelLoader), the backbone for a significant chunk of custom content for this game. A couple scripts in here also require it or make use of its features.
+* [IAmBatby](https://github.com/IAmBatby) — For [LethalLevelLoader](https://thunderstore.io/c/lethal-company/p/IAmBatby/LethalLevelLoader), the backbone for a significant chunk of custom content for this game. A couple scripts in here also used to require it and/or make use of its features, but it has since been removed as a hard dependency.
 * [PF1MIL](https://thunderstore.io/c/lethal-company/p/PF1MIL) — For Early Access™ testing of various scripts, suggesting additions and improvements, and just generally waiting patiently for this library to release.
 * _You!_ — ![alt](https://cdn.betterttv.net/emote/642f4905a3c841a2f9ef2a94/1x.webp "pepeSTARE")

@@ -1,26 +1,80 @@
 # Changelog
 
-## [v0.9.4]
+## [v0.10.0]
 
-WIP
+Long overdue update! Lots of internal refactoring, requested changes, additional features, and bug fixes.
 
+- Removed [LethalLevelLoader](https://thunderstore.io/c/lethal-company/p/IAmBatby/LethalLevelLoader) as a hard dependency.
+  - Just looking to make my scripts library-agnostic, so they can be used with any of the major content APIs without requiring a specific one.
+  - Removed `HazardReplacer` and `ScrapInjector` scripts, and (temporarily) made `EventfulStoryLog` nonfunctional.
+- Added abstract `NetworkedLinecast`, for performing a `Linecast` and invoking events if a `Collider` is found or not.
+  - Added `LinecastPlacer`, for placing an object at a point hit by the `Linecast`.
 - Added `SightSensor`, for detecting a player's line of sight towards an object.
 - Added `AttentionGrabber`, for forcing a player's camera to stare at an object.
-- Added `GlobalPropScaler`, for adjusting `GlobalProp` count range values using the current dungeon size multiplier.
-- Made `PlayerLauncher` dropping items no longer use `PlayerControllerB.DropAllHeldItemsAndSyncNonexact()`, in favor of the exact one.
-- Added `ShotgunSensor` compatibility for [BeanieLib](https://thunderstore.io/c/lethal-company/p/Beaniebe/Beanie_Lib)'s `CustomShotgun` script.
-- Added curve field to `FearInducer` to scale angle tolerance required to trigger it depending on distance away from it.
-- Added methods to `FearInducer` for manually setting a player's fear level, regardless of line of sight.
-- Added methods to `AnimationParamSetter` for toggling, incrementing, and multiplying parameter values.
-- Added enemy filtering to `ExplodeEffect` for excluding certain enemies from being damaged by the explosion.
-  - Also improved reliability of targeting objects inside the damage region.
-- Added 'weight modifiers' to all `IWeightedScript`-inheriting scripts:
+- Added `GlobalPropScaler`, for adjusting `GlobalProp` count range values based on the current dungeon size multiplier.
+- Added `LightGroup`, for components that inherit from `HDAdditionalLightData`.
+  - Has functions for adjusting a handful of properties with numeric values (e.g. intensity, range, color temperature).
+- Added `MaterialParamSetter`, which can set shader parameters for a specific material, similar to `AnimationParamSetter`.
+- Added `MoldNodes`, for restricting Vain Shroud spawning to _begin_ at one or several specific nodes, instead of a random one.
+  - Vain Shrouds only spread _towards_ an object with the `MoldAttractionPoint` tag (if one is found), but they choose _any_ AI node as their starting point.
+  - Also allows randomizing the chosen point on every landing (Weed Killer usage/progress is saved, they just appear at a different point).
+- Added `WorldAligner`, for aligning one or several objects to a set rotation in world space (either instantly or smoothly over time).
+- Added functions to `PlayerLauncher` for enabling/disabling items being dropped, to be able to toggle it at runtime.
+  - Also made it no longer use `PlayerControllerB.DropAllHeldItemsAndSyncNonexact()`, in favor of the exact one.
+- Added functions to `FearInducer` for manually setting a player's fear level, regardless of line of sight.
+  - Also added curve field to scale angle tolerance required to trigger line of sight depending on distance away from it.
+- Added functions to `AnimationParamSetter` for toggling, incrementing, and multiplying `Animator` parameter values.
+- Added various features to `PlayerHinderer` and fixed a couple things:
+  - Added overrides for the vanilla water splash particle effects and their sound effects.
+    - Minimum falling speed required to trigger splashes (either small or big) can also be adjusted.
+  - Replaced unimplemented `waterOverlay` field with `setUnderwaterVolumeFilter` and `setUnderwaterOcclusionFilter` fields, which _are_ implemented!
+  - Added periodic player drunkness (voice pitch) syncing across clients, _provided_ the object is properly spawned.
+  - Fixed `muteAudio` not properly muting some underwater sounds.
+  - Fixed `drownPlayer` not being respected when applying underwater filters (and always drowning the player).
+- Added function to reset activation for all `IActivationScript`-implementing scripts:
+  - Allows scripts with a set activation time to run more than once, notably for any objects that persist across multiple rounds.
+  - All scripts can now be toggled to resubscribe to events or run immediately, _provided_ their activation is reset prior to it.
+- Added 'weight modifiers' to all `IWeightedScript`-implementing scripts:
   - Weight modifiers allow changing weight values whenever an entry with modifiers defined is selected.
   - Modifiers can target its own weights or the weights of other entries, and multiple different operations can be done at a time.
   - Allows for more dynamic weighted rolls (e.g. halving the weights of the entry that was selected and adding a flat value to another).
-  - Also revised internal logic for `IWeightedScript` in general, should be a bit more reliable.
-- Added player drunkness state syncing to `PlayerHinderer`, if spawned.
+  - Also revised internal logic for the `IWeightedScript` interface in general.
+- Improved `NetworkedSpawner` scripts in a few ways:
+  - Made inside and outside AI nodes be grabbed more reliably, and no longer _only_ at the start of a round.
+  - Made `EnemySpawner` able to spawn enemies that require a nest to exist (notably Old Birds).
+  - Made `PrefabSpawner`'s prefab cache take into account network prefabs being destroyed (due to interior hotreloading).
+  - Made `ScrapSpawner`'s `muteSpawnedScrap` field disable `playOnAwake` for muted `AudioSource` components, in case they start disabled.
+    - Also now actually waiting a frame before stopping spawned items from falling.
+  - Added fields to `ScrapSpawner` for defining minimum and maximum values of items from the moon's loot pool to be added as scrap spawns.
+  - Made `NetworkedSpawner` able to 'spawn' (instantiate) regular GameObjects instead of only NetworkObjects.
+    - Opens up the possibility of creating prefab instances without needing to actually spawn them.
+  - Made HiveSpawner, ScrapSpawner, and EnemySpawner (if a nest is needed) require being spawned themselves to actually spawn stuff.
+- Improved `DetectRegion` reliability in a few places:
+  - Made scale be properly taken into account when performing searches inside a `SphereCollider` or a `CapsuleCollider`.
+  - Made regions keep track of items currently inside them, to properly call `onRegionExited` in a few cases where `OnTriggerExit()` would not.
+  - Added enemy filtering to `ExplodeEffect` for excluding certain enemies from being damaged by the explosion.
+    - Also improved detection for objects inside the damage or kill region, but it now requires an active `Collider`.
+- Improved `OutOfBoundsAdjuster` a bit:
+  - Fixed only the first `OutOfBoundsTrigger` being moved, if a moon happens to have multiple.
+  - Fixed players dying no matter what when below a (static) height of `-600`.
+    - Fatal height is now `225` units below wherever the `OutOfBoundsTrigger` gets moved to.
+  - Made the script work from anywhere, not just within the `Dungeon` being generated (e.g. from a scene, in case any moon wants their `LevelGenerationRoot` below `-600`).
+- Added `Custom` `hitID` to `ItemWhackable` and `NetworkedHittable`-inheriting scripts.
+  - Just in case a value other than the vanilla ones is desired (e.g. for filtering purposes).
+  - Also added function to get a `DamageHittable`'s current health value.
+- Made player action finding for `MovementSensor`, `InteractSeatable`, and `PlatformGrabbable` a bit more reliable.
+- Switched to `Time.smoothDeltaTime` for `PlatformGrabbable` and `PlayerLauncher`.
+- Reenabled `SpecificDoorway` functionality, for it is still useful.
+- Fixed `PlayerAttachable`'s `detachOnExit` detaching globally, if any player exits the trigger.
+- Fixed `PlayerAttachable`'s `despawnOnDetach` despawning happening from within an `Rpc`.
+  - Also made sure there can only be one despawn `Coroutine` going on at a time.
 - Fixed `PlayerSeater` not resetting player animation state after sitting down (actually this time).
+- Fixed `SpraySensor` deprecated value taking priority over the actual intended one.
+- Fixed `ToggleEvent` not unsubscribing from its activation, if it happened to be destroyed before triggering.
+- Added `ShotgunSensor` compatibility for [BeanieLib](https://thunderstore.io/c/lethal-company/p/Beaniebe/Beanie_Lib)'s `CustomShotgun` script.
+  - Also fixed shell count being inaccurate when detecting a shot (which made it impossible for the last shot to trigger it), and improved cooldown checking.
+- Did some small refactoring across various classes, though I may have forgotten about which exactly.
+- Added comments and tooltips to various scripts.
 
 ## [v0.9.3]
 

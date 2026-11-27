@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "pacoito"
 name = "itolib"
-description = "[v80] Wondrous gizmos and gadgets for the restless mind."
+description = "[v81] Wondrous gizmos and gadgets for the restless mind."
 websiteUrl = "https://github.com/pacoito123/LC_itolib"
 containsNsfwContent = false
 
