@@ -99,7 +99,7 @@ namespace itolib.Behaviours.Interactables
             }
 
             // Try obtain player action required for the player to get back up.
-            if (string.IsNullOrEmpty(actionToExit) || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToExit))
+            if (string.IsNullOrEmpty(actionToExit) || !GameNetworkManager.Instance.localPlayerController.TryFindInputAction(out playerAction, actionToExit))
             {
                 Plugin.Logger.LogWarning($"Could not find movement action '{actionToExit}' defined for InteractSeatable component in '{name}'!");
             }
@@ -119,7 +119,7 @@ namespace itolib.Behaviours.Interactables
             }
 
             // Try obtain player action required for the player to get back up, if it happens to be missing.
-            if (string.IsNullOrEmpty(actionToExit) || playerAction == null || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToExit))
+            if (string.IsNullOrEmpty(actionToExit) || playerAction == null || !GameNetworkManager.Instance.localPlayerController.TryFindInputAction(out playerAction, actionToExit))
             {
                 Plugin.Logger.LogWarning($"Could not find movement action '{actionToExit}' defined for InteractSeatable component in '{name}'!");
 

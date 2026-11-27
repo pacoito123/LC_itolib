@@ -88,7 +88,7 @@ namespace itolib.Behaviours.Detectors
             }
 
             // Try obtain player action that triggers this sensor.
-            if (string.IsNullOrEmpty(actionToTrigger) || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToTrigger))
+            if (string.IsNullOrEmpty(actionToTrigger) || !GameNetworkManager.Instance.localPlayerController.TryFindInputAction(out playerAction, actionToTrigger))
             {
                 Plugin.Logger.LogWarning($"Could not find movement action '{actionToTrigger}' defined for MovementSensor component in '{name}'!");
             }
@@ -109,7 +109,7 @@ namespace itolib.Behaviours.Detectors
             }
 
             // Try obtain player action that triggers this sensor, if it happens to be missing.
-            if (string.IsNullOrEmpty(actionToTrigger) || playerAction == null || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToTrigger))
+            if (string.IsNullOrEmpty(actionToTrigger) || playerAction == null || !GameNetworkManager.Instance.localPlayerController.TryFindInputAction(out playerAction, actionToTrigger))
             {
                 Plugin.Logger.LogWarning($"Could not find movement action '{actionToTrigger}' defined for MovementSensor component in '{name}'!");
 
@@ -161,10 +161,10 @@ namespace itolib.Behaviours.Detectors
         {
             base.AttachPlayerLocal(player);
 
-            if (localPlayerAttached && !holdAction && playerAction != null)
+            if (localPlayerAttached && !holdAction)
             {
                 // Subscribe to the action starting event, if not set as a hold action.
-                playerAction.started += PlayerMoved;
+                playerAction?.started += PlayerMoved;
             }
         }
 
@@ -173,10 +173,10 @@ namespace itolib.Behaviours.Detectors
         /// </summary>
         public override void DetachPlayerLocal()
         {
-            if (localPlayerAttached && !holdAction && playerAction != null)
+            if (localPlayerAttached && !holdAction)
             {
                 // Unsubscribe to the action starting event, if not set as a hold action.
-                playerAction.started -= PlayerMoved;
+                playerAction?.started -= PlayerMoved;
             }
 
             base.DetachPlayerLocal();

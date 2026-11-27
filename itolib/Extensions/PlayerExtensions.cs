@@ -95,18 +95,21 @@ namespace itolib.Extensions
         /// <param name="playerAction"></param>
         /// <param name="actionId"></param>
         /// <returns></returns>
-        public static bool TryFindMovementAction(this PlayerControllerB player, out InputAction playerAction, string actionId)
+        public static bool TryFindInputAction(this PlayerControllerB player, out InputAction playerAction, string actionId)
         {
             playerAction = null!;
 
-            if (player.playerActions != null && player.playerActions.m_Movement != null)
+            if (InputSystem.actions != null)
             {
-                playerAction = player.playerActions.m_Movement.FindAction(actionId);
-
-                return true;
+                playerAction = InputSystem.actions.FindAction(actionId);
             }
 
-            return false;
+            if (playerAction == null && player.playerActions != null)
+            {
+                playerAction = player.playerActions.FindAction(actionId);
+            }
+
+            return playerAction != null;
         }
 
         /// <summary>

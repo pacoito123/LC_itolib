@@ -111,7 +111,7 @@ namespace itolib.Behaviours.Kinematics
             }
 
             // Try obtain player action required to be held.
-            if (!string.IsNullOrEmpty(actionToHold) && !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToHold))
+            if (!string.IsNullOrEmpty(actionToHold) && !GameNetworkManager.Instance.localPlayerController.TryFindInputAction(out playerAction, actionToHold))
             {
                 Plugin.Logger.LogWarning($"Could not find movement action '{actionToHold}' defined for PlatformGrabbable component in '{name}'!");
             }
@@ -135,7 +135,7 @@ namespace itolib.Behaviours.Kinematics
             }
 
             // Try obtain player action required to be held, if it happens to be missing.
-            if (playerAction == null || !GameNetworkManager.Instance.localPlayerController.TryFindMovementAction(out playerAction, actionToHold))
+            if (playerAction == null || !GameNetworkManager.Instance.localPlayerController.TryFindInputAction(out playerAction, actionToHold))
             {
                 Plugin.Logger.LogWarning($"Could not find movement action '{actionToHold}' defined for PlatformGrabbable component in '{name}'!");
 

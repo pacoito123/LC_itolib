@@ -86,7 +86,7 @@ namespace itolib.Behaviours.Detectors
             }
 
             // Check if player is not holding an item or is unable to use it for any reason.
-            if (player.throwingObject || !player.CanUseItem())
+            if (player.throwingObject || !player.CanUseItem() || player.timeSinceSwitchingSlots < 0.075f)
             {
                 return;
             }
@@ -118,13 +118,12 @@ namespace itolib.Behaviours.Detectors
         /// <summary>
         ///     Check if the item being activated is a <c>ShotgunItem</c> that is not reloading, has shells, has its safety disabled, and is not on cooldown.
         /// </summary>
-        /// <param name="heldItem"></param>
+        /// <param name="heldItem"><c>GrabbableObject</c> held by the player.</param>
         /// <returns>Whether the <c>ShotgunItem</c> was fired or not.</returns>
         private static bool CheckShotgunFire(GrabbableObject? heldItem)
         {
-            // TODO: Shells loaded count is inaccurate at this point, this check happens after firing reduces ammo count.
-            return heldItem is ShotgunItem shotgun && !shotgun.isReloading && shotgun.shellsLoaded != 0 && !shotgun.safetyOn
-                && (!shotgun.RequireCooldown() || shotgun.currentUseCooldown == shotgun.useCooldown);
+            return heldItem is ShotgunItem shotgun && !shotgun.isReloading && shotgun.shellsLoaded > 0 && !shotgun.safetyOn
+                && shotgun.useCooldown > 0.0f && (!shotgun.itemProperties.holdButtonUse || !shotgun.isBeingUsed) && shotgun.currentUseCooldown <= 0.0f;
         }
     }
 }
