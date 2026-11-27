@@ -5,25 +5,23 @@ using UnityEngine.Rendering;
 namespace itolib.Behaviours.Groupings
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a group of <c>Renderer</c> components to perform bulk operations on.
     /// </summary>
     public class RendererGroup : ComponentGroup<Renderer>
     {
         /// <summary>
-        ///     TODO.
+        ///     All actions able to be performed on every <c>Renderer</c> component in the group.
         /// </summary>
         private enum RendererActions : byte
         {
             ReceiveShadows,
-            SetShadowCastingMode
+            SetShadowCastingMode,
+            SetRenderingLayerMask = 15,
+            BitwiseORRenderingLayerMask,
+            BitwiseANDRenderingLayerMask
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="renderer"></param>
-        /// <param name="actionID"></param>
-        /// <param name="parameter"></param>
+        /// <inheritdoc/>
         protected override void PerformSingleAction(Renderer renderer, Enum actionID, object? parameter = null)
         {
             if (actionID is not RendererActions rendererActionID)
@@ -42,9 +40,39 @@ namespace itolib.Behaviours.Groupings
                         renderer.shadowCastingMode = mode;
                     }
                     break;
+                case RendererActions.SetRenderingLayerMask:
+                    if (parameter != null)
+                    {
+                        renderer.renderingLayerMask = (uint)parameter;
+                    }
+                    break;
+                case RendererActions.BitwiseORRenderingLayerMask:
+                    if (parameter != null)
+                    {
+                        renderer.renderingLayerMask |= (uint)parameter;
+                    }
+                    break;
+                case RendererActions.BitwiseANDRenderingLayerMask:
+                    if (parameter != null)
+                    {
+                        renderer.renderingLayerMask &= (uint)parameter;
+                    }
+                    break;
                 default:
                     break;
             }
+        }
+
+        /// <inheritdoc/>
+        protected override void EnableSingleComponent(Renderer renderer, bool enabled)
+        {
+            renderer.enabled = enabled;
+        }
+
+        /// <inheritdoc/>
+        protected override void ToggleSingleComponent(Renderer renderer)
+        {
+            renderer.enabled = !renderer.enabled;
         }
 
         /// <summary>
@@ -71,20 +99,28 @@ namespace itolib.Behaviours.Groupings
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="renderer"></param>
-        /// <param name="enabled"></param>
-        protected override void EnableSingleComponent(Renderer renderer, bool enabled)
+        /// <param name="layerMask"></param>
+        public void SetRenderingLayerMask(int layerMask)
         {
-            renderer.enabled = enabled;
+            PerformGroupAction(RendererActions.SetRenderingLayerMask, (uint)layerMask);
         }
 
         /// <summary>
         ///     TODO.
         /// </summary>
-        /// <param name="renderer"></param>
-        protected override void ToggleSingleComponent(Renderer renderer)
+        /// <param name="layerMask"></param>
+        public void BitwiseORRenderingLayerMask(int layerMask)
         {
-            renderer.enabled = !renderer.enabled;
+            PerformGroupAction(RendererActions.BitwiseORRenderingLayerMask, (uint)layerMask);
+        }
+
+        /// <summary>
+        ///     TODO.
+        /// </summary>
+        /// <param name="layerMask"></param>
+        public void BitwiseANDRenderingLayerMask(int layerMask)
+        {
+            PerformGroupAction(RendererActions.BitwiseANDRenderingLayerMask, (uint)layerMask);
         }
     }
 }

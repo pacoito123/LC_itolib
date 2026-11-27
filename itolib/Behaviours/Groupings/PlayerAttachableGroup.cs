@@ -5,12 +5,12 @@ using System;
 namespace itolib.Behaviours.Groupings
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a group of <c>PlayerAttachable</c> components to perform bulk operations on.
     /// </summary>
     public class PlayerAttachableGroup : ComponentGroup<PlayerAttachable>
     {
         /// <summary>
-        ///     TODO.
+        ///     All actions able to be performed on every <c>PlayerAttachable</c> component in the group.
         /// </summary>
         private enum AttachableActions : byte
         {
@@ -19,12 +19,7 @@ namespace itolib.Behaviours.Groupings
             TransferPlayer
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="attachable"></param>
-        /// <param name="actionID"></param>
-        /// <param name="parameter"></param>
+        /// <inheritdoc/>
         protected override void PerformSingleAction(PlayerAttachable attachable, Enum actionID, object? parameter = null)
         {
             if (actionID is not AttachableActions attachableActionID)
@@ -58,6 +53,18 @@ namespace itolib.Behaviours.Groupings
             }
         }
 
+        /// <inheritdoc/>
+        protected override void EnableSingleComponent(PlayerAttachable attachable, bool enabled)
+        {
+            attachable.EnableAttaching(enabled);
+        }
+
+        /// <inheritdoc/>
+        protected override void ToggleSingleComponent(PlayerAttachable attachable)
+        {
+            attachable.ToggleAttaching();
+        }
+
         /// <summary>
         ///     TODO.
         /// </summary>
@@ -82,25 +89,6 @@ namespace itolib.Behaviours.Groupings
         public void TransferPlayerAll(PlayerControllerB player)
         {
             PerformGroupAction(AttachableActions.TransferPlayer, player);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="attachable"></param>
-        /// <param name="enabled"></param>
-        protected override void EnableSingleComponent(PlayerAttachable attachable, bool enabled)
-        {
-            attachable.EnableAttaching(enabled);
-        }
-
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="attachable"></param>
-        protected override void ToggleSingleComponent(PlayerAttachable attachable)
-        {
-            attachable.ToggleAttaching();
         }
     }
 }

@@ -4,12 +4,12 @@ using UnityEngine;
 namespace itolib.Behaviours.Groupings
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a group of <c>Rigidbody</c> components to perform bulk operations on.
     /// </summary>
     public class RigidbodyGroup : ComponentGroup<Rigidbody>
     {
         /// <summary>
-        ///     TODO.
+        ///     All actions able to be performed on every <c>Rigidbody</c> component in the group.
         /// </summary>
         private enum RigidbodyActions : byte
         {
@@ -26,31 +26,29 @@ namespace itolib.Behaviours.Groupings
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Whether to wake up sleeping <c>Rigidbody</c> components when applying forces or not.
         /// </summary>
         [Space(5.0f)]
         [Header("Rigidbody Group")]
-        [Tooltip("")]
+        [Tooltip("Whether to wake up sleeping Rigidbody components when applying forces or not.")]
         [SerializeField] private bool respectSleep;
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="rigidbody"></param>
-        /// <param name="actionID"></param>
-        /// <param name="parameter"></param>
+        /// <inheritdoc/>
         protected override void PerformSingleAction(Rigidbody rigidbody, Enum actionID, object? parameter = null)
         {
+            // Check if action ID is invalid.
             if (actionID is not RigidbodyActions rigidbodyActionID)
             {
                 return;
             }
 
+            // Check if sleeping Rigidbodies should be respected.
             if (respectSleep && (int)rigidbodyActionID < 8 && rigidbody.IsSleeping())
             {
                 return;
             }
 
+            // Obtain force parameter, if one is provided.
             Vector3 force = Vector3.zero;
             if ((int)rigidbodyActionID < 8)
             {
@@ -104,21 +102,14 @@ namespace itolib.Behaviours.Groupings
             }
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="rigidbody"></param>
-        /// <param name="enabled"></param>
+        /// <inheritdoc/>
         protected override void EnableSingleComponent(Rigidbody rigidbody, bool enabled)
         {
             rigidbody.isKinematic = !enabled;
             rigidbody.detectCollisions = enabled;
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="rigidbody"></param>
+        /// <inheritdoc/>
         protected override void ToggleSingleComponent(Rigidbody rigidbody)
         {
             rigidbody.isKinematic = !rigidbody.isKinematic;
@@ -126,79 +117,79 @@ namespace itolib.Behaviours.Groupings
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Apply a continuous acceleration force in world space to every <c>Rigidbody</c> component in the group.
         /// </summary>
-        /// <param name="acceleration"></param>
+        /// <param name="acceleration">Acceleration force to apply, in world space.</param>
         public void ApplyContinuousAcceleration(Vector3 acceleration)
         {
             PerformGroupAction(RigidbodyActions.ApplyAcceleration, acceleration);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Apply a continuous acceleration force in object space to every <c>Rigidbody</c> component in the group.
         /// </summary>
-        /// <param name="acceleration"></param>
+        /// <param name="acceleration">Acceleration force to apply, in object space.</param>
         public void ApplyRelativeContinuousAcceleration(Vector3 acceleration)
         {
             PerformGroupAction(RigidbodyActions.ApplyAccelerationRelative, acceleration);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Apply a continuous force in world space to every <c>Rigidbody</c> component in the group.
         /// </summary>
-        /// <param name="force"></param>
+        /// <param name="force">Force to apply, in world space.</param>
         public void ApplyContinuousForce(Vector3 force)
         {
             PerformGroupAction(RigidbodyActions.ApplyForce, force);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Apply a continuous force in object space to every <c>Rigidbody</c> component in the group.
         /// </summary>
-        /// <param name="force"></param>
+        /// <param name="force">Force to apply, in object space.</param>
         public void ApplyRelativeContinuousForce(Vector3 force)
         {
             PerformGroupAction(RigidbodyActions.ApplyForceRelative, force);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Apply an impulse force in world space to every <c>Rigidbody</c> component in the group.
         /// </summary>
-        /// <param name="impulse"></param>
+        /// <param name="impulse">Impulse force to apply, in world space.</param>
         public void ApplyInstantImpulse(Vector3 impulse)
         {
             PerformGroupAction(RigidbodyActions.ApplyImpulse, impulse);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Apply an impulse force in object space to every <c>Rigidbody</c> component in the group.
         /// </summary>
-        /// <param name="impulse"></param>
+        /// <param name="impulse">Impulse force to apply, in object space.</param>
         public void ApplyRelativeInstantImpulse(Vector3 impulse)
         {
             PerformGroupAction(RigidbodyActions.ApplyImpulseRelative, impulse);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Apply a velocity force in world space to every <c>Rigidbody</c> component in the group.
         /// </summary>
-        /// <param name="velocityChange"></param>
+        /// <param name="velocityChange">Velocity force to apply, in world space.</param>
         public void ApplyInstantVelocityChange(Vector3 velocityChange)
         {
             PerformGroupAction(RigidbodyActions.ApplyVelocityChange, velocityChange);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Apply a velocity force in object space to every <c>Rigidbody</c> component in the group.
         /// </summary>
-        /// <param name="velocityChange"></param>
+        /// <param name="velocityChange">Velocity force to apply, in object space.</param>
         public void ApplyRelativeInstantVelocityChange(Vector3 velocityChange)
         {
             PerformGroupAction(RigidbodyActions.ApplyVelocityChangeRelative, velocityChange);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Force sleep upon every <c>Rigidbody</c> component in the group.
         /// </summary>
         public void SleepAll()
         {
@@ -206,7 +197,7 @@ namespace itolib.Behaviours.Groupings
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Awaken every <c>Rigidbody</c> component in the group.
         /// </summary>
         public void WakeUpAll()
         {

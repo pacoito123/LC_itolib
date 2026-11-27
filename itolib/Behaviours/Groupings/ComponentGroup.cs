@@ -8,9 +8,9 @@ using UnityEngine;
 namespace itolib.Behaviours.Groupings
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a group of components of type <c><typeparamref name="T"/></c> to perform bulk operations on.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Type of components within this group.</typeparam>
     public abstract class ComponentGroup<T> : MonoBehaviour, IActivationScript where T : Component
     {
         /// <inheritdoc/>
@@ -20,27 +20,36 @@ namespace itolib.Behaviours.Groupings
         public bool PerformedActivation { get; set; }
 
         /// <summary>
-        ///     TODO.
+        ///     All unique components of type <c><typeparamref name="T"/></c> found by the component search.
         /// </summary>
-        private T?[]? components;
+        private readonly HashSet<T?> components = [];
 
         /// <summary>
-        ///     TODO.
+        ///     List of components of type <c><typeparamref name="T"/></c> obtained from the last searched object.
+        /// </summary>
+        private readonly List<T> tempComponents = [];
+
+        /// <summary>
+        ///     List of objects to search within for components of type <c><typeparamref name="T"/></c>.
         /// </summary>
         [Header("Component Group")]
-        [Tooltip("")]
-        [SerializeField] private GameObject[]? objectsToSearch;
+        [Tooltip("List of objects to search within for components of the defined type.")]
+        [SerializeField] private List<GameObject?>? objectsToSearch;
 
         /// <summary>
-        ///     TODO.
+        ///     List of object tags to ignore when searching for components of type <c><typeparamref name="T"/></c>.
         /// </summary>
-        [Tooltip("")]
+        [Tooltip("List of object tags to ignore when searching for components of the defined type.")]
         [SerializeField] private string[]? tagsToIgnore;
 
         /// <summary>
-        ///     Desired <c>ActivationTime</c> for the <c><typeparamref name="T"/></c> search.
+        ///     Whether to search recursively for components of type <c><typeparamref name="T"/></c> or not.
         /// </summary>
-        [field: Tooltip($"Desired activation time for the {nameof(T)} search.")]
+        [Tooltip("Whether to search recursively for components of the defined type or not.")]
+        [SerializeField] private bool recursively = true;
+
+        /// <inheritdoc/>
+        [field: Tooltip($"Desired activation time for the component search.")]
         [field: SerializeField] public ActivationTime ActivationTime { get; set; } = ActivationTime.Immediate;
 
         /// <summary>
@@ -54,7 +63,7 @@ namespace itolib.Behaviours.Groupings
         /// <summary>
         ///     Perform component search immediately or subscribe to a specific event upon being enabled, depending on the set <c>ActivationTime</c>.
         /// </summary>
-        protected virtual void OnEnable()
+        private void OnEnable()
         {
             ActivationSelf.Initialize();
         }
@@ -68,44 +77,60 @@ namespace itolib.Behaviours.Groupings
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Perform search for components of type <c><typeparamref name="T"/></c> within the specified objects.
         /// </summary>
-        private void FindComponentsInObjects()
+        /// <param name="recursively">Whether to search for components of type <c><typeparamref name="T"/></c> recursively or not.</param>
+        public virtual void FindComponentsInObjects(bool recursively)
         {
-            if (PerformedActivation)
+            // Check if there are no objects to search.
+            if (objectsToSearch == null || objectsToSearch.Count == 0)
             {
                 return;
             }
 
-            HashSet<T> uniqueComponents = [];
+            // Clear components in the group.
+            components.Clear();
 
-            for (int i = 0; i < objectsToSearch?.Length; i++)
+            // Search every object for components of the defined type.
+            foreach (GameObject? gameObject in objectsToSearch)
             {
-                if (objectsToSearch[i] != null)
+                if (gameObject == null)
                 {
-                    uniqueComponents.UnionWith(objectsToSearch[i].GetComponentsInChildren<T>());
+                    continue;
                 }
+
+                if (recursively)
+                {
+                    // Obtain all components of the defined type within the object's hierarchy.
+                    gameObject.GetComponentsInChildren(includeInactive: true, tempComponents);
+                }
+                else
+                {
+                    // Obtain all components of the defined type at the root of the object.
+                    gameObject.GetComponents(tempComponents);
+                }
+
+                // Add found components to group.
+                components.UnionWith(tempComponents);
             }
 
+            // Remove any components with ignored tags from the group.
             for (int i = 0; i < tagsToIgnore?.Length; i++)
             {
-                _ = uniqueComponents.RemoveWhere(component => component.CompareTag(tagsToIgnore[i]));
+                _ = components.RemoveWhere(component => component == null || component.CompareTag(tagsToIgnore[i]));
             }
-
-            components = [.. uniqueComponents];
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Perform bulk action for all components of type <c><typeparamref name="T"/></c> in the group.
         /// </summary>
-        /// <param name="actionID"></param>
-        /// <param name="parameter"></param>
-        protected void PerformGroupAction(Enum actionID, object? parameter = null)
+        /// <param name="actionID">ID of the action to perform.</param>
+        /// <param name="parameter">Optional parameter given to the action to perform.</param>
+        protected virtual void PerformGroupAction(Enum actionID, object? parameter = null)
         {
-            for (int i = 0; i < components?.Length; i++)
+            // Perform action for every found component of the defined type in the group.
+            foreach (T? component in components)
             {
-                T? component = components[i];
-
                 if (component != null)
                 {
                     PerformSingleAction(component, actionID, parameter);
@@ -114,32 +139,31 @@ namespace itolib.Behaviours.Groupings
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Perform action for a single component of type <c><typeparamref name="T"/></c> in the group.
         /// </summary>
-        /// <param name="component"></param>
-        /// <param name="actionID"></param>
-        /// <param name="parameter"></param>
+        /// <param name="component">Single component of type <c><typeparamref name="T"/></c> in the group.</param>
+        /// <param name="actionID">ID of the action to perform.</param>
+        /// <param name="parameter">Optional parameter given to the action to perform.</param>
         protected abstract void PerformSingleAction(T component, Enum actionID, object? parameter = null);
 
         /// <summary>
-        ///     TODO.
+        ///     Enable or disable all components of type <c><typeparamref name="T"/></c> in the group.
         /// </summary>
-        /// <param name="enabled"></param>
+        /// <param name="enabled">Whether to enable or disable.</param>
         public void EnableComponents(bool enabled)
         {
             EnableGroupComponents(enabled);
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Enable or disable all components of type <c><typeparamref name="T"/></c> in the group.
         /// </summary>
-        /// <param name="enabled"></param>
-        protected void EnableGroupComponents(bool enabled)
+        /// <param name="enabled">Whether to enable or disable.</param>
+        protected virtual void EnableGroupComponents(bool enabled)
         {
-            for (int i = 0; i < components?.Length; i++)
+            // Enable or disable every found component of the defined type in the group.
+            foreach (T? component in components)
             {
-                T? component = components[i];
-
                 if (component != null)
                 {
                     EnableSingleComponent(component, enabled);
@@ -148,37 +172,28 @@ namespace itolib.Behaviours.Groupings
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Enable a single component of type <c><typeparamref name="T"/></c> in the group.
         /// </summary>
-        /// <param name="component"></param>
-        /// <param name="enabled"></param>
+        /// <param name="component">Single component of type <c><typeparamref name="T"/></c> in the group.</param>
+        /// <param name="enabled">Whether to enable or disable.</param>
         protected abstract void EnableSingleComponent(T component, bool enabled);
 
         /// <summary>
-        ///     TODO.
+        ///     Toggle all components of type <c><typeparamref name="T"/></c> in the group.
         /// </summary>
         public void ToggleComponents()
         {
-            for (int i = 0; i < components?.Length; i++)
-            {
-                T? component = components[i];
-
-                if (component != null)
-                {
-                    ToggleSingleComponent(component);
-                }
-            }
+            ToggleGroupComponents();
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Toggle all components of type <c><typeparamref name="T"/></c> in the group.
         /// </summary>
-        protected void ToggleGroupComponents()
+        protected virtual void ToggleGroupComponents()
         {
-            for (int i = 0; i < components?.Length; i++)
+            // Toggle every found component of the defined type in the group.
+            foreach (T? component in components)
             {
-                T? component = components[i];
-
                 if (component != null)
                 {
                     ToggleSingleComponent(component);
@@ -187,15 +202,45 @@ namespace itolib.Behaviours.Groupings
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Toggle a single component of type <c><typeparamref name="T"/></c> in the group.
         /// </summary>
         /// <param name="component"></param>
         protected abstract void ToggleSingleComponent(T component);
 
+        /// <summary>
+        ///     Manually add an object to be searched for components of type <c><typeparamref name="T"/></c>. 
+        /// </summary>
+        /// <remarks>Does not automatically call <c>FindComponentsInObjects()</c> again, it must be done manually.</remarks>
+        /// <param name="gameObject">Object to add to the search for components of type <c><typeparamref name="T"/></c>.</param>
+        public virtual void AddObjectToSearch(GameObject gameObject)
+        {
+            // Initialize list of objects to search, if empty.
+            objectsToSearch ??= [];
+
+            if (gameObject != null && !objectsToSearch.Contains(gameObject))
+            {
+                // Add object to the list of objects to search, if not already present.
+                objectsToSearch.Add(gameObject);
+            }
+        }
+
+        /// <summary>
+        ///     Manually add a single component of type <c><typeparamref name="T"/></c> to the group.
+        /// </summary>
+        /// <param name="component"></param>
+        public virtual void AddComponentToGroup(T component)
+        {
+            if (component != null)
+            {
+                // Add component to the group, if not already present.
+                _ = components.Add(component);
+            }
+        }
+
         /// <inheritdoc/>
         public virtual void PerformActivation(ActivationTime activationTime)
         {
-            FindComponentsInObjects();
+            FindComponentsInObjects(recursively);
         }
 
         /// <inheritdoc/>

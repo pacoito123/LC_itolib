@@ -5,12 +5,12 @@ using UnityEngine.Rendering.HighDefinition;
 namespace itolib.Behaviours.Groupings
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a group of <c>HDAdditionalLightData</c> components to perform bulk operations on.
     /// </summary>
     public class LightGroup : ComponentGroup<HDAdditionalLightData>
     {
         /// <summary>
-        ///     TODO.
+        ///     All actions able to be performed on every <c>HDAdditionalLightData</c> component in the group.
         /// </summary>
         private enum LightActions : byte // TODO: Fade Distance, Volumetrics, Shadows
         {
@@ -116,6 +116,18 @@ namespace itolib.Behaviours.Groupings
                 default:
                     break;
             }
+        }
+
+        /// <inheritdoc/>
+        protected override void EnableSingleComponent(HDAdditionalLightData component, bool enabled)
+        {
+            component.enabled = enabled;
+        }
+
+        /// <inheritdoc/>
+        protected override void ToggleSingleComponent(HDAdditionalLightData component)
+        {
+            component.enabled = !component.enabled;
         }
 
         /// <summary>
@@ -296,18 +308,6 @@ namespace itolib.Behaviours.Groupings
         public void IncrementAreaTubeLengthAll(float length)
         {
             PerformGroupAction(LightActions.IncrementAreaTubeLength, length);
-        }
-
-        /// <inheritdoc/>
-        protected override void EnableSingleComponent(HDAdditionalLightData component, bool enabled)
-        {
-            component.enabled = enabled;
-        }
-
-        /// <inheritdoc/>
-        protected override void ToggleSingleComponent(HDAdditionalLightData component)
-        {
-            component.enabled = !component.enabled;
         }
 
         /// <summary>

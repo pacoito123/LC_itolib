@@ -5,12 +5,12 @@ using UnityEngine;
 namespace itolib.Behaviours.Groupings
 {
     /// <summary>
-    ///     TODO.
+    ///     Represents a group of <c>AudioSource</c> components to perform bulk operations on.
     /// </summary>
     public class AudioGroup : ComponentGroup<AudioSource>
     {
         /// <summary>
-        ///     TODO.
+        ///     All actions able to be performed on every <c>AudioSource</c> component in the group.
         /// </summary>
         private enum AudioActions : byte
         {
@@ -23,11 +23,11 @@ namespace itolib.Behaviours.Groupings
         }
 
         /// <summary>
-        ///     TODO.
+        ///     Whether to automatically initialize (play then immediately pause) every <c>AudioSource</c> component in the group or not.
         /// </summary>
         [Space(5.0f)]
         [Header("Audio Group")]
-        [Tooltip("")]
+        [Tooltip("Whether to automatically initialize (play then immediately pause) every AudioSource component in the group or not.")]
         [SerializeField] private bool autoInitialize;
 
         /// <inheritdoc/>
@@ -41,12 +41,7 @@ namespace itolib.Behaviours.Groupings
             }
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="actionID"></param>
-        /// <param name="parameter"></param>
+        /// <inheritdoc/>
         protected override void PerformSingleAction(AudioSource source, Enum actionID, object? parameter = null)
         {
             if (actionID is not AudioActions audioActionID)
@@ -91,20 +86,13 @@ namespace itolib.Behaviours.Groupings
             }
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="enabled"></param>
+        /// <inheritdoc/>
         protected override void EnableSingleComponent(AudioSource source, bool enabled)
         {
             source.enabled = enabled;
         }
 
-        /// <summary>
-        ///     TODO.
-        /// </summary>
-        /// <param name="source"></param>
+        /// <inheritdoc/>
         protected override void ToggleSingleComponent(AudioSource source)
         {
             source.enabled = !source.enabled;
